@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using YAXLib;
@@ -14,6 +13,7 @@ namespace Mpdn.RenderScript
 
             private IFilter m_ImageFilter;
             private IShader[] m_Shaders = new IShader[0];
+            private string[] m_ShaderFileNames = new string[0];
 
             public override ScriptDescriptor Descriptor
             {
@@ -45,14 +45,18 @@ namespace Mpdn.RenderScript
                 m_Settings.Destroy();
             }
 
+            public override void Setup(IRenderer renderer)
+            {
+                base.Setup(renderer);
+
+                SetupRenderChain();
+            }
+
             protected override void Dispose(bool disposing)
             {
                 Common.Dispose(ref m_ImageFilter);
 
-                for (int i = 0; i < m_Shaders.Length; i++)
-                {
-                    Common.Dispose(ref m_Shaders[i]);
-                }
+                DisposeShaders();
             }
 
             public override bool ShowConfigDialog()
@@ -63,38 +67,61 @@ namespace Mpdn.RenderScript
                     return false;
 
                 m_Settings.Save();
+                SetupRenderChain();
                 return true;
             }
 
             protected override ITexture GetFrame()
             {
-                return m_ImageFilter == null ? InputFilter.OutputTexture : GetFrame(m_ImageFilter);
+                lock (m_Settings)
+                {
+                    return GetFrame(m_ImageFilter);
+                }
             }
 
             public override void OnOutputSizeChanged()
             {
-                base.OnOutputSizeChanged();
-
-                Common.Dispose(ref m_ImageFilter);
-                SetupRenderChain();
+                lock (m_Settings)
+                {
+                    m_ImageFilter.AllocateTextures();
+                }
             }
 
             private void SetupRenderChain()
             {
-                var shaderFileNames = m_Settings.Config.ShaderFileNames;
-                var shaders = CompileShaders(shaderFileNames);
+                lock (m_Settings)
+                {
+                    var shaderFileNames = m_Settings.Config.ShaderFileNames;
+                    if (!shaderFileNames.SequenceEqual(m_ShaderFileNames))
+                    {
+                        CompileShaders(shaderFileNames);
+                    }
 
-                m_ImageFilter = shaders.Aggregate(InputFilter, (current, shader) => CreateFilter(shader, current));
+                    m_ImageFilter = m_Shaders.Aggregate(InputFilter, (current, shader) => CreateFilter(shader, current));
+                    m_ImageFilter.Initialize();
+                }
             }
 
-            private IEnumerable<IShader> CompileShaders(string[] shaderFileNames)
+            private void CompileShaders(string[] shaderFileNames)
             {
+                DisposeShaders();
+
                 m_Shaders = new IShader[shaderFileNames.Length];
                 for (int i = 0; i < shaderFileNames.Length; i++)
                 {
                     m_Shaders[i] = CompileShader(shaderFileNames[i]);
                 }
-                return m_Shaders;
+                m_ShaderFileNames = shaderFileNames;
+            }
+
+            private void DisposeShaders()
+            {
+                for (int i = 0; i < m_Shaders.Length; i++)
+                {
+                    Common.Dispose(ref m_Shaders[i]);
+                }
+                m_Shaders = new IShader[0];
+                m_ShaderFileNames = new string[0];
             }
         }
 

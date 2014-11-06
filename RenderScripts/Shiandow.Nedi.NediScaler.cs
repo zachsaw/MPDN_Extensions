@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Diagnostics;
 using System.Windows.Forms;
 using YAXLib;
 
@@ -87,7 +86,6 @@ namespace Mpdn.RenderScript
 
             protected override void Dispose(bool disposing)
             {
-                Debug.WriteLine("Dispose");
                 DiscardNediScaler();
 
                 Common.Dispose(ref m_Nedi1Shader);
@@ -100,35 +98,50 @@ namespace Mpdn.RenderScript
             {
                 lock (m_NediSettings)
                 {
-                    Debug.WriteLine("Setup");
                     base.Setup(renderer);
                     CompileShaders();
                     CreateNediScaler();
                 }
             }
 
+            public override void OnInputSizeChanged()
+            {
+                AllocateTextures();
+            }
+
             public override void OnOutputSizeChanged()
             {
-                if (UseNedi)
-                {
-                    m_NediScaler.AllocateTextures();
-                    m_Scaler = m_NediScaler;
-                }
-                else
-                {
-                    m_NediScaler.DeallocateTextures();
-                    m_Scaler = InputFilter;
-                }
+                AllocateTextures();
             }
 
             protected override ITexture GetFrame()
             {
-                return GetFrame(m_Scaler);
+                lock (m_NediSettings)
+                {
+                    return GetFrame(m_Scaler);
+                }
             }
 
             private bool UseNedi
             {
                 get { return m_NediSettings.Config.AlwaysDoubleImage || NeedToUpscale(); }
+            }
+
+            private void AllocateTextures()
+            {
+                lock (m_NediSettings)
+                {
+                    if (UseNedi)
+                    {
+                        m_NediScaler.AllocateTextures();
+                        m_Scaler = m_NediScaler;
+                    }
+                    else
+                    {
+                        m_NediScaler.DeallocateTextures();
+                        m_Scaler = InputFilter;
+                    }
+                }
             }
 
             private void CompileShaders()
