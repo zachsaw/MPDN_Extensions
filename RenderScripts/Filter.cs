@@ -1,0 +1,345 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using SharpDX;
+
+namespace Mpdn.RenderScript
+{
+    public interface IFilter : IDisposable
+    {
+        IFilter[] InputFilters { get; }
+        ITexture OutputTexture { get; }
+        Size OutputSize { get; }
+        int RenderTime { get; }
+        int FinishTime { get; }
+        void NewFrame();
+        void Render();
+        void Initialize(int time = 0);
+        void AllocateTextures();
+        void DeallocateTextures();
+    }
+
+    public abstract class Filter : IFilter
+    {
+        private bool m_Disposed;
+        private bool m_OwnsTexture;
+        private ITexture m_OutputTexture;
+
+        protected Filter(IRenderer renderer, params IFilter[] inputFilters)
+        {
+            if (inputFilters == null || inputFilters.Length == 0 || inputFilters.Any(f => f == null))
+            {
+                throw new ArgumentNullException("inputFilters");
+            }
+
+            Renderer = renderer;
+            Initialized = false;
+
+            InputFilters = inputFilters;
+        }
+
+        protected IRenderer Renderer { get; private set; }
+        protected bool Updated { get; set; }
+        protected bool Initialized { get; set; }
+
+        #region IFilter
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        public IFilter[] InputFilters { get; private set; }
+        public ITexture OutputTexture
+        {
+            get
+            {
+                // If m_OutputTexture is null, we are reusing  
+                // Renderer.OutputRenderTarget as our OutputTexture 
+                return m_OutputTexture ?? Renderer.OutputRenderTarget;
+            }
+            private set { m_OutputTexture = value; }
+        } 
+
+        public abstract Size OutputSize { get; }
+
+        public int RenderTime { get; private set; }
+        public int FinishTime { get; private set; }
+
+        public virtual void NewFrame()
+        {
+            if (InputFilters == null)
+                return;
+
+            foreach (var filter in InputFilters)
+            {
+                filter.NewFrame();
+            }
+
+            Updated = false;
+        }
+
+        public virtual void Render()
+        {
+            foreach (var filter in InputFilters)
+            {
+                filter.Render();
+            }
+
+            if (Updated)
+                return;
+
+            Updated = true;
+            var inputTextures = InputFilters.Select(f => f.OutputTexture);
+            Render(inputTextures);
+        }
+
+        public virtual void Initialize(int time = 0)
+        {
+            FinishTime = time;
+
+            if (Initialized)
+                return;
+
+            foreach (var filter in InputFilters)
+            {
+                filter.Initialize(FinishTime);
+                FinishTime = filter.FinishTime;
+            }
+
+            RenderTime = FinishTime;
+
+            foreach (var filter in InputFilters)
+            {
+                filter.Initialize(RenderTime);
+            }
+
+            FinishTime++;
+
+            Initialized = true;
+        }
+
+        public virtual void AllocateTextures()
+        {
+            var size = OutputSize;
+            if (OutputTexture == null || size.Width != OutputTexture.Width || size.Height != OutputTexture.Height)
+            {
+                if (m_OwnsTexture)
+                {
+                    Common.Dispose(OutputTexture);
+                }
+                OutputTexture = null;
+            }
+
+            foreach (var filter in InputFilters)
+            {
+                filter.AllocateTextures();
+            }
+
+            if (OutputTexture == null)
+            {
+                AllocateOutputTexture();
+            }
+        }
+
+        public virtual void DeallocateTextures()
+        {
+            foreach (var filter in InputFilters)
+            {
+                filter.DeallocateTextures();
+            }
+
+            if (m_OwnsTexture)
+            {
+                Common.Dispose(OutputTexture);
+            }
+            OutputTexture = null;
+        }
+
+        #endregion
+
+        public abstract void Render(IEnumerable<ITexture> inputs);
+
+        private void AllocateOutputTexture()
+        {
+            var tex =
+                GetTextures(this)
+                    .FirstOrDefault(f => f != null && f.Width == OutputSize.Width && f.Height == OutputSize.Height);
+
+            if (tex != null)
+            {
+                // Reuse texture
+                OutputTexture = tex;
+                return;
+            }
+
+            if (OutputSize == Renderer.OutputSize)
+            {
+                // Reuse renderer's output render target as texture
+                OutputTexture = null;
+                return;
+            }
+
+            OutputTexture = Renderer.CreateRenderTarget(OutputSize);
+            m_OwnsTexture = true;
+        }
+
+        private static IEnumerable<ITexture> GetTextures(IFilter filter)
+        {
+            var filters = filter.InputFilters;
+            if (filters == null)
+                return null;
+
+            var result = new List<ITexture>();
+            result.AddRange(filters.Where(f => f.FinishTime <= filter.RenderTime).Select(f => f.OutputTexture));
+
+            foreach (var f in filters)
+            {
+                var inputFilters = GetTextures(f);
+                if (inputFilters == null)
+                    continue;
+
+                result.AddRange(inputFilters);
+            }
+
+            return result;
+        }
+
+        ~Filter()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (m_Disposed)
+                return;
+
+            DisposeInputFilters();
+
+            if (!m_OwnsTexture)
+                return;
+
+            Common.Dispose(OutputTexture);
+            OutputTexture = null;
+
+            m_Disposed = true;
+        }
+
+        private void DisposeInputFilters()
+        {
+            if (InputFilters == null)
+                return;
+
+            foreach (var filter in InputFilters)
+            {
+                Common.Dispose(filter);
+            }
+        }
+    }
+
+    public class InputFilter : IFilter
+    {
+        public InputFilter(IRenderer renderer)
+        {
+            Renderer = renderer;
+            InputFilters = null;
+        }
+
+        protected IRenderer Renderer { get; private set; }
+
+        public IFilter[] InputFilters { get; private set; }
+
+        public ITexture OutputTexture
+        {
+            get { return Renderer.InputRenderTarget; }
+        }
+
+        public Size OutputSize
+        {
+            get { return Renderer.InputSize; }
+        }
+
+        public bool ShareableOutputTexture
+        {
+            get { return false; }
+        }
+
+        public int RenderTime { get { return -1; } }
+        public int FinishTime { get; private set; }
+
+        public void Dispose()
+        {
+        }
+
+        public void NewFrame()
+        {
+        }
+
+        public void Render()
+        {
+        }
+
+        public void Initialize(int time = 0)
+        {
+            FinishTime = time;
+        }
+
+        public void AllocateTextures()
+        {
+        }
+
+        public void DeallocateTextures()
+        {
+        }
+    }
+
+    public class ShaderFilter : Filter
+    {
+        public ShaderFilter(IRenderer renderer, IShader shader, bool linearSampling = false, params IFilter[] inputFilters)
+            : base(renderer, inputFilters)
+        {
+            Shader = shader;
+            LinearSampling = linearSampling;
+        }
+
+        protected IShader Shader { get; private set; }
+        protected bool LinearSampling { get; private set; }
+        protected int Counter { get; private set; }
+
+        public override Size OutputSize
+        {
+            get
+            {
+                var size = InputFilters[0].OutputSize;
+                return new Size(size.Width, size.Height);
+            }
+        }
+
+        public override void Render(IEnumerable<ITexture> inputs)
+        {
+            LoadInputs(inputs);
+            Renderer.Render(OutputTexture, Shader);
+        }
+
+        private void LoadInputs(IEnumerable<ITexture> inputs)
+        {
+            var i = 0;
+            foreach (var input in inputs)
+            {
+                Shader.SetTextureConstant(String.Format("s{0}", i), input.Texture, LinearSampling);
+                Shader.SetConstant(String.Format("size{0}", i),
+                    new Vector4(input.Width, input.Height, 1.0f/input.Width, 1.0f/input.Height), false);
+                i++;
+            }
+
+            // Legacy constants 
+            var output = OutputTexture;
+            Shader.SetConstant("p0", new Vector4(output.Width, output.Height, Counter++, Stopwatch.GetTimestamp()),
+                false);
+            Shader.SetConstant("p1", new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
+        }
+    }
+}
