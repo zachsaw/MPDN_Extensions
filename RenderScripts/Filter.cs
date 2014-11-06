@@ -12,8 +12,8 @@ namespace Mpdn.RenderScript
         IFilter[] InputFilters { get; }
         ITexture OutputTexture { get; }
         Size OutputSize { get; }
-        int RenderTime { get; }
-        int FinishTime { get; }
+        int FilterIndex { get; }
+        int LastDependentIndex { get; }
         void NewFrame();
         void Render();
         void Initialize(int time = 0);
@@ -65,8 +65,8 @@ namespace Mpdn.RenderScript
 
         public abstract Size OutputSize { get; }
 
-        public int RenderTime { get; private set; }
-        public int FinishTime { get; private set; }
+        public int FilterIndex { get; private set; }
+        public int LastDependentIndex { get; private set; }
 
         public virtual void NewFrame()
         {
@@ -98,25 +98,25 @@ namespace Mpdn.RenderScript
 
         public virtual void Initialize(int time = 0)
         {
-            FinishTime = time;
+            LastDependentIndex = time;
 
             if (Initialized)
                 return;
 
             foreach (var filter in InputFilters)
             {
-                filter.Initialize(FinishTime);
-                FinishTime = filter.FinishTime;
+                filter.Initialize(LastDependentIndex);
+                LastDependentIndex = filter.LastDependentIndex;
             }
 
-            RenderTime = FinishTime;
+            FilterIndex = LastDependentIndex;
 
             foreach (var filter in InputFilters)
             {
-                filter.Initialize(RenderTime);
+                filter.Initialize(FilterIndex);
             }
 
-            FinishTime++;
+            LastDependentIndex++;
 
             Initialized = true;
         }
@@ -193,7 +193,7 @@ namespace Mpdn.RenderScript
                 return null;
 
             var result = new List<ITexture>();
-            result.AddRange(filters.Where(f => f.FinishTime <= filter.RenderTime).Select(f => f.OutputTexture));
+            result.AddRange(filters.Where(f => f.LastDependentIndex <= filter.FilterIndex).Select(f => f.OutputTexture));
 
             foreach (var f in filters)
             {
@@ -267,8 +267,8 @@ namespace Mpdn.RenderScript
             get { return false; }
         }
 
-        public int RenderTime { get { return -1; } }
-        public int FinishTime { get; private set; }
+        public int FilterIndex { get { return -1; } }
+        public int LastDependentIndex { get; private set; }
 
         public void Dispose()
         {
@@ -284,7 +284,7 @@ namespace Mpdn.RenderScript
 
         public void Initialize(int time = 0)
         {
-            FinishTime = time;
+            LastDependentIndex = time;
         }
 
         public void AllocateTextures()

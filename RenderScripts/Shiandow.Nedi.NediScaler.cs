@@ -62,18 +62,6 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            public override ScriptInputDescriptor InputDescriptor
-            {
-                get
-                {
-                    return new ScriptInputDescriptor
-                    {
-                        // Begin with original video size 
-                        Size = Renderer.VideoSize
-                    };
-                }
-            }
-
             public override void Initialize(int instanceId)
             {
                 m_NediSettings = new NediSettings(instanceId);
