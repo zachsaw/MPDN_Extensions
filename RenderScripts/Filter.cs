@@ -73,25 +73,29 @@ namespace Mpdn.RenderScript
             if (InputFilters == null)
                 return;
 
+            if (!Updated)
+                return;
+
+            Updated = false;
+
             foreach (var filter in InputFilters)
             {
                 filter.NewFrame();
             }
-
-            Updated = false;
         }
 
         public virtual void Render()
         {
+            if (Updated)
+                return;
+
+            Updated = true;
+
             foreach (var filter in InputFilters)
             {
                 filter.Render();
             }
 
-            if (Updated)
-                return;
-
-            Updated = true;
             var inputTextures = InputFilters.Select(f => f.OutputTexture);
             Render(inputTextures);
         }
@@ -164,6 +168,7 @@ namespace Mpdn.RenderScript
 
         private void AllocateOutputTexture()
         {
+            // This can (should) be improved - it currently does not reuse all feasible textures
             var tex =
                 GetTextures(this)
                     .FirstOrDefault(f => f != null && f.Width == OutputSize.Width && f.Height == OutputSize.Height);

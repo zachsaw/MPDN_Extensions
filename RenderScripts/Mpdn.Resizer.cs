@@ -25,10 +25,18 @@ namespace Mpdn.RenderScript
                     {
                         Guid = new Guid("C5621540-C3F6-4B54-98FE-EA9ECECD0D41"),
                         Name = "Resizer",
-                        Description = "Resizes the image",
+                        Description = GetDescription(),
                         HasConfigDialog = true
                     };
                 }
+            }
+
+            private string GetDescription()
+            {
+                var options = m_Settings == null
+                    ? string.Empty
+                    : string.Format(" to {0}", m_Settings.Config.Resizer.ToDescription());
+                return string.Format("Resizes the image{0}", options);
             }
 
             public override ScriptInputDescriptor InputDescriptor

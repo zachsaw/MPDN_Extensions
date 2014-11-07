@@ -23,10 +23,17 @@ namespace Mpdn.RenderScript
                     {
                         Guid = new Guid("50CA262F-65B6-4A0F-A8B5-5E25B6A18217"),
                         Name = "Image Processor",
-                        Description = "Pixel shader pre-/post-processing filter",
+                        Description = GetDescription(),
                         HasConfigDialog = true
                     };
                 }
+            }
+
+            private string GetDescription()
+            {
+                return m_Settings == null || m_Settings.Config.ShaderFileNames.Length == 0
+                    ? "Pixel shader pre-/post-processing filter"
+                    : string.Join(" ➔ ", m_Settings.Config.ShaderFileNames);
             }
 
             protected override string ShaderPath
@@ -91,6 +98,9 @@ namespace Mpdn.RenderScript
             {
                 lock (m_Settings)
                 {
+                    if (Renderer == null)
+                        return;
+
                     var shaderFileNames = m_Settings.Config.ShaderFileNames;
                     if (!shaderFileNames.SequenceEqual(m_ShaderFileNames))
                     {

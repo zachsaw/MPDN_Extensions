@@ -39,7 +39,7 @@ namespace Mpdn.RenderScript
             private IShader m_NediHInterleaveShader;
             private IShader m_NediVInterleaveShader;
 
-            private NediSettings m_NediSettings;
+            private NediSettings m_Settings;
 
             protected override string ShaderPath
             {
@@ -54,33 +54,41 @@ namespace Mpdn.RenderScript
                     {
                         Guid = new Guid("B8E439B7-7DC2-4FC1-94E2-608A39756FB0"),
                         Name = "NEDI",
-                        Description = "NEDI image doubler",
+                        Description = GetDescription(),
                         Copyright = "NEDI by Shiandow",
                         HasConfigDialog = true
                     };
                 }
             }
 
+            private string GetDescription()
+            {
+                var options = m_Settings == null
+                    ? string.Empty
+                    : string.Format("{0}", m_Settings.Config.AlwaysDoubleImage ? " (forced)" : string.Empty);
+                return string.Format("NEDI image doubler{0}", options);
+            }
+
             public override void Initialize(int instanceId)
             {
-                m_NediSettings = new NediSettings(instanceId);
-                m_NediSettings.Load();
+                m_Settings = new NediSettings(instanceId);
+                m_Settings.Load();
             }
 
             public override void Destroy()
             {
-                m_NediSettings.Destroy();
+                m_Settings.Destroy();
             }
 
             public override bool ShowConfigDialog()
             {
                 var dialog = new NediConfigDialog();
-                dialog.Setup(m_NediSettings.Config);
+                dialog.Setup(m_Settings.Config);
                 if (dialog.ShowDialog() != DialogResult.OK)
                     return false;
 
                 OnInputSizeChanged();
-                m_NediSettings.Save();
+                m_Settings.Save();
                 return true;
             }
 
@@ -96,7 +104,7 @@ namespace Mpdn.RenderScript
 
             public override void Setup(IRenderer renderer)
             {
-                lock (m_NediSettings)
+                lock (m_Settings)
                 {
                     base.Setup(renderer);
                     CompileShaders();
@@ -116,7 +124,7 @@ namespace Mpdn.RenderScript
 
             protected override ITexture GetFrame()
             {
-                lock (m_NediSettings)
+                lock (m_Settings)
                 {
                     return GetFrame(m_Scaler);
                 }
@@ -124,13 +132,16 @@ namespace Mpdn.RenderScript
 
             private bool UseNedi
             {
-                get { return m_NediSettings.Config.AlwaysDoubleImage || NeedToUpscale(); }
+                get { return m_Settings.Config.AlwaysDoubleImage || NeedToUpscale(); }
             }
 
             private void AllocateTextures()
             {
-                lock (m_NediSettings)
+                lock (m_Settings)
                 {
+                    if (Renderer == null)
+                        return;
+
                     if (UseNedi)
                     {
                         m_NediScaler.AllocateTextures();
