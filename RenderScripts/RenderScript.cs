@@ -122,19 +122,19 @@ namespace Mpdn.RenderScript
         protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation,
             params IFilter[] inputFilters)
         {
-            return CreateFilter(shader, (w, h) => new Size(w, h), 0, false, inputFilters);
+            return CreateFilter(shader, transformation, 0, false, inputFilters);
         }
 
         protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation, bool linearSampling,
             params IFilter[] inputFilters)
         {
-            return CreateFilter(shader, (w, h) => new Size(w, h), 0, linearSampling, inputFilters);
+            return CreateFilter(shader, transformation, 0, linearSampling, inputFilters);
         }
 
         protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation, int sizeIndex,
             params IFilter[] inputFilters)
         {
-            return CreateFilter(shader, (w, h) => new Size(w, h), sizeIndex, false, inputFilters);
+            return CreateFilter(shader, transformation, sizeIndex, false, inputFilters);
         }
 
         protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation, int sizeIndex,
