@@ -24,8 +24,8 @@ namespace Mpdn.RenderScript
     public abstract class Filter : IFilter
     {
         private bool m_Disposed;
-        private bool m_OwnsTexture;
         private ITexture m_OutputTexture;
+        private bool m_OwnsTexture;
 
         protected Filter(IRenderer renderer, params IFilter[] inputFilters)
         {
@@ -52,6 +52,7 @@ namespace Mpdn.RenderScript
         }
 
         public IFilter[] InputFilters { get; private set; }
+
         public ITexture OutputTexture
         {
             get
@@ -61,7 +62,7 @@ namespace Mpdn.RenderScript
                 return m_OutputTexture ?? Renderer.OutputRenderTarget;
             }
             private set { m_OutputTexture = value; }
-        } 
+        }
 
         public abstract Size OutputSize { get; }
 
@@ -255,6 +256,11 @@ namespace Mpdn.RenderScript
 
         protected IRenderer Renderer { get; private set; }
 
+        public bool ShareableOutputTexture
+        {
+            get { return false; }
+        }
+
         public IFilter[] InputFilters { get; private set; }
 
         public ITexture OutputTexture
@@ -267,12 +273,11 @@ namespace Mpdn.RenderScript
             get { return Renderer.InputSize; }
         }
 
-        public bool ShareableOutputTexture
+        public int FilterIndex
         {
-            get { return false; }
+            get { return -1; }
         }
 
-        public int FilterIndex { get { return -1; } }
         public int LastDependentIndex { get; private set; }
 
         public void Dispose()
@@ -303,13 +308,14 @@ namespace Mpdn.RenderScript
 
     public class ShaderFilter : Filter
     {
-        public ShaderFilter(IRenderer renderer, IShader shader, params IFilter[] inputFilters)
-            : this(renderer, shader, (w, h) => new Size(w, h), 0, false, inputFilters)
+        public ShaderFilter(IRenderer renderer, IShader shader, int sizeIndex, bool linearSampling,
+            params IFilter[] inputFilters)
+            : this(renderer, shader, (w, h) => new Size(w, h), sizeIndex, linearSampling, inputFilters)
         {
         }
 
-        public ShaderFilter(IRenderer renderer, IShader shader, Func<int, int, Size> transformation, int sizeIndex, bool linearSampling,
-            params IFilter[] inputFilters)
+        public ShaderFilter(IRenderer renderer, IShader shader, Func<int, int, Size> transformation, int sizeIndex,
+            bool linearSampling, params IFilter[] inputFilters)
             : base(renderer, inputFilters)
         {
             if (sizeIndex < 0 || sizeIndex >= inputFilters.Length || inputFilters[sizeIndex] == null)
