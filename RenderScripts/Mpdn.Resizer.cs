@@ -24,7 +24,7 @@ namespace Mpdn.RenderScript
                     return new ScriptDescriptor
                     {
                         Guid = new Guid("C5621540-C3F6-4B54-98FE-EA9ECECD0D41"),
-                        Name = "Size Marker",
+                        Name = "Resizer",
                         Description = GetDescription(),
                         HasConfigDialog = true
                     };
@@ -34,18 +34,18 @@ namespace Mpdn.RenderScript
             private string GetDescription()
             {
                 var desc = m_Settings == null
-                    ? "Puts a size marker at this point of the render chain"
-                    : string.Format("Marked size: {0}", m_Settings.Config.Resizer.ToDescription());
+                    ? "Resizes the image"
+                    : string.Format("Resize to: {0}", m_Settings.Config.Resizer.ToDescription());
                 return desc;
             }
 
-            public override ScriptInputDescriptor InputDescriptor
+            public override ScriptInterfaceDescriptor InterfaceDescriptor
             {
                 get
                 {
-                    return new ScriptInputDescriptor
+                    return new ScriptInterfaceDescriptor
                     {
-                        Size = GetInputSize()
+                        InputSize = GetInputSize()
                     };
                 }
             }

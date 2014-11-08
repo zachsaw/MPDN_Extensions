@@ -38,6 +38,18 @@ namespace Mpdn.RenderScript
                 }
             }
 
+            public override ScriptInterfaceDescriptor InterfaceDescriptor
+            {
+                get
+                {
+                    var videoSize = Renderer.VideoSize;
+                    return new ScriptInterfaceDescriptor
+                    {
+                        OutputSize = new Size(videoSize.Width*2, videoSize.Height*2)
+                    };
+                }
+            }
+
             private bool UseNedi
             {
                 get { return m_Settings.Config.AlwaysDoubleImage || NeedToUpscale(); }

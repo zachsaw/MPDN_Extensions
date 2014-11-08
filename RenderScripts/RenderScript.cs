@@ -39,9 +39,9 @@ namespace Mpdn.RenderScript
 
         public abstract ScriptDescriptor Descriptor { get; }
 
-        public virtual ScriptInputDescriptor InputDescriptor
+        public virtual ScriptInterfaceDescriptor InterfaceDescriptor
         {
-            get { return new ScriptInputDescriptor(); }
+            get { return new ScriptInterfaceDescriptor(); }
         }
 
         public virtual void Initialize(int instanceId)
@@ -93,6 +93,11 @@ namespace Mpdn.RenderScript
             filter.NewFrame();
             filter.Render();
             return filter.OutputTexture;
+        }
+
+        protected virtual void Scale(ITexture output, ITexture input)
+        {
+            Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }
 
         protected IShader CompileShader(string shaderFileName)
@@ -148,11 +153,6 @@ namespace Mpdn.RenderScript
                 throw new InvalidOperationException("CreateFilter is not available before Setup() is called");
 
             return new ShaderFilter(Renderer, shader, transform, sizeIndex, linearSampling, inputFilters);
-        }
-
-        protected void Scale(ITexture output, ITexture input)
-        {
-            Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }
     }
 }
