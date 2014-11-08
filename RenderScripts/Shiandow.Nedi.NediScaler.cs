@@ -7,25 +7,28 @@ namespace Mpdn.RenderScript
 {
     namespace Shiandow.Nedi
     {
-        public class MultiplyFilter : ShaderFilter
+        public class TransformationFilter : ShaderFilter
         {
-            private readonly int m_WFactor;
-            private readonly int m_HFactor;
+            private readonly Func<int,int,Size> m_Transformation;
+            private readonly int m_Index;
 
             public override Size OutputSize
             {
                 get
                 {
                     var size = InputFilters[0].OutputSize;
-                    return new Size(size.Width * m_WFactor, size.Height * m_HFactor);
+                    size = m_Transformation(size.Width, size.Height);
+                    return size;
                 }
             }
 
-            public MultiplyFilter(IRenderer renderer, IShader shader, int wfactor, int hfactor, bool linearSampling = false, params IFilter[] inputFilters)
+            public TransformationFilter(IRenderer renderer, IShader shader, Func<int,int,Size> transformation, int index = 0, bool linearSampling = false, params IFilter[] inputFilters)
                 : base(renderer, shader, linearSampling, inputFilters)
             {
-                m_WFactor = wfactor;
-                m_HFactor = hfactor;
+                m_Transformation = transformation;
+                m_Index = index;
+                if (index < 0 || index >= inputFilters.Length || inputFilters[index] == null)
+                	throw new IndexOutOfRangeException(String.Format("No valid input filter at index {0}",index));
             }
         }
 
@@ -165,18 +168,18 @@ namespace Mpdn.RenderScript
 
             private void CreateNediScaler()
             {
-                var nedi1 = CreateMultiplyFilter(m_Nedi1Shader, 1, 1, InputFilter);
-                var nediH = CreateMultiplyFilter(m_NediHInterleaveShader, 2, 1, InputFilter, nedi1);
-                var nedi2 = CreateMultiplyFilter(m_Nedi2Shader, 1, 1, nediH);
-                var nediV = CreateMultiplyFilter(m_NediVInterleaveShader, 1, 2, nediH, nedi2);
+                var nedi1 = CreateFilter(m_Nedi1Shader, InputFilter);
+                var nediH = CreateTransformationFilter(m_NediHInterleaveShader, (w,h) => new Size(2*w,h), InputFilter, nedi1);
+                var nedi2 = CreateFilter(m_Nedi2Shader, nediH);
+                var nediV = CreateTransformationFilter(m_NediVInterleaveShader, (w,h) => new Size(w,h*2), nediH, nedi2);
 
                 m_NediScaler = nediV;
                 m_NediScaler.Initialize();
             }
 
-            private IFilter CreateMultiplyFilter(IShader shader, int wFactor, int hFactor, params IFilter[] filters)
+            private IFilter CreateTransformationFilter(IShader shader, Func<int,int,Size> transformation, params IFilter[] filters)
             {
-                return new MultiplyFilter(Renderer, shader, wFactor, hFactor, false, filters);
+                return new TransformationFilter(Renderer, shader, transformation, 0, false, filters);
             }
 
             private bool NeedToUpscale()
