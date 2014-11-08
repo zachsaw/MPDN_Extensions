@@ -303,9 +303,21 @@ namespace Mpdn.RenderScript
 
     public class ShaderFilter : Filter
     {
-        public ShaderFilter(IRenderer renderer, IShader shader, bool linearSampling = false, params IFilter[] inputFilters)
+        public ShaderFilter(IRenderer renderer, IShader shader, params IFilter[] inputFilters)
+            : this(renderer, shader, 0, false, inputFilters)
+        {
+        }
+
+        public ShaderFilter(IRenderer renderer, IShader shader, int sizeIndex, bool linearSampling,
+            params IFilter[] inputFilters)
             : base(renderer, inputFilters)
         {
+            if (sizeIndex < 0 || sizeIndex >= inputFilters.Length || inputFilters[sizeIndex] == null)
+            {
+                throw new IndexOutOfRangeException(String.Format("No valid input filter at index {0}", sizeIndex));
+            }
+
+            SizeIndex = sizeIndex;
             Shader = shader;
             LinearSampling = linearSampling;
         }
@@ -313,12 +325,13 @@ namespace Mpdn.RenderScript
         protected IShader Shader { get; private set; }
         protected bool LinearSampling { get; private set; }
         protected int Counter { get; private set; }
+        protected int SizeIndex { get; private set; }
 
         public override Size OutputSize
         {
             get
             {
-                var size = InputFilters[0].OutputSize;
+                var size = InputFilters[SizeIndex].OutputSize;
                 return new Size(size.Width, size.Height);
             }
         }
@@ -334,7 +347,7 @@ namespace Mpdn.RenderScript
             var i = 0;
             foreach (var input in inputs)
             {
-                Shader.SetTextureConstant(String.Format("s{0}", i), input.Texture, LinearSampling);
+                Shader.SetTextureConstant(String.Format("s{0}", i), input.Texture, LinearSampling, false);
                 Shader.SetConstant(String.Format("size{0}", i),
                     new Vector4(input.Width, input.Height, 1.0f/input.Width, 1.0f/input.Height), false);
                 i++;
@@ -345,6 +358,34 @@ namespace Mpdn.RenderScript
             Shader.SetConstant("p0", new Vector4(output.Width, output.Height, Counter++, Stopwatch.GetTimestamp()),
                 false);
             Shader.SetConstant("p1", new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
+        }
+    }
+
+    public class TransformationFilter : ShaderFilter
+    {
+        private readonly Func<int, int, Size> m_Transformation;
+
+        public TransformationFilter(IRenderer renderer, IShader shader, Func<int, int, Size> transformation,
+            params IFilter[] inputFilters)
+            : this(renderer, shader, transformation, 0, false, inputFilters)
+        {
+        }
+
+        public TransformationFilter(IRenderer renderer, IShader shader, Func<int, int, Size> transformation,
+            int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
+            : base(renderer, shader, sizeIndex, linearSampling, inputFilters)
+        {
+            m_Transformation = transformation;
+        }
+
+        public override Size OutputSize
+        {
+            get
+            {
+                var size = InputFilters[SizeIndex].OutputSize;
+                size = m_Transformation(size.Width, size.Height);
+                return size;
+            }
         }
     }
 }

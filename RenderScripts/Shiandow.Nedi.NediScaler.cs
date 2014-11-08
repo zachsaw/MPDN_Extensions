@@ -7,40 +7,14 @@ namespace Mpdn.RenderScript
 {
     namespace Shiandow.Nedi
     {
-        public class TransformationFilter : ShaderFilter
-        {
-            private readonly Func<int,int,Size> m_Transformation;
-            private readonly int m_Index;
-
-            public override Size OutputSize
-            {
-                get
-                {
-                    var size = InputFilters[0].OutputSize;
-                    size = m_Transformation(size.Width, size.Height);
-                    return size;
-                }
-            }
-
-            public TransformationFilter(IRenderer renderer, IShader shader, Func<int,int,Size> transformation, int index = 0, bool linearSampling = false, params IFilter[] inputFilters)
-                : base(renderer, shader, linearSampling, inputFilters)
-            {
-                m_Transformation = transformation;
-                m_Index = index;
-                if (index < 0 || index >= inputFilters.Length || inputFilters[index] == null)
-                	throw new IndexOutOfRangeException(String.Format("No valid input filter at index {0}",index));
-            }
-        }
-
         public class NediScaler : RenderScript
         {
-            private IFilter m_NediScaler;
-            private IFilter m_Scaler;
-
             private IShader m_Nedi1Shader;
             private IShader m_Nedi2Shader;
             private IShader m_NediHInterleaveShader;
+            private IFilter m_NediScaler;
             private IShader m_NediVInterleaveShader;
+            private IFilter m_Scaler;
 
             private NediSettings m_Settings;
 
@@ -62,6 +36,11 @@ namespace Mpdn.RenderScript
                         HasConfigDialog = true
                     };
                 }
+            }
+
+            private bool UseNedi
+            {
+                get { return m_Settings.Config.AlwaysDoubleImage || NeedToUpscale(); }
             }
 
             private string GetDescription()
@@ -133,11 +112,6 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            private bool UseNedi
-            {
-                get { return m_Settings.Config.AlwaysDoubleImage || NeedToUpscale(); }
-            }
-
             private void AllocateTextures()
             {
                 lock (m_Settings)
@@ -169,17 +143,19 @@ namespace Mpdn.RenderScript
             private void CreateNediScaler()
             {
                 var nedi1 = CreateFilter(m_Nedi1Shader, InputFilter);
-                var nediH = CreateTransformationFilter(m_NediHInterleaveShader, (w,h) => new Size(2*w,h), InputFilter, nedi1);
+
+                var nediH =
+                    CreateTransformationFilter(m_NediHInterleaveShader,
+                        (w, h) => new Size(2*w, h), InputFilter, nedi1);
+
                 var nedi2 = CreateFilter(m_Nedi2Shader, nediH);
-                var nediV = CreateTransformationFilter(m_NediVInterleaveShader, (w,h) => new Size(w,h*2), nediH, nedi2);
+
+                var nediV =
+                    CreateTransformationFilter(m_NediVInterleaveShader,
+                        (w, h) => new Size(w, h*2), nediH, nedi2);
 
                 m_NediScaler = nediV;
                 m_NediScaler.Initialize();
-            }
-
-            private IFilter CreateTransformationFilter(IShader shader, Func<int,int,Size> transformation, params IFilter[] filters)
-            {
-                return new TransformationFilter(Renderer, shader, transformation, 0, false, filters);
             }
 
             private bool NeedToUpscale()

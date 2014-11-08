@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 
 namespace Mpdn.RenderScript
@@ -98,31 +99,48 @@ namespace Mpdn.RenderScript
             return Renderer.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
         }
 
-        protected IFilter CreateFilter(IShader shader, IFilter inputFilter)
+        protected IFilter CreateFilter(IShader shader, params IFilter[] inputFilters)
         {
-            return CreateFilter(shader, false, inputFilter);
-        }
-
-        protected IFilter CreateFilter(IShader shader, bool linearSampling, IFilter inputFilter)
-        {
-            if (shader == null)
-                throw new ArgumentNullException("shader");
-
-            if (Renderer == null)
-                throw new InvalidOperationException("CreateFilter is not available before Setup() is called");
-
-            return new ShaderFilter(Renderer, shader, linearSampling, inputFilter);
+            return CreateFilter(shader, 0, false, inputFilters);
         }
 
         protected IFilter CreateFilter(IShader shader, bool linearSampling, params IFilter[] inputFilters)
         {
+            return CreateFilter(shader, 0, linearSampling, inputFilters);
+        }
+
+        protected IFilter CreateFilter(IShader shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
+        {
             if (shader == null)
                 throw new ArgumentNullException("shader");
 
             if (Renderer == null)
                 throw new InvalidOperationException("CreateFilter is not available before Setup() is called");
 
-            return new ShaderFilter(Renderer, shader, linearSampling, inputFilters);
+            return new ShaderFilter(Renderer, shader, sizeIndex, linearSampling, inputFilters);
+        }
+
+        protected IFilter CreateTransformationFilter(IShader shader, Func<int, int, Size> transformation,
+            params IFilter[] filters)
+        {
+            return CreateTransformationFilter(shader, transformation, 0, false, filters);
+        }
+
+        protected IFilter CreateTransformationFilter(IShader shader, Func<int, int, Size> transformation, bool linearSampling,
+            params IFilter[] filters)
+        {
+            return CreateTransformationFilter(shader, transformation, 0, linearSampling, filters);
+        }
+
+        protected IFilter CreateTransformationFilter(IShader shader, Func<int, int, Size> transformation, int sizeIndex, bool linearSampling, params IFilter[] filters)
+        {
+            if (shader == null)
+                throw new ArgumentNullException("shader");
+
+            if (Renderer == null)
+                throw new InvalidOperationException("CreateTransformationFilter is not available before Setup() is called");
+
+            return new TransformationFilter(Renderer, shader, transformation, sizeIndex, linearSampling, filters);
         }
 
         protected void Scale(ITexture output, ITexture input)
