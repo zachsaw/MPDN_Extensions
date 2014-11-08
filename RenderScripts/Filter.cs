@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using SharpDX;
+using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
@@ -24,8 +25,8 @@ namespace Mpdn.RenderScript
     public abstract class Filter : IFilter
     {
         private bool m_Disposed;
-        private bool m_OwnsTexture;
         private ITexture m_OutputTexture;
+        private bool m_OwnsTexture;
 
         protected Filter(IRenderer renderer, params IFilter[] inputFilters)
         {
@@ -52,6 +53,7 @@ namespace Mpdn.RenderScript
         }
 
         public IFilter[] InputFilters { get; private set; }
+
         public ITexture OutputTexture
         {
             get
@@ -61,7 +63,7 @@ namespace Mpdn.RenderScript
                 return m_OutputTexture ?? Renderer.OutputRenderTarget;
             }
             private set { m_OutputTexture = value; }
-        } 
+        }
 
         public abstract Size OutputSize { get; }
 
@@ -245,15 +247,20 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class InputFilter : IFilter
+    public class SourceFilter : IFilter
     {
-        public InputFilter(IRenderer renderer)
+        public SourceFilter(IRenderer renderer)
         {
             Renderer = renderer;
             InputFilters = null;
         }
 
         protected IRenderer Renderer { get; private set; }
+
+        public bool ShareableOutputTexture
+        {
+            get { return false; }
+        }
 
         public IFilter[] InputFilters { get; private set; }
 
@@ -267,12 +274,11 @@ namespace Mpdn.RenderScript
             get { return Renderer.InputSize; }
         }
 
-        public bool ShareableOutputTexture
+        public int FilterIndex
         {
-            get { return false; }
+            get { return -1; }
         }
 
-        public int FilterIndex { get { return -1; } }
         public int LastDependentIndex { get; private set; }
 
         public void Dispose()
@@ -303,24 +309,36 @@ namespace Mpdn.RenderScript
 
     public class ShaderFilter : Filter
     {
-        public ShaderFilter(IRenderer renderer, IShader shader, bool linearSampling = false, params IFilter[] inputFilters)
+        public ShaderFilter(IRenderer renderer, IShader shader, int sizeIndex, bool linearSampling,
+            params IFilter[] inputFilters)
+            : this(renderer, shader, s => new Size(s.Width, s.Height), sizeIndex, linearSampling, inputFilters)
+        {
+        }
+
+        public ShaderFilter(IRenderer renderer, IShader shader, TransformFunc transform, int sizeIndex,
+            bool linearSampling, params IFilter[] inputFilters)
             : base(renderer, inputFilters)
         {
+            if (sizeIndex < 0 || sizeIndex >= inputFilters.Length || inputFilters[sizeIndex] == null)
+            {
+                throw new IndexOutOfRangeException(String.Format("No valid input filter at index {0}", sizeIndex));
+            }
+
             Shader = shader;
             LinearSampling = linearSampling;
+            Transform = transform;
+            SizeIndex = sizeIndex;
         }
 
         protected IShader Shader { get; private set; }
         protected bool LinearSampling { get; private set; }
         protected int Counter { get; private set; }
+        protected TransformFunc Transform { get; private set; }
+        protected int SizeIndex { get; private set; }
 
         public override Size OutputSize
         {
-            get
-            {
-                var size = InputFilters[0].OutputSize;
-                return new Size(size.Width, size.Height);
-            }
+            get { return Transform(InputFilters[SizeIndex].OutputSize); }
         }
 
         public override void Render(IEnumerable<ITexture> inputs)
@@ -334,7 +352,7 @@ namespace Mpdn.RenderScript
             var i = 0;
             foreach (var input in inputs)
             {
-                Shader.SetTextureConstant(String.Format("s{0}", i), input.Texture, LinearSampling);
+                Shader.SetTextureConstant(String.Format("s{0}", i), input.Texture, LinearSampling, false);
                 Shader.SetConstant(String.Format("size{0}", i),
                     new Vector4(input.Width, input.Height, 1.0f/input.Width, 1.0f/input.Height), false);
                 i++;

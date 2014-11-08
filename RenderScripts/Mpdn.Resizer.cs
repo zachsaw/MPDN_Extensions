@@ -33,19 +33,19 @@ namespace Mpdn.RenderScript
 
             private string GetDescription()
             {
-                var options = m_Settings == null
-                    ? string.Empty
-                    : string.Format(" to {0}", m_Settings.Config.Resizer.ToDescription());
-                return string.Format("Resizes the image{0}", options);
+                var desc = m_Settings == null
+                    ? "Resizes the image"
+                    : string.Format("Resize to: {0}", m_Settings.Config.Resizer.ToDescription());
+                return desc;
             }
 
-            public override ScriptInputDescriptor InputDescriptor
+            public override ScriptInterfaceDescriptor InterfaceDescriptor
             {
                 get
                 {
-                    return new ScriptInputDescriptor
+                    return new ScriptInterfaceDescriptor
                     {
-                        Size = GetInputSize()
+                        InputSize = GetInputSize()
                     };
                 }
             }
@@ -62,20 +62,22 @@ namespace Mpdn.RenderScript
                 m_Settings.Destroy();
             }
 
-            public override bool ShowConfigDialog()
+            public override bool ShowConfigDialog(IWin32Window owner)
             {
-                var dialog = new ResizerConfigDialog();
-                dialog.Setup(m_Settings.Config);
-                if (dialog.ShowDialog() != DialogResult.OK)
-                    return false;
+                using (var dialog = new ResizerConfigDialog())
+                {
+                    dialog.Setup(m_Settings.Config);
+                    if (dialog.ShowDialog(owner) != DialogResult.OK)
+                        return false;
 
-                m_Settings.Save();
-                return true;
+                    m_Settings.Save();
+                    return true;
+                }
             }
 
             private Size GetInputSize()
             {
-                if (m_Settings.Config.Resizer == m_SavedResizerOption && 
+                if (m_Settings.Config.Resizer == m_SavedResizerOption &&
                     m_SavedTargetSize == Renderer.TargetSize &&
                     m_Size != Size.Empty)
                     return m_Size;
@@ -84,10 +86,38 @@ namespace Mpdn.RenderScript
                 m_SavedTargetSize = Renderer.TargetSize;
 
                 var targetSize = Renderer.TargetSize;
+                var videoSize = Renderer.VideoSize;
                 switch (m_SavedResizerOption)
                 {
                     case ResizerOption.VideoSize:
-                        m_Size = Renderer.VideoSize;
+                        m_Size = videoSize;
+                        break;
+                    case ResizerOption.VideoSizeX2:
+                        m_Size = new Size(videoSize.Width << 1, videoSize.Height << 1);
+                        break;
+                    case ResizerOption.VideoSizeX4:
+                        m_Size = new Size(videoSize.Width << 2, videoSize.Height << 2);
+                        break;
+                    case ResizerOption.VideoSizeX8:
+                        m_Size = new Size(videoSize.Width << 3, videoSize.Height << 3);
+                        break;
+                    case ResizerOption.VideoSizeX16:
+                        m_Size = new Size(videoSize.Width << 4, videoSize.Height << 4);
+                        break;
+                    case ResizerOption.GreaterOfTargetAndVideoSize:
+                        m_Size = GetMaxSize(targetSize, videoSize);
+                        break;
+                    case ResizerOption.GreaterOfTargetAndVideoSizeX2:
+                        m_Size = GetMaxSize(targetSize, new Size(videoSize.Width << 1, videoSize.Height << 1));
+                        break;
+                    case ResizerOption.GreaterOfTargetAndVideoSizeX4:
+                        m_Size = GetMaxSize(targetSize, new Size(videoSize.Width << 2, videoSize.Height << 2));
+                        break;
+                    case ResizerOption.GreaterOfTargetAndVideoSizeX8:
+                        m_Size = GetMaxSize(targetSize, new Size(videoSize.Width << 3, videoSize.Height << 3));
+                        break;
+                    case ResizerOption.GreaterOfTargetAndVideoSizeX16:
+                        m_Size = GetMaxSize(targetSize, new Size(videoSize.Width << 4, videoSize.Height << 4));
                         break;
                     case ResizerOption.PastTargetUsingVideoSize:
                         return GetVideoBasedSizeOver(targetSize.Width + 1, targetSize.Height + 1);
@@ -128,6 +158,12 @@ namespace Mpdn.RenderScript
                 return m_Size;
             }
 
+            private static Size GetMaxSize(Size size1, Size size2)
+            {
+                // Use height to determine which is max
+                return size1.Height > size2.Height ? size1 : size2;
+            }
+
             private Size GetVideoBasedSizeOver(int targetWidth, int targetHeight)
             {
                 int videoWidth = Renderer.VideoSize.Width;
@@ -135,7 +171,7 @@ namespace Mpdn.RenderScript
                 int widthX = Math.Max(1, GetMultiplier(targetWidth, videoWidth));
                 int heightX = Math.Max(1, GetMultiplier(targetHeight, videoHeight));
                 var multiplier = Math.Max(widthX, heightX);
-                m_Size = new Size(videoWidth * multiplier, videoHeight * multiplier);
+                m_Size = new Size(videoWidth*multiplier, videoHeight*multiplier);
                 return m_Size;
             }
 
@@ -146,7 +182,7 @@ namespace Mpdn.RenderScript
                 int widthX = Math.Max(1, GetMultiplier(targetWidth, videoWidth) - 1);
                 int heightX = Math.Max(1, GetMultiplier(targetHeight, videoHeight) - 1);
                 var multiplier = Math.Max(widthX, heightX);
-                m_Size = new Size(videoWidth * multiplier, videoHeight * multiplier);
+                m_Size = new Size(videoWidth*multiplier, videoHeight*multiplier);
                 return m_Size;
             }
 
@@ -157,7 +193,7 @@ namespace Mpdn.RenderScript
 
             protected override ITexture GetFrame()
             {
-                return InputFilter.OutputTexture;
+                return SourceFilter.OutputTexture;
             }
         }
 
@@ -165,6 +201,24 @@ namespace Mpdn.RenderScript
         {
             [Description("Video size")]
             VideoSize,
+            [Description("Video size x2")]
+            VideoSizeX2,
+            [Description("Video size x4")]
+            VideoSizeX4,
+            [Description("Video size x8")]
+            VideoSizeX8,
+            [Description("Video size x16")]
+            VideoSizeX16,
+            [Description("The greater of target size and video size")]
+            GreaterOfTargetAndVideoSize,
+            [Description("The greater of target size and video size x2")]
+            GreaterOfTargetAndVideoSizeX2,
+            [Description("The greater of target size and video size x4")]
+            GreaterOfTargetAndVideoSizeX4,
+            [Description("The greater of target size and video size x8")]
+            GreaterOfTargetAndVideoSizeX8,
+            [Description("The greater of target size and video size x16")]
+            GreaterOfTargetAndVideoSizeX16,
             [Description("Just past target using a multiple of video size")]
             PastTargetUsingVideoSize,
             [Description("Just past target using a multiple of video size except when target equals to video size")]

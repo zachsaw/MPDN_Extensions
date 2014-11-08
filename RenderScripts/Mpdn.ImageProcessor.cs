@@ -66,16 +66,18 @@ namespace Mpdn.RenderScript
                 DisposeShaders();
             }
 
-            public override bool ShowConfigDialog()
+            public override bool ShowConfigDialog(IWin32Window owner)
             {
-                var dialog = new ImageProcessorConfigDialog();
-                dialog.Setup(ShaderDataFilePath, m_Settings.Config);
-                if (dialog.ShowDialog() != DialogResult.OK)
-                    return false;
+                using (var dialog = new ImageProcessorConfigDialog())
+                {
+                    dialog.Setup(ShaderDataFilePath, m_Settings.Config);
+                    if (dialog.ShowDialog(owner) != DialogResult.OK)
+                        return false;
 
-                m_Settings.Save();
-                SetupRenderChain();
-                return true;
+                    m_Settings.Save();
+                    SetupRenderChain();
+                    return true;
+                }
             }
 
             protected override ITexture GetFrame()
@@ -107,7 +109,7 @@ namespace Mpdn.RenderScript
                         CompileShaders(shaderFileNames);
                     }
 
-                    m_ImageFilter = m_Shaders.Aggregate(InputFilter, (current, shader) => CreateFilter(shader, current));
+                    m_ImageFilter = m_Shaders.Aggregate(SourceFilter, (current, shader) => CreateFilter(shader, current));
                     m_ImageFilter.Initialize();
                 }
             }
