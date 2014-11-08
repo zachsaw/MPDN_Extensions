@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using SharpDX;
+using SizeTransformationFunc = System.Func<int, int, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
@@ -314,7 +315,7 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public ShaderFilter(IRenderer renderer, IShader shader, Func<int, int, Size> transformation, int sizeIndex,
+        public ShaderFilter(IRenderer renderer, IShader shader, SizeTransformationFunc transformation, int sizeIndex,
             bool linearSampling, params IFilter[] inputFilters)
             : base(renderer, inputFilters)
         {
@@ -332,7 +333,7 @@ namespace Mpdn.RenderScript
         protected IShader Shader { get; private set; }
         protected bool LinearSampling { get; private set; }
         protected int Counter { get; private set; }
-        protected Func<int, int, Size> Transformation { get; private set; }
+        protected SizeTransformationFunc Transformation { get; private set; }
         protected int SizeIndex { get; private set; }
 
         public override Size OutputSize

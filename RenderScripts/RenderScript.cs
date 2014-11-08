@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using SizeTransformationFunc = System.Func<int, int, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
@@ -39,10 +40,7 @@ namespace Mpdn.RenderScript
 
         public virtual ScriptInputDescriptor InputDescriptor
         {
-            get
-            {
-                return new ScriptInputDescriptor();
-            }
+            get { return new ScriptInputDescriptor(); }
         }
 
         public virtual void Initialize(int instanceId)
@@ -119,22 +117,26 @@ namespace Mpdn.RenderScript
             return CreateFilter(shader, (w, h) => new Size(w, h), sizeIndex, linearSampling, inputFilters);
         }
 
-        protected IFilter CreateFilter(IShader shader, Func<int, int, Size> transformation, params IFilter[] inputFilters)
+        protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation,
+            params IFilter[] inputFilters)
         {
             return CreateFilter(shader, (w, h) => new Size(w, h), 0, false, inputFilters);
         }
 
-        protected IFilter CreateFilter(IShader shader, Func<int, int, Size> transformation, bool linearSampling, params IFilter[] inputFilters)
+        protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation, bool linearSampling,
+            params IFilter[] inputFilters)
         {
             return CreateFilter(shader, (w, h) => new Size(w, h), 0, linearSampling, inputFilters);
         }
 
-        protected IFilter CreateFilter(IShader shader, Func<int, int, Size> transformation, int sizeIndex, params IFilter[] inputFilters)
+        protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation, int sizeIndex,
+            params IFilter[] inputFilters)
         {
             return CreateFilter(shader, (w, h) => new Size(w, h), sizeIndex, false, inputFilters);
         }
 
-        protected IFilter CreateFilter(IShader shader, Func<int, int, Size> transformation, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
+        protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation, int sizeIndex,
+            bool linearSampling, params IFilter[] inputFilters)
         {
             if (shader == null)
                 throw new ArgumentNullException("shader");
