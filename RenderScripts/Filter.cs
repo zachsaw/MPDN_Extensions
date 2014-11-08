@@ -247,9 +247,9 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class InputFilter : IFilter
+    public class SourceFilter : IFilter
     {
-        public InputFilter(IRenderer renderer)
+        public SourceFilter(IRenderer renderer)
         {
             Renderer = renderer;
             InputFilters = null;

@@ -107,7 +107,7 @@ namespace Mpdn.RenderScript
                         CompileShaders(shaderFileNames);
                     }
 
-                    m_ImageFilter = m_Shaders.Aggregate(InputFilter, (current, shader) => CreateFilter(shader, current));
+                    m_ImageFilter = m_Shaders.Aggregate(SourceFilter, (current, shader) => CreateFilter(shader, current));
                     m_ImageFilter.Initialize();
                 }
             }

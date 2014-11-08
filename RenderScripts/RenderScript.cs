@@ -7,7 +7,7 @@ namespace Mpdn.RenderScript
 {
     public abstract class RenderScript : IScriptRenderer, IDisposable
     {
-        private InputFilter m_InputFilter;
+        private SourceFilter m_SourceFilter;
 
         protected IRenderer Renderer { get; private set; }
 
@@ -25,9 +25,9 @@ namespace Mpdn.RenderScript
             }
         }
 
-        protected IFilter InputFilter
+        protected IFilter SourceFilter
         {
-            get { return m_InputFilter ?? (m_InputFilter = new InputFilter(Renderer)); }
+            get { return m_SourceFilter ?? (m_SourceFilter = new SourceFilter(Renderer)); }
         }
 
         public void Dispose()
@@ -76,6 +76,8 @@ namespace Mpdn.RenderScript
 
         protected virtual void Dispose(bool disposing)
         {
+            // Not required, but is there in case SourceFilter is changed
+            Common.Dispose(ref m_SourceFilter);
         }
 
         ~RenderScript()

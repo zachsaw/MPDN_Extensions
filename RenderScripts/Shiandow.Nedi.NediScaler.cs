@@ -127,7 +127,7 @@ namespace Mpdn.RenderScript
                     else
                     {
                         m_NediScaler.DeallocateTextures();
-                        m_Scaler = InputFilter;
+                        m_Scaler = SourceFilter;
                     }
                 }
             }
@@ -142,17 +142,10 @@ namespace Mpdn.RenderScript
 
             private void CreateNediScaler()
             {
-                var nedi1 = CreateFilter(m_Nedi1Shader, InputFilter);
-
-                var nediH =
-                    CreateFilter(m_NediHInterleaveShader,
-                        (w, h) => new Size(2*w, h), InputFilter, nedi1);
-
+                var nedi1 = CreateFilter(m_Nedi1Shader, SourceFilter);
+                var nediH = CreateFilter(m_NediHInterleaveShader, (w, h) => new Size(2*w, h), SourceFilter, nedi1);
                 var nedi2 = CreateFilter(m_Nedi2Shader, nediH);
-
-                var nediV =
-                    CreateFilter(m_NediVInterleaveShader,
-                        (w, h) => new Size(w, h*2), nediH, nedi2);
+                var nediV = CreateFilter(m_NediVInterleaveShader, (w, h) => new Size(w, h*2), nediH, nedi2);
 
                 m_NediScaler = nediV;
                 m_NediScaler.Initialize();

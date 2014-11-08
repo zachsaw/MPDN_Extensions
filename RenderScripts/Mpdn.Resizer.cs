@@ -157,7 +157,7 @@ namespace Mpdn.RenderScript
 
             protected override ITexture GetFrame()
             {
-                return InputFilter.OutputTexture;
+                return SourceFilter.OutputTexture;
             }
         }
 
