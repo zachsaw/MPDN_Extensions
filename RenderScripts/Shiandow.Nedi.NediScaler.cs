@@ -145,13 +145,13 @@ namespace Mpdn.RenderScript
                 var nedi1 = CreateFilter(m_Nedi1Shader, InputFilter);
 
                 var nediH =
-                    CreateTransformationFilter(m_NediHInterleaveShader,
+                    CreateFilter(m_NediHInterleaveShader,
                         (w, h) => new Size(2*w, h), InputFilter, nedi1);
 
                 var nedi2 = CreateFilter(m_Nedi2Shader, nediH);
 
                 var nediV =
-                    CreateTransformationFilter(m_NediVInterleaveShader,
+                    CreateFilter(m_NediVInterleaveShader,
                         (w, h) => new Size(w, h*2), nediH, nedi2);
 
                 m_NediScaler = nediV;
