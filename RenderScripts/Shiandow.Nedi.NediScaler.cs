@@ -62,16 +62,18 @@ namespace Mpdn.RenderScript
                 m_Settings.Destroy();
             }
 
-            public override bool ShowConfigDialog()
+            public override bool ShowConfigDialog(IWin32Window owner)
             {
-                var dialog = new NediConfigDialog();
-                dialog.Setup(m_Settings.Config);
-                if (dialog.ShowDialog() != DialogResult.OK)
-                    return false;
+                using (var dialog = new NediConfigDialog())
+                {
+                    dialog.Setup(m_Settings.Config);
+                    if (dialog.ShowDialog(owner) != DialogResult.OK)
+                        return false;
 
-                OnInputSizeChanged();
-                m_Settings.Save();
-                return true;
+                    OnInputSizeChanged();
+                    m_Settings.Save();
+                    return true;
+                }
             }
 
             protected override void Dispose(bool disposing)

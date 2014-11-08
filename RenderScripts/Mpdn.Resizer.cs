@@ -62,15 +62,17 @@ namespace Mpdn.RenderScript
                 m_Settings.Destroy();
             }
 
-            public override bool ShowConfigDialog()
+            public override bool ShowConfigDialog(IWin32Window owner)
             {
-                var dialog = new ResizerConfigDialog();
-                dialog.Setup(m_Settings.Config);
-                if (dialog.ShowDialog() != DialogResult.OK)
-                    return false;
+                using (var dialog = new ResizerConfigDialog())
+                {
+                    dialog.Setup(m_Settings.Config);
+                    if (dialog.ShowDialog(owner) != DialogResult.OK)
+                        return false;
 
-                m_Settings.Save();
-                return true;
+                    m_Settings.Save();
+                    return true;
+                }
             }
 
             private Size GetInputSize()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Windows.Forms;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
@@ -51,7 +52,7 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public virtual bool ShowConfigDialog()
+        public virtual bool ShowConfigDialog(IWin32Window owner)
         {
             throw new NotImplementedException("Config dialog has not been implemented");
         }
