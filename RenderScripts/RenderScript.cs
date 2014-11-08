@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
-using SizeTransformationFunc = System.Func<int, int, System.Drawing.Size>;
+using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
@@ -116,28 +116,28 @@ namespace Mpdn.RenderScript
 
         protected IFilter CreateFilter(IShader shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
         {
-            return CreateFilter(shader, (w, h) => new Size(w, h), sizeIndex, linearSampling, inputFilters);
+            return CreateFilter(shader, s => new Size(s.Width, s.Height), sizeIndex, linearSampling, inputFilters);
         }
 
-        protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation,
+        protected IFilter CreateFilter(IShader shader, TransformFunc transform,
             params IFilter[] inputFilters)
         {
-            return CreateFilter(shader, transformation, 0, false, inputFilters);
+            return CreateFilter(shader, transform, 0, false, inputFilters);
         }
 
-        protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation, bool linearSampling,
+        protected IFilter CreateFilter(IShader shader, TransformFunc transform, bool linearSampling,
             params IFilter[] inputFilters)
         {
-            return CreateFilter(shader, transformation, 0, linearSampling, inputFilters);
+            return CreateFilter(shader, transform, 0, linearSampling, inputFilters);
         }
 
-        protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation, int sizeIndex,
+        protected IFilter CreateFilter(IShader shader, TransformFunc transform, int sizeIndex,
             params IFilter[] inputFilters)
         {
-            return CreateFilter(shader, transformation, sizeIndex, false, inputFilters);
+            return CreateFilter(shader, transform, sizeIndex, false, inputFilters);
         }
 
-        protected IFilter CreateFilter(IShader shader, SizeTransformationFunc transformation, int sizeIndex,
+        protected IFilter CreateFilter(IShader shader, TransformFunc transform, int sizeIndex,
             bool linearSampling, params IFilter[] inputFilters)
         {
             if (shader == null)
@@ -146,7 +146,7 @@ namespace Mpdn.RenderScript
             if (Renderer == null)
                 throw new InvalidOperationException("CreateFilter is not available before Setup() is called");
 
-            return new ShaderFilter(Renderer, shader, transformation, sizeIndex, linearSampling, inputFilters);
+            return new ShaderFilter(Renderer, shader, transform, sizeIndex, linearSampling, inputFilters);
         }
 
         protected void Scale(ITexture output, ITexture input)

@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using SharpDX;
-using SizeTransformationFunc = System.Func<int, int, System.Drawing.Size>;
+using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
@@ -311,11 +311,11 @@ namespace Mpdn.RenderScript
     {
         public ShaderFilter(IRenderer renderer, IShader shader, int sizeIndex, bool linearSampling,
             params IFilter[] inputFilters)
-            : this(renderer, shader, (w, h) => new Size(w, h), sizeIndex, linearSampling, inputFilters)
+            : this(renderer, shader, s => new Size(s.Width, s.Height), sizeIndex, linearSampling, inputFilters)
         {
         }
 
-        public ShaderFilter(IRenderer renderer, IShader shader, SizeTransformationFunc transformation, int sizeIndex,
+        public ShaderFilter(IRenderer renderer, IShader shader, TransformFunc transform, int sizeIndex,
             bool linearSampling, params IFilter[] inputFilters)
             : base(renderer, inputFilters)
         {
@@ -326,23 +326,19 @@ namespace Mpdn.RenderScript
 
             Shader = shader;
             LinearSampling = linearSampling;
-            Transformation = transformation;
+            Transform = transform;
             SizeIndex = sizeIndex;
         }
 
         protected IShader Shader { get; private set; }
         protected bool LinearSampling { get; private set; }
         protected int Counter { get; private set; }
-        protected SizeTransformationFunc Transformation { get; private set; }
+        protected TransformFunc Transform { get; private set; }
         protected int SizeIndex { get; private set; }
 
         public override Size OutputSize
         {
-            get
-            {
-                var size = InputFilters[SizeIndex].OutputSize;
-                return Transformation(size.Width, size.Height);
-            }
+            get { return Transform(InputFilters[SizeIndex].OutputSize); }
         }
 
         public override void Render(IEnumerable<ITexture> inputs)
