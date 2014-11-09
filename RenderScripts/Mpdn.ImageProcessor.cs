@@ -109,8 +109,15 @@ namespace Mpdn.RenderScript
                         CompileShaders(shaderFileNames);
                     }
 
+                    var oldFilter = m_ImageFilter;
                     m_ImageFilter = m_Shaders.Aggregate(SourceFilter, (current, shader) => CreateFilter(shader, current));
                     m_ImageFilter.Initialize();
+
+                    if (oldFilter != null) 
+                    {
+                    	Common.Dispose(ref oldFilter);
+                    	m_ImageFilter.AllocateTextures();
+                    }
                 }
             }
 
