@@ -15,6 +15,7 @@ namespace Mpdn.RenderScript
         Size OutputSize { get; }
         int FilterIndex { get; }
         int LastDependentIndex { get; }
+        bool TextureStolen { get; set; }
         void NewFrame();
         void Render();
         void Initialize(int time = 0);
@@ -69,6 +70,7 @@ namespace Mpdn.RenderScript
 
         public int FilterIndex { get; private set; }
         public int LastDependentIndex { get; private set; }
+        public bool TextureStolen { get; set; }
 
         public virtual void NewFrame()
         {
@@ -168,43 +170,56 @@ namespace Mpdn.RenderScript
 
         public abstract void Render(IEnumerable<ITexture> inputs);
 
+        private void StealTexture(IFilter filter) {
+            OutputTexture = filter.OutputTexture;
+            filter.TextureStolen = true;
+        }
+
         private void AllocateOutputTexture()
         {
-            // This can (should) be improved - it currently does not reuse all feasible textures
-            var tex =
-                GetTextures(this)
-                    .FirstOrDefault(f => f != null && f.Width == OutputSize.Width && f.Height == OutputSize.Height);
+            TextureStolen = false;
 
-            if (tex != null)
+            // This can (should) be improved - it currently does not reuse all feasible textures
+            var filter =
+                GetInputFilters(this)
+                    .FirstOrDefault(f => 
+                        !f.TextureStolen &&
+                        f.LastDependentIndex < FilterIndex &&
+                        f.OutputTexture != null &&
+                        f.OutputTexture.Width == OutputSize.Width &&
+                        f.OutputTexture.Height == OutputSize.Height);
+
+            if (filter != null)
             {
-                // Reuse texture
-                OutputTexture = tex;
+                // Steal texture
+                StealTexture(filter);
                 return;
             }
 
-            if (OutputSize == Renderer.OutputSize)
+            // Doesn't work yet, added workaround in SourceFilter.
+            /*if (OutputSize == Renderer.OutputSize)
             {
                 // Reuse renderer's output render target as texture
                 OutputTexture = null;
                 return;
-            }
+            }*/
 
             OutputTexture = Renderer.CreateRenderTarget(OutputSize);
             m_OwnsTexture = true;
         }
 
-        private static IEnumerable<ITexture> GetTextures(IFilter filter)
+        private static IEnumerable<IFilter> GetInputFilters(IFilter filter)
         {
             var filters = filter.InputFilters;
             if (filters == null)
                 return null;
 
-            var result = new List<ITexture>();
-            result.AddRange(filters.Where(f => f.LastDependentIndex <= filter.FilterIndex).Select(f => f.OutputTexture));
+            var result = new List<IFilter>();
+            result.AddRange(filters.Where(f => f.LastDependentIndex <= filter.FilterIndex));
 
             foreach (var f in filters)
             {
-                var inputFilters = GetTextures(f);
+                var inputFilters = GetInputFilters(f);
                 if (inputFilters == null)
                     continue;
 
@@ -252,24 +267,19 @@ namespace Mpdn.RenderScript
         public SourceFilter(IRenderer renderer)
         {
             Renderer = renderer;
-            InputFilters = null;
+            InputFilters = new[]{new OutputDummy(renderer)};
         }
 
         protected IRenderer Renderer { get; private set; }
 
-        public bool ShareableOutputTexture
-        {
-            get { return false; }
-        }
-
         public IFilter[] InputFilters { get; private set; }
 
-        public ITexture OutputTexture
+        public virtual ITexture OutputTexture
         {
             get { return Renderer.InputRenderTarget; }
         }
 
-        public Size OutputSize
+        public virtual Size OutputSize
         {
             get { return Renderer.InputSize; }
         }
@@ -280,6 +290,8 @@ namespace Mpdn.RenderScript
         }
 
         public int LastDependentIndex { get; private set; }
+
+        public bool TextureStolen { get; set; }
 
         public void Dispose()
         {
@@ -300,11 +312,59 @@ namespace Mpdn.RenderScript
 
         public void AllocateTextures()
         {
+            foreach (var filter in InputFilters)
+            {
+                filter.AllocateTextures();
+            }
+            TextureStolen = false;
         }
 
         public void DeallocateTextures()
         {
         }
+    }
+
+    public class OutputDummy : IFilter {
+        public OutputDummy(IRenderer renderer) {
+            Renderer = renderer;
+            InputFilters = null;
+        }
+
+        protected IRenderer Renderer { get; private set; }
+
+        public IFilter[] InputFilters { get; private set; }
+
+        public ITexture OutputTexture
+        {
+            get { return Renderer.OutputRenderTarget; }
+        }
+
+        public Size OutputSize
+        {
+            get { return Renderer.TargetSize; }
+        }
+
+        public int FilterIndex
+        {
+            get { return -2; }
+        }
+
+        public int LastDependentIndex 
+        { 
+            get { return -1; }
+        }
+
+        public void Initialize(int time = 0) { }
+        public bool TextureStolen { get; set; }
+        public void Dispose() { }
+        public void NewFrame() { }
+        public void Render() { }
+
+        public void AllocateTextures() { 
+            TextureStolen = false; 
+        }
+
+        public void DeallocateTextures() { }
     }
 
     public class ShaderFilter : Filter
