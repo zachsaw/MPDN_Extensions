@@ -112,7 +112,6 @@ namespace Mpdn.RenderScript
                     if (oldFilter != null) 
                     {
                     	Common.Dispose(ref oldFilter);
-                    	m_ImageFilter.AllocateTextures();
                     }
                 }
             }
