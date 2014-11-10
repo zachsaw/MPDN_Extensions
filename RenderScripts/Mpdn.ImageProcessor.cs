@@ -76,7 +76,6 @@ namespace Mpdn.RenderScript
 
                     m_Settings.Save();
                     SetupRenderChain();
-                    OnOutputSizeChanged();
                     return true;
                 }
             }
