@@ -110,12 +110,10 @@ namespace Mpdn.RenderScript
 
             public override void OnInputSizeChanged()
             {
-                AllocateTextures();
             }
 
             public override void OnOutputSizeChanged()
             {
-                AllocateTextures();
             }
 
             protected override ITexture GetFrame()
