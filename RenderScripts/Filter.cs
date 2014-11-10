@@ -28,6 +28,7 @@ namespace Mpdn.RenderScript
         private bool m_Disposed;
         private ITexture m_OutputTexture;
         private bool m_OwnsTexture;
+        private IFilter m_TextureOwner;
 
         protected Filter(IRenderer renderer, params IFilter[] inputFilters)
         {
@@ -59,11 +60,10 @@ namespace Mpdn.RenderScript
         {
             get
             {
-                // If m_OutputTexture is null, we are reusing  
-                // Renderer.OutputRenderTarget as our OutputTexture 
-                return m_OutputTexture ?? Renderer.OutputRenderTarget;
+                // If m_TextureOwner is not null then we are reusing the texture of m_TextureOwner
+                return m_TextureOwner != null ? m_TextureOwner.OutputTexture : m_OutputTexture;
             }
-            private set { m_OutputTexture = value; }
+            private set { m_OutputTexture = value; m_TextureOwner = null; }
         }
 
         public abstract Size OutputSize { get; }
@@ -171,8 +171,9 @@ namespace Mpdn.RenderScript
         public abstract void Render(IEnumerable<ITexture> inputs);
 
         private void StealTexture(IFilter filter) {
-            OutputTexture = filter.OutputTexture;
+            m_TextureOwner = filter;
             filter.TextureStolen = true;
+            Debug.WriteLine(String.Format("filter {0} steals texture of filter {1}",FilterIndex,filter.FilterIndex));
         }
 
         private void AllocateOutputTexture()
