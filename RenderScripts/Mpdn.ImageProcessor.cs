@@ -90,13 +90,6 @@ namespace Mpdn.RenderScript
 
             public override void OnOutputSizeChanged()
             {
-                lock (m_Settings)
-                {
-                    if (Renderer == null)
-                        return;
-
-                    m_ImageFilter.AllocateTextures();
-                }
             }
 
             private void SetupRenderChain()
