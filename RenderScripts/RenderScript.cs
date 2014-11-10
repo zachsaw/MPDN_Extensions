@@ -90,6 +90,7 @@ namespace Mpdn.RenderScript
 
         protected virtual ITexture GetFrame(IFilter filter)
         {
+            filter.AllocateTextures();
             filter.NewFrame();
             filter.Render();
             return filter.OutputTexture;
