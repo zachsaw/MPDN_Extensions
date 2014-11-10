@@ -257,11 +257,6 @@ namespace Mpdn.RenderScript
 
         protected IRenderer Renderer { get; private set; }
 
-        public bool ShareableOutputTexture
-        {
-            get { return false; }
-        }
-
         public IFilter[] InputFilters { get; private set; }
 
         public ITexture OutputTexture
@@ -352,7 +347,7 @@ namespace Mpdn.RenderScript
             var i = 0;
             foreach (var input in inputs)
             {
-                Shader.SetTextureConstant(String.Format("s{0}", i), input.Texture, LinearSampling, false);
+                Shader.SetTextureConstant(i, input.Texture, LinearSampling, false);
                 Shader.SetConstant(String.Format("size{0}", i),
                     new Vector4(input.Width, input.Height, 1.0f/input.Width, 1.0f/input.Height), false);
                 i++;
@@ -360,9 +355,9 @@ namespace Mpdn.RenderScript
 
             // Legacy constants 
             var output = OutputTexture;
-            Shader.SetConstant("p0", new Vector4(output.Width, output.Height, Counter++, Stopwatch.GetTimestamp()),
+            Shader.SetConstant(0, new Vector4(output.Width, output.Height, Counter++, Stopwatch.GetTimestamp()),
                 false);
-            Shader.SetConstant("p1", new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
+            Shader.SetConstant(1, new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
         }
     }
 }

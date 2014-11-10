@@ -76,6 +76,7 @@ namespace Mpdn.RenderScript
 
                     m_Settings.Save();
                     SetupRenderChain();
+                    OnOutputSizeChanged();
                     return true;
                 }
             }
@@ -92,6 +93,9 @@ namespace Mpdn.RenderScript
             {
                 lock (m_Settings)
                 {
+                    if (Renderer == null)
+                        return;
+
                     m_ImageFilter.AllocateTextures();
                 }
             }
