@@ -88,7 +88,18 @@ namespace Mpdn.RenderScript
 
         public virtual void Render()
         {
-            Scale(Renderer.OutputRenderTarget, GetFrame(m_Filter ?? GetFilter()));
+            var filter = GetFilter();
+            EnsureFilterNotNull(filter);
+            if (m_Filter != filter)
+            {
+                if (m_Filter != null)
+                {
+                    m_Filter.DeallocateTextures();
+                }
+                m_Filter = filter;
+                m_Filter.AllocateTextures();
+            }
+            Scale(Renderer.OutputRenderTarget, GetFrame(m_Filter));
         }
 
         protected virtual void Dispose(bool disposing)
