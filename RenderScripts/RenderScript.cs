@@ -88,7 +88,11 @@ namespace Mpdn.RenderScript
 
         public virtual void Render()
         {
-            Scale(Renderer.OutputRenderTarget, GetFrame(m_Filter ?? GetFilter()));
+            if (HandleFilterChanged(GetFilter()))
+            {
+                m_Filter.AllocateTextures();
+            }
+            Scale(Renderer.OutputRenderTarget, GetFrame(m_Filter));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -112,16 +116,7 @@ namespace Mpdn.RenderScript
             if (Renderer == null)
                 return;
 
-            var filter = GetFilter();
-            EnsureFilterNotNull(filter);
-            if (m_Filter != filter)
-            {
-                if (m_Filter != null)
-                {
-                    m_Filter.DeallocateTextures();
-                }
-                m_Filter = filter;
-            }
+            HandleFilterChanged(GetFilter());
             m_Filter.AllocateTextures();
         }
 
@@ -191,6 +186,21 @@ namespace Mpdn.RenderScript
                 throw new InvalidOperationException("CreateFilter is not available before Setup() is called");
 
             return new ShaderFilter(Renderer, shader, transform, sizeIndex, linearSampling, inputFilters);
+        }
+
+        private bool HandleFilterChanged(IFilter filter)
+        {
+            EnsureFilterNotNull(filter);
+
+            if (m_Filter == filter)
+                return false;
+
+            if (m_Filter != null)
+            {
+                m_Filter.DeallocateTextures();
+            }
+            m_Filter = filter;
+            return true;
         }
 
         private static void EnsureFilterNotNull(IFilter filter)
