@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
 using YAXLib;
@@ -27,13 +28,6 @@ namespace Mpdn.RenderScript
                         HasConfigDialog = true
                     };
                 }
-            }
-
-            private string GetDescription()
-            {
-                return m_Settings == null || m_Settings.Config.ShaderFileNames.Length == 0
-                    ? "Pixel shader pre-/post-processing filter"
-                    : string.Join(" ➔ ", m_Settings.Config.ShaderFileNames);
             }
 
             protected override string ShaderPath
@@ -85,13 +79,130 @@ namespace Mpdn.RenderScript
             {
                 lock (m_Settings)
                 {
-                    return m_ImageFilter;
+                    return UseImageProcessor ? m_ImageFilter : SourceFilter;
                 }
+            }
+
+            public override void Render()
+            {
+                Scale(Renderer.OutputRenderTarget, GetFrame(GetFilter()));
             }
 
             protected override TextureAllocTrigger TextureAllocTrigger
             {
                 get { return TextureAllocTrigger.OnOutputSizeChanged; }
+            }
+
+            private bool UseImageProcessor
+            {
+                get
+                {
+                    bool notscalingVideo = false;
+                    bool upscalingVideo = false;
+                    bool downscalingVideo = false;
+                    bool notscalingInput = false;
+                    bool upscalingInput = false;
+                    bool downscalingInput = false;
+
+                    var usage = m_Settings.Config.ImageProcessorUsage;
+                    var inputSize = Renderer.VideoSize;
+                    var outputSize = Renderer.TargetSize;
+                    if (outputSize == inputSize)
+                    {
+                        // Not scaling video
+                        notscalingVideo = true;
+                    }
+                    else if (outputSize.Width > inputSize.Width)
+                    {
+                        // Upscaling video
+                        upscalingVideo = true;
+                    }
+                    else
+                    {
+                        // Downscaling video
+                        downscalingVideo = true;
+                    }
+                    inputSize = Renderer.InputSize;
+                    outputSize = Renderer.OutputSize;
+                    if (outputSize == inputSize)
+                    {
+                        // Not scaling input
+                        notscalingInput = true;
+                    }
+                    else if (outputSize.Width > inputSize.Width)
+                    {
+                        // Upscaling input
+                        upscalingInput = true;
+                    }
+                    else
+                    {
+                        // Downscaling input
+                        downscalingInput = true;
+                    }
+
+                    switch (usage)
+                    {
+                        case ImageProcessorUsage.Always:
+                            return true;
+                        case ImageProcessorUsage.Never:
+                            return false;
+                        case ImageProcessorUsage.WhenUpscaling:
+                            return upscalingVideo;
+                        case ImageProcessorUsage.WhenDownscaling:
+                            return downscalingVideo;
+                        case ImageProcessorUsage.WhenNotScaling:
+                            return notscalingVideo;
+                        case ImageProcessorUsage.WhenUpscalingInput:
+                            return upscalingInput;
+                        case ImageProcessorUsage.WhenDownscalingInput:
+                            return downscalingInput;
+                        case ImageProcessorUsage.WhenNotScalingInput:
+                            return notscalingInput;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            }
+
+            private string GetDescription()
+            {
+                return m_Settings == null || m_Settings.Config.ShaderFileNames.Length == 0
+                    ? "Pixel shader pre-/post-processing filter"
+                    : GetUsageString() + string.Join(" ➔ ", m_Settings.Config.ShaderFileNames);
+            }
+
+            private string GetUsageString()
+            {
+                var usage = m_Settings.Config.ImageProcessorUsage;
+                string result;
+                switch (usage)
+                {
+                    case ImageProcessorUsage.Never:
+                        result = "[INACTIVE] ";
+                        break;
+                    case ImageProcessorUsage.WhenUpscaling:
+                        result = "When upscaling video: ";
+                        break;
+                    case ImageProcessorUsage.WhenDownscaling:
+                        result = "When downscaling video: ";
+                        break;
+                    case ImageProcessorUsage.WhenNotScaling:
+                        result = "When not scaling video: ";
+                        break;
+                    case ImageProcessorUsage.WhenUpscalingInput:
+                        result = "When upscaling input: ";
+                        break;
+                    case ImageProcessorUsage.WhenDownscalingInput:
+                        result = "When downscaling input: ";
+                        break;
+                    case ImageProcessorUsage.WhenNotScalingInput:
+                        result = "When not scaling input: ";
+                        break;
+                    default:
+                        result = string.Empty;
+                        break;
+                }
+                return result;
             }
 
             private void SetupRenderChain()
@@ -137,11 +248,36 @@ namespace Mpdn.RenderScript
             }
         }
 
+        public enum ImageProcessorUsage
+        {
+            [Description("Always")]
+            Always,
+            [Description("Never")]
+            Never,
+            [Description("When upscaling video")]
+            WhenUpscaling,
+            [Description("When downscaling video")]
+            WhenDownscaling,
+            [Description("When not scaling video")]
+            WhenNotScaling,
+            [Description("When upscaling input")]
+            WhenUpscalingInput,
+            [Description("When downscaling input")]
+            WhenDownscalingInput,
+            [Description("When not scaling input")]
+            WhenNotScalingInput
+        }
+
         #region Settings
 
         public class Settings
         {
             private string[] m_ShaderFileNames;
+
+            public Settings()
+            {
+                ImageProcessorUsage = ImageProcessorUsage.Always;
+            }
 
             [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public string[] ShaderFileNames
@@ -149,6 +285,9 @@ namespace Mpdn.RenderScript
                 get { return m_ShaderFileNames ?? (m_ShaderFileNames = new string[0]); }
                 set { m_ShaderFileNames = value; }
             }
+
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public ImageProcessorUsage ImageProcessorUsage { get; set; }
         }
 
         public class ImageProcessorSettings : ScriptSettings<Settings>

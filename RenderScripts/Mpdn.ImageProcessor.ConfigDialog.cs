@@ -16,6 +16,14 @@ namespace Mpdn.RenderScript
             public ImageProcessorConfigDialog()
             {
                 InitializeComponent();
+
+                var descs = EnumHelpers.GetDescriptions<ImageProcessorUsage>();
+                foreach (var desc in descs)
+                {
+                    comboBoxUsage.Items.Add(desc);
+                }
+
+                comboBoxUsage.SelectedIndex = 0;
             }
 
             public void Setup(string shaderPath, Settings settings)
@@ -29,6 +37,8 @@ namespace Mpdn.RenderScript
                 {
                     listBox.SelectedIndex = 0;
                 }
+
+                comboBoxUsage.SelectedIndex = (int) settings.ImageProcessorUsage;
             }
 
             private void DialogClosed(object sender, FormClosedEventArgs e)
@@ -37,6 +47,7 @@ namespace Mpdn.RenderScript
                     return;
 
                 m_Settings.ShaderFileNames = listBox.Items.Cast<string>().ToArray();
+                m_Settings.ImageProcessorUsage = (ImageProcessorUsage) comboBoxUsage.SelectedIndex;
             }
 
             private void ButtonAddClick(object sender, EventArgs e)

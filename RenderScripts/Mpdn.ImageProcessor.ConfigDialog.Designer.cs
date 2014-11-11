@@ -40,13 +40,15 @@
             this.buttonUp = new System.Windows.Forms.Button();
             this.buttonDown = new System.Windows.Forms.Button();
             this.buttonClear = new System.Windows.Forms.Button();
+            this.comboBoxUsage = new System.Windows.Forms.ComboBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(297, 249);
+            this.buttonCancel.Location = new System.Drawing.Point(297, 269);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 7;
@@ -57,7 +59,7 @@
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(216, 249);
+            this.buttonOk.Location = new System.Drawing.Point(216, 269);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 6;
@@ -82,7 +84,7 @@
             this.listBox.IntegralHeight = false;
             this.listBox.Location = new System.Drawing.Point(13, 33);
             this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(357, 201);
+            this.listBox.Size = new System.Drawing.Size(357, 191);
             this.listBox.TabIndex = 0;
             this.listBox.SelectedIndexChanged += new System.EventHandler(this.ListBoxSelectedIndexChanged);
             // 
@@ -157,14 +159,36 @@
             this.buttonClear.UseVisualStyleBackColor = true;
             this.buttonClear.Click += new System.EventHandler(this.ButtonClearClick);
             // 
+            // comboBoxUsage
+            // 
+            this.comboBoxUsage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.comboBoxUsage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxUsage.FormattingEnabled = true;
+            this.comboBoxUsage.Location = new System.Drawing.Point(124, 230);
+            this.comboBoxUsage.Name = "comboBoxUsage";
+            this.comboBoxUsage.Size = new System.Drawing.Size(155, 21);
+            this.comboBoxUsage.TabIndex = 1007;
+            // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 233);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(106, 13);
+            this.label2.TabIndex = 1008;
+            this.label2.Text = "Use image processor";
+            // 
             // ImageProcessorConfigDialog
             // 
             this.AcceptButton = this.buttonOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(384, 284);
+            this.ClientSize = new System.Drawing.Size(384, 304);
             this.ControlBox = false;
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.comboBoxUsage);
             this.Controls.Add(this.buttonClear);
             this.Controls.Add(this.buttonDown);
             this.Controls.Add(this.buttonUp);
@@ -199,6 +223,8 @@
             private System.Windows.Forms.Button buttonUp;
             private System.Windows.Forms.Button buttonDown;
             private System.Windows.Forms.Button buttonClear;
+            private System.Windows.Forms.ComboBox comboBoxUsage;
+            private System.Windows.Forms.Label label2;
 
         }
     }
