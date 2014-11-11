@@ -47,6 +47,21 @@ namespace Mpdn.RenderScript
                 m_Settings.Load();
             }
 
+            public override bool ShowConfigDialog(IWin32Window owner)
+            {
+                using (var dialog = new ImageProcessorConfigDialog())
+                {
+                    dialog.Setup(ShaderDataFilePath, m_Settings.Config);
+                    if (dialog.ShowDialog(owner) != DialogResult.OK)
+                        return false;
+
+                    m_Settings.Save();
+                    SetupRenderChain();
+                    OnOutputSizeChanged();
+                    return true;
+                }
+            }
+
             public override void Destroy()
             {
                 m_Settings.Destroy();
@@ -66,34 +81,17 @@ namespace Mpdn.RenderScript
                 DisposeShaders();
             }
 
-            public override bool ShowConfigDialog(IWin32Window owner)
-            {
-                using (var dialog = new ImageProcessorConfigDialog())
-                {
-                    dialog.Setup(ShaderDataFilePath, m_Settings.Config);
-                    if (dialog.ShowDialog(owner) != DialogResult.OK)
-                        return false;
-
-                    m_Settings.Save();
-                    SetupRenderChain();
-                    return true;
-                }
-            }
-
-            protected override ITexture GetFrame()
+            protected override IFilter GetFilter()
             {
                 lock (m_Settings)
                 {
-                    return GetFrame(m_ImageFilter);
+                    return m_ImageFilter;
                 }
             }
 
-            public override void OnOutputSizeChanged()
+            protected override TextureAllocTrigger TextureAllocTrigger
             {
-                lock (m_Settings)
-                {
-                    m_ImageFilter.AllocateTextures();
-                }
+                get { return TextureAllocTrigger.OnOutputSizeChanged; }
             }
 
             private void SetupRenderChain()
@@ -108,6 +106,8 @@ namespace Mpdn.RenderScript
                     {
                         CompileShaders(shaderFileNames);
                     }
+
+                    Common.Dispose(ref m_ImageFilter);
 
                     m_ImageFilter = m_Shaders.Aggregate(SourceFilter, (current, shader) => CreateFilter(shader, current));
                     m_ImageFilter.Initialize();

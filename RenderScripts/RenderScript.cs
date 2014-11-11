@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -8,7 +9,8 @@ namespace Mpdn.RenderScript
 {
     public abstract class RenderScript : IScriptRenderer, IDisposable
     {
-        private SourceFilter m_SourceFilter;
+        private IFilter m_SourceFilter;
+        private IFilter m_Filter;
 
         protected IRenderer Renderer { get; private set; }
 
@@ -64,15 +66,25 @@ namespace Mpdn.RenderScript
 
         public virtual void OnInputSizeChanged()
         {
+            if (TextureAllocTrigger == TextureAllocTrigger.OnInputSizeChanged ||
+                TextureAllocTrigger == TextureAllocTrigger.OnInputOutputSizeChanged)
+            {
+                AllocateTextures();
+            }
         }
 
         public virtual void OnOutputSizeChanged()
         {
+            if (TextureAllocTrigger == TextureAllocTrigger.OnOutputSizeChanged ||
+                TextureAllocTrigger == TextureAllocTrigger.OnInputOutputSizeChanged)
+            {
+                AllocateTextures();
+            }
         }
 
         public virtual void Render()
         {
-            Scale(Renderer.OutputRenderTarget, GetFrame());
+            Scale(Renderer.OutputRenderTarget, GetFrame(m_Filter ?? GetFilter()));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -86,10 +98,31 @@ namespace Mpdn.RenderScript
             Dispose(false);
         }
 
-        protected abstract ITexture GetFrame();
+        protected abstract IFilter GetFilter();
+
+        protected abstract TextureAllocTrigger TextureAllocTrigger { get; }
+
+        protected virtual void AllocateTextures()
+        {
+            if (Renderer == null)
+                return;
+
+            var filter = GetFilter();
+            EnsureFilterNotNull(filter);
+            if (m_Filter != filter)
+            {
+                if (m_Filter != null)
+                {
+                    m_Filter.DeallocateTextures();
+                }
+                m_Filter = filter;
+            }
+            m_Filter.AllocateTextures();
+        }
 
         protected virtual ITexture GetFrame(IFilter filter)
         {
+            EnsureFilterNotNull(filter);
             filter.NewFrame();
             filter.Render();
             return filter.OutputTexture;
@@ -154,5 +187,21 @@ namespace Mpdn.RenderScript
 
             return new ShaderFilter(Renderer, shader, transform, sizeIndex, linearSampling, inputFilters);
         }
+
+        private static void EnsureFilterNotNull(IFilter filter)
+        {
+            if (filter == null)
+            {
+                throw new NoNullAllowedException("GetFilter must not return null");
+            }
+        }
+    }
+
+    public enum TextureAllocTrigger
+    {
+        None,
+        OnInputSizeChanged,
+        OnOutputSizeChanged,
+        OnInputOutputSizeChanged
     }
 }

@@ -14,7 +14,6 @@ namespace Mpdn.RenderScript
             private IShader m_NediHInterleaveShader;
             private IFilter m_NediScaler;
             private IShader m_NediVInterleaveShader;
-            private IFilter m_Scaler;
 
             private NediSettings m_Settings;
 
@@ -108,42 +107,17 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            public override void OnInputSizeChanged()
-            {
-                AllocateTextures();
-            }
-
-            public override void OnOutputSizeChanged()
-            {
-                AllocateTextures();
-            }
-
-            protected override ITexture GetFrame()
+            protected override IFilter GetFilter()
             {
                 lock (m_Settings)
                 {
-                    return GetFrame(m_Scaler);
+                    return UseNedi ? m_NediScaler : SourceFilter;
                 }
             }
 
-            private void AllocateTextures()
+            protected override TextureAllocTrigger TextureAllocTrigger
             {
-                lock (m_Settings)
-                {
-                    if (Renderer == null)
-                        return;
-
-                    if (UseNedi)
-                    {
-                        m_NediScaler.AllocateTextures();
-                        m_Scaler = m_NediScaler;
-                    }
-                    else
-                    {
-                        m_NediScaler.DeallocateTextures();
-                        m_Scaler = SourceFilter;
-                    }
-                }
+                get { return TextureAllocTrigger.OnInputOutputSizeChanged; }
             }
 
             private void CompileShaders()
@@ -170,8 +144,8 @@ namespace Mpdn.RenderScript
 
             private bool NeedToUpscale()
             {
-                return Renderer.TargetSize.Width > Renderer.VideoSize.Width ||
-                       Renderer.TargetSize.Height > Renderer.VideoSize.Height;
+                return Renderer.OutputSize.Width > Renderer.InputSize.Width ||
+                       Renderer.OutputSize.Height > Renderer.InputSize.Height;
             }
 
             private void DiscardNediScaler()
