@@ -66,19 +66,23 @@ namespace Mpdn.RenderScript
 
         public virtual void OnInputSizeChanged()
         {
-            if (TextureAllocTrigger == TextureAllocTrigger.OnInputSizeChanged ||
-                TextureAllocTrigger == TextureAllocTrigger.OnInputOutputSizeChanged)
+            switch (TextureAllocTrigger)
             {
-                AllocateTextures();
+                case TextureAllocTrigger.OnInputOutputSizeChanged:
+                case TextureAllocTrigger.OnInputSizeChanged:
+                    AllocateTextures();
+                    break;
             }
         }
 
         public virtual void OnOutputSizeChanged()
         {
-            if (TextureAllocTrigger == TextureAllocTrigger.OnOutputSizeChanged ||
-                TextureAllocTrigger == TextureAllocTrigger.OnInputOutputSizeChanged)
+            switch (TextureAllocTrigger)
             {
-                AllocateTextures();
+                case TextureAllocTrigger.OnInputOutputSizeChanged:
+                case TextureAllocTrigger.OnOutputSizeChanged:
+                    AllocateTextures();
+                    break;
             }
         }
 
@@ -89,7 +93,8 @@ namespace Mpdn.RenderScript
 
         protected virtual void Dispose(bool disposing)
         {
-            // Not required, but is there in case SourceFilter is changed
+            // Not required, but is there in case SourceFilter is changed 
+            // such that it does something in its Dispose method
             Common.Dispose(ref m_SourceFilter);
         }
 
