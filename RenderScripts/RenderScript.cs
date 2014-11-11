@@ -64,6 +64,9 @@ namespace Mpdn.RenderScript
 
         public virtual void OnInputSizeChanged()
         {
+            if (Renderer == null)
+                return;
+
             if (TextureAllocTrigger == TextureAllocTrigger.OnInputSizeChanged ||
                 TextureAllocTrigger == TextureAllocTrigger.OnInputOutputSizeChanged)
             {
@@ -73,6 +76,9 @@ namespace Mpdn.RenderScript
 
         public virtual void OnOutputSizeChanged()
         {
+            if (Renderer == null)
+                return;
+
             if (TextureAllocTrigger == TextureAllocTrigger.OnOutputSizeChanged ||
                 TextureAllocTrigger == TextureAllocTrigger.OnInputOutputSizeChanged)
             {
