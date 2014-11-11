@@ -42,9 +42,10 @@ namespace Mpdn.RenderScript
                 get
                 {
                     var videoSize = Renderer.VideoSize;
+                    var outputSize = UseNedi ? new Size(videoSize.Width*2, videoSize.Height*2) : videoSize;
                     return new ScriptInterfaceDescriptor
                     {
-                        OutputSize = new Size(videoSize.Width*2, videoSize.Height*2)
+                        OutputSize = outputSize
                     };
                 }
             }
@@ -144,8 +145,8 @@ namespace Mpdn.RenderScript
 
             private bool NeedToUpscale()
             {
-                return Renderer.OutputSize.Width > Renderer.InputSize.Width ||
-                       Renderer.OutputSize.Height > Renderer.InputSize.Height;
+                return Renderer.TargetSize.Width > Renderer.VideoSize.Width ||
+                       Renderer.TargetSize.Height > Renderer.VideoSize.Height;
             }
 
             private void DiscardNediScaler()
