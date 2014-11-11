@@ -75,6 +75,16 @@ namespace Mpdn.RenderScript
                 }
             }
 
+            protected override IFilter GetFilter()
+            {
+                return SourceFilter;
+            }
+
+            protected override TextureAllocTrigger TextureAllocTrigger
+            {
+                get { return TextureAllocTrigger.None; }
+            }
+
             private Size GetInputSize()
             {
                 if (m_Settings.Config.Resizer == m_SavedResizerOption &&
@@ -189,11 +199,6 @@ namespace Mpdn.RenderScript
             private static int GetMultiplier(int dest, int src)
             {
                 return (int) Math.Ceiling((Math.Log10(dest) - Math.Log10(src))/s_Log2) + 1;
-            }
-
-            protected override ITexture GetFrame()
-            {
-                return SourceFilter.OutputTexture;
             }
         }
 

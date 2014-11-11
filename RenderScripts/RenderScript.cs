@@ -64,15 +64,25 @@ namespace Mpdn.RenderScript
 
         public virtual void OnInputSizeChanged()
         {
+            if (TextureAllocTrigger == TextureAllocTrigger.OnInputSizeChanged ||
+                TextureAllocTrigger == TextureAllocTrigger.OnInputOutputSizeChanged)
+            {
+                GetFilter().AllocateTextures();
+            }
         }
 
         public virtual void OnOutputSizeChanged()
         {
+            if (TextureAllocTrigger == TextureAllocTrigger.OnOutputSizeChanged ||
+                TextureAllocTrigger == TextureAllocTrigger.OnInputOutputSizeChanged)
+            {
+                GetFilter().AllocateTextures();
+            }
         }
 
         public virtual void Render()
         {
-            Scale(Renderer.OutputRenderTarget, GetFrame());
+            Scale(Renderer.OutputRenderTarget, GetFrame(GetFilter()));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -86,11 +96,12 @@ namespace Mpdn.RenderScript
             Dispose(false);
         }
 
-        protected abstract ITexture GetFrame();
+        protected abstract IFilter GetFilter();
+
+        protected abstract TextureAllocTrigger TextureAllocTrigger { get; }
 
         protected virtual ITexture GetFrame(IFilter filter)
         {
-            filter.AllocateTextures();
             filter.NewFrame();
             filter.Render();
             return filter.OutputTexture;
@@ -155,5 +166,13 @@ namespace Mpdn.RenderScript
 
             return new ShaderFilter(Renderer, shader, transform, sizeIndex, linearSampling, inputFilters);
         }
+    }
+
+    public enum TextureAllocTrigger
+    {
+        None,
+        OnInputSizeChanged,
+        OnOutputSizeChanged,
+        OnInputOutputSizeChanged
     }
 }
