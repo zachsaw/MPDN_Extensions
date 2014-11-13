@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace Mpdn.RenderScript
@@ -85,20 +86,18 @@ namespace Mpdn.RenderScript
 
             protected abstract RenderScript[] GetScriptChain();
 
-            protected bool IsDownscalingFrom(RenderScript script)
+            protected bool IsDownscalingFrom(Size size)
             {
-                return !IsNotScalingFrom(script) && !IsNotUpscalingFrom(script);
+                return !IsNotScalingFrom(size) && !IsUpscalingFrom(size);
             }
 
-            private bool IsNotScalingFrom(RenderScript script)
+            protected bool IsNotScalingFrom(Size size)
             {
-                var size = script.InterfaceDescriptor.OutputSize;
                 return size == Renderer.TargetSize;
             }
 
-            private bool IsNotUpscalingFrom(RenderScript script)
+            protected bool IsUpscalingFrom(Size size)
             {
-                var size = script.InterfaceDescriptor.OutputSize;
                 var targetSize = Renderer.TargetSize;
                 return targetSize.Width > size.Width || targetSize.Height > size.Height;
             }
