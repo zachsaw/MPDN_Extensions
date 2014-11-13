@@ -8,7 +8,7 @@ using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
-    public interface IFilter : IDisposable
+    public interface IFilter : ICloneable, IDisposable
     {
         IFilter[] InputFilters { get; }
         ITexture OutputTexture { get; }
@@ -194,12 +194,11 @@ namespace Mpdn.RenderScript
 
         private static IFilter DeepCloneFilter(IFilter filter)
         {
-            var f = filter as Filter;
-            if (f == null)
-                return null; // Assume it's a source filter
+            if (filter is SourceFilter)
+                return null;
 
-            var result = (Filter) f.MemberwiseClone();
-            result.InputFilters = (IFilter[]) result.InputFilters.Clone();
+            var f = (ICloneable) filter;
+            var result = (IFilter) f.Clone();
             for (int i = 0; i < filter.InputFilters.Length; i++)
             {
                 result.InputFilters[i] = DeepCloneFilter(result.InputFilters[i]);
@@ -283,6 +282,13 @@ namespace Mpdn.RenderScript
             Dispose(false);
         }
 
+        public object Clone()
+        {
+            var clone = (Filter) MemberwiseClone();
+            clone.InputFilters = (IFilter[]) InputFilters.Clone();
+            return clone;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (m_Disposed)
@@ -311,9 +317,9 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class SourceFilter : IFilter
+    public abstract class BaseSourceFilter : IFilter
     {
-        public SourceFilter(IRenderer renderer)
+        protected BaseSourceFilter(IRenderer renderer)
         {
             Renderer = renderer;
             InputFilters = new IFilter[] {new OutputDummy(renderer)};
@@ -324,16 +330,8 @@ namespace Mpdn.RenderScript
         #region IFilter Implementation
 
         public IFilter[] InputFilters { get; private set; }
-
-        public virtual ITexture OutputTexture
-        {
-            get { return Renderer.InputRenderTarget; }
-        }
-
-        public virtual Size OutputSize
-        {
-            get { return Renderer.InputSize; }
-        }
+        public abstract ITexture OutputTexture { get; }
+        public abstract Size OutputSize { get; }
 
         public int FilterIndex
         {
@@ -377,6 +375,13 @@ namespace Mpdn.RenderScript
         public IFilter Append(IFilter filter)
         {
             return filter;
+        }
+
+        public object Clone()
+        {
+            var clone = (BaseSourceFilter) MemberwiseClone();
+            clone.InputFilters = (IFilter[]) InputFilters.Clone();
+            return clone;
         }
 
         #endregion
@@ -447,7 +452,30 @@ namespace Mpdn.RenderScript
                 throw new InvalidOperationException();
             }
 
+            public object Clone()
+            {
+                throw new InvalidOperationException();
+            }
+
             #endregion
+        }
+    }
+
+    public sealed class SourceFilter : BaseSourceFilter
+    {
+        public SourceFilter(IRenderer renderer) 
+            : base(renderer)
+        {
+        }
+
+        public override ITexture OutputTexture
+        {
+            get { return Renderer.InputRenderTarget; }
+        }
+
+        public override Size OutputSize
+        {
+            get { return Renderer.InputSize; }
         }
     }
 
