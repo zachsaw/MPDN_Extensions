@@ -181,21 +181,13 @@ namespace Mpdn.RenderScript
 
         public IFilter Append(IFilter filter)
         {
-            if (filter as SourceFilter != null)
-                return this;
-
-            var result = DeepCloneFilter(filter);
-
-            // Seek out filter's SourceFilters and replace them
-            ReplaceSourceFilter(result.InputFilters);
-
-            return result;
+            return filter as SourceFilter != null ? this : DeepCloneFilter(filter);
         }
 
-        private static IFilter DeepCloneFilter(IFilter filter)
+        private IFilter DeepCloneFilter(IFilter filter)
         {
             if (filter is SourceFilter)
-                return null;
+                return this; // Use this as the source instead
 
             var f = (ICloneable) filter;
             var result = (IFilter) f.Clone();
@@ -204,23 +196,6 @@ namespace Mpdn.RenderScript
                 result.InputFilters[i] = DeepCloneFilter(result.InputFilters[i]);
             }
             return result;
-        }
-
-        private void ReplaceSourceFilter(IList<IFilter> filters)
-        {
-            for (int i = 0; i < filters.Count; i++)
-            {
-                var f = filters[i];
-                if (f != null)
-                {
-                    ReplaceSourceFilter(f.InputFilters);
-                }
-                else
-                {
-                    // Source filter
-                    filters[i] = this;
-                }
-            }
         }
 
         #endregion

@@ -49,14 +49,14 @@ namespace Mpdn.RenderScript
 
                 if (IsDownscalingFrom(size))
                 {
-                    // For final downscaling, use linear light scaling
+                    // Use linear light for downscaling
                     result.Add(ToLinear);
                     result.Add(ResizeToTarget);
                     result.Add(ToGamma);
                 }
                 else
                 {
-                    // Otherwise, use scale with gamma light
+                    // Otherwise, scale with gamma light
                     result.Add(ResizeToTarget);
                 }
 
