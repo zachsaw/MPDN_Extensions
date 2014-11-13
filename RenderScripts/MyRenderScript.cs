@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using Mpdn.RenderScript.Mpdn.ImageProcessor;
 using Mpdn.RenderScript.Mpdn.Resizer;
 using Mpdn.RenderScript.Shiandow.Nedi;
