@@ -35,10 +35,17 @@ namespace Mpdn.RenderScript
                 get { return "ImageProcessingShaders"; }
             }
 
+            public static ImageProcessor Create(string[] shaderFileNames)
+            {
+                var result = new ImageProcessor();
+                result.m_Settings = new ImageProcessorSettings();
+                result.m_Settings.Config.ShaderFileNames = shaderFileNames;
+                return result;
+            }
+
             public override void Initialize(int instanceId)
             {
                 m_Settings = new ImageProcessorSettings(instanceId);
-                m_Settings.Load();
             }
 
             public override bool ShowConfigDialog(IWin32Window owner)
@@ -75,17 +82,12 @@ namespace Mpdn.RenderScript
                 DisposeShaders();
             }
 
-            protected override IFilter GetFilter()
+            public override IFilter GetFilter()
             {
                 lock (m_Settings)
                 {
                     return UseImageProcessor ? m_ImageFilter : SourceFilter;
                 }
-            }
-
-            public override void Render()
-            {
-                Scale(Renderer.OutputRenderTarget, GetFrame(GetFilter()));
             }
 
             protected override TextureAllocTrigger TextureAllocTrigger
@@ -290,13 +292,21 @@ namespace Mpdn.RenderScript
             public ImageProcessorUsage ImageProcessorUsage { get; set; }
         }
 
-        public class ImageProcessorSettings : ScriptSettings<Settings>
+        public sealed class ImageProcessorSettings : ScriptSettings<Settings>
         {
             private readonly int m_InstanceId;
 
             public ImageProcessorSettings(int instanceId)
+                : base(false)
             {
                 m_InstanceId = instanceId;
+                Load();
+            }
+
+            public ImageProcessorSettings()
+                : base(true)
+            {
+                Load();
             }
 
             protected override string ScriptConfigFileName

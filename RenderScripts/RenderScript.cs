@@ -107,7 +107,7 @@ namespace Mpdn.RenderScript
             Dispose(false);
         }
 
-        protected abstract IFilter GetFilter();
+        public abstract IFilter GetFilter();
 
         protected abstract TextureAllocTrigger TextureAllocTrigger { get; }
 

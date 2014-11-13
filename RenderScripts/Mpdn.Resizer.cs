@@ -50,10 +50,18 @@ namespace Mpdn.RenderScript
                 }
             }
 
+            public static Resizer Create(ResizerOption option = ResizerOption.TargetSize100Percent)
+            {
+                var result = new Resizer();
+                result.m_Settings = new ResizerSettings();
+                result.m_Settings.Config.Resizer = option;
+                result.m_SavedResizerOption = result.m_Settings.Config.Resizer;
+                return result;
+            }
+
             public override void Initialize(int instanceId)
             {
                 m_Settings = new ResizerSettings(instanceId);
-                m_Settings.Load();
                 m_SavedResizerOption = m_Settings.Config.Resizer;
             }
 
@@ -75,7 +83,7 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            protected override IFilter GetFilter()
+            public override IFilter GetFilter()
             {
                 return SourceFilter;
             }
@@ -268,8 +276,16 @@ namespace Mpdn.RenderScript
             private readonly int m_InstanceId;
 
             public ResizerSettings(int instanceId)
+                : base(false)
             {
                 m_InstanceId = instanceId;
+                Load();
+            }
+
+            public ResizerSettings()
+                : base(true)
+            {
+                Load();
             }
 
             protected override string ScriptConfigFileName

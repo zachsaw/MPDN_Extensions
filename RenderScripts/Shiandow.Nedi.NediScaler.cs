@@ -63,10 +63,17 @@ namespace Mpdn.RenderScript
                 return string.Format("NEDI image doubler{0}", options);
             }
 
+            public static NediScaler Create(bool forced = false)
+            {
+                var result = new NediScaler();
+                result.m_Settings = new NediSettings();
+                result.m_Settings.Config.AlwaysDoubleImage = forced;
+                return result;
+            }
+
             public override void Initialize(int instanceId)
             {
                 m_Settings = new NediSettings(instanceId);
-                m_Settings.Load();
             }
 
             public override void Destroy()
@@ -108,7 +115,7 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            protected override IFilter GetFilter()
+            public override IFilter GetFilter()
             {
                 lock (m_Settings)
                 {
@@ -174,8 +181,16 @@ namespace Mpdn.RenderScript
             private readonly int m_InstanceId;
 
             public NediSettings(int instanceId)
+                : base(false)
             {
                 m_InstanceId = instanceId;
+                Load();
+            }
+
+            public NediSettings()
+                : base(true)
+            {
+                Load();
             }
 
             protected override string ScriptConfigFileName

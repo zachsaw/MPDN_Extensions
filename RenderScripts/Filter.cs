@@ -21,6 +21,7 @@ namespace Mpdn.RenderScript
         void Initialize(int time = 0);
         void AllocateTextures();
         void DeallocateTextures();
+        IFilter Append(IFilter filter);
     }
 
     public abstract class Filter : IFilter
@@ -178,6 +179,54 @@ namespace Mpdn.RenderScript
             OutputTexture = null;
         }
 
+        public IFilter Append(IFilter filter)
+        {
+            if (filter as SourceFilter != null)
+                return this;
+
+            var result = DeepCloneFilter(filter);
+
+            if (ReferenceEquals(result, filter))
+                throw new Exception("Test");
+
+            // Seek out filter's SourceFilters and replace them
+            ReplaceSourceFilter(result.InputFilters);
+
+            return result;
+        }
+
+        private static IFilter DeepCloneFilter(IFilter filter)
+        {
+            var f = filter as Filter;
+            if (f == null)
+                return null;
+
+            var result = (Filter) f.MemberwiseClone();
+            result.InputFilters = (IFilter[]) result.InputFilters.Clone();
+            for (int i = 0; i < filter.InputFilters.Length; i++)
+            {
+                result.InputFilters[i] = DeepCloneFilter(result.InputFilters[i]);
+            }
+            return result;
+        }
+
+        private void ReplaceSourceFilter(IList<IFilter> filters)
+        {
+            for (int i = 0; i < filters.Count; i++)
+            {
+                var f = filters[i];
+                if (f != null)
+                {
+                    ReplaceSourceFilter(f.InputFilters);
+                }
+                else
+                {
+                    // Source filter
+                    filters[i] = this;
+                }
+            }
+        }
+
         #endregion
 
         public abstract void Render(IEnumerable<ITexture> inputs);
@@ -328,71 +377,81 @@ namespace Mpdn.RenderScript
         {
         }
 
-        #endregion
-    }
-
-    public class OutputDummy : IFilter
-    {
-        public OutputDummy(IRenderer renderer)
+        public IFilter Append(IFilter filter)
         {
-            Renderer = renderer;
-            InputFilters = null;
-        }
-
-        protected IRenderer Renderer { get; private set; }
-
-        #region IFilter Implementation
-
-        public IFilter[] InputFilters { get; private set; }
-
-        public ITexture OutputTexture
-        {
-            get { return Renderer.OutputRenderTarget; }
-        }
-
-        public Size OutputSize
-        {
-            get { return Renderer.OutputSize; }
-        }
-
-        public int FilterIndex
-        {
-            get { return -2; }
-        }
-
-        public int LastDependentIndex
-        {
-            get { return -1; }
-        }
-
-        public bool TextureStolen { get; set; }
-
-        public void Dispose()
-        {
-        }
-
-        public void Initialize(int time = 0)
-        {
-        }
-
-        public void NewFrame()
-        {
-        }
-
-        public void Render()
-        {
-        }
-
-        public void AllocateTextures()
-        {
-            TextureStolen = false;
-        }
-
-        public void DeallocateTextures()
-        {
+            return filter;
         }
 
         #endregion
+
+        private class OutputDummy : IFilter
+        {
+            public OutputDummy(IRenderer renderer)
+            {
+                Renderer = renderer;
+                InputFilters = null;
+            }
+
+            private IRenderer Renderer { get; set; }
+
+            #region IFilter Implementation
+
+            public IFilter[] InputFilters { get; private set; }
+
+            public ITexture OutputTexture
+            {
+                get { return Renderer.OutputRenderTarget; }
+            }
+
+            public Size OutputSize
+            {
+                get { return Renderer.OutputSize; }
+            }
+
+            public int FilterIndex
+            {
+                get { return -2; }
+            }
+
+            public int LastDependentIndex
+            {
+                get { return -1; }
+            }
+
+            public bool TextureStolen { get; set; }
+
+            public void Dispose()
+            {
+            }
+
+            public void Initialize(int time = 0)
+            {
+            }
+
+            public void NewFrame()
+            {
+            }
+
+            public void Render()
+            {
+            }
+
+            public void AllocateTextures()
+            {
+                TextureStolen = false;
+            }
+
+            public void DeallocateTextures()
+            {
+            }
+
+            public IFilter Append(IFilter filter)
+            {
+                throw new InvalidOperationException();
+            }
+
+            #endregion
+        }
     }
 
     public class ShaderFilter : Filter
