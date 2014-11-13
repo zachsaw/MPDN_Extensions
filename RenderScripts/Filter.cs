@@ -186,9 +186,6 @@ namespace Mpdn.RenderScript
 
             var result = DeepCloneFilter(filter);
 
-            if (ReferenceEquals(result, filter))
-                throw new Exception("Test");
-
             // Seek out filter's SourceFilters and replace them
             ReplaceSourceFilter(result.InputFilters);
 
@@ -199,7 +196,7 @@ namespace Mpdn.RenderScript
         {
             var f = filter as Filter;
             if (f == null)
-                return null;
+                return null; // Assume it's a source filter
 
             var result = (Filter) f.MemberwiseClone();
             result.InputFilters = (IFilter[]) result.InputFilters.Clone();
