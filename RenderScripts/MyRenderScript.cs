@@ -39,19 +39,17 @@ namespace Mpdn.RenderScript
                 result.Add(PreProcess);
 
                 var size = Renderer.VideoSize;
-                if (IsUpscalingFrom(size))
+
+                // Use NEDI once only.
+                // Note: To use NEDI as many times as required to get the image past target size,
+                //       Change the following *if* to *while*
+                if (IsUpscalingFrom(size)) // See RenderScriptChain for other comparer methods
                 {
                     result.Add(Nedi);
                     size = DoubleSize(size);
-                    if (IsUpscalingFrom(size))
-                    {
-                        // Quadruple image using Nedi if required
-                        result.Add(Nedi);
-                        size = DoubleSize(size);
-                    }
                 }
 
-                if (IsDownscalingFrom(size)) // See RenderScriptChain for other comparer methods
+                if (IsDownscalingFrom(size))
                 {
                     // For final downscaling, use linear light scaling
                     result.Add(ToLinear);
