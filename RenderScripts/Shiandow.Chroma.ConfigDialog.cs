@@ -57,7 +57,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class ChromaScalerConfigDialogBase : ScriptConfigDialog<Settings>
+        public abstract class ChromaScalerConfigDialogBase : ScriptConfigDialog<Settings>
         {
         }
     }
