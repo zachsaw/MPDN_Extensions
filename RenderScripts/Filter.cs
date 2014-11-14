@@ -12,6 +12,7 @@ namespace Mpdn.RenderScript
     {
         IFilter[] InputFilters { get; }
         ITexture OutputTexture { get; }
+        bool IsTextureRenderTarget { get; }
         Size OutputSize { get; }
         int FilterIndex { get; }
         int LastDependentIndex { get; }
@@ -72,6 +73,11 @@ namespace Mpdn.RenderScript
                 m_OutputTexture = value;
                 m_TextureOwner = null; // we own this texture
             }
+        }
+
+        public virtual bool IsTextureRenderTarget
+        {
+            get { return true; }
         }
 
         public abstract Size OutputSize { get; }
@@ -218,6 +224,7 @@ namespace Mpdn.RenderScript
                     .FirstOrDefault(f =>
                         !f.TextureStolen &&
                         f.LastDependentIndex < FilterIndex &&
+                        f.IsTextureRenderTarget &&
                         f.OutputTexture != null &&
                         f.OutputTexture.Width == OutputSize.Width &&
                         f.OutputTexture.Height == OutputSize.Height);
@@ -294,18 +301,23 @@ namespace Mpdn.RenderScript
 
     public abstract class BaseSourceFilter : IFilter
     {
-        protected BaseSourceFilter(IRenderer renderer)
+        protected BaseSourceFilter(IRenderer renderer, params IFilter[] inputFilters)
         {
             Renderer = renderer;
-            InputFilters = new IFilter[] {new OutputDummy(renderer)};
+            InputFilters = inputFilters;
         }
 
         protected IRenderer Renderer { get; private set; }
 
         #region IFilter Implementation
 
-        public IFilter[] InputFilters { get; private set; }
+        public IFilter[] InputFilters { get; protected set; }
         public abstract ITexture OutputTexture { get; }
+        public virtual bool IsTextureRenderTarget
+        {
+            get { return false; }
+        }
+
         public abstract Size OutputSize { get; }
 
         public int FilterIndex
@@ -360,8 +372,35 @@ namespace Mpdn.RenderScript
         }
 
         #endregion
+    }
 
-        private class OutputDummy : IFilter
+    public sealed class SourceFilter : BaseSourceFilter
+    {
+        public SourceFilter(IRenderer renderer) 
+            : base(renderer, new OutputDummy(renderer))
+        {
+        }
+
+        #region IFilter Implementation
+
+        public override ITexture OutputTexture
+        {
+            get { return Renderer.InputRenderTarget; }
+        }
+
+        public override bool IsTextureRenderTarget
+        {
+            get { return true; }
+        }
+
+        public override Size OutputSize
+        {
+            get { return Renderer.InputSize; }
+        }
+
+        #endregion
+
+        private sealed class OutputDummy : IFilter
         {
             public OutputDummy(IRenderer renderer)
             {
@@ -378,6 +417,11 @@ namespace Mpdn.RenderScript
             public ITexture OutputTexture
             {
                 get { return Renderer.OutputRenderTarget; }
+            }
+
+            public bool IsTextureRenderTarget
+            {
+                get { return true; }
             }
 
             public Size OutputSize
@@ -436,24 +480,6 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public sealed class SourceFilter : BaseSourceFilter
-    {
-        public SourceFilter(IRenderer renderer) 
-            : base(renderer)
-        {
-        }
-
-        public override ITexture OutputTexture
-        {
-            get { return Renderer.InputRenderTarget; }
-        }
-
-        public override Size OutputSize
-        {
-            get { return Renderer.InputSize; }
-        }
-    }
-
     public class ShaderFilter : Filter
     {
         public ShaderFilter(IRenderer renderer, IShader shader, int sizeIndex, bool linearSampling,
@@ -494,7 +520,7 @@ namespace Mpdn.RenderScript
             Renderer.Render(OutputTexture, Shader);
         }
 
-        private void LoadInputs(IEnumerable<ITexture> inputs)
+        protected virtual void LoadInputs(IEnumerable<ITexture> inputs)
         {
             var i = 0;
             foreach (var input in inputs)
