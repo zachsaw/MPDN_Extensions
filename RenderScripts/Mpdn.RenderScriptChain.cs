@@ -66,9 +66,9 @@ namespace Mpdn.RenderScript
                     {
                         m_Filter = m_Filter.Append(scriptChain[i].GetFilter());
                     }
+                    m_Filter.Initialize();
                 }
                 m_ScriptChain = scriptChain;
-                m_Filter.Initialize();
                 m_Filter.AllocateTextures();
             }
 

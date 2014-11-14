@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace Mpdn.RenderScript
 {
     namespace Shiandow.Chroma
     {
-        public partial class ChromaScalerConfigDialog : Form
+        public partial class ChromaScalerConfigDialog : ScriptConfigDialog<Settings>
         {
-            private Settings m_Settings;
             private bool m_SettingPreset;
 
             public ChromaScalerConfigDialog()
@@ -24,13 +22,18 @@ namespace Mpdn.RenderScript
                 PresetBox.SelectedIndex = (int) Presets.Custom;
             }
 
-            public void Setup(Settings settings)
+            protected override void LoadSettings()
             {
-                m_Settings = settings;
+                BSetter.Value = (Decimal) Settings.B;
+                CSetter.Value = (Decimal) Settings.C;
+                PresetBox.SelectedIndex = (int) Settings.Preset;
+            }
 
-                BSetter.Value = (Decimal) settings.B;
-                CSetter.Value = (Decimal) settings.C;
-                PresetBox.SelectedIndex = (int) settings.Preset;
+            protected override void SaveSettings()
+            {
+                Settings.B = (float) BSetter.Value;
+                Settings.C = (float) CSetter.Value;
+                Settings.Preset = (Presets) PresetBox.SelectedIndex;
             }
 
             private void ValueChanged(object sender, EventArgs e)
@@ -48,19 +51,9 @@ namespace Mpdn.RenderScript
                     return;
 
                 m_SettingPreset = true;
-                BSetter.Value = (Decimal) ChromaScaler.BConst[index];
-                CSetter.Value = (Decimal) ChromaScaler.CConst[index];
+                BSetter.Value = (Decimal) ChromaScaler.B_CONST[index];
+                CSetter.Value = (Decimal) ChromaScaler.C_CONST[index];
                 m_SettingPreset = false;
-            }
-
-            private void DialogClosed(object sender, FormClosedEventArgs e)
-            {
-                if (DialogResult != DialogResult.OK)
-                    return;
-
-                m_Settings.B = (float) BSetter.Value;
-                m_Settings.C = (float) CSetter.Value;
-                m_Settings.Preset = (Presets) PresetBox.SelectedIndex;
             }
         }
     }

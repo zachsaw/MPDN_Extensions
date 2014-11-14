@@ -1,42 +1,109 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Windows.Forms;
 using YAXLib;
 
 namespace Mpdn.RenderScript
 {
     namespace Mpdn.Resizer
     {
-        public class Resizer : RenderScript
+
+        #region ResizerOptions
+
+        public enum ResizerOption
+        {
+            [Description("Video size")]
+            VideoSize,
+            [Description("Video size x2")]
+            VideoSizeX2,
+            [Description("Video size x4")]
+            VideoSizeX4,
+            [Description("Video size x8")]
+            VideoSizeX8,
+            [Description("Video size x16")]
+            VideoSizeX16,
+            [Description("The greater of target size and video size")]
+            GreaterOfTargetAndVideoSize,
+            [Description("The greater of target size and video size x2")]
+            GreaterOfTargetAndVideoSizeX2,
+            [Description("The greater of target size and video size x4")]
+            GreaterOfTargetAndVideoSizeX4,
+            [Description("The greater of target size and video size x8")]
+            GreaterOfTargetAndVideoSizeX8,
+            [Description("The greater of target size and video size x16")]
+            GreaterOfTargetAndVideoSizeX16,
+            [Description("Just past target using a multiple of video size")]
+            PastTargetUsingVideoSize,
+            [Description("Just past target using a multiple of video size except when target equals to video size")]
+            PastTargetUsingVideoSizeExceptSimilar,
+            [Description("Just under target using a multiple of video size")]
+            UnderTargetUsingVideoSize,
+            [Description("Just under target using a multiple of video size except when target equals to video size")]
+            UnderTargetUsingVideoSizeExceptSimilar,
+            [Description("25% of target size")]
+            TargetSize025Percent,
+            [Description("50% of target size")]
+            TargetSize050Percent,
+            [Description("75% of target size")]
+            TargetSize075Percent,
+            [Description("100% of target size")]
+            TargetSize100Percent,
+            [Description("125% of target size")]
+            TargetSize125Percent,
+            [Description("150% of target size")]
+            TargetSize150Percent,
+            [Description("175% of target size")]
+            TargetSize175Percent,
+            [Description("200% of target size")]
+            TargetSize200Percent
+        }
+
+        #endregion
+
+        #region Settings
+
+        public class Settings
+        {
+            public Settings()
+            {
+                Resizer = ResizerOption.TargetSize100Percent;
+            }
+
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public ResizerOption Resizer { get; set; }
+        }
+
+        #endregion
+
+        public class Resizer : ConfigurableRenderScript<Settings, ResizerConfigDialog>
         {
             private static readonly double s_Log2 = Math.Log10(2);
 
             private Size m_Size;
             private Size m_SavedTargetSize;
             private ResizerOption m_SavedResizerOption;
-            private ResizerSettings m_Settings;
 
-            public override ScriptDescriptor Descriptor
+            public static Resizer Create(ResizerOption option = ResizerOption.TargetSize100Percent)
+            {
+                var result = new Resizer();
+                result.Initialize();
+                result.Settings.Config.Resizer = option;
+                result.m_SavedResizerOption = result.Settings.Config.Resizer;
+                return result;
+            }
+
+            protected override ConfigurableRenderScriptDescriptor ConfigScriptDescriptor
             {
                 get
                 {
-                    return new ScriptDescriptor
+                    return new ConfigurableRenderScriptDescriptor
                     {
                         Guid = new Guid("C5621540-C3F6-4B54-98FE-EA9ECECD0D41"),
                         Name = "Resizer",
                         Description = GetDescription(),
-                        HasConfigDialog = true
+                        ConfigFileName = "Mpdn.Resizer"
                     };
                 }
-            }
-
-            private string GetDescription()
-            {
-                var desc = m_Settings == null
-                    ? "Resizes the image"
-                    : string.Format("Resize to: {0}", m_Settings.Config.Resizer.ToDescription());
-                return desc;
             }
 
             public override ScriptInterfaceDescriptor InterfaceDescriptor
@@ -50,57 +117,32 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            public static Resizer Create(ResizerOption option = ResizerOption.TargetSize100Percent)
-            {
-                var result = new Resizer();
-                result.m_Settings = new ResizerSettings();
-                result.m_Settings.Config.Resizer = option;
-                result.m_SavedResizerOption = result.m_Settings.Config.Resizer;
-                return result;
-            }
-
-            public override void Initialize(int instanceId)
-            {
-                m_Settings = new ResizerSettings(instanceId);
-                m_SavedResizerOption = m_Settings.Config.Resizer;
-            }
-
-            public override void Destroy()
-            {
-                m_Settings.Destroy();
-            }
-
-            public override bool ShowConfigDialog(IWin32Window owner)
-            {
-                using (var dialog = new ResizerConfigDialog())
-                {
-                    dialog.Setup(m_Settings.Config);
-                    if (dialog.ShowDialog(owner) != DialogResult.OK)
-                        return false;
-
-                    m_Settings.Save();
-                    return true;
-                }
-            }
-
-            public override IFilter GetFilter()
-            {
-                return SourceFilter;
-            }
-
             protected override TextureAllocTrigger TextureAllocTrigger
             {
                 get { return TextureAllocTrigger.None; }
             }
 
+            public override IFilter CreateFilter(Settings settings)
+            {
+                return SourceFilter;
+            }
+
+            private string GetDescription()
+            {
+                var desc = Settings == null
+                    ? "Resizes the image"
+                    : string.Format("Resize to: {0}", Settings.Config.Resizer.ToDescription());
+                return desc;
+            }
+
             private Size GetInputSize()
             {
-                if (m_Settings.Config.Resizer == m_SavedResizerOption &&
+                if (Settings.Config.Resizer == m_SavedResizerOption &&
                     m_SavedTargetSize == Renderer.TargetSize &&
                     m_Size != Size.Empty)
                     return m_Size;
 
-                m_SavedResizerOption = m_Settings.Config.Resizer;
+                m_SavedResizerOption = Settings.Config.Resizer;
                 m_SavedTargetSize = Renderer.TargetSize;
 
                 var targetSize = Renderer.TargetSize;
@@ -209,91 +251,5 @@ namespace Mpdn.RenderScript
                 return (int) Math.Ceiling((Math.Log10(dest) - Math.Log10(src))/s_Log2) + 1;
             }
         }
-
-        public enum ResizerOption
-        {
-            [Description("Video size")]
-            VideoSize,
-            [Description("Video size x2")]
-            VideoSizeX2,
-            [Description("Video size x4")]
-            VideoSizeX4,
-            [Description("Video size x8")]
-            VideoSizeX8,
-            [Description("Video size x16")]
-            VideoSizeX16,
-            [Description("The greater of target size and video size")]
-            GreaterOfTargetAndVideoSize,
-            [Description("The greater of target size and video size x2")]
-            GreaterOfTargetAndVideoSizeX2,
-            [Description("The greater of target size and video size x4")]
-            GreaterOfTargetAndVideoSizeX4,
-            [Description("The greater of target size and video size x8")]
-            GreaterOfTargetAndVideoSizeX8,
-            [Description("The greater of target size and video size x16")]
-            GreaterOfTargetAndVideoSizeX16,
-            [Description("Just past target using a multiple of video size")]
-            PastTargetUsingVideoSize,
-            [Description("Just past target using a multiple of video size except when target equals to video size")]
-            PastTargetUsingVideoSizeExceptSimilar,
-            [Description("Just under target using a multiple of video size")]
-            UnderTargetUsingVideoSize,
-            [Description("Just under target using a multiple of video size except when target equals to video size")]
-            UnderTargetUsingVideoSizeExceptSimilar,
-            [Description("25% of target size")]
-            TargetSize025Percent,
-            [Description("50% of target size")]
-            TargetSize050Percent,
-            [Description("75% of target size")]
-            TargetSize075Percent,
-            [Description("100% of target size")]
-            TargetSize100Percent,
-            [Description("125% of target size")]
-            TargetSize125Percent,
-            [Description("150% of target size")]
-            TargetSize150Percent,
-            [Description("175% of target size")]
-            TargetSize175Percent,
-            [Description("200% of target size")]
-            TargetSize200Percent
-        }
-
-        #region Settings
-
-        public class Settings
-        {
-            public Settings()
-            {
-                Resizer = ResizerOption.TargetSize100Percent;
-            }
-
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public ResizerOption Resizer { get; set; }
-        }
-
-        public class ResizerSettings : ScriptSettings<Settings>
-        {
-            private readonly int m_InstanceId;
-
-            public ResizerSettings(int instanceId)
-                : base(false)
-            {
-                m_InstanceId = instanceId;
-                Load();
-            }
-
-            public ResizerSettings()
-                : base(true)
-            {
-                Load();
-            }
-
-            protected override string ScriptConfigFileName
-            {
-                get { return string.Format("Mpdn.Resizer.{0}.config", m_InstanceId); }
-            }
-        }
-
-        #endregion
     }
 }

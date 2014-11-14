@@ -174,7 +174,6 @@
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "ChromaScaler Settings";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.DialogClosed);
             ((System.ComponentModel.ISupportInitialize)(this.BSetter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.CSetter)).EndInit();
             this.ResumeLayout(false);
