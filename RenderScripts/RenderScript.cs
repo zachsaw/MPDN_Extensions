@@ -9,10 +9,31 @@ namespace Mpdn.RenderScript
 {
     public abstract class RenderScript : IScriptRenderer, IDisposable
     {
+        protected IRenderer Renderer { get; private set; }
+        protected IFilter SourceFilter
+        {
+            get { return m_SourceFilter ?? (m_SourceFilter = new SourceFilter(Renderer)); }
+        }
+
+        public abstract ScriptDescriptor Descriptor { get; }
+
+        public virtual ScriptInterfaceDescriptor InterfaceDescriptor
+        {
+            get { return new ScriptInterfaceDescriptor(); }
+        }
+
+        public abstract IFilter GetFilter();
+
+        protected abstract TextureAllocTrigger TextureAllocTrigger { get; }
+
+        public virtual void Initialize(int instanceId)
+        {
+        }
+
+        #region Implementation
+
         private IFilter m_SourceFilter;
         private IFilter m_Filter;
-
-        protected IRenderer Renderer { get; private set; }
 
         protected virtual string ShaderPath
         {
@@ -23,31 +44,15 @@ namespace Mpdn.RenderScript
         {
             get
             {
-                var asmPath = typeof (IScriptRenderer).Assembly.Location;
+                var asmPath = typeof(IScriptRenderer).Assembly.Location;
                 return Path.Combine(Common.GetDirectoryName(asmPath), "RenderScripts", ShaderPath);
             }
-        }
-
-        protected IFilter SourceFilter
-        {
-            get { return m_SourceFilter ?? (m_SourceFilter = new SourceFilter(Renderer)); }
         }
 
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        public abstract ScriptDescriptor Descriptor { get; }
-
-        public virtual ScriptInterfaceDescriptor InterfaceDescriptor
-        {
-            get { return new ScriptInterfaceDescriptor(); }
-        }
-
-        public virtual void Initialize(int instanceId)
-        {
         }
 
         public virtual void Destroy()
@@ -107,9 +112,13 @@ namespace Mpdn.RenderScript
             Dispose(false);
         }
 
-        public abstract IFilter GetFilter();
-
-        protected abstract TextureAllocTrigger TextureAllocTrigger { get; }
+        protected virtual ITexture GetFrame(IFilter filter)
+        {
+            EnsureFilterNotNull(filter);
+            filter.NewFrame();
+            filter.Render();
+            return filter.OutputTexture;
+        }
 
         protected virtual void AllocateTextures()
         {
@@ -120,13 +129,32 @@ namespace Mpdn.RenderScript
             m_Filter.AllocateTextures();
         }
 
-        protected virtual ITexture GetFrame(IFilter filter)
+        private bool HandleFilterChanged(IFilter filter)
         {
             EnsureFilterNotNull(filter);
-            filter.NewFrame();
-            filter.Render();
-            return filter.OutputTexture;
+
+            if (m_Filter == filter)
+                return false;
+
+            if (m_Filter != null)
+            {
+                m_Filter.DeallocateTextures();
+            }
+            m_Filter = filter;
+            return true;
         }
+
+        private static void EnsureFilterNotNull(IFilter filter)
+        {
+            if (filter == null)
+            {
+                throw new NoNullAllowedException("GetFilter must not return null");
+            }
+        }
+
+        #endregion
+
+        #region Convenience Functions
 
         protected virtual void Scale(ITexture output, ITexture input)
         {
@@ -188,28 +216,7 @@ namespace Mpdn.RenderScript
             return new ShaderFilter(Renderer, shader, transform, sizeIndex, linearSampling, inputFilters);
         }
 
-        private bool HandleFilterChanged(IFilter filter)
-        {
-            EnsureFilterNotNull(filter);
-
-            if (m_Filter == filter)
-                return false;
-
-            if (m_Filter != null)
-            {
-                m_Filter.DeallocateTextures();
-            }
-            m_Filter = filter;
-            return true;
-        }
-
-        private static void EnsureFilterNotNull(IFilter filter)
-        {
-            if (filter == null)
-            {
-                throw new NoNullAllowedException("GetFilter must not return null");
-            }
-        }
+        #endregion
     }
 
     public enum TextureAllocTrigger
