@@ -187,17 +187,42 @@ namespace Mpdn.RenderScript
 
         public IFilter Append(IFilter filter)
         {
-            return filter as SourceFilter != null ? this : DeepCloneFilter(filter);
+            return filter as SourceFilter != null ? this : AppendFilter(filter);
         }
 
-        private IFilter DeepCloneFilter(IFilter filter)
+        private IFilter AppendFilter(IFilter filter)
+        {
+            // Clone the filters to make sure we aren't modifying the original filters
+            filter = DeepCloneFilter(filter);
+            var replacementFilter = DeepCloneFilter(this);
+            // Replace source filters of 'filter' with 'this'
+            return ReplaceSource(filter, replacementFilter);
+        }
+
+        private static IFilter ReplaceSource(IFilter filter, IFilter replacementFilter)
         {
             if (filter is SourceFilter)
-                return this; // Use this as the source instead
+                return replacementFilter;
+
+            for (int i = 0; i < filter.InputFilters.Length; i++)
+            {
+                filter.InputFilters[i] = ReplaceSource(filter.InputFilters[i], replacementFilter);
+            }
+
+            return filter;
+        }
+
+        private static IFilter DeepCloneFilter(IFilter filter)
+        {
+            if (filter == null)
+                return null;
 
             var f = (ICloneable) filter;
             var result = (IFilter) f.Clone();
-            for (int i = 0; i < filter.InputFilters.Length; i++)
+            if (filter.InputFilters == null)
+                return result;
+
+            for (var i = 0; i < filter.InputFilters.Length; i++)
             {
                 result.InputFilters[i] = DeepCloneFilter(result.InputFilters[i]);
             }
@@ -205,6 +230,13 @@ namespace Mpdn.RenderScript
         }
 
         #endregion
+
+        public object Clone()
+        {
+            var clone = (Filter) MemberwiseClone();
+            clone.InputFilters = (IFilter[]) InputFilters.Clone();
+            return clone;
+        }
 
         public abstract void Render(IEnumerable<ITexture> inputs);
 
@@ -264,13 +296,6 @@ namespace Mpdn.RenderScript
             Dispose(false);
         }
 
-        public object Clone()
-        {
-            var clone = (Filter) MemberwiseClone();
-            clone.InputFilters = (IFilter[]) InputFilters.Clone();
-            return clone;
-        }
-
         protected virtual void Dispose(bool disposing)
         {
             if (m_Disposed)
@@ -313,6 +338,7 @@ namespace Mpdn.RenderScript
 
         public IFilter[] InputFilters { get; protected set; }
         public abstract ITexture OutputTexture { get; }
+
         public virtual bool IsTextureRenderTarget
         {
             get { return false; }
@@ -376,7 +402,7 @@ namespace Mpdn.RenderScript
 
     public sealed class SourceFilter : BaseSourceFilter
     {
-        public SourceFilter(IRenderer renderer) 
+        public SourceFilter(IRenderer renderer)
             : base(renderer, new OutputDummy(renderer))
         {
         }
@@ -473,10 +499,79 @@ namespace Mpdn.RenderScript
 
             public object Clone()
             {
-                throw new InvalidOperationException();
+                return MemberwiseClone();
             }
 
             #endregion
+        }
+    }
+
+    public class YSourceFilter : BaseSourceFilter
+    {
+        public YSourceFilter(IRenderer renderer) : base(renderer)
+        {
+        }
+
+        public override ITexture OutputTexture
+        {
+            get { return Renderer.TextureY; }
+        }
+
+        public override Size OutputSize
+        {
+            get { return Renderer.LumaSize; }
+        }
+    }
+
+    public class USourceFilter : BaseSourceFilter
+    {
+        public USourceFilter(IRenderer renderer) : base(renderer)
+        {
+        }
+
+        public override ITexture OutputTexture
+        {
+            get { return Renderer.TextureU; }
+        }
+
+        public override Size OutputSize
+        {
+            get { return Renderer.ChromaSize; }
+        }
+    }
+
+    public class VSourceFilter : BaseSourceFilter
+    {
+        public VSourceFilter(IRenderer renderer) : base(renderer)
+        {
+        }
+
+        public override ITexture OutputTexture
+        {
+            get { return Renderer.TextureV; }
+        }
+
+        public override Size OutputSize
+        {
+            get { return Renderer.ChromaSize; }
+        }
+    }
+
+    public class RgbFilter : Filter
+    {
+        public RgbFilter(IRenderer renderer, IFilter inputFilter)
+            : base(renderer, inputFilter)
+        {
+        }
+
+        public override Size OutputSize
+        {
+            get { return InputFilters[0].OutputSize; }
+        }
+
+        public override void Render(IEnumerable<ITexture> inputs)
+        {
+            Renderer.ConvertToRgb(OutputTexture, inputs.Single(), Renderer.Colorimetric);
         }
     }
 

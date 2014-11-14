@@ -8,10 +8,9 @@ namespace Mpdn.RenderScript
 {
     namespace Mpdn.ImageProcessor
     {
-        public partial class ImageProcessorConfigDialog : Form
+        public partial class ImageProcessorConfigDialog : ScriptConfigDialog<Settings>
         {
             private string m_ShaderPath;
-            private Settings m_Settings;
 
             public ImageProcessorConfigDialog()
             {
@@ -26,28 +25,24 @@ namespace Mpdn.RenderScript
                 comboBoxUsage.SelectedIndex = 0;
             }
 
-            public void Setup(string shaderPath, Settings settings)
+            protected override void LoadSettings()
             {
-                m_ShaderPath = shaderPath;
-                m_Settings = settings;
+                m_ShaderPath = Settings.ShaderPath;
 
-                Add(settings.ShaderFileNames);
+                Add(Settings.ShaderFileNames);
 
                 if (listBox.Items.Count > 0)
                 {
                     listBox.SelectedIndex = 0;
                 }
 
-                comboBoxUsage.SelectedIndex = (int) settings.ImageProcessorUsage;
+                comboBoxUsage.SelectedIndex = (int) Settings.ImageProcessorUsage;
             }
 
-            private void DialogClosed(object sender, FormClosedEventArgs e)
+            protected override void SaveSettings()
             {
-                if (DialogResult != DialogResult.OK)
-                    return;
-
-                m_Settings.ShaderFileNames = listBox.Items.Cast<string>().ToArray();
-                m_Settings.ImageProcessorUsage = (ImageProcessorUsage) comboBoxUsage.SelectedIndex;
+                Settings.ShaderFileNames = listBox.Items.Cast<string>().ToArray();
+                Settings.ImageProcessorUsage = (ImageProcessorUsage)comboBoxUsage.SelectedIndex;
             }
 
             private void ButtonAddClick(object sender, EventArgs e)
