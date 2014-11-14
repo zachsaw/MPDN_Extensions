@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿//
+// NOTE: MPDN needs to be restarted for any changes you have made in this file to take effect!
+//
+
+using System.Collections.Generic;
 using System.Drawing;
 using Mpdn.RenderScript.Mpdn.ImageProcessor;
 using Mpdn.RenderScript.Mpdn.Resizer;
@@ -14,7 +18,7 @@ namespace Mpdn.RenderScript
             private readonly string[] PreResizeShaderfiles = { @"SweetFX\Bloom.hlsl", /* add more files here (separate with comma) ... */ };
             private readonly string[] PostResizeShaderfiles = { @"SweetFX\LumaSharpen.hlsl", /* add more files here (separate with comma) ... */ };
 
-            private RenderScript ScaleChroma, Nedi, PreProcess, PostProcess, ToLinear, ToGamma, ResizeToTarget;
+            private RenderScript ScaleChroma, Nedi, PreProcess, PostProcess, Deinterlace, ToLinear, ToGamma, ResizeToTarget;
 
             protected override RenderScript[] CreateScripts()
             {
@@ -24,6 +28,7 @@ namespace Mpdn.RenderScript
                     Nedi = NediScaler.Create(forced: true),
                     PreProcess = ImageProcessor.Create(PreResizeShaderfiles),
                     PostProcess = ImageProcessor.Create(PostResizeShaderfiles),
+                    Deinterlace = ImageProcessor.Create(new[] {@"MPC-HC\Deinterlace (blend).hlsl"}),
                     ToLinear = ImageProcessor.Create(new[] {@"ConvertToLinearLight.hlsl"}),
                     ToGamma = ImageProcessor.Create(new[] {@"ConvertToGammaLight.hlsl"}),
                     ResizeToTarget = Resizer.Create(option: ResizerOption.TargetSize100Percent),
@@ -37,6 +42,12 @@ namespace Mpdn.RenderScript
 
                 // Scale chroma first (this bypasses MPDN's chroma scaler)
                 result.Add(ScaleChroma);
+
+                if (Renderer.InterlaceFlags.HasFlag(InterlaceFlags.IsInterlaced))
+                {
+                    // Deinterlace using blend
+                    result.Add(Deinterlace);
+                }
 
                 // Pre resize shaders, followed by NEDI image doubler
                 result.Add(PreProcess);
