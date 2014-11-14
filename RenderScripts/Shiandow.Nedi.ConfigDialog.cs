@@ -1,30 +1,22 @@
-﻿using System.Windows.Forms;
-
-namespace Mpdn.RenderScript
+﻿namespace Mpdn.RenderScript
 {
     namespace Shiandow.Nedi
     {
-        public partial class NediConfigDialog : Form
+        public partial class NediConfigDialog : ScriptConfigDialog<Settings>
         {
-            private Settings m_Settings;
-
             public NediConfigDialog()
             {
                 InitializeComponent();
             }
 
-            public void Setup(Settings settings)
+            protected override void LoadSettings()
             {
-                m_Settings = settings;
-                checkBoxAlwaysEnabled.Checked = m_Settings.AlwaysDoubleImage;
+                checkBoxAlwaysEnabled.Checked = Settings.AlwaysDoubleImage;
             }
 
-            private void DialogClosed(object sender, FormClosedEventArgs e)
+            protected override void SaveSettings()
             {
-                if (DialogResult != DialogResult.OK)
-                    return;
-
-                m_Settings.AlwaysDoubleImage = checkBoxAlwaysEnabled.Checked;
+                Settings.AlwaysDoubleImage = checkBoxAlwaysEnabled.Checked;
             }
         }
     }

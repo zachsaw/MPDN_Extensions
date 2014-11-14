@@ -7,7 +7,22 @@ namespace Mpdn.RenderScript
 {
     namespace Shiandow.Nedi
     {
-        public class NediScaler : RenderScript
+        #region Settings
+
+        public class Settings
+        {
+            public Settings()
+            {
+                AlwaysDoubleImage = false;
+            }
+
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public bool AlwaysDoubleImage { get; set; }
+        }
+
+        #endregion
+
+        public class NediScaler : ConfigurableRenderScript<Settings, NediConfigDialog>
         {
             private IShader m_Nedi1Shader;
             private IShader m_Nedi2Shader;
@@ -15,24 +30,30 @@ namespace Mpdn.RenderScript
             private IFilter m_NediScaler;
             private IShader m_NediVInterleaveShader;
 
-            private NediSettings m_Settings;
+            public static NediScaler Create(bool forced = false)
+            {
+                var result = new NediScaler();
+                result.Initialize();
+                result.Settings.Config.AlwaysDoubleImage = forced;
+                return result;
+            }
 
             protected override string ShaderPath
             {
                 get { return "NEDI"; }
             }
 
-            public override ScriptDescriptor Descriptor
+            protected override ConfigurableRenderScriptDescriptor ConfigScriptDescriptor
             {
                 get
                 {
-                    return new ScriptDescriptor
+                    return new ConfigurableRenderScriptDescriptor
                     {
                         Guid = new Guid("B8E439B7-7DC2-4FC1-94E2-608A39756FB0"),
                         Name = "NEDI",
                         Description = GetDescription(),
                         Copyright = "NEDI by Shiandow",
-                        HasConfigDialog = true
+                        ConfigFileName = "Shiandow.Nedi"
                     };
                 }
             }
@@ -50,82 +71,62 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            private bool UseNedi
+            protected override TextureAllocTrigger TextureAllocTrigger
             {
-                get { return m_Settings.Config.AlwaysDoubleImage || NeedToUpscale(); }
+                get { return TextureAllocTrigger.OnInputOutputSizeChanged; }
             }
 
-            private string GetDescription()
+            public override IFilter CreateFilter(Settings settings)
             {
-                var options = m_Settings == null
-                    ? string.Empty
-                    : string.Format("{0}", m_Settings.Config.AlwaysDoubleImage ? " (forced)" : string.Empty);
-                return string.Format("NEDI image doubler{0}", options);
-            }
-
-            public static NediScaler Create(bool forced = false)
-            {
-                var result = new NediScaler();
-                result.m_Settings = new NediSettings();
-                result.m_Settings.Config.AlwaysDoubleImage = forced;
-                return result;
-            }
-
-            public override void Initialize(int instanceId)
-            {
-                m_Settings = new NediSettings(instanceId);
-            }
-
-            public override void Destroy()
-            {
-                m_Settings.Destroy();
-            }
-
-            public override bool ShowConfigDialog(IWin32Window owner)
-            {
-                using (var dialog = new NediConfigDialog())
+                lock (Settings)
                 {
-                    dialog.Setup(m_Settings.Config);
-                    if (dialog.ShowDialog(owner) != DialogResult.OK)
-                        return false;
-
-                    OnInputSizeChanged();
-                    m_Settings.Save();
-                    return true;
-                }
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                DiscardNediScaler();
-
-                Common.Dispose(ref m_Nedi1Shader);
-                Common.Dispose(ref m_Nedi2Shader);
-                Common.Dispose(ref m_NediHInterleaveShader);
-                Common.Dispose(ref m_NediVInterleaveShader);
-            }
-
-            public override void Setup(IRenderer renderer)
-            {
-                lock (m_Settings)
-                {
-                    base.Setup(renderer);
                     CompileShaders();
-                    CreateNediScaler();
+                    return CreateNediScaler();
                 }
             }
 
             public override IFilter GetFilter()
             {
-                lock (m_Settings)
+                lock (Settings)
                 {
                     return UseNedi ? m_NediScaler : SourceFilter;
                 }
             }
 
-            protected override TextureAllocTrigger TextureAllocTrigger
+            public override bool ShowConfigDialog(IWin32Window owner)
             {
-                get { return TextureAllocTrigger.OnInputOutputSizeChanged; }
+                if (!base.ShowConfigDialog(owner)) 
+                    return false;
+
+                OnInputSizeChanged();
+                return true;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                DiscardNediScaler();
+                DiscardNediShaders();
+            }
+
+            private bool UseNedi
+            {
+                get { return Settings.Config.AlwaysDoubleImage || NeedToUpscale(); }
+            }
+
+            private string GetDescription()
+            {
+                var options = Settings == null
+                    ? string.Empty
+                    : string.Format("{0}", Settings.Config.AlwaysDoubleImage ? " (forced)" : string.Empty);
+                return string.Format("NEDI image doubler{0}", options);
+            }
+
+            private void DiscardNediShaders()
+            {
+                Common.Dispose(ref m_Nedi1Shader);
+                Common.Dispose(ref m_Nedi2Shader);
+                Common.Dispose(ref m_NediHInterleaveShader);
+                Common.Dispose(ref m_NediVInterleaveShader);
             }
 
             private void CompileShaders()
@@ -136,7 +137,7 @@ namespace Mpdn.RenderScript
                 m_NediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl");
             }
 
-            private void CreateNediScaler()
+            private IFilter CreateNediScaler()
             {
                 Func<Size, Size> transformWidth = s => new Size(2*s.Width, s.Height);
                 Func<Size, Size> transformHeight = s => new Size(s.Width, s.Height*2);
@@ -146,8 +147,7 @@ namespace Mpdn.RenderScript
                 var nedi2 = CreateFilter(m_Nedi2Shader, nediH);
                 var nediV = CreateFilter(m_NediVInterleaveShader, transformHeight, nediH, nedi2);
 
-                m_NediScaler = nediV;
-                m_NediScaler.Initialize();
+                return m_NediScaler = nediV;
             }
 
             private bool NeedToUpscale()
@@ -162,43 +162,5 @@ namespace Mpdn.RenderScript
                 Common.Dispose(ref m_NediScaler);
             }
         }
-
-        #region Settings
-
-        public class Settings
-        {
-            public Settings()
-            {
-                AlwaysDoubleImage = false;
-            }
-
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public bool AlwaysDoubleImage { get; set; }
-        }
-
-        public class NediSettings : ScriptSettings<Settings>
-        {
-            private readonly int m_InstanceId;
-
-            public NediSettings(int instanceId)
-                : base(false)
-            {
-                m_InstanceId = instanceId;
-                Load();
-            }
-
-            public NediSettings()
-                : base(true)
-            {
-                Load();
-            }
-
-            protected override string ScriptConfigFileName
-            {
-                get { return string.Format("Shiandow.Nedi.{0}.config", m_InstanceId); }
-            }
-        }
-
-        #endregion
     }
 }

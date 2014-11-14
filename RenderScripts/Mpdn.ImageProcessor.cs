@@ -8,24 +8,80 @@ namespace Mpdn.RenderScript
 {
     namespace Mpdn.ImageProcessor
     {
-        public class ImageProcessor : RenderScript
-        {
-            private ImageProcessorSettings m_Settings;
+        #region Settings
 
+        public class Settings
+        {
+            private string[] m_ShaderFileNames;
+
+            public Settings()
+            {
+                ImageProcessorUsage = ImageProcessorUsage.Always;
+            }
+
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public string[] ShaderFileNames
+            {
+                get { return m_ShaderFileNames ?? (m_ShaderFileNames = new string[0]); }
+                set { m_ShaderFileNames = value; }
+            }
+
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public ImageProcessorUsage ImageProcessorUsage { get; set; }
+
+            public string ShaderPath; // Not saved
+        }
+
+        #endregion
+
+        #region ImageProcessorUsage
+
+        public enum ImageProcessorUsage
+        {
+            [Description("Always")]
+            Always,
+            [Description("Never")]
+            Never,
+            [Description("When upscaling video")]
+            WhenUpscaling,
+            [Description("When downscaling video")]
+            WhenDownscaling,
+            [Description("When not scaling video")]
+            WhenNotScaling,
+            [Description("When upscaling input")]
+            WhenUpscalingInput,
+            [Description("When downscaling input")]
+            WhenDownscalingInput,
+            [Description("When not scaling input")]
+            WhenNotScalingInput
+        }
+
+        #endregion
+
+        public class ImageProcessor : ConfigurableRenderScript<Settings, ImageProcessorConfigDialog>
+        {
             private IFilter m_ImageFilter;
             private IShader[] m_Shaders = new IShader[0];
             private string[] m_ShaderFileNames = new string[0];
 
-            public override ScriptDescriptor Descriptor
+            public static ImageProcessor Create(string[] shaderFileNames)
+            {
+                var result = new ImageProcessor();
+                result.Initialize();
+                result.Settings.Config.ShaderFileNames = shaderFileNames;
+                return result;
+            }
+
+            protected override ConfigurableRenderScriptDescriptor ConfigScriptDescriptor
             {
                 get
                 {
-                    return new ScriptDescriptor
+                    return new ConfigurableRenderScriptDescriptor
                     {
                         Guid = new Guid("50CA262F-65B6-4A0F-A8B5-5E25B6A18217"),
                         Name = "Image Processor",
                         Description = GetDescription(),
-                        HasConfigDialog = true
+                        ConfigFileName = "Mpdn.ImageProcessor"
                     };
                 }
             }
@@ -35,64 +91,44 @@ namespace Mpdn.RenderScript
                 get { return "ImageProcessingShaders"; }
             }
 
-            public static ImageProcessor Create(string[] shaderFileNames)
+            protected override TextureAllocTrigger TextureAllocTrigger
             {
-                var result = new ImageProcessor();
-                result.m_Settings = new ImageProcessorSettings();
-                result.m_Settings.Config.ShaderFileNames = shaderFileNames;
-                return result;
+                get { return TextureAllocTrigger.OnOutputSizeChanged; }
             }
 
-            public override void Initialize(int instanceId)
+            public override IFilter CreateFilter(Settings settings)
             {
-                m_Settings = new ImageProcessorSettings(instanceId);
+                SetupRenderChain();
+                return m_ImageFilter;
+            }
+
+            protected override void Initialize(Config settings)
+            {
+                settings.Config.ShaderPath = ShaderDataFilePath;
             }
 
             public override bool ShowConfigDialog(IWin32Window owner)
             {
-                using (var dialog = new ImageProcessorConfigDialog())
-                {
-                    dialog.Setup(ShaderDataFilePath, m_Settings.Config);
-                    if (dialog.ShowDialog(owner) != DialogResult.OK)
-                        return false;
-
-                    m_Settings.Save();
-                    SetupRenderChain();
-                    OnOutputSizeChanged();
-                    return true;
-                }
-            }
-
-            public override void Destroy()
-            {
-                m_Settings.Destroy();
-            }
-
-            public override void Setup(IRenderer renderer)
-            {
-                base.Setup(renderer);
+                if (!base.ShowConfigDialog(owner))
+                    return false;
 
                 SetupRenderChain();
+                OnOutputSizeChanged();
+                return true;
             }
 
             protected override void Dispose(bool disposing)
             {
                 Common.Dispose(ref m_ImageFilter);
-
                 DisposeShaders();
             }
 
             public override IFilter GetFilter()
             {
-                lock (m_Settings)
+                lock (Settings)
                 {
                     return UseImageProcessor ? m_ImageFilter : SourceFilter;
                 }
-            }
-
-            protected override TextureAllocTrigger TextureAllocTrigger
-            {
-                get { return TextureAllocTrigger.OnOutputSizeChanged; }
             }
 
             private bool UseImageProcessor
@@ -106,7 +142,7 @@ namespace Mpdn.RenderScript
                     bool upscalingInput = false;
                     bool downscalingInput = false;
 
-                    var usage = m_Settings.Config.ImageProcessorUsage;
+                    var usage = Settings.Config.ImageProcessorUsage;
                     var inputSize = Renderer.VideoSize;
                     var outputSize = Renderer.TargetSize;
                     if (outputSize == inputSize)
@@ -168,14 +204,14 @@ namespace Mpdn.RenderScript
 
             private string GetDescription()
             {
-                return m_Settings == null || m_Settings.Config.ShaderFileNames.Length == 0
+                return Settings == null || Settings.Config.ShaderFileNames.Length == 0
                     ? "Pixel shader pre-/post-processing filter"
-                    : GetUsageString() + string.Join(" ➔ ", m_Settings.Config.ShaderFileNames);
+                    : GetUsageString() + string.Join(" ➔ ", Settings.Config.ShaderFileNames);
             }
 
             private string GetUsageString()
             {
-                var usage = m_Settings.Config.ImageProcessorUsage;
+                var usage = Settings.Config.ImageProcessorUsage;
                 string result;
                 switch (usage)
                 {
@@ -209,12 +245,12 @@ namespace Mpdn.RenderScript
 
             private void SetupRenderChain()
             {
-                lock (m_Settings)
+                lock (Settings)
                 {
                     if (Renderer == null)
                         return;
 
-                    var shaderFileNames = m_Settings.Config.ShaderFileNames;
+                    var shaderFileNames = Settings.Config.ShaderFileNames;
                     if (!shaderFileNames.SequenceEqual(m_ShaderFileNames))
                     {
                         CompileShaders(shaderFileNames);
@@ -223,7 +259,6 @@ namespace Mpdn.RenderScript
                     Common.Dispose(ref m_ImageFilter);
 
                     m_ImageFilter = m_Shaders.Aggregate(SourceFilter, (current, shader) => CreateFilter(shader, current));
-                    m_ImageFilter.Initialize();
                 }
             }
 
@@ -249,72 +284,5 @@ namespace Mpdn.RenderScript
                 m_ShaderFileNames = new string[0];
             }
         }
-
-        public enum ImageProcessorUsage
-        {
-            [Description("Always")]
-            Always,
-            [Description("Never")]
-            Never,
-            [Description("When upscaling video")]
-            WhenUpscaling,
-            [Description("When downscaling video")]
-            WhenDownscaling,
-            [Description("When not scaling video")]
-            WhenNotScaling,
-            [Description("When upscaling input")]
-            WhenUpscalingInput,
-            [Description("When downscaling input")]
-            WhenDownscalingInput,
-            [Description("When not scaling input")]
-            WhenNotScalingInput
-        }
-
-        #region Settings
-
-        public class Settings
-        {
-            private string[] m_ShaderFileNames;
-
-            public Settings()
-            {
-                ImageProcessorUsage = ImageProcessorUsage.Always;
-            }
-
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public string[] ShaderFileNames
-            {
-                get { return m_ShaderFileNames ?? (m_ShaderFileNames = new string[0]); }
-                set { m_ShaderFileNames = value; }
-            }
-
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public ImageProcessorUsage ImageProcessorUsage { get; set; }
-        }
-
-        public sealed class ImageProcessorSettings : ScriptSettings<Settings>
-        {
-            private readonly int m_InstanceId;
-
-            public ImageProcessorSettings(int instanceId)
-                : base(false)
-            {
-                m_InstanceId = instanceId;
-                Load();
-            }
-
-            public ImageProcessorSettings()
-                : base(true)
-            {
-                Load();
-            }
-
-            protected override string ScriptConfigFileName
-            {
-                get { return string.Format("Mpdn.ImageProcessor.{0}.config", m_InstanceId); }
-            }
-        }
-
-        #endregion
     }
 }

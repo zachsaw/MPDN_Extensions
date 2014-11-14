@@ -5,10 +5,8 @@ namespace Mpdn.RenderScript
 {
     namespace Mpdn.Resizer
     {
-        public partial class ResizerConfigDialog : Form
+        public partial class ResizerConfigDialog : ScriptConfigDialog<Settings>
         {
-            private Settings m_Settings;
-
             public ResizerConfigDialog()
             {
                 InitializeComponent();
@@ -22,19 +20,14 @@ namespace Mpdn.RenderScript
                 listBox.SelectedIndex = 0;
             }
 
-            public void Setup(Settings settings)
+            protected override void LoadSettings()
             {
-                m_Settings = settings;
-
-                listBox.SelectedIndex = (int) settings.Resizer;
+                listBox.SelectedIndex = (int) Settings.Resizer;
             }
 
-            private void DialogClosed(object sender, FormClosedEventArgs e)
+            protected override void SaveSettings()
             {
-                if (DialogResult != DialogResult.OK)
-                    return;
-
-                m_Settings.Resizer = (ResizerOption) listBox.SelectedIndex;
+                Settings.Resizer = (ResizerOption) listBox.SelectedIndex;
             }
 
             private void ListBoxDoubleClick(object sender, EventArgs e)

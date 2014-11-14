@@ -99,7 +99,6 @@
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Size Specifier Configuration";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.DialogClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 
