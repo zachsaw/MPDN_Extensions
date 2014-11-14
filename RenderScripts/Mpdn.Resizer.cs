@@ -114,8 +114,6 @@ namespace Mpdn.RenderScript
         public class Resizer : ConfigurableRenderScript<Settings, ResizerConfigDialog>
         {
             private static readonly double s_Log2 = Math.Log10(2);
-
-            private IFilter m_Filter;
             private Size m_Size;
             private Size m_SavedTargetSize;
             private ResizerOption m_SavedResizerOption;
@@ -159,19 +157,13 @@ namespace Mpdn.RenderScript
 
             protected override TextureAllocTrigger TextureAllocTrigger
             {
-                get { return TextureAllocTrigger.None; }
+                get { return TextureAllocTrigger.OnInputOutputSizeChanged; }
             }
 
             public override IFilter CreateFilter(Settings settings)
             {
-                return m_Filter = new ResizeFilter(Renderer, SourceFilter, GetOutputSize,
+                return new ResizeFilter(Renderer, SourceFilter, GetOutputSize,
                     settings.Upscaler ?? Renderer.LumaUpscaler, settings.Downscaler ?? Renderer.LumaDownscaler);
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                base.Dispose(disposing);
-                Common.Dispose(ref m_Filter);
             }
 
             private string GetDescription()

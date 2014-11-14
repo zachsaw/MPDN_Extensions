@@ -22,7 +22,7 @@ namespace Mpdn.RenderScript
             get { return new ScriptInterfaceDescriptor(); }
         }
 
-        public abstract IFilter GetFilter();
+        public abstract IFilter CreateFilter();
 
         protected abstract TextureAllocTrigger TextureAllocTrigger { get; }
 
@@ -33,7 +33,7 @@ namespace Mpdn.RenderScript
         #region Implementation
 
         private IFilter m_SourceFilter;
-        private IFilter m_Filter;
+        protected IFilter m_Filter;
 
         protected virtual string ShaderPath
         {
@@ -47,6 +47,11 @@ namespace Mpdn.RenderScript
                 var asmPath = typeof(IScriptRenderer).Assembly.Location;
                 return Path.Combine(Common.GetDirectoryName(asmPath), "RenderScripts", ShaderPath);
             }
+        }
+
+        public virtual IFilter GetFilter()
+        {
+            return m_Filter;
         }
 
         public void Dispose()
@@ -67,6 +72,7 @@ namespace Mpdn.RenderScript
         public virtual void Setup(IRenderer renderer)
         {
             Renderer = renderer;
+            m_Filter = CreateFilter();
         }
 
         public virtual void OnInputSizeChanged()
@@ -105,6 +111,7 @@ namespace Mpdn.RenderScript
             // Not required, but is there in case SourceFilter is changed 
             // such that it does something in its Dispose method
             Common.Dispose(ref m_SourceFilter);
+            Common.Dispose(ref m_Filter);
         }
 
         ~RenderScript()
@@ -141,6 +148,7 @@ namespace Mpdn.RenderScript
                 m_Filter.DeallocateTextures();
             }
             m_Filter = filter;
+            m_Filter.Initialize();
             return true;
         }
 
