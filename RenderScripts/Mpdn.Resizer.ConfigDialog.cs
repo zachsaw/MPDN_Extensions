@@ -5,7 +5,7 @@ namespace Mpdn.RenderScript
 {
     namespace Mpdn.Resizer
     {
-        public partial class ResizerConfigDialog : ScriptConfigDialog<Settings>
+        public partial class ResizerConfigDialog : ResizerConfigDialogBase
         {
             public ResizerConfigDialog()
             {
@@ -34,6 +34,10 @@ namespace Mpdn.RenderScript
             {
                 DialogResult = DialogResult.OK;
             }
+        }
+
+        public class ResizerConfigDialogBase : ScriptConfigDialog<Settings>
+        {
         }
     }
 }

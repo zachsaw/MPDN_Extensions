@@ -2,7 +2,7 @@
 {
     namespace Shiandow.Nedi
     {
-        public partial class NediConfigDialog : ScriptConfigDialog<Settings>
+        public partial class NediConfigDialog : NediConfigDialogBase
         {
             public NediConfigDialog()
             {
@@ -18,6 +18,10 @@
             {
                 Settings.AlwaysDoubleImage = checkBoxAlwaysEnabled.Checked;
             }
+        }
+
+        public class NediConfigDialogBase : ScriptConfigDialog<Settings>
+        {
         }
     }
 }
