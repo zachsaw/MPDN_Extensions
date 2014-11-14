@@ -400,6 +400,43 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
+    public class MimicFilter : IFilter
+    {
+        public MimicFilter(IFilter filter)
+        {
+            m_Filter = filter;
+        }
+
+        private IFilter m_Filter;
+
+        public void ReplaceWith(IFilter filter)
+        {
+            m_Filter = filter;
+        }
+
+        #region m_Filter Passthough
+
+        public void Dispose() { m_Filter.Dispose();  }
+
+        public Object Clone() { return new MimicFilter((IFilter)m_Filter.Clone()); }
+
+        public IFilter[] InputFilters { get { return m_Filter.InputFilters; } }
+        public ITexture OutputTexture { get { return m_Filter.OutputTexture; } }
+        public bool IsTextureRenderTarget { get { return m_Filter.IsTextureRenderTarget; } }
+        public Size OutputSize { get { return m_Filter.OutputSize; } }
+        public int FilterIndex { get { return m_Filter.FilterIndex; } }
+        public int LastDependentIndex { get { return m_Filter.LastDependentIndex; } }
+        public bool TextureStolen { get { return m_Filter.TextureStolen; } set { m_Filter.TextureStolen = value; } }
+        public void NewFrame() { m_Filter.NewFrame(); }
+        public void Render() { m_Filter.Render(); }
+        public void Initialize(int time = 0) { m_Filter.Initialize(time); }
+        public void AllocateTextures() { m_Filter.AllocateTextures(); }
+        public void DeallocateTextures() { m_Filter.DeallocateTextures(); }
+        public IFilter Append(IFilter filter) { return m_Filter.Append(filter); }
+
+        #endregion
+    }
+
     public sealed class SourceFilter : BaseSourceFilter
     {
         public SourceFilter(IRenderer renderer)
