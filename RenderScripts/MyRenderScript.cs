@@ -2,6 +2,7 @@
 using System.Drawing;
 using Mpdn.RenderScript.Mpdn.ImageProcessor;
 using Mpdn.RenderScript.Mpdn.Resizer;
+using Mpdn.RenderScript.Shiandow.Chroma;
 using Mpdn.RenderScript.Shiandow.Nedi;
 
 namespace Mpdn.RenderScript
@@ -13,12 +14,13 @@ namespace Mpdn.RenderScript
             private readonly string[] PreResizeShaderfiles = { @"SweetFX\Bloom.hlsl", /* add more files here (separate with comma) ... */ };
             private readonly string[] PostResizeShaderfiles = { @"SweetFX\LumaSharpen.hlsl", /* add more files here (separate with comma) ... */ };
 
-            private RenderScript Nedi, PreProcess, PostProcess, ToLinear, ToGamma, ResizeToTarget;
+            private RenderScript ScaleChroma, Nedi, PreProcess, PostProcess, ToLinear, ToGamma, ResizeToTarget;
 
             protected override RenderScript[] CreateScripts()
             {
                 return new[]
                 {
+                    ScaleChroma = ChromaScaler.Create(preset: Presets.MitchellNetravali),
                     Nedi = NediScaler.Create(forced: true),
                     PreProcess = ImageProcessor.Create(PreResizeShaderfiles),
                     PostProcess = ImageProcessor.Create(PostResizeShaderfiles),
@@ -32,6 +34,9 @@ namespace Mpdn.RenderScript
             protected override RenderScript[] GetScriptChain()
             {
                 var result = new List<RenderScript>();
+
+                // Scale chroma first (this bypasses MPDN's chroma scaler)
+                result.Add(ScaleChroma);
 
                 // Pre resize shaders, followed by NEDI image doubler
                 result.Add(PreProcess);
@@ -60,8 +65,11 @@ namespace Mpdn.RenderScript
                     result.Add(ResizeToTarget);
                 }
 
-                // Post resize shaders
-                result.Add(PostProcess);
+                if (!Is1080OrHigher(Renderer.VideoSize))
+                {
+                    // Sharpen only if video isn't full HD
+                    result.Add(PostProcess);
+                }
 
                 return result.ToArray();
             }
@@ -69,6 +77,11 @@ namespace Mpdn.RenderScript
             private static Size DoubleSize(Size size)
             {
                 return new Size(size.Width*2, size.Height*2);
+            }
+
+            private static bool Is1080OrHigher(Size size)
+            {
+                return size.Height >= 1080;
             }
         }
     }
