@@ -5,7 +5,7 @@ namespace Mpdn.RenderScript
 {
     namespace Shiandow.Chroma
     {
-        public partial class ChromaScalerConfigDialog : ScriptConfigDialog<Settings>
+        public partial class ChromaScalerConfigDialog : ChromaScalerConfigDialogBase
         {
             private bool m_SettingPreset;
 
@@ -55,6 +55,10 @@ namespace Mpdn.RenderScript
                 CSetter.Value = (Decimal) ChromaScaler.C_CONST[index];
                 m_SettingPreset = false;
             }
+        }
+
+        public class ChromaScalerConfigDialogBase : ScriptConfigDialog<Settings>
+        {
         }
     }
 }
