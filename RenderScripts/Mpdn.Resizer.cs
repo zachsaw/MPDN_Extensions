@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Linq;
+using Mpdn.RenderScript.Scaler;
 using YAXLib;
 
 namespace Mpdn.RenderScript
@@ -71,6 +74,39 @@ namespace Mpdn.RenderScript
 
             [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public ResizerOption Resizer { get; set; }
+
+            public IScaler Upscaler; // Not saved
+            public IScaler Downscaler; // Not saved
+        }
+
+        #endregion
+
+        #region Filter Definition
+
+        public class ResizeFilter : Filter
+        {
+            private readonly Func<Size> m_GetSizeFunc;
+            private readonly IScaler m_Upscaler;
+            private readonly IScaler m_Downscaler;
+
+            public ResizeFilter(IRenderer renderer, IFilter inputFilter, Func<Size> getSizeFunc, 
+                IScaler upscaler, IScaler downscaler)
+                : base(renderer, inputFilter)
+            {
+                m_GetSizeFunc = getSizeFunc;
+                m_Upscaler = upscaler;
+                m_Downscaler = downscaler;
+            }
+
+            public override Size OutputSize
+            {
+                get { return m_GetSizeFunc(); }
+            }
+
+            public override void Render(IEnumerable<ITexture> inputs)
+            {
+                Renderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler);
+            }
         }
 
         #endregion
@@ -79,15 +115,19 @@ namespace Mpdn.RenderScript
         {
             private static readonly double s_Log2 = Math.Log10(2);
 
+            private IFilter m_Filter;
             private Size m_Size;
             private Size m_SavedTargetSize;
             private ResizerOption m_SavedResizerOption;
 
-            public static Resizer Create(ResizerOption option = ResizerOption.TargetSize100Percent)
+            public static Resizer Create(ResizerOption option = ResizerOption.TargetSize100Percent,
+                IScaler upscaler = null, IScaler downscaler = null)
             {
                 var result = new Resizer();
                 result.Initialize();
                 result.Settings.Config.Resizer = option;
+                result.Settings.Config.Upscaler = upscaler;
+                result.Settings.Config.Downscaler = downscaler;
                 result.m_SavedResizerOption = result.Settings.Config.Resizer;
                 return result;
             }
@@ -112,7 +152,7 @@ namespace Mpdn.RenderScript
                 {
                     return new ScriptInterfaceDescriptor
                     {
-                        InputSize = GetInputSize()
+                        OutputSize = GetOutputSize()
                     };
                 }
             }
@@ -124,7 +164,14 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(Settings settings)
             {
-                return SourceFilter;
+                return m_Filter = new ResizeFilter(Renderer, SourceFilter, GetOutputSize,
+                    settings.Upscaler ?? Renderer.LumaUpscaler, settings.Downscaler ?? Renderer.LumaDownscaler);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                Common.Dispose(ref m_Filter);
             }
 
             private string GetDescription()
@@ -135,7 +182,7 @@ namespace Mpdn.RenderScript
                 return desc;
             }
 
-            private Size GetInputSize()
+            private Size GetOutputSize()
             {
                 if (Settings.Config.Resizer == m_SavedResizerOption &&
                     m_SavedTargetSize == Renderer.TargetSize &&
