@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace Mpdn.RenderScript
 {
-    public abstract class ScriptConfigDialog<TSettings> : Form
+    public class ScriptConfigDialog<TSettings> : Form
         where TSettings : class, new()
     {
         protected TSettings Settings { get; private set; }
@@ -15,9 +15,17 @@ namespace Mpdn.RenderScript
             LoadSettings();
         }
 
-        protected abstract void LoadSettings();
+        protected virtual void LoadSettings()
+        {
+            // This needs to be overriden
+            throw new NotImplementedException();
+        }
 
-        protected abstract void SaveSettings();
+        protected virtual void SaveSettings()
+        {
+            // This needs to be overriden
+            throw new NotImplementedException();
+        }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {

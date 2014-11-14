@@ -8,7 +8,7 @@ namespace Mpdn.RenderScript
 {
     namespace Mpdn.ImageProcessor
     {
-        public partial class ImageProcessorConfigDialog : ScriptConfigDialog<Settings>
+        public partial class ImageProcessorConfigDialog : ImageProcessorConfigDialogBase
         {
             private string m_ShaderPath;
 
@@ -135,6 +135,10 @@ namespace Mpdn.RenderScript
                 Up = -1,
                 Down = 1
             }
+        }
+
+        public class ImageProcessorConfigDialogBase : ScriptConfigDialog<Settings>
+        {
         }
     }
 }
