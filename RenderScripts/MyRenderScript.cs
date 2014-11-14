@@ -1,11 +1,8 @@
-﻿//
-// NOTE: MPDN needs to be restarted for any changes you have made in this file to take effect!
-//
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using Mpdn.RenderScript.Mpdn.ImageProcessor;
 using Mpdn.RenderScript.Mpdn.Resizer;
+using Mpdn.RenderScript.Scaler;
 using Mpdn.RenderScript.Shiandow.Chroma;
 using Mpdn.RenderScript.Shiandow.Nedi;
 
@@ -24,14 +21,15 @@ namespace Mpdn.RenderScript
             {
                 return new[]
                 {
-                    ScaleChroma = ChromaScaler.Create(preset: Presets.MitchellNetravali),
+                    ScaleChroma = ChromaScaler.Create(preset: Presets.Spline),
                     Nedi = NediScaler.Create(forced: true),
                     PreProcess = ImageProcessor.Create(PreResizeShaderfiles),
                     PostProcess = ImageProcessor.Create(PostResizeShaderfiles),
                     Deinterlace = ImageProcessor.Create(new[] {@"MPC-HC\Deinterlace (blend).hlsl"}),
                     ToLinear = ImageProcessor.Create(new[] {@"ConvertToLinearLight.hlsl"}),
                     ToGamma = ImageProcessor.Create(new[] {@"ConvertToGammaLight.hlsl"}),
-                    ResizeToTarget = Resizer.Create(option: ResizerOption.TargetSize100Percent),
+                    // Note: By specifying upscaler and downscaler in Resizer, we bypass MPDN's scaler settings altogether
+                    ResizeToTarget = Resizer.Create(option: ResizerOption.TargetSize100Percent, upscaler: new Softcubic(1.0f), downscaler: new Softcubic(1.0f)),
                     // Add more scripts here ...
                 };
             }
