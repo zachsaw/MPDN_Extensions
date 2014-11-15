@@ -14,7 +14,7 @@ namespace Mpdn.RenderScript
         {
             private RenderScript ScaleChroma, Nedi, PreProcess, PostProcess, Deinterlace, ToLinear, ToGamma, ResizeToTarget;
 
-            protected override RenderScript[] CreateScripts()
+            protected override IList<RenderScript> CreateScripts()
             {
                 // Declare all the scripts we will be using
                 return new[]
@@ -32,7 +32,7 @@ namespace Mpdn.RenderScript
                 };
             }
 
-            protected override RenderScript[] GetScriptChain()
+            protected override IList<RenderScript> GetScriptChain()
             {
                 var chain = new List<RenderScript>();
 
@@ -75,7 +75,7 @@ namespace Mpdn.RenderScript
                     chain.Add(PostProcess);
                 }
 
-                return chain.ToArray();
+                return chain;
             }
 
             private static bool Is1080OrHigher(Size size)
