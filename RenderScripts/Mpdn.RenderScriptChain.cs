@@ -9,8 +9,8 @@ namespace Mpdn.RenderScript
     {
         public abstract class RenderScriptChain : RenderScript
         {
-            private RenderScript[] m_Scripts = new RenderScript[0];
-            private RenderScript[] m_ScriptChain = new RenderScript[0];
+            private IList<RenderScript> m_Scripts = new RenderScript[0];
+            private IList<RenderScript> m_ScriptChain = new RenderScript[0];
 
             public override void Setup(IRenderer renderer)
             {
@@ -48,7 +48,7 @@ namespace Mpdn.RenderScript
 
             private RenderScript[] GetScriptChainInternal()
             {
-                var result = GetScriptChain();
+                var result = GetScriptChain().ToArray();
                 EnsureScriptsValid(result, "GetScriptChain()");
 
                 return result;
@@ -87,15 +87,16 @@ namespace Mpdn.RenderScript
             {
                 base.Dispose(disposing);
 
-                for (int i = 0; i < m_Scripts.Length; i++)
+                foreach (var script in m_Scripts)
                 {
-                    Common.Dispose(ref m_Scripts[i]);
+                    Common.Dispose(script);
                 }
+                m_Scripts = new RenderScript[0];
             }
 
-            protected abstract RenderScript[] CreateScripts();
+            protected abstract IList<RenderScript> CreateScripts();
 
-            protected abstract RenderScript[] GetScriptChain();
+            protected abstract IList<RenderScript> GetScriptChain();
 
             protected bool IsDownscalingFrom(Size size)
             {
