@@ -495,39 +495,62 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public sealed class OutputFilter : IDisposable, ICloneable
+    public sealed class FilterChain : IDisposable, ICloneable
     {
         protected ProxyFilter Start;
-        private IFilter End;
+        private IFilter Head;
         private IRenderer Renderer;
+        private TextureAllocTrigger m_TextureAllocTrigger;
 
-        public OutputFilter(IRenderer renderer, ProxyFilter start, IFilter end)
+        public FilterChain(IRenderer renderer, ProxyFilter start, IFilter end,
+            TextureAllocTrigger textureAllocTrigger = TextureAllocTrigger.None)
         {
             Renderer = renderer;
             Start = start;
-            End = end;
+            Head = end;
+            m_TextureAllocTrigger = textureAllocTrigger;
         }
 
-        public OutputFilter Append(OutputFilter output)
+        public FilterChain Append(FilterChain output)
         {
-            output.Start.ReplaceWith(End);
+            output.Start.ReplaceWith(Head);
             output.Start = Start;
             return output;
         }
 
         public override void Render()
         {
-            End.NewFrame();
-            End.Render();
-            var input = End.OutputTexture;
+            Head.NewFrame();
+            Head.Render();
+            var input = Head.OutputTexture;
             Renderer.Scale(Renderer.OutputRenderTarget, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }
 
-        public void Dispose() { End.Dispose(); }
+        public virtual void OnInputSizeChanged()
+        {
+            switch (m_TextureAllocTrigger)
+            {
+                case TextureAllocTrigger.OnInputOutputSizeChanged:
+                case TextureAllocTrigger.OnInputSizeChanged:
+                    Head.AllocateTextures();
+                    break;
+            }
+        }
 
-        public Object Clone() { return new OutputFilter(Renderer, Start, End); }
+        public virtual void OnOutputSizeChanged()
+        {
+            switch (m_TextureAllocTrigger)
+            {
+                case TextureAllocTrigger.OnInputOutputSizeChanged:
+                case TextureAllocTrigger.OnOutputSizeChanged:
+                    Head.AllocateTextures();
+                    break;
+            }
+        }
 
+        public void Dispose() { Head.Dispose(); }
 
+        public Object Clone() { return new FilterChain(Renderer, Start, Head); }
     }
 
     public sealed class SourceFilter : BaseSourceFilter
