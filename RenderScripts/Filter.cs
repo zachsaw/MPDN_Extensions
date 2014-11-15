@@ -495,6 +495,41 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
+    public sealed class OutputFilter : IDisposable, ICloneable
+    {
+        protected ProxyFilter Start;
+        private IFilter End;
+        private IRenderer Renderer;
+
+        public OutputFilter(IRenderer renderer, ProxyFilter start, IFilter end)
+        {
+            Renderer = renderer;
+            Start = start;
+            End = end;
+        }
+
+        public OutputFilter Append(OutputFilter output)
+        {
+            output.Start.ReplaceWith(End);
+            output.Start = Start;
+            return output;
+        }
+
+        public override void Render()
+        {
+            End.NewFrame();
+            End.Render();
+            var input = End.OutputTexture;
+            Renderer.Scale(Renderer.OutputRenderTarget, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+        }
+
+        public void Dispose() { End.Dispose(); }
+
+        public Object Clone() { return new OutputFilter(Renderer, Start, End); }
+
+
+    }
+
     public sealed class SourceFilter : BaseSourceFilter
     {
         public SourceFilter(IRenderer renderer)
