@@ -65,16 +65,22 @@ namespace Mpdn.RenderScript
                 var scriptChain = GetScriptChainInternal();
                 if (!scriptChain.SequenceEqual(m_ScriptChain))
                 {
-                    IFilter previous = SourceFilter;
-                    for (int i = 1; i < scriptChain.Count(); i++)
-                    {
-                        scriptChain[i].SourceFilter.ReplaceWith(previous);
-                        previous = scriptChain[i].GetFilter();
-                    }
-                    Filter = previous;
+                    Filter = ChainScripts(scriptChain);
                 }
                 m_ScriptChain = scriptChain;
                 Filter.AllocateTextures();
+            }
+
+            private IFilter ChainScripts(IList<RenderScript> scriptChain)
+            {
+                IFilter previous = SourceFilter;
+                for (int i = 1; i < scriptChain.Count(); i++)
+                {
+                    var script = scriptChain[i];
+                    script.SourceFilter.ReplaceWith(previous);
+                    previous = script.GetFilter();
+                }
+                return previous;
             }
 
             protected override void Dispose(bool disposing)
@@ -105,6 +111,33 @@ namespace Mpdn.RenderScript
             {
                 var targetSize = Renderer.TargetSize;
                 return targetSize.Width > size.Width || targetSize.Height > size.Height;
+            }
+
+            protected bool IsDownscalingFrom(IList<RenderScript> scriptChain)
+            {
+                using (var filter = ChainScripts(scriptChain))
+                {
+                    var size = filter.OutputSize;
+                    return IsDownscalingFrom(size);
+                }
+            }
+
+            protected bool IsUpscalingFrom(IList<RenderScript> scriptChain)
+            {
+                using (var filter = ChainScripts(scriptChain))
+                {
+                    var size = filter.OutputSize;
+                    return IsUpscalingFrom(size);
+                }
+            }
+
+            protected bool IsNotScalingFrom(IList<RenderScript> scriptChain)
+            {
+                using (var filter = ChainScripts(scriptChain))
+                {
+                    var size = filter.OutputSize;
+                    return IsNotScalingFrom(size);
+                }
             }
 
             protected bool IsDownscaling
