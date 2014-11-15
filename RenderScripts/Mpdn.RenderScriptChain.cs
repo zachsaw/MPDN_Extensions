@@ -11,7 +11,6 @@ namespace Mpdn.RenderScript
         {
             private RenderScript[] m_Scripts = new RenderScript[0];
             private RenderScript[] m_ScriptChain = new RenderScript[0];
-            private IFilter m_Filter;
 
             public override void Setup(IRenderer renderer)
             {
@@ -55,18 +54,24 @@ namespace Mpdn.RenderScript
                 return result;
             }
 
+            public override IFilter CreateFilter()
+            {
+                // RenderScriptChain can't create a filter dynamically (yet)
+                return null;
+            }
+
             private void SetupScriptChain()
             {
                 var scriptChain = GetScriptChainInternal();
                 if (!scriptChain.SequenceEqual(m_ScriptChain))
                 {
-                    Common.Dispose(ref m_Filter);
-                    m_Filter = scriptChain[0].GetFilter();
+                    IFilter previous = SourceFilter;
                     for (int i = 1; i < scriptChain.Count(); i++)
                     {
-                        m_Filter = m_Filter.Append(scriptChain[i].GetFilter());
+                        scriptChain[i].SourceFilter.ReplaceWith(previous);
+                        previous = scriptChain[i].GetFilter();
                     }
-                    m_Filter.Initialize();
+                    m_Filter = previous;
                 }
                 m_ScriptChain = scriptChain;
                 m_Filter.AllocateTextures();
@@ -120,11 +125,6 @@ namespace Mpdn.RenderScript
                     var targetSize = Renderer.TargetSize;
                     return targetSize.Width > videoSize.Width || targetSize.Height > videoSize.Height;
                 }
-            }
-
-            public override IFilter GetFilter()
-            {
-                return m_Filter;
             }
 
             protected override TextureAllocTrigger TextureAllocTrigger

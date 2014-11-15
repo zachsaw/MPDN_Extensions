@@ -63,8 +63,6 @@ namespace Mpdn.RenderScript
 
         #region Implementation
 
-        private IFilter m_Filter;
-
         public override ScriptDescriptor Descriptor
         {
             get
@@ -78,12 +76,6 @@ namespace Mpdn.RenderScript
                     Copyright = ConfigScriptDescriptor.Copyright
                 };
             }
-        }
-
-        public override void Setup(IRenderer renderer)
-        {
-            base.Setup(renderer);
-            CreateFilter();
         }
 
         public override void Destroy()
@@ -116,15 +108,9 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public override IFilter GetFilter()
+        public override IFilter CreateFilter()
         {
-            return m_Filter;
-        }
-
-        public void CreateFilter()
-        {
-            m_Filter = CreateFilter(Settings.Config);
-            m_Filter.Initialize();
+            return CreateFilter(Settings.Config);
         }
 
         #endregion
