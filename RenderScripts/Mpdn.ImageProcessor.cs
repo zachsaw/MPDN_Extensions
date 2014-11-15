@@ -258,7 +258,7 @@ namespace Mpdn.RenderScript
 
                     Common.Dispose(ref m_ImageFilter);
 
-                    m_ImageFilter = m_Shaders.Aggregate(SourceFilter, (current, shader) => CreateFilter(shader, current));
+                    m_ImageFilter = m_Shaders.Aggregate((IFilter) SourceFilter, (current, shader) => CreateFilter(shader, current));
                 }
             }
 

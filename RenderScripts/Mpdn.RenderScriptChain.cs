@@ -65,13 +65,13 @@ namespace Mpdn.RenderScript
                 var scriptChain = GetScriptChainInternal();
                 if (!scriptChain.SequenceEqual(m_ScriptChain))
                 {
-                    Common.Dispose(ref m_Filter);
-                    m_Filter = scriptChain[0].GetFilter();
+                    IFilter previous = SourceFilter;
                     for (int i = 1; i < scriptChain.Count(); i++)
                     {
-                        m_Filter = m_Filter.Append(scriptChain[i].GetFilter());
+                        scriptChain[i].SourceFilter.ReplaceWith(previous);
+                        previous = scriptChain[i].GetFilter();
                     }
-                    m_Filter.Initialize();
+                    m_Filter = previous;
                 }
                 m_ScriptChain = scriptChain;
                 m_Filter.AllocateTextures();

@@ -10,9 +10,9 @@ namespace Mpdn.RenderScript
     public abstract class RenderScript : IScriptRenderer, IDisposable
     {
         protected IRenderer Renderer { get; private set; }
-        protected IFilter SourceFilter
+        public MimicFilter SourceFilter
         {
-            get { return m_SourceFilter ?? (m_SourceFilter = new SourceFilter(Renderer)); }
+            get { return m_SourceFilter ?? (m_SourceFilter = new MimicFilter(new SourceFilter(Renderer))); }
         }
 
         public abstract ScriptDescriptor Descriptor { get; }
@@ -32,7 +32,7 @@ namespace Mpdn.RenderScript
 
         #region Implementation
 
-        private IFilter m_SourceFilter;
+        private MimicFilter m_SourceFilter;
         protected IFilter m_Filter;
 
         protected virtual string ShaderPath
