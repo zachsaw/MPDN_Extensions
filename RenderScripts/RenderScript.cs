@@ -229,6 +229,18 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
+    public abstract class RenderScript<TChain> : RenderScript
+        where TChain : ChainBuilder, new()
+    {
+        public override IFilter CreateFilter()
+        {
+            var chain = new TChain{
+                Renderer = Renderer
+            };
+            return chain.Compile(SourceFilter);
+        }
+    }
+
     public enum TextureAllocTrigger
     {
         None,

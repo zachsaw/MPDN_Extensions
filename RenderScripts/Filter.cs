@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.IO;
 using SharpDX;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
@@ -402,155 +403,194 @@ namespace Mpdn.RenderScript
 
     public class ProxyFilter : IFilter
     {
-        private IFilter m_Filter;
+        protected virtual IFilter Filter { get; set; }
+
+        protected ProxyFilter() { }
 
         public ProxyFilter(IFilter filter)
         {
-            m_Filter = filter;
+            Filter = filter;
         }
 
         public void ReplaceWith(IFilter filter)
         {
-            m_Filter = filter;
+            Filter = filter;
         }
 
         #region m_Filter Passthough
 
         public void Dispose()
         {
-            m_Filter.Dispose();
+            Filter.Dispose();
         }
 
         public Object Clone()
         {
-            return new ProxyFilter((IFilter) m_Filter.Clone());
+            return new ProxyFilter((IFilter)Filter.Clone());
         }
 
         public IFilter[] InputFilters
         {
-            get { return m_Filter.InputFilters; }
+            get { return Filter.InputFilters; }
         }
 
         public ITexture OutputTexture
         {
-            get { return m_Filter.OutputTexture; }
+            get { return Filter.OutputTexture; }
         }
 
         public bool IsTextureRenderTarget
         {
-            get { return m_Filter.IsTextureRenderTarget; }
+            get { return Filter.IsTextureRenderTarget; }
         }
 
         public Size OutputSize
         {
-            get { return m_Filter.OutputSize; }
+            get { return Filter.OutputSize; }
         }
 
         public int FilterIndex
         {
-            get { return m_Filter.FilterIndex; }
+            get { return Filter.FilterIndex; }
         }
 
         public int LastDependentIndex
         {
-            get { return m_Filter.LastDependentIndex; }
+            get { return Filter.LastDependentIndex; }
         }
 
         public bool TextureStolen
         {
-            get { return m_Filter.TextureStolen; }
-            set { m_Filter.TextureStolen = value; }
+            get { return Filter.TextureStolen; }
+            set { Filter.TextureStolen = value; }
         }
 
         public void NewFrame()
         {
-            m_Filter.NewFrame();
+            Filter.NewFrame();
         }
 
         public void Render()
         {
-            m_Filter.Render();
+            Filter.Render();
         }
 
         public void Initialize(int time = 0)
         {
-            m_Filter.Initialize(time);
+            Filter.Initialize(time);
         }
 
         public void AllocateTextures()
         {
-            m_Filter.AllocateTextures();
+            Filter.AllocateTextures();
         }
 
         public void DeallocateTextures()
         {
-            m_Filter.DeallocateTextures();
+            Filter.DeallocateTextures();
         }
 
         public IFilter Append(IFilter filter)
         {
-            return m_Filter.Append(filter);
+            return Filter.Append(filter);
         }
 
         #endregion
     }
 
-    public sealed class FilterChain : IDisposable, ICloneable
+    public abstract class ChainBuilder<TSettings>
     {
-        protected ProxyFilter Start;
-        private IFilter Head;
-        private IRenderer Renderer;
-        private TextureAllocTrigger m_TextureAllocTrigger;
+        public IRenderer Renderer;
 
-        public FilterChain(IRenderer renderer, ProxyFilter start, IFilter end,
-            TextureAllocTrigger textureAllocTrigger = TextureAllocTrigger.None)
+        public abstract IFilter Compile(IFilter sourceFilter, TSettings settings);
+
+        #region Convenience Functions
+
+        protected virtual string ShaderPath
         {
-            Renderer = renderer;
-            Start = start;
-            Head = end;
-            m_TextureAllocTrigger = textureAllocTrigger;
+            get { return GetType().FullName; }
         }
 
-        public FilterChain Append(FilterChain output)
+        protected string ShaderDataFilePath
         {
-            output.Start.ReplaceWith(Head);
-            output.Start = Start;
-            return output;
-        }
-
-        public override void Render()
-        {
-            Head.NewFrame();
-            Head.Render();
-            var input = Head.OutputTexture;
-            Renderer.Scale(Renderer.OutputRenderTarget, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
-        }
-
-        public virtual void OnInputSizeChanged()
-        {
-            switch (m_TextureAllocTrigger)
+            get
             {
-                case TextureAllocTrigger.OnInputOutputSizeChanged:
-                case TextureAllocTrigger.OnInputSizeChanged:
-                    Head.AllocateTextures();
-                    break;
+                var asmPath = typeof(IScriptRenderer).Assembly.Location;
+                return Path.Combine(Common.GetDirectoryName(asmPath), "RenderScripts", ShaderPath);
             }
         }
 
-        public virtual void OnOutputSizeChanged()
+        protected virtual void Scale(ITexture output, ITexture input)
         {
-            switch (m_TextureAllocTrigger)
-            {
-                case TextureAllocTrigger.OnInputOutputSizeChanged:
-                case TextureAllocTrigger.OnOutputSizeChanged:
-                    Head.AllocateTextures();
-                    break;
-            }
+            Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }
 
-        public void Dispose() { Head.Dispose(); }
+        protected IShader CompileShader(string shaderFileName)
+        {
+            return Renderer.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
+        }
 
-        public Object Clone() { return new FilterChain(Renderer, Start, Head); }
+        protected IFilter CreateFilter(IShader shader, params IFilter[] inputFilters)
+        {
+            return CreateFilter(shader, false, inputFilters);
+        }
+
+        protected IFilter CreateFilter(IShader shader, bool linearSampling, params IFilter[] inputFilters)
+        {
+            return CreateFilter(shader, 0, linearSampling, inputFilters);
+        }
+
+        protected IFilter CreateFilter(IShader shader, int sizeIndex, params IFilter[] inputFilters)
+        {
+            return CreateFilter(shader, sizeIndex, false, inputFilters);
+        }
+
+        protected IFilter CreateFilter(IShader shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
+        {
+            return CreateFilter(shader, s => new Size(s.Width, s.Height), sizeIndex, linearSampling, inputFilters);
+        }
+
+        protected IFilter CreateFilter(IShader shader, TransformFunc transform,
+            params IFilter[] inputFilters)
+        {
+            return CreateFilter(shader, transform, 0, false, inputFilters);
+        }
+
+        protected IFilter CreateFilter(IShader shader, TransformFunc transform, bool linearSampling,
+            params IFilter[] inputFilters)
+        {
+            return CreateFilter(shader, transform, 0, linearSampling, inputFilters);
+        }
+
+        protected IFilter CreateFilter(IShader shader, TransformFunc transform, int sizeIndex,
+            params IFilter[] inputFilters)
+        {
+            return CreateFilter(shader, transform, sizeIndex, false, inputFilters);
+        }
+
+        protected IFilter CreateFilter(IShader shader, TransformFunc transform, int sizeIndex,
+            bool linearSampling, params IFilter[] inputFilters)
+        {
+            if (shader == null)
+                throw new ArgumentNullException("shader");
+
+            if (Renderer == null)
+                throw new InvalidOperationException("CreateFilter is not available before Setup() is called");
+
+            return new ShaderFilter(Renderer, shader, transform, sizeIndex, linearSampling, inputFilters);
+        }
+
+        #endregion
+    }
+
+    public abstract class ChainBuilder : ChainBuilder<object>
+    {
+        public abstract IFilter Compile(IFilter sourceFilter);
+
+        public override IFilter Compile(IFilter sourceFilter, object settings)
+        {
+            return Compile(sourceFilter);
+        }
     }
 
     public sealed class SourceFilter : BaseSourceFilter
