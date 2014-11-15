@@ -64,7 +64,7 @@ namespace Mpdn.RenderScript
             private IShader[] m_Shaders = new IShader[0];
             private string[] m_ShaderFileNames = new string[0];
 
-            public static ImageProcessor Create(string[] shaderFileNames)
+            public static ImageProcessor Create(params string[] shaderFileNames)
             {
                 var result = new ImageProcessor();
                 result.Initialize();

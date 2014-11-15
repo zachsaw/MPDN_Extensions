@@ -30,7 +30,7 @@ namespace Mpdn.RenderScript
             private IFilter m_NediScaler;
             private IShader m_NediVInterleaveShader;
 
-            public static NediScaler Create(bool forced = false)
+            public static NediScaler Create(bool forced = true)
             {
                 var result = new NediScaler();
                 result.Initialize();

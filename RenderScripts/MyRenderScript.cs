@@ -12,22 +12,20 @@ namespace Mpdn.RenderScript
     {
         public class MyRenderScript : CustomRenderScriptChain
         {
-            private readonly string[] PreResizeShaderfiles = { @"SweetFX\Bloom.hlsl", /* add more files here (separate with comma) ... */ };
-            private readonly string[] PostResizeShaderfiles = { @"SweetFX\LumaSharpen.hlsl", /* add more files here (separate with comma) ... */ };
-
             private RenderScript ScaleChroma, Nedi, PreProcess, PostProcess, Deinterlace, ToLinear, ToGamma, ResizeToTarget;
 
             protected override RenderScript[] CreateScripts()
             {
+                // Declare all the scripts we will be using
                 return new[]
                 {
-                    ScaleChroma = ChromaScaler.Create(preset: Presets.Spline),
-                    Nedi = NediScaler.Create(forced: true),
-                    PreProcess = ImageProcessor.Create(PreResizeShaderfiles),
-                    PostProcess = ImageProcessor.Create(PostResizeShaderfiles),
-                    Deinterlace = ImageProcessor.Create(new[] {@"MPC-HC\Deinterlace (blend).hlsl"}),
-                    ToLinear = ImageProcessor.Create(new[] {@"ConvertToLinearLight.hlsl"}),
-                    ToGamma = ImageProcessor.Create(new[] {@"ConvertToGammaLight.hlsl"}),
+                    ScaleChroma    = ChromaScaler.Create(preset: Presets.Spline),
+                    Nedi           = NediScaler.Create(forced: true),
+                    PreProcess     = ImageProcessor.Create(@"SweetFX\Bloom.hlsl", @"SweetFX\LiftGammaGain.hlsl"),
+                    PostProcess    = ImageProcessor.Create(@"SweetFX\LumaSharpen.hlsl"),
+                    Deinterlace    = ImageProcessor.Create(@"MPC-HC\Deinterlace (blend).hlsl"),
+                    ToLinear       = ImageProcessor.Create(@"ConvertToLinearLight.hlsl"),
+                    ToGamma        = ImageProcessor.Create(@"ConvertToGammaLight.hlsl"),
                     // Note: By specifying upscaler and downscaler in Resizer, we bypass MPDN's scaler settings altogether
                     ResizeToTarget = Resizer.Create(option: ResizerOption.TargetSize100Percent, upscaler: new Softcubic(1.0f), downscaler: new Softcubic(1.0f)),
                     // Add more scripts here ...
@@ -36,56 +34,48 @@ namespace Mpdn.RenderScript
 
             protected override RenderScript[] GetScriptChain()
             {
-                var result = new List<RenderScript>();
+                var chain = new List<RenderScript>();
 
                 // Scale chroma first (this bypasses MPDN's chroma scaler)
-                result.Add(ScaleChroma);
+                chain.Add(ScaleChroma);
 
                 if (Renderer.InterlaceFlags.HasFlag(InterlaceFlags.IsInterlaced))
                 {
                     // Deinterlace using blend
-                    result.Add(Deinterlace);
+                    chain.Add(Deinterlace);
                 }
 
                 // Pre resize shaders, followed by NEDI image doubler
-                result.Add(PreProcess);
-
-                var size = Renderer.VideoSize;
+                chain.Add(PreProcess);
 
                 // Use NEDI once only.
                 // Note: To use NEDI as many times as required to get the image past target size,
                 //       Change the following *if* to *while*
-                if (IsUpscalingFrom(size)) // See RenderScriptChain for other comparer methods
+                if (IsUpscalingFrom(chain)) // See RenderScriptChain for other comparer methods
                 {
-                    result.Add(Nedi);
-                    size = DoubleSize(size);
+                    chain.Add(Nedi);
                 }
 
-                if (IsDownscalingFrom(size))
+                if (IsDownscalingFrom(chain))
                 {
                     // Use linear light for downscaling
-                    result.Add(ToLinear);
-                    result.Add(ResizeToTarget);
-                    result.Add(ToGamma);
+                    chain.Add(ToLinear);
+                    chain.Add(ResizeToTarget);
+                    chain.Add(ToGamma);
                 }
                 else
                 {
                     // Otherwise, scale with gamma light
-                    result.Add(ResizeToTarget);
+                    chain.Add(ResizeToTarget);
                 }
 
                 if (!Is1080OrHigher(Renderer.VideoSize))
                 {
                     // Sharpen only if video isn't full HD
-                    result.Add(PostProcess);
+                    chain.Add(PostProcess);
                 }
 
-                return result.ToArray();
-            }
-
-            private static Size DoubleSize(Size size)
-            {
-                return new Size(size.Width*2, size.Height*2);
+                return chain.ToArray();
             }
 
             private static bool Is1080OrHigher(Size size)
