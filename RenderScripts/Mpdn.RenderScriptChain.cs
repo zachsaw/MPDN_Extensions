@@ -11,7 +11,6 @@ namespace Mpdn.RenderScript
         {
             private RenderScript[] m_Scripts = new RenderScript[0];
             private RenderScript[] m_ScriptChain = new RenderScript[0];
-            private IFilter m_Filter;
 
             public override void Setup(IRenderer renderer)
             {
@@ -53,6 +52,12 @@ namespace Mpdn.RenderScript
                 EnsureScriptsValid(result, "GetScriptChain()");
 
                 return result;
+            }
+
+            public override IFilter CreateFilter()
+            {
+                // RenderScriptChain can't create a filter dynamically (yet)
+                return null;
             }
 
             private void SetupScriptChain()
@@ -120,11 +125,6 @@ namespace Mpdn.RenderScript
                     var targetSize = Renderer.TargetSize;
                     return targetSize.Width > videoSize.Width || targetSize.Height > videoSize.Height;
                 }
-            }
-
-            public override IFilter GetFilter()
-            {
-                return m_Filter;
             }
 
             protected override TextureAllocTrigger TextureAllocTrigger

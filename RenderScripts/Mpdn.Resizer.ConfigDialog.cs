@@ -36,7 +36,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class ResizerConfigDialogBase : ScriptConfigDialog<Settings>
+        public abstract class ResizerConfigDialogBase : ScriptConfigDialog<Settings>
         {
         }
     }

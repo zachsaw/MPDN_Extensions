@@ -137,7 +137,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class ImageProcessorConfigDialogBase : ScriptConfigDialog<Settings>
+        public abstract class ImageProcessorConfigDialogBase : ScriptConfigDialog<Settings>
         {
         }
     }

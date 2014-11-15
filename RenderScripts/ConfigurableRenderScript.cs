@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace Mpdn.RenderScript
 {
-    public class ScriptConfigDialog<TSettings> : Form
+    public abstract class ScriptConfigDialog<TSettings> : Form
         where TSettings : class, new()
     {
         protected TSettings Settings { get; private set; }
@@ -15,17 +15,9 @@ namespace Mpdn.RenderScript
             LoadSettings();
         }
 
-        protected virtual void LoadSettings()
-        {
-            // This needs to be overriden
-            throw new NotImplementedException();
-        }
+        protected abstract void LoadSettings();
 
-        protected virtual void SaveSettings()
-        {
-            // This needs to be overriden
-            throw new NotImplementedException();
-        }
+        protected abstract void SaveSettings();
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
@@ -63,8 +55,6 @@ namespace Mpdn.RenderScript
 
         #region Implementation
 
-        private IFilter m_Filter;
-
         public override ScriptDescriptor Descriptor
         {
             get
@@ -78,12 +68,6 @@ namespace Mpdn.RenderScript
                     Copyright = ConfigScriptDescriptor.Copyright
                 };
             }
-        }
-
-        public override void Setup(IRenderer renderer)
-        {
-            base.Setup(renderer);
-            CreateFilter();
         }
 
         public override void Destroy()
@@ -116,15 +100,9 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public override IFilter GetFilter()
+        public override IFilter CreateFilter()
         {
-            return m_Filter;
-        }
-
-        public void CreateFilter()
-        {
-            m_Filter = CreateFilter(Settings.Config);
-            m_Filter.Initialize();
+            return CreateFilter(Settings.Config);
         }
 
         #endregion
