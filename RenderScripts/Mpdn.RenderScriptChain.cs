@@ -71,10 +71,10 @@ namespace Mpdn.RenderScript
                         scriptChain[i].SourceFilter.ReplaceWith(previous);
                         previous = scriptChain[i].GetFilter();
                     }
-                    m_Filter = previous;
+                    Filter = previous;
                 }
                 m_ScriptChain = scriptChain;
-                m_Filter.AllocateTextures();
+                Filter.AllocateTextures();
             }
 
             protected override void Dispose(bool disposing)
