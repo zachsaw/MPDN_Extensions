@@ -10,9 +10,9 @@ namespace Mpdn.RenderScript
     public abstract class RenderScript : IScriptRenderer, IDisposable
     {
         protected IRenderer Renderer { get; private set; }
-        public MimicFilter SourceFilter
+        public ProxyFilter SourceFilter
         {
-            get { return m_SourceFilter ?? (m_SourceFilter = new MimicFilter(new SourceFilter(Renderer))); }
+            get { return m_SourceFilter ?? (m_SourceFilter = new ProxyFilter(new SourceFilter(Renderer))); }
         }
 
         public abstract ScriptDescriptor Descriptor { get; }
@@ -32,8 +32,9 @@ namespace Mpdn.RenderScript
 
         #region Implementation
 
-        private MimicFilter m_SourceFilter;
-        protected IFilter m_Filter;
+        private ProxyFilter m_SourceFilter;
+
+        protected IFilter Filter { get; set; }
 
         protected virtual string ShaderPath
         {
@@ -51,7 +52,7 @@ namespace Mpdn.RenderScript
 
         public virtual IFilter GetFilter()
         {
-            return m_Filter;
+            return Filter;
         }
 
         public void Dispose()
@@ -72,7 +73,7 @@ namespace Mpdn.RenderScript
         public virtual void Setup(IRenderer renderer)
         {
             Renderer = renderer;
-            m_Filter = CreateFilter();
+            Filter = CreateFilter();
         }
 
         public virtual void OnInputSizeChanged()
@@ -101,9 +102,9 @@ namespace Mpdn.RenderScript
         {
             if (HandleFilterChanged(GetFilter()))
             {
-                m_Filter.AllocateTextures();
+                Filter.AllocateTextures();
             }
-            Scale(Renderer.OutputRenderTarget, GetFrame(m_Filter));
+            Scale(Renderer.OutputRenderTarget, GetFrame(Filter));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -111,7 +112,8 @@ namespace Mpdn.RenderScript
             // Not required, but is there in case SourceFilter is changed 
             // such that it does something in its Dispose method
             Common.Dispose(ref m_SourceFilter);
-            Common.Dispose(ref m_Filter);
+            Common.Dispose(Filter);
+            Filter = null;
         }
 
         ~RenderScript()
@@ -133,22 +135,22 @@ namespace Mpdn.RenderScript
                 return;
 
             HandleFilterChanged(GetFilter());
-            m_Filter.AllocateTextures();
+            Filter.AllocateTextures();
         }
 
         private bool HandleFilterChanged(IFilter filter)
         {
             EnsureFilterNotNull(filter);
 
-            if (m_Filter == filter)
+            if (Filter == filter)
                 return false;
 
-            if (m_Filter != null)
+            if (Filter != null)
             {
-                m_Filter.DeallocateTextures();
+                Filter.DeallocateTextures();
             }
-            m_Filter = filter;
-            m_Filter.Initialize();
+            Filter = filter;
+            Filter.Initialize();
             return true;
         }
 
