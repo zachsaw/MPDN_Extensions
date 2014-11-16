@@ -498,11 +498,33 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public abstract class ChainBuilder<TSettings>
+    public abstract class ChainBuilder : IDisposable
     {
+        private IFilter m_Filter;
+        private ProxyFilter m_SourceFilter;
         public IRenderer Renderer;
 
-        public abstract IFilter Compile(IFilter sourceFilter, TSettings settings);
+        protected virtual bool ReCompile { get { return false; } }
+
+        public abstract IFilter CreateFilter(IFilter sourceFilter);
+
+        public IFilter Compile(IFilter sourceFilter)
+        {
+            if (m_SourceFilter == null)
+                m_SourceFilter = new ProxyFilter(sourceFilter);
+            else
+                m_SourceFilter.ReplaceWith(sourceFilter);
+
+            if (m_Filter == null || ReCompile)
+                m_Filter = CreateFilter(m_SourceFilter);
+
+            return m_Filter; 
+        }
+
+        public void Dispose()
+        {
+            Common.Dispose(ref m_Filter);
+        }
 
         #region Convenience Functions
 
@@ -583,14 +605,15 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public abstract class ChainBuilder : ChainBuilder<object>
+    public abstract class ChainBuilder<TSettings> : ChainBuilder
+        where TSettings : class, new()
     {
-        public abstract IFilter Compile(IFilter sourceFilter);
-
-        public override IFilter Compile(IFilter sourceFilter, object settings)
+        public override IFilter CreateFilter(IFilter sourceFilter)
         {
-            return Compile(sourceFilter);
+            return CreateFilter(sourceFilter, new TSettings());
         }
+
+        public abstract IFilter CreateFilter(IFilter sourceFilter, TSettings settings); 
     }
 
     public sealed class SourceFilter : BaseSourceFilter
