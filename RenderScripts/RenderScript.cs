@@ -237,7 +237,23 @@ namespace Mpdn.RenderScript
             var chain = new TChain{
                 Renderer = Renderer
             };
-            return chain.Compile(SourceFilter);
+            return chain.Compile()(SourceFilter);
+        }
+
+        public override ScriptInterfaceDescriptor InterfaceDescriptor
+        {
+            get
+            {
+                return new ScriptInterfaceDescriptor
+                {
+                    OutputSize = Filter.OutputSize
+                };
+            }
+        }
+
+        public override sealed IFilter GetFilter()
+        {
+            return Filter;
         }
     }
 

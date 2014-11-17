@@ -145,19 +145,19 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public abstract class ConfigurableRenderScript<TChain, TSettings, TDialog> : ConfigurableRenderScript<TSettings, TDialog>
+    public abstract class ConfigurableRenderScript<TSettings, TChain, TDialog> : ConfigurableRenderScript<TSettings, TDialog>
         where TChain : ChainBuilder<TSettings>, new()
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
-        public override IFilter CreateFilter()
+        public sealed override IFilter CreateFilter(TSettings settings)
         {
             var chain = new TChain
             {
                 Renderer = Renderer,
-                Settings = Settings.Config
+                Settings = settings
             };
-            return chain.Compile(SourceFilter);
+            return chain.Compile()(SourceFilter);
         }
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.IO;
 using SharpDX;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
@@ -401,21 +400,9 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public class ProxyFilter : IFilter
+    public abstract class MetaFilter : IFilter
     {
-        protected virtual IFilter Filter { get; set; }
-
-        protected ProxyFilter() { }
-
-        public ProxyFilter(IFilter filter)
-        {
-            Filter = filter;
-        }
-
-        public void ReplaceWith(IFilter filter)
-        {
-            Filter = filter;
-        }
+        protected abstract IFilter Filter { get; }
 
         #region m_Filter Passthough
 
@@ -498,150 +485,44 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public abstract class ChainBuilder<TSettings> : IDisposable
-        where TSettings : class, new()
+    public class ProxyFilter : MetaFilter
     {
-        public IRenderer Renderer;
-        public TSettings Settings;
-
         private IFilter m_Filter;
-        private ProxyFilter m_SourceFilter;
+        protected override IFilter Filter { get { return m_Filter; } }
 
-        public ChainBuilder()
+        public ProxyFilter(IFilter filter)
         {
-            Settings = new TSettings();
+            m_Filter = filter;
         }
 
-        protected virtual bool ReCompile { get { return false; } }
-
-        protected abstract IFilter CreateFilter(IFilter sourceFilter, TSettings settings);
-
-        public IFilter Compile(IFilter sourceFilter)
+        public void ReplaceWith(IFilter filter)
         {
-            if (m_SourceFilter == null)
-                m_SourceFilter = new ProxyFilter(sourceFilter);
-            else
-                m_SourceFilter.ReplaceWith(sourceFilter);
-
-            if (m_Filter == null || ReCompile)
-                m_Filter = CreateFilter(m_SourceFilter, Settings);
-
-            return m_Filter; 
+            m_Filter = filter;
         }
+    }
 
-        public void Dispose()
-        {
-            Common.Dispose(ref m_Filter);
-        }
+    public class IfElseFilter : MetaFilter
+    {
+        private Func<bool> m_Condition;
+        private IFilter m_ThenFilter;
+        private IFilter m_ElseFilter;
 
-        public ChainBuilder Configure(TSettings settings)
-        {
-            this.Settings = settings;
-            return new ConfiguredChainBuilder(this, settings);
-        }
-
-        private class ConfiguredChainBuilder : ChainBuilder
-        {
-            private TSettings m_Settings;
-            private ChainBuilder<TSettings> m_ChainBuilder;
-
-            public ConfiguredChainBuilder(ChainBuilder<TSettings> chainBuilder, TSettings settings)
-            {
-                m_ChainBuilder = chainBuilder;
-                m_Settings = settings;
-            }
-
-            protected override IFilter CreateFilter(IFilter sourceFilter)
-            {
-                return m_ChainBuilder.CreateFilter(sourceFilter, m_Settings);
-            }
-        }
-
-        #region Convenience Functions
-
-        protected virtual string ShaderPath
-        {
-            get { return GetType().FullName; }
-        }
-
-        protected string ShaderDataFilePath
+        protected override IFilter Filter
         {
             get
             {
-                var asmPath = typeof(IScriptRenderer).Assembly.Location;
-                return Path.Combine(Common.GetDirectoryName(asmPath), "RenderScripts", ShaderPath);
+                if (m_Condition()) 
+                    return m_ThenFilter;
+                else 
+                    return m_ElseFilter;
             }
         }
 
-        protected virtual void Scale(ITexture output, ITexture input)
+        public IfElseFilter(Func<bool> condition, IFilter thenFilter, IFilter elseFilter)
         {
-            Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
-        }
-
-        protected IShader CompileShader(string shaderFileName)
-        {
-            return Renderer.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
-        }
-
-        protected IFilter CreateFilter(IShader shader, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, bool linearSampling, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, 0, linearSampling, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, int sizeIndex, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, sizeIndex, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, s => new Size(s.Width, s.Height), sizeIndex, linearSampling, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform,
-            params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, transform, 0, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform, bool linearSampling,
-            params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, transform, 0, linearSampling, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform, int sizeIndex,
-            params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, transform, sizeIndex, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform, int sizeIndex,
-            bool linearSampling, params IFilter[] inputFilters)
-        {
-            if (shader == null)
-                throw new ArgumentNullException("shader");
-
-            if (Renderer == null)
-                throw new InvalidOperationException("CreateFilter is not available before Setup() is called");
-
-            return new ShaderFilter(Renderer, shader, transform, sizeIndex, linearSampling, inputFilters);
-        }
-
-        #endregion
-    }
-
-    public abstract class ChainBuilder : ChainBuilder<object>
-    {
-        protected abstract IFilter CreateFilter(IFilter sourceFilter);
-
-        protected override IFilter CreateFilter(IFilter sourceFilter, object settings) {
-            return CreateFilter(sourceFilter);
+            m_Condition = condition;
+            m_ThenFilter = thenFilter;
+            m_ElseFilter = elseFilter;
         }
     }
 
