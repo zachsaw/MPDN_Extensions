@@ -267,7 +267,8 @@ namespace Mpdn.RenderScript
                 return;
             }
 
-            OutputTexture = Renderer.CreateRenderTarget(OutputSize);
+            if (!OutputSize.IsEmpty)
+                OutputTexture = Renderer.CreateRenderTarget(OutputSize);
         }
 
         private static IEnumerable<IFilter> GetInputFilters(IFilter filter)
@@ -406,78 +407,78 @@ namespace Mpdn.RenderScript
 
         #region m_Filter Passthough
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             Filter.Dispose();
         }
 
-        public Object Clone()
+        public virtual Object Clone()
         {
             return new ProxyFilter((IFilter)Filter.Clone());
         }
 
-        public IFilter[] InputFilters
+        public virtual IFilter[] InputFilters
         {
             get { return Filter.InputFilters; }
         }
 
-        public ITexture OutputTexture
+        public virtual ITexture OutputTexture
         {
             get { return Filter.OutputTexture; }
         }
 
-        public bool IsTextureRenderTarget
+        public virtual bool IsTextureRenderTarget
         {
             get { return Filter.IsTextureRenderTarget; }
         }
 
-        public Size OutputSize
+        public virtual Size OutputSize
         {
             get { return Filter.OutputSize; }
         }
 
-        public int FilterIndex
+        public virtual int FilterIndex
         {
             get { return Filter.FilterIndex; }
         }
 
-        public int LastDependentIndex
+        public virtual int LastDependentIndex
         {
             get { return Filter.LastDependentIndex; }
         }
 
-        public bool TextureStolen
+        public virtual bool TextureStolen
         {
             get { return Filter.TextureStolen; }
             set { Filter.TextureStolen = value; }
         }
 
-        public void NewFrame()
+        public virtual void NewFrame()
         {
             Filter.NewFrame();
         }
 
-        public void Render()
+        public virtual void Render()
         {
             Filter.Render();
         }
 
-        public void Initialize(int time = 0)
+        public virtual void Initialize(int time = 0)
         {
             Filter.Initialize(time);
         }
 
-        public void AllocateTextures()
+        public virtual void AllocateTextures()
         {
             Filter.AllocateTextures();
         }
 
-        public void DeallocateTextures()
+        public virtual void DeallocateTextures()
         {
             Filter.DeallocateTextures();
         }
 
-        public IFilter Append(IFilter filter)
+        public virtual IFilter Append(IFilter filter)
         {
             return Filter.Append(filter);
         }
@@ -498,31 +499,6 @@ namespace Mpdn.RenderScript
         public void ReplaceWith(IFilter filter)
         {
             m_Filter = filter;
-        }
-    }
-
-    public class IfElseFilter : MetaFilter
-    {
-        private Func<bool> m_Condition;
-        private IFilter m_ThenFilter;
-        private IFilter m_ElseFilter;
-
-        protected override IFilter Filter
-        {
-            get
-            {
-                if (m_Condition()) 
-                    return m_ThenFilter;
-                else 
-                    return m_ElseFilter;
-            }
-        }
-
-        public IfElseFilter(Func<bool> condition, IFilter thenFilter, IFilter elseFilter)
-        {
-            m_Condition = condition;
-            m_ThenFilter = thenFilter;
-            m_ElseFilter = elseFilter;
         }
     }
 
@@ -629,6 +605,34 @@ namespace Mpdn.RenderScript
             }
 
             #endregion
+        }
+    }
+
+    public sealed class OutputFilter : MetaFilter
+    {
+        private IRenderer Renderer;
+        private IFilter m_Filter;
+        protected override IFilter Filter { get { return m_Filter; } }
+
+        public OutputFilter(IRenderer renderer, IFilter filter)
+        {
+            Renderer = renderer;
+            m_Filter = filter;
+            Initialize();
+            AllocateTextures();
+        }
+
+        public override void Render()
+        {
+            Filter.NewFrame();
+            Filter.Render();
+            var output = Filter.OutputTexture;
+            Scale(Renderer.OutputRenderTarget, output);
+        }
+
+        private void Scale(ITexture output, ITexture input)
+        {
+            Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }
     }
 

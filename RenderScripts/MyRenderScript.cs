@@ -1,86 +1,102 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using Mpdn.RenderScript.Mpdn.ImageProcessor;
 using Mpdn.RenderScript.Mpdn.Resizer;
 using Mpdn.RenderScript.Scaler;
 using Mpdn.RenderScript.Shiandow.Chroma;
 using Mpdn.RenderScript.Shiandow.Nedi;
+using YAXLib;
 
 namespace Mpdn.RenderScript
 {
     namespace MyOwnUniqueNameSpace // e.g. Replace with your user name
     {
-        public class MyRenderScript : CustomRenderScriptChain
-        {
-            private RenderScript ScaleChroma, Nedi, PreProcess, PostProcess, Deinterlace, ToLinear, ToGamma, ResizeToTarget;
+        public class MyRenderChain : CombinedChain {
+            /*#region Settings
 
-            protected override IList<RenderScript> CreateScripts()
+            private string[] PostProcess;
+
+            public MyRenderChain()
             {
-                // Declare all the scripts we will be using
-                return new[]
-                {
-                    ScaleChroma    = ChromaScaler.Create(preset: Presets.Spline),
-                    Nedi           = NediScaler.Create(forced: true),
-                    PreProcess     = ImageProcessor.Create(@"SweetFX\Bloom.hlsl", @"SweetFX\LiftGammaGain.hlsl"),
-                    PostProcess    = ImageProcessor.Create(@"SweetFX\LumaSharpen.hlsl"),
-                    Deinterlace    = ImageProcessor.Create(@"MPC-HC\Deinterlace (blend).hlsl"),
-                    ToLinear       = ImageProcessor.Create(@"ConvertToLinearLight.hlsl"),
-                    ToGamma        = ImageProcessor.Create(@"ConvertToGammaLight.hlsl"),
-                    // Note: By specifying upscaler and downscaler in Resizer, we bypass MPDN's scaler settings altogether
-                    ResizeToTarget = Resizer.Create(option: ResizerOption.TargetSize100Percent, upscaler: new Softcubic(1.0f), downscaler: new Softcubic(1.0f)),
-                    // Add more scripts here ...
-                };
+                ImageProcessorUsage = ImageProcessorUsage.Always;
             }
 
-            protected override IList<RenderScript> GetScriptChain()
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public string[] ShaderFileNames
             {
-                var chain = new List<RenderScript>();
+                get { return PostProcess ?? (PostProcess = new string[0]); }
+                set { PostProcess = value; }
+            }
 
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public ImageProcessorUsage ImageProcessorUsage { get; set; }
+
+            #endregion*/
+
+            private string[] PreProcess = new[] { @"SweetFX\Bloom.hlsl", @"SweetFX\LiftGammaGain.hlsl" };
+            private string[] PostProcess = new[] { @"SweetFX\LumaSharpen.hlsl" };
+            private string[] Deinterlace = new[] { @"MPC-HC\Deinterlace (blend).hlsl" };
+            private string[] ToLinear = new[] { @"ConvertToLinearLight.hlsl" };
+            private string[] ToGamma = new[] { @"ConvertToGammaLight.hlsl" };
+
+            protected override void BuildChain(FilterChain Chain)
+            {
                 // Scale chroma first (this bypasses MPDN's chroma scaler)
-                chain.Add(ScaleChroma);
+                Chain.Add(new BicubicChroma{ Preset = Presets.MitchellNetravali });
 
                 if (Renderer.InterlaceFlags.HasFlag(InterlaceFlags.IsInterlaced))
                 {
                     // Deinterlace using blend
-                    chain.Add(Deinterlace);
+                    Chain.Add(new ImageProcessor { ShaderFileNames = Deinterlace });
                 }
 
                 // Pre resize shaders, followed by NEDI image doubler
-                chain.Add(PreProcess);
+                Chain.Add(new ImageProcessor { ShaderFileNames = PreProcess });
 
                 // Use NEDI once only.
                 // Note: To use NEDI as many times as required to get the image past target size,
                 //       Change the following *if* to *while*
-                if (IsUpscalingFrom(chain)) // See RenderScriptChain for other comparer methods
+                if (IsUpscalingFrom(Chain)) // See RenderScriptChain for other comparer methods
                 {
-                    chain.Add(Nedi);
+                    Chain.Add(new Nedi { AlwaysDoubleImage = true });
                 }
 
-                if (IsDownscalingFrom(chain))
+                if (IsDownscalingFrom(Chain))
                 {
                     // Use linear light for downscaling
-                    chain.Add(ToLinear);
-                    chain.Add(ResizeToTarget);
-                    chain.Add(ToGamma);
+                    Chain.Add(new ImageProcessor { ShaderFileNames = ToLinear });
+                    Chain.Add(new Resizer { ResizerOption = ResizerOption.TargetSize100Percent });
+                    Chain.Add(new ImageProcessor { ShaderFileNames = ToGamma });
                 }
                 else
                 {
                     // Otherwise, scale with gamma light
-                    chain.Add(ResizeToTarget);
+                    Chain.Add(new Resizer { ResizerOption = ResizerOption.TargetSize100Percent });
                 }
 
-                if (!Is1080OrHigher(Renderer.VideoSize))
+                if (Renderer.VideoSize.Width >= 1920)
                 {
                     // Sharpen only if video isn't full HD
-                    chain.Add(PostProcess);
+                    Chain.Add(new ImageProcessor { ShaderFileNames = PostProcess });
                 }
-
-                return chain;
             }
+        }
 
-            private static bool Is1080OrHigher(Size size)
+        public class MyRenderScript : RenderScript<MyRenderChain>
+        {
+            protected override RenderScriptDescriptor ScriptDescriptor
             {
-                return size.Height >= 1080;
+                get
+                {
+                    return new RenderScriptDescriptor
+                    {
+                        Name = "Custom Render Script Chain",
+                        Description = "A customized render script chain (Advanced)",
+                        Guid = new Guid("B0AD7BE7-A86D-4BE4-A750-4362FEF28A55"),
+                        Copyright = ""
+                    };
+                }
             }
         }
     }

@@ -33,29 +33,6 @@ namespace Mpdn.RenderScript
 
         #endregion
 
-        #region Settings
-
-        public class Settings
-        {
-            public Settings()
-            {
-                B = (float)(1.0 / 3.0);
-                C = (float)(1.0 / 3.0);
-                Preset = Presets.Custom;
-            }
-
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public float B { get; set; }
-
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public float C { get; set; }
-
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public Presets Preset { get; set; }
-        }
-
-        #endregion
-
         #region Presets
 
         public enum Presets
@@ -80,51 +57,89 @@ namespace Mpdn.RenderScript
 
         #endregion
 
-        public class ChromaScaler : ConfigurableRenderScript<Settings, ChromaScalerConfigDialog>
+        public class BicubicChroma : RenderChain
         {
-            public static readonly double[] B_CONST = {0.0, 1.0,     0.0, 1.0/3.0,  12/(19+  9*Math.Sqrt(2)), 6/(13+7*Math.Sqrt(2)), ( 9-3*Math.Sqrt(2))/7 };
-            public static readonly double[] C_CONST = {0.0, 0.0, 1.0/2.0, 1.0/3.0, 113/(58+216*Math.Sqrt(2)), 7/(2+12*Math.Sqrt(2)), (-2+3*Math.Sqrt(2))/14};
+            #region Settings
 
-            private IFilter m_ChromaScaler;
-        	private IShader m_ChromaShader;
+            public static readonly double[] B_CONST = { 0.0, 1.0, 0.0, 1.0 / 3.0, 12 / (19 + 9 * Math.Sqrt(2)), 6 / (13 + 7 * Math.Sqrt(2)), (9 - 3 * Math.Sqrt(2)) / 7 };
+            public static readonly double[] C_CONST = { 0.0, 0.0, 1.0 / 2.0, 1.0 / 3.0, 113 / (58 + 216 * Math.Sqrt(2)), 7 / (2 + 12 * Math.Sqrt(2)), (-2 + 3 * Math.Sqrt(2)) / 14 };
 
-            public static ChromaScaler Create(Presets preset)
+            public BicubicChroma()
             {
-                if (preset == Presets.Custom)
+                B = (float)(1.0 / 3.0);
+                C = (float)(1.0 / 3.0);
+                Preset = Presets.Custom;
+            }
+
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public float B { get; set; }
+
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public float C { get; set; }
+
+            private Presets m_Preset;
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public Presets Preset
+            {
+                get
                 {
-                    throw new ArgumentException(
-                        "To use custom preset, call the Create() overload with B and C arguments", "preset");
+                    return Preset;
                 }
-
-                return Create((float) B_CONST[(int) preset], (float) C_CONST[(int) preset]);
+                set
+                {
+                    if (value != Presets.Custom)
+                    {
+                        B = (float)B_CONST[(int)value];
+                        C = (float)C_CONST[(int)value];
+                    }
+                    m_Preset = value;
+                }
             }
 
-            public static ChromaScaler Create(float B = (float) (1.0/3.0), float C = (float) (1.0/3.0))
-            {
-                var result = new ChromaScaler();
-                result.Initialize();
-
-                result.Settings.Config.B = B;
-                result.Settings.Config.C = C;
-                return result;
-            }
+            #endregion
 
             protected override string ShaderPath
             {
                 get { return "ChromaScaler"; }
             }
 
-            protected override ConfigurableRenderScriptDescriptor ConfigScriptDescriptor
+            public override IFilter CreateFilter(IFilter sourceFilter)
+            {
+                var m_ChromaShader = CompileShader("Chroma.hlsl");
+
+                Func<Size, Size> transformWidth = s => new Size(Renderer.VideoSize.Width, s.Height);
+                Func<Size, Size> transformHeight = s => new Size(s.Width, Renderer.VideoSize.Height);
+                Func<Size, Size> transformWidthHeight = s => Renderer.VideoSize;
+
+                var Yinput = new YSourceFilter(Renderer);
+                var Uinput = new USourceFilter(Renderer);
+                var Vinput = new VSourceFilter(Renderer);
+
+                var chroma = new ChromaFilter(Renderer, m_ChromaShader, B, C, transformWidthHeight, Yinput, Uinput, Vinput);
+                var rgb = new RgbFilter(Renderer, chroma);
+
+                return rgb;
+            }
+        }
+
+
+        public class ChromaScaler : ConfigurableRenderScript<BicubicChroma, ChromaScalerConfigDialog>
+        {
+            protected override string ConfigFileName
+            {
+                get { return "Shiandow.Chroma"; }
+            }
+
+            protected override RenderScriptDescriptor ScriptDescriptor
             {
                 get
                 {
-                    return new ConfigurableRenderScriptDescriptor
+                    return new RenderScriptDescriptor
                     {
                         Guid = new Guid("BDCC94DD-93B3-4414-BA1F-345E10E1C371"),
                         Name = "ChromaScaler",
                         Description = "Chroma Scaler",
                         Copyright = "ChromaScaler by Shiandow",
-                        ConfigFileName = "Shiandow.Chroma"
                     };
                 }
             }
@@ -138,37 +153,6 @@ namespace Mpdn.RenderScript
                         Prescale = false
                     };
                 }
-            }
-
-            protected override TextureAllocTrigger TextureAllocTrigger
-            {
-                get { return TextureAllocTrigger.OnInputOutputSizeChanged; }
-            }
-
-            public override IFilter CreateFilter(Settings settings)
-            {
-                m_ChromaShader = CompileShader("Chroma.hlsl");
-
-                Func<Size, Size> transformWidth = s => new Size(Renderer.VideoSize.Width, s.Height);
-                Func<Size, Size> transformHeight = s => new Size(s.Width, Renderer.VideoSize.Height);
-                Func<Size, Size> transformWidthHeight = s => Renderer.VideoSize;
-
-                var Yinput = new YSourceFilter(Renderer);
-                var Uinput = new USourceFilter(Renderer);
-                var Vinput = new VSourceFilter(Renderer);
-
-                var chroma = new ChromaFilter(Renderer, m_ChromaShader, settings.B, settings.C, transformWidthHeight, Yinput, Uinput, Vinput);
-                var rgb = new RgbFilter(Renderer, chroma);
-
-                return m_ChromaScaler = rgb;
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                base.Dispose(disposing);
-
-                Common.Dispose(ref m_ChromaScaler);
-                Common.Dispose(ref m_ChromaShader);
             }
         }
     }

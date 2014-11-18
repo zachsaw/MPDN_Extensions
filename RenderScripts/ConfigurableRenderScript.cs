@@ -38,30 +38,19 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class ConfigurableRenderScriptDescriptor
+    public abstract class ConfigurableRenderScript<TChain, TDialog> : RenderScript<TChain>
+        where TChain : class, IRenderChain, new()
+        where TDialog : ScriptConfigDialog<TChain>, new()
     {
-        public Guid Guid = Guid.Empty;
-        public string Name;
-        public string Description;
-        public string Copyright;
-        public string ConfigFileName;
-    }
+        protected Config ScriptConfig { get; private set; }
+        protected override TChain Chain { get { return ScriptConfig.Config; } }
 
-    public abstract class ConfigurableRenderScript<TSettings, TDialog> : RenderScript
-        where TSettings : class, new()
-        where TDialog : ScriptConfigDialog<TSettings>, new()
-    {
-        protected Config Settings { get; private set; }
+        protected abstract string ConfigFileName { get; }
 
-        protected abstract ConfigurableRenderScriptDescriptor ConfigScriptDescriptor { get; }
-
-        public abstract IFilter CreateFilter(TSettings settings);
-
-        protected virtual void Initialize(Config settings)
+        public override void Initialize(int instanceId)
         {
+            ScriptConfig = new Config(ConfigFileName, instanceId);
         }
-
-        #region Implementation
 
         public override ScriptDescriptor Descriptor
         {
@@ -70,54 +59,30 @@ namespace Mpdn.RenderScript
                 return new ScriptDescriptor
                 {
                     HasConfigDialog = true,
-                    Guid = ConfigScriptDescriptor.Guid,
-                    Name = ConfigScriptDescriptor.Name,
-                    Description = ConfigScriptDescriptor.Description,
-                    Copyright = ConfigScriptDescriptor.Copyright
+                    Guid = ScriptDescriptor.Guid,
+                    Name = ScriptDescriptor.Name,
+                    Description = ScriptDescriptor.Description,
+                    Copyright = ScriptDescriptor.Copyright
                 };
             }
-        }
-
-        public override void Destroy()
-        {
-            Settings.Destroy();
-        }
-
-        public override void Initialize(int instanceId)
-        {
-            Settings = new Config(ConfigScriptDescriptor.ConfigFileName, instanceId);
-            Initialize(Settings);
-        }
-
-        protected virtual void Initialize()
-        {
-            Settings = new Config();
-            Initialize(Settings);
         }
 
         public override bool ShowConfigDialog(IWin32Window owner)
         {
             using (var dialog = new TDialog())
             {
-                dialog.Setup(Settings.Config);
+                dialog.Setup(ScriptConfig.Config);
                 if (dialog.ShowDialog(owner) != DialogResult.OK)
                     return false;
 
-                Settings.Save();
+                ScriptConfig.Save();
                 return true;
             }
         }
 
-        public override IFilter CreateFilter()
-        {
-            return CreateFilter(Settings.Config);
-        }
-
-        #endregion
-
         #region ScriptSettings Class
 
-        public class Config : ScriptSettings<TSettings>
+        public class Config : ScriptSettings<TChain>
         {
             private readonly string m_ConfigName;
             private readonly int m_InstanceId;
@@ -130,12 +95,6 @@ namespace Mpdn.RenderScript
                 Load();
             }
 
-            public Config()
-                : base(true)
-            {
-                Load();
-            }
-
             protected override string ScriptConfigFileName
             {
                 get { return string.Format("{0}.{1}.config", m_ConfigName, m_InstanceId); }
@@ -143,21 +102,5 @@ namespace Mpdn.RenderScript
         }
 
         #endregion
-    }
-
-    public abstract class ConfigurableRenderScript<TSettings, TChain, TDialog> : ConfigurableRenderScript<TSettings, TDialog>
-        where TChain : ChainBuilder<TSettings>, new()
-        where TSettings : class, new()
-        where TDialog : ScriptConfigDialog<TSettings>, new()
-    {
-        public sealed override IFilter CreateFilter(TSettings settings)
-        {
-            var chain = new TChain
-            {
-                Renderer = Renderer,
-                Settings = settings
-            };
-            return chain.Compile()(SourceFilter);
-        }
     }
 }
