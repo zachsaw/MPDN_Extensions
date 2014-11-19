@@ -41,12 +41,12 @@ namespace Mpdn.RenderScript
             InputFilters = inputFilters;
         }
 
-        protected bool Updated { get; set; }
-        protected bool Initialized { get; set; }
-
         public abstract void Render(IEnumerable<ITexture> inputs);
 
         #region IFilter Implementation
+
+        protected bool Updated { get; set; }
+        protected bool Initialized { get; set; }
 
         public IFilter[] InputFilters { get; private set; }
         public ITexture OutputTexture { get; private set; }
@@ -446,7 +446,7 @@ namespace Mpdn.RenderScript
 
             public ITexture GetTexture(Size textureSize)
             {
-                IList<ITexture>[] lists = new[]{SavedTextures, OldTextures, TempTextures};
+                IList<ITexture>[] lists = new[]{SavedTextures, OldTextures};
                 foreach (var list in lists)
                 foreach (var texture in list)
                     if (   (texture.Width  == textureSize.Width) 
@@ -462,6 +462,7 @@ namespace Mpdn.RenderScript
             public void PutTempTexture(ITexture texture)
             {
                 TempTextures.Add(texture);
+                SavedTextures.Add(texture);
             }
 
             public void PutTexture(ITexture texture)
@@ -474,8 +475,11 @@ namespace Mpdn.RenderScript
                 foreach (var texture in OldTextures)
                     Common.Dispose(texture);
 
-                TempTextures = new List<ITexture>();
+                foreach (var texture in TempTextures)
+                    SavedTextures.Remove(texture);
+
                 OldTextures = SavedTextures;
+                TempTextures = new List<ITexture>();
                 SavedTextures = new List<ITexture>();
             }
 

@@ -151,15 +151,18 @@ namespace Mpdn.RenderScript
     }
 
     public class FilterChain {
+        private IRenderer Renderer;
         public IFilter Filter;
 
-        public FilterChain(IFilter sourceFilter)
+        public FilterChain(IFilter sourceFilter, IRenderer renderer)
         {
+            Renderer = renderer;
             Filter = sourceFilter;
         }
 
         public void Add(IRenderChain renderChain)
         {
+            renderChain.Renderer = Renderer;
             Filter = renderChain.CreateFilter(Filter);
         }
 
@@ -174,7 +177,7 @@ namespace Mpdn.RenderScript
         protected abstract void BuildChain(FilterChain Chain);
 
         public override IFilter CreateFilter(IFilter sourceFilter) {
-            var chain = new FilterChain(sourceFilter);
+            var chain = new FilterChain(sourceFilter, Renderer);
             BuildChain(chain);
             return chain.Filter;
         }
