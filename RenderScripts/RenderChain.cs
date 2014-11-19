@@ -11,18 +11,18 @@ namespace Mpdn.RenderScript
 {
     public static class StaticRenderer
     {
-        private static Dictionary<String, IShader> m_CompiledShaders = new Dictionary<string, IShader>();
+        private static Dictionary<String, IShader> CompiledShaders = new Dictionary<string, IShader>();
         public static IRenderer Renderer { private get; set; }
 
         public static IShader CompileShader(String shaderPath)
         {
             IShader shader;
-            m_CompiledShaders.TryGetValue(shaderPath, out shader);
-
+            CompiledShaders.TryGetValue(shaderPath, out shader);
+            
             if (shader == null)
             {
                 shader = Renderer.CompileShader(shaderPath);
-                m_CompiledShaders.Add(shaderPath, shader);
+                CompiledShaders.Add(shaderPath, shader);
             }
 
             return shader;

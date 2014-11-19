@@ -36,9 +36,6 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter SourceFilter)
             {
-                if (!UseNedi(SourceFilter))
-                    return SourceFilter;
-
                 var m_Nedi1Shader = CompileShader("NEDI-I.hlsl");
                 var m_Nedi2Shader = CompileShader("NEDI-II.hlsl");
                 var m_NediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl");
@@ -46,6 +43,9 @@ namespace Mpdn.RenderScript
 
                 Func<Size, Size> transformWidth = s => new Size(2 * s.Width, s.Height);
                 Func<Size, Size> transformHeight = s => new Size(s.Width, s.Height * 2);
+
+                if (!UseNedi(SourceFilter))
+                    return SourceFilter;
 
                 var nedi1 = CreateFilter(m_Nedi1Shader, SourceFilter);
                 var nediH = CreateFilter(m_NediHInterleaveShader, transformWidth, SourceFilter, nedi1);

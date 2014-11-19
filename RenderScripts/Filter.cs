@@ -447,9 +447,9 @@ namespace Mpdn.RenderScript
         private class TextureCache : ITextureCache
         {
             private IRenderer Renderer;
-            private IList<ITexture> SavedTextures;
-            private IList<ITexture> OldTextures;
-            private IList<ITexture> TempTextures;
+            private List<ITexture> SavedTextures;
+            private List<ITexture> OldTextures;
+            private List<ITexture> TempTextures;
 
             public TextureCache(IRenderer renderer)
             {
@@ -461,15 +461,15 @@ namespace Mpdn.RenderScript
 
             public ITexture GetTexture(Size textureSize)
             {
-                IList<ITexture>[] lists = new[]{SavedTextures, OldTextures};
-                foreach (var list in lists)
-                foreach (var texture in list)
-                    if (   (texture.Width  == textureSize.Width) 
-                        && (texture.Height == textureSize.Height))
-                    {
-                        list.Remove(texture);
-                        return texture;
-                    }
+                foreach (var list in new[] { SavedTextures, OldTextures })
+                {
+                    var index = list.FindIndex(x => (x.Width == textureSize.Width) && (x.Height == textureSize.Height));
+                    if (index < 0) continue;
+
+                    var texture = list[index];
+                    list.RemoveAt(index);
+                    return texture;
+                }
 
                 return Renderer.CreateRenderTarget(textureSize);
             }
