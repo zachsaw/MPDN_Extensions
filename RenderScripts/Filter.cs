@@ -8,83 +8,53 @@ using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
-    public interface IFilter : ICloneable, IDisposable
+    public interface IFilter : IDisposable
     {
         IFilter[] InputFilters { get; }
         ITexture OutputTexture { get; }
-        bool IsTextureRenderTarget { get; }
         Size OutputSize { get; }
         int FilterIndex { get; }
         int LastDependentIndex { get; }
-        bool TextureStolen { get; set; }
         void NewFrame();
-        void Render();
+        void Render(ITextureCache Cache);
+        void ReleaseTexture(ITextureCache Cache);
         void Initialize(int time = 0);
-        void AllocateTextures();
-        void DeallocateTextures();
-        IFilter Append(IFilter filter);
+    }
+
+    public interface ITextureCache
+    {
+        ITexture GetTexture(Size textureSize);
+        void     PutTexture(ITexture texture);
+        void PutTempTexture(ITexture texture);
     }
 
     public abstract class Filter : IFilter
     {
-        private bool m_Disposed;
-        private ITexture m_OutputTexture;
-        private IFilter m_TextureOwner;
-
-        protected Filter(IRenderer renderer, params IFilter[] inputFilters)
+        protected Filter(params IFilter[] inputFilters)
         {
             if (inputFilters == null || inputFilters.Length == 0 || inputFilters.Any(f => f == null))
             {
                 throw new ArgumentNullException("inputFilters");
             }
 
-            Renderer = renderer;
             Initialized = false;
-
             InputFilters = inputFilters;
         }
 
-        private bool OwnsTexture
-        {
-            get
-            {
-                // null means we own this texture
-                return m_TextureOwner == null;
-            }
-        }
-
-        protected IRenderer Renderer { get; private set; }
         protected bool Updated { get; set; }
         protected bool Initialized { get; set; }
+
+        public abstract void Render(IEnumerable<ITexture> inputs);
 
         #region IFilter Implementation
 
         public IFilter[] InputFilters { get; private set; }
-
-        public ITexture OutputTexture
-        {
-            get
-            {
-                // If m_TextureOwner is not null then we are reusing the texture of m_TextureOwner
-                return m_TextureOwner != null ? m_TextureOwner.OutputTexture : m_OutputTexture;
-            }
-            private set
-            {
-                m_OutputTexture = value;
-                m_TextureOwner = null; // we own this texture
-            }
-        }
-
-        public virtual bool IsTextureRenderTarget
-        {
-            get { return true; }
-        }
+        public ITexture OutputTexture { get; private set; }
 
         public abstract Size OutputSize { get; }
 
         public int FilterIndex { get; private set; }
         public int LastDependentIndex { get; private set; }
-        public bool TextureStolen { get; set; }
 
         public void Dispose()
         {
@@ -132,7 +102,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public virtual void Render()
+        public virtual void Render(ITextureCache Cache)
         {
             if (Updated)
                 return;
@@ -140,157 +110,30 @@ namespace Mpdn.RenderScript
             Updated = true;
 
             foreach (var filter in InputFilters)
-            {
-                filter.Render();
-            }
+                filter.Render(Cache);
+
+            OutputTexture = Cache.GetTexture(OutputSize);
 
             var inputTextures = InputFilters.Select(f => f.OutputTexture);
             Render(inputTextures);
-        }
 
-        public virtual void AllocateTextures()
-        {
             foreach (var filter in InputFilters)
             {
-                filter.AllocateTextures();
-            }
-
-            var size = OutputSize;
-            if (OutputTexture == null || size.Width != OutputTexture.Width || size.Height != OutputTexture.Height)
-            {
-                if (OwnsTexture)
-                {
-                    Common.Dispose(OutputTexture);
-                }
-                OutputTexture = null;
-            }
-
-            if (OutputTexture == null)
-            {
-                AllocateOutputTexture();
+                if (filter.LastDependentIndex == FilterIndex)
+                    filter.ReleaseTexture(Cache);
             }
         }
 
-        public virtual void DeallocateTextures()
-        {
-            foreach (var filter in InputFilters)
-            {
-                filter.DeallocateTextures();
-            }
-
-            if (OwnsTexture)
-            {
-                Common.Dispose(OutputTexture);
-            }
+        public virtual void ReleaseTexture(ITextureCache Cache) {
+            Cache.PutTexture(OutputTexture);
             OutputTexture = null;
-        }
-
-        public IFilter Append(IFilter filter)
-        {
-            return filter as SourceFilter != null ? this : AppendFilter(filter);
-        }
-
-        private IFilter AppendFilter(IFilter filter)
-        {
-            // Clone the filters to make sure we aren't modifying the original filters
-            filter = DeepCloneFilter(filter);
-            var replacementFilter = DeepCloneFilter(this);
-            // Replace source filters of 'filter' with 'this'
-            return ReplaceSource(filter, replacementFilter);
-        }
-
-        private static IFilter ReplaceSource(IFilter filter, IFilter replacementFilter)
-        {
-            if (filter is SourceFilter)
-                return replacementFilter;
-
-            for (var i = 0; i < filter.InputFilters.Length; i++)
-            {
-                filter.InputFilters[i] = ReplaceSource(filter.InputFilters[i], replacementFilter);
-            }
-
-            return filter;
-        }
-
-        private static IFilter DeepCloneFilter(IFilter filter)
-        {
-            if (filter == null)
-                return null;
-
-            var f = (ICloneable) filter;
-            var result = (IFilter) f.Clone();
-            if (filter.InputFilters == null)
-                return result;
-
-            for (var i = 0; i < filter.InputFilters.Length; i++)
-            {
-                result.InputFilters[i] = DeepCloneFilter(result.InputFilters[i]);
-            }
-            return result;
         }
 
         #endregion
 
-        public object Clone()
-        {
-            var clone = (Filter) MemberwiseClone();
-            clone.InputFilters = (IFilter[]) InputFilters.Clone();
-            return clone;
-        }
+        #region Destructors
 
-        public abstract void Render(IEnumerable<ITexture> inputs);
-
-        private void StealTexture(IFilter filter)
-        {
-            m_TextureOwner = filter;
-            filter.TextureStolen = true;
-        }
-
-        private void AllocateOutputTexture()
-        {
-            TextureStolen = false;
-
-            // This can (should) be improved - it currently does not reuse all feasible textures
-            var filter =
-                GetInputFilters(this)
-                    .FirstOrDefault(f =>
-                        !f.TextureStolen &&
-                        f.LastDependentIndex < FilterIndex &&
-                        f.IsTextureRenderTarget &&
-                        f.OutputTexture != null &&
-                        f.OutputTexture.Width == OutputSize.Width &&
-                        f.OutputTexture.Height == OutputSize.Height);
-
-            if (filter != null)
-            {
-                StealTexture(filter);
-                return;
-            }
-
-            if (!OutputSize.IsEmpty)
-                OutputTexture = Renderer.CreateRenderTarget(OutputSize);
-        }
-
-        private static IEnumerable<IFilter> GetInputFilters(IFilter filter)
-        {
-            var filters = filter.InputFilters;
-            if (filters == null)
-                return null;
-
-            var result = new List<IFilter>();
-            result.AddRange(filters.Where(f => f.LastDependentIndex <= filter.FilterIndex));
-
-            foreach (var f in filters)
-            {
-                var inputFilters = GetInputFilters(f);
-                if (inputFilters == null)
-                    continue;
-
-                result.AddRange(inputFilters);
-            }
-
-            return result;
-        }
+        private bool m_Disposed;
 
         ~Filter()
         {
@@ -303,12 +146,6 @@ namespace Mpdn.RenderScript
                 return;
 
             DisposeInputFilters();
-
-            if (!OwnsTexture)
-                return;
-
-            Common.Dispose(OutputTexture);
-            OutputTexture = null;
 
             m_Disposed = true;
         }
@@ -323,6 +160,8 @@ namespace Mpdn.RenderScript
                 Common.Dispose(filter);
             }
         }
+
+        #endregion
     }
 
     public abstract class BaseSourceFilter : IFilter
@@ -340,21 +179,14 @@ namespace Mpdn.RenderScript
         public IFilter[] InputFilters { get; protected set; }
         public abstract ITexture OutputTexture { get; }
 
-        public virtual bool IsTextureRenderTarget
-        {
-            get { return false; }
-        }
-
         public abstract Size OutputSize { get; }
 
-        public int FilterIndex
+        public virtual int FilterIndex
         {
             get { return -1; }
         }
 
-        public int LastDependentIndex { get; private set; }
-
-        public bool TextureStolen { get; set; }
+        public virtual int LastDependentIndex { get; private set; }
 
         public void Dispose()
         {
@@ -369,143 +201,22 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public void Render()
+        public void Render(ITextureCache Cache)
         {
         }
 
-        public void AllocateTextures()
+        public virtual void ReleaseTexture(ITextureCache Cache)
         {
-            foreach (var filter in InputFilters)
-            {
-                filter.AllocateTextures();
-            }
-            TextureStolen = false;
-        }
-
-        public void DeallocateTextures()
-        {
-        }
-
-        public IFilter Append(IFilter filter)
-        {
-            return filter;
-        }
-
-        public object Clone()
-        {
-            var clone = (BaseSourceFilter) MemberwiseClone();
-            clone.InputFilters = (IFilter[]) InputFilters.Clone();
-            return clone;
+            Cache.PutTempTexture(OutputTexture);
         }
 
         #endregion
-    }
-
-    public abstract class MetaFilter : IFilter
-    {
-        protected abstract IFilter Filter { get; }
-
-        #region m_Filter Passthough
-
-        public virtual void Dispose()
-        {
-            Filter.Dispose();
-        }
-
-        public virtual Object Clone()
-        {
-            return new ProxyFilter((IFilter)Filter.Clone());
-        }
-
-        public virtual IFilter[] InputFilters
-        {
-            get { return Filter.InputFilters; }
-        }
-
-        public virtual ITexture OutputTexture
-        {
-            get { return Filter.OutputTexture; }
-        }
-
-        public virtual bool IsTextureRenderTarget
-        {
-            get { return Filter.IsTextureRenderTarget; }
-        }
-
-        public virtual Size OutputSize
-        {
-            get { return Filter.OutputSize; }
-        }
-
-        public virtual int FilterIndex
-        {
-            get { return Filter.FilterIndex; }
-        }
-
-        public virtual int LastDependentIndex
-        {
-            get { return Filter.LastDependentIndex; }
-        }
-
-        public virtual bool TextureStolen
-        {
-            get { return Filter.TextureStolen; }
-            set { Filter.TextureStolen = value; }
-        }
-
-        public virtual void NewFrame()
-        {
-            Filter.NewFrame();
-        }
-
-        public virtual void Render()
-        {
-            Filter.Render();
-        }
-
-        public virtual void Initialize(int time = 0)
-        {
-            Filter.Initialize(time);
-        }
-
-        public virtual void AllocateTextures()
-        {
-            Filter.AllocateTextures();
-        }
-
-        public virtual void DeallocateTextures()
-        {
-            Filter.DeallocateTextures();
-        }
-
-        public virtual IFilter Append(IFilter filter)
-        {
-            return Filter.Append(filter);
-        }
-
-        #endregion
-    }
-
-    public class ProxyFilter : MetaFilter
-    {
-        private IFilter m_Filter;
-        protected override IFilter Filter { get { return m_Filter; } }
-
-        public ProxyFilter(IFilter filter)
-        {
-            m_Filter = filter;
-        }
-
-        public void ReplaceWith(IFilter filter)
-        {
-            m_Filter = filter;
-        }
     }
 
     public sealed class SourceFilter : BaseSourceFilter
     {
         public SourceFilter(IRenderer renderer)
-            : base(renderer, new OutputDummy(renderer))
+            : base(renderer)
         {
         }
 
@@ -516,124 +227,12 @@ namespace Mpdn.RenderScript
             get { return Renderer.InputRenderTarget; }
         }
 
-        public override bool IsTextureRenderTarget
-        {
-            get { return true; }
-        }
-
         public override Size OutputSize
         {
             get { return Renderer.InputSize; }
         }
 
         #endregion
-
-        private sealed class OutputDummy : IFilter
-        {
-            public OutputDummy(IRenderer renderer)
-            {
-                Renderer = renderer;
-                InputFilters = null;
-            }
-
-            private IRenderer Renderer { get; set; }
-
-            #region IFilter Implementation
-
-            public IFilter[] InputFilters { get; private set; }
-
-            public ITexture OutputTexture
-            {
-                get { return Renderer.OutputRenderTarget; }
-            }
-
-            public bool IsTextureRenderTarget
-            {
-                get { return true; }
-            }
-
-            public Size OutputSize
-            {
-                get { return Renderer.OutputSize; }
-            }
-
-            public int FilterIndex
-            {
-                get { return -2; }
-            }
-
-            public int LastDependentIndex
-            {
-                get { return -1; }
-            }
-
-            public bool TextureStolen { get; set; }
-
-            public void Dispose()
-            {
-            }
-
-            public void Initialize(int time = 0)
-            {
-            }
-
-            public void NewFrame()
-            {
-            }
-
-            public void Render()
-            {
-            }
-
-            public void AllocateTextures()
-            {
-                TextureStolen = false;
-            }
-
-            public void DeallocateTextures()
-            {
-            }
-
-            public IFilter Append(IFilter filter)
-            {
-                throw new InvalidOperationException();
-            }
-
-            public object Clone()
-            {
-                return MemberwiseClone();
-            }
-
-            #endregion
-        }
-    }
-
-    public sealed class OutputFilter : MetaFilter
-    {
-        private IRenderer Renderer;
-        private IFilter m_Filter;
-        protected override IFilter Filter { get { return m_Filter; } }
-
-        public OutputFilter(IRenderer renderer, IFilter filter)
-        {
-            Renderer = renderer;
-            m_Filter = filter;
-            Initialize();
-            AllocateTextures();
-        }
-
-        public override void Render()
-        {
-            Filter.NewFrame();
-            Filter.Render();
-            var output = Filter.OutputTexture;
-            Scale(Renderer.OutputRenderTarget, output);
-        }
-
-        private void Scale(ITexture output, ITexture input)
-        {
-            Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
-        }
     }
 
     public class YSourceFilter : BaseSourceFilter
@@ -650,6 +249,10 @@ namespace Mpdn.RenderScript
         public override Size OutputSize
         {
             get { return Renderer.LumaSize; }
+        }
+
+        public override void ReleaseTexture(ITextureCache Cache)
+        {
         }
     }
 
@@ -668,6 +271,10 @@ namespace Mpdn.RenderScript
         {
             get { return Renderer.ChromaSize; }
         }
+
+        public override void ReleaseTexture(ITextureCache Cache)
+        {
+        }
     }
 
     public class VSourceFilter : BaseSourceFilter
@@ -685,12 +292,16 @@ namespace Mpdn.RenderScript
         {
             get { return Renderer.ChromaSize; }
         }
+
+        public override void ReleaseTexture(ITextureCache Cache)
+        {
+        }
     }
 
     public class RgbFilter : Filter
     {
         public RgbFilter(IRenderer renderer, IFilter inputFilter)
-            : base(renderer, inputFilter)
+            : base(inputFilter)
         {
         }
 
@@ -701,7 +312,7 @@ namespace Mpdn.RenderScript
 
         public override void Render(IEnumerable<ITexture> inputs)
         {
-            Renderer.ConvertToRgb(OutputTexture, inputs.Single(), Renderer.Colorimetric);
+            StaticRenderer.ConvertToRgb(OutputTexture, inputs.Single());
         }
     }
 
@@ -715,7 +326,7 @@ namespace Mpdn.RenderScript
 
         public ShaderFilter(IRenderer renderer, IShader shader, TransformFunc transform, int sizeIndex,
             bool linearSampling, params IFilter[] inputFilters)
-            : base(renderer, inputFilters)
+            : base(inputFilters)
         {
             if (sizeIndex < 0 || sizeIndex >= inputFilters.Length || inputFilters[sizeIndex] == null)
             {
@@ -728,6 +339,7 @@ namespace Mpdn.RenderScript
             SizeIndex = sizeIndex;
         }
 
+        protected IRenderer Renderer { get; private set; }
         protected IShader Shader { get; private set; }
         protected bool LinearSampling { get; private set; }
         protected int Counter { get; private set; }
@@ -742,7 +354,7 @@ namespace Mpdn.RenderScript
         public override void Render(IEnumerable<ITexture> inputs)
         {
             LoadInputs(inputs);
-            Renderer.Render(OutputTexture, Shader);
+            StaticRenderer.Render(OutputTexture, Shader);
         }
 
         protected virtual void LoadInputs(IEnumerable<ITexture> inputs)
@@ -763,4 +375,118 @@ namespace Mpdn.RenderScript
             Shader.SetConstant(1, new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
         }
     }
+
+    public class OutputFilter : IDisposable
+    {
+        protected IRenderer Renderer;
+        protected IRenderChain Chain;
+        private TextureCache Cache;
+        private IFilter m_Filter;
+        private SourceFilter m_SourceFilter;
+
+        public OutputFilter(IRenderer renderer, IRenderChain chain)
+        {
+            Renderer = renderer;
+            Chain = chain;
+            m_SourceFilter = new SourceFilter(Renderer);
+            Cache = new TextureCache(Renderer);
+        }
+
+        public Size OutputSize
+        {
+            get { return m_Filter.OutputSize; }
+        }
+
+        public void Refresh()
+        {
+            Common.Dispose(m_Filter);
+
+            m_Filter = Chain.CreateFilter(m_SourceFilter);
+            m_Filter.Initialize();
+        }
+
+        public void Render()
+        {
+            Cache.PutTempTexture(Renderer.OutputRenderTarget);
+            m_Filter.NewFrame();
+            m_Filter.Render(Cache);
+            Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
+            m_Filter.ReleaseTexture(Cache);
+            Cache.FlushTextures();
+        }
+
+        public void Dispose()
+        {
+            Common.Dispose(Cache);
+            Common.Dispose(m_Filter);
+            Common.Dispose(m_SourceFilter);
+        }
+
+        private void Scale(ITexture output, ITexture input)
+        {
+            Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+        }
+
+        #region TextureCache
+
+        private class TextureCache : ITextureCache
+        {
+            private IRenderer Renderer;
+            private IList<ITexture> SavedTextures;
+            private IList<ITexture> OldTextures;
+            private IList<ITexture> TempTextures;
+
+            public TextureCache(IRenderer renderer)
+            {
+                Renderer = renderer;
+                SavedTextures = new List<ITexture>();
+                OldTextures = new List<ITexture>();
+                TempTextures = new List<ITexture>();
+            }
+
+            public ITexture GetTexture(Size textureSize)
+            {
+                IList<ITexture>[] lists = new[]{SavedTextures, OldTextures, TempTextures};
+                foreach (var list in lists)
+                foreach (var texture in list)
+                    if (   (texture.Width  == textureSize.Width) 
+                        && (texture.Height == textureSize.Height))
+                    {
+                        list.Remove(texture);
+                        return texture;
+                    }
+
+                return Renderer.CreateRenderTarget(textureSize);
+            }
+
+            public void PutTempTexture(ITexture texture)
+            {
+                TempTextures.Add(texture);
+            }
+
+            public void PutTexture(ITexture texture)
+            {
+                SavedTextures.Add(texture);
+            }
+
+            public void FlushTextures()
+            {
+                foreach (var texture in OldTextures)
+                    Common.Dispose(texture);
+
+                TempTextures = new List<ITexture>();
+                OldTextures = SavedTextures;
+                SavedTextures = new List<ITexture>();
+            }
+
+            public void Dispose()
+            {
+                FlushTextures();
+                FlushTextures();
+            }
+        }
+
+        #endregion
+    }
+
 }

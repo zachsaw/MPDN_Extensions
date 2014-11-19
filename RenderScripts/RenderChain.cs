@@ -1,4 +1,5 @@
 using System;
+using Mpdn.RenderScript.Scaler;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -8,7 +9,7 @@ using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
-    public static class ShaderCache
+    public static class StaticRenderer
     {
         private static Dictionary<String, IShader> m_CompiledShaders = new Dictionary<string, IShader>();
         public static IRenderer Renderer { private get; set; }
@@ -26,9 +27,29 @@ namespace Mpdn.RenderScript
 
             return shader;
         }
+
+        public static void Render(ITexture texture, IShader shader)
+        {
+            Renderer.Render(texture, shader);
+        }
+
+        public static void Scale(ITexture renderTarget, ITexture texture, IScaler upscaler, IScaler downscaler)
+        {
+            Renderer.Scale(renderTarget, texture, upscaler, downscaler);
+        }
+
+        public static void ConvertToRgb(ITexture renderTarget, ITexture texture)
+        {
+            Renderer.ConvertToRgb(renderTarget, texture, Renderer.Colorimetric);
+        }
+
+        public static void ConvertToRgb(ITexture renderTarget, ITexture texture, YuvColorimetric yuvColorimetric)
+        {
+            Renderer.ConvertToRgb(renderTarget, texture, yuvColorimetric);
+        }
     }
 
-    public interface IRenderChain : IDisposable
+    public interface IRenderChain
     {
         IRenderer Renderer { set; }
         IFilter CreateFilter(IFilter sourceFilter);
@@ -37,10 +58,7 @@ namespace Mpdn.RenderScript
     public abstract class RenderChain : IRenderChain
     {
         public IRenderer Renderer { protected get; set; }
-
         public abstract IFilter CreateFilter(IFilter sourceFilter);
-
-        public virtual void Dispose() { }
 
         #region Convenience Functions
 
@@ -60,7 +78,7 @@ namespace Mpdn.RenderScript
 
         protected IShader CompileShader(string shaderFileName)
         {
-            return ShaderCache.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
+            return StaticRenderer.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
         }
 
         protected IFilter CreateFilter(IShader shader, params IFilter[] inputFilters)
@@ -130,26 +148,24 @@ namespace Mpdn.RenderScript
         {
             return Compiler(sourceFilter);
         }
-
-        public virtual void Dispose() { }
     }
 
-    public class FilterChain : MetaFilter {
-        private IFilter m_Filter;
-        protected override IFilter Filter
-        {
-            get { return m_Filter; }
-        }
+    public class FilterChain {
+        public IFilter Filter;
 
         public FilterChain(IFilter sourceFilter)
         {
-            m_Filter = sourceFilter;
+            Filter = sourceFilter;
         }
 
         public void Add(IRenderChain renderChain)
         {
-            m_Filter = renderChain.CreateFilter(m_Filter);
-            renderChain.Dispose();
+            Filter = renderChain.CreateFilter(Filter);
+        }
+
+        public Size OutputSize
+        {
+            get { return Filter.OutputSize; }
         }
     }
 
@@ -160,7 +176,7 @@ namespace Mpdn.RenderScript
         public override IFilter CreateFilter(IFilter sourceFilter) {
             var chain = new FilterChain(sourceFilter);
             BuildChain(chain);
-            return chain;
+            return chain.Filter;
         }
 
         #region Convenience functions

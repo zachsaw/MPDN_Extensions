@@ -27,6 +27,16 @@ namespace Mpdn.RenderScript
 
         private TChain m_Chain;
         private OutputFilter m_Filter;
+        protected OutputFilter Filter
+        {
+            get
+            {
+                if (m_Filter == null) 
+                    m_Filter = new OutputFilter(Renderer, Chain);
+
+                return m_Filter;
+            }
+        }
 
         public virtual ScriptDescriptor Descriptor
         {
@@ -46,16 +56,15 @@ namespace Mpdn.RenderScript
         public virtual void Setup(IRenderer renderer)
         {
             Renderer = renderer;
-            ShaderCache.Renderer = Renderer;
+            StaticRenderer.Renderer = Renderer;
             Chain.Renderer = Renderer;
-            UpdateFilter();
+            RefreshFilter();
         }
 
         public virtual void Initialize(int instanceId)
         {
             m_Chain = new TChain();
-        }
-        
+        }        
 
         public virtual bool ShowConfigDialog(IWin32Window owner)
         {
@@ -68,40 +77,35 @@ namespace Mpdn.RenderScript
             {
                 return new ScriptInterfaceDescriptor
                 {
-                    OutputSize = m_Filter.OutputSize
+                    OutputSize = Filter.OutputSize
                 };
             }
         }
 
         public void Render()
         {
-            m_Filter.Render();
-        }
-
-        public OutputFilter Build(IRenderChain filterChain)
-        {
-            return new OutputFilter(Renderer, filterChain.CreateFilter(new SourceFilter(Renderer))); ;
+            Filter.Render();
         }
 
         public virtual void OnInputSizeChanged()
         {
-            UpdateFilter();
+            RefreshFilter();
         }
 
         public virtual void OnOutputSizeChanged()
         {
-            UpdateFilter();
+            RefreshFilter();
         }
 
-        public virtual void UpdateFilter()
+        public virtual void RefreshFilter()
         {
-            m_Filter = Build(Chain);
+            Filter.Refresh();
         }
 
         public void Destroy()
         {
             Common.Dispose(Chain);
-            Common.Dispose(m_Filter);
+            Common.Dispose(Filter);
         }
 
         #endregion Implementation

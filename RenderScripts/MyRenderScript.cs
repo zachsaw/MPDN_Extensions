@@ -13,27 +13,6 @@ namespace Mpdn.RenderScript
     namespace MyOwnUniqueNameSpace // e.g. Replace with your user name
     {
         public class MyRenderChain : CombinedChain {
-            /*#region Settings
-
-            private string[] PostProcess;
-
-            public MyRenderChain()
-            {
-                ImageProcessorUsage = ImageProcessorUsage.Always;
-            }
-
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public string[] ShaderFileNames
-            {
-                get { return PostProcess ?? (PostProcess = new string[0]); }
-                set { PostProcess = value; }
-            }
-
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public ImageProcessorUsage ImageProcessorUsage { get; set; }
-
-            #endregion*/
-
             private string[] PreProcess = new[] { @"SweetFX\Bloom.hlsl", @"SweetFX\LiftGammaGain.hlsl" };
             private string[] PostProcess = new[] { @"SweetFX\LumaSharpen.hlsl" };
             private string[] Deinterlace = new[] { @"MPC-HC\Deinterlace (blend).hlsl" };
@@ -57,7 +36,7 @@ namespace Mpdn.RenderScript
                 // Use NEDI once only.
                 // Note: To use NEDI as many times as required to get the image past target size,
                 //       Change the following *if* to *while*
-                if (IsUpscalingFrom(Chain)) // See RenderScriptChain for other comparer methods
+                if (IsUpscalingFrom(Chain)) // See CombinedChain for other comparer methods
                 {
                     Chain.Add(new Nedi { AlwaysDoubleImage = true });
                 }

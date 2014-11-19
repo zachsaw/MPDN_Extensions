@@ -211,7 +211,7 @@ namespace Mpdn.RenderScript
 
             public ResizeFilter(IRenderer renderer, IFilter inputFilter, Func<Size> getSizeFunc, 
                 IScaler upscaler, IScaler downscaler)
-                : base(renderer, inputFilter)
+                : base(inputFilter)
             {
                 m_GetSizeFunc = getSizeFunc;
                 m_Upscaler = upscaler;
@@ -225,7 +225,7 @@ namespace Mpdn.RenderScript
 
             public override void Render(IEnumerable<ITexture> inputs)
             {
-                Renderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler);
+                StaticRenderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler);
             }
         }
 
