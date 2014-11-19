@@ -18,7 +18,7 @@ namespace Mpdn.RenderScript
         void NewFrame();
         void Render(ITextureCache Cache);
         void ReleaseTexture(ITextureCache Cache);
-        void Initialize(int time = 0);
+        void Initialize(int time = 1);
     }
 
     public interface ITextureCache
@@ -61,7 +61,7 @@ namespace Mpdn.RenderScript
             Dispose(true);
         }
 
-        public virtual void Initialize(int time = 0)
+        public virtual void Initialize(int time = 1)
         {
             LastDependentIndex = time;
 
@@ -183,7 +183,7 @@ namespace Mpdn.RenderScript
 
         public virtual int FilterIndex
         {
-            get { return -1; }
+            get { return 0; }
         }
 
         public virtual int LastDependentIndex { get; private set; }
@@ -192,7 +192,7 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public void Initialize(int time = 0)
+        public void Initialize(int time = 1)
         {
             LastDependentIndex = time;
         }
@@ -376,7 +376,14 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class OutputFilter : IDisposable
+    public interface IOutputFilter
+    {
+        ScriptInterfaceDescriptor Descriptor { get; }
+        void Refresh();
+        void Render();
+    }
+
+    public class OutputFilter : IOutputFilter, IDisposable
     {
         protected IRenderer Renderer;
         protected IRenderChain Chain;
@@ -392,9 +399,17 @@ namespace Mpdn.RenderScript
             Cache = new TextureCache(Renderer);
         }
 
-        public Size OutputSize
+        public ScriptInterfaceDescriptor Descriptor
         {
-            get { return m_Filter.OutputSize; }
+            get
+            {
+                return new ScriptInterfaceDescriptor
+                {
+                    OutputSize = m_Filter.OutputSize,
+                    WantYuv = false,
+                    Prescale = (m_SourceFilter.LastDependentIndex > 0)
+                };
+            }
         }
 
         public void Refresh()

@@ -75,10 +75,7 @@ namespace Mpdn.RenderScript
         {
             get
             {
-                return new ScriptInterfaceDescriptor
-                {
-                    OutputSize = Filter.OutputSize
-                };
+                return Filter.Descriptor;
             }
         }
 

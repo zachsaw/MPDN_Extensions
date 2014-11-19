@@ -82,7 +82,7 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                return new ResizeFilter(Renderer, sourceFilter, GetOutputSize,
+                return new ResizeFilter(sourceFilter, GetOutputSize,
                     Upscaler ?? Renderer.LumaUpscaler, Downscaler ?? Renderer.LumaDownscaler);
             }
 
@@ -209,7 +209,7 @@ namespace Mpdn.RenderScript
             private readonly IScaler m_Upscaler;
             private readonly IScaler m_Downscaler;
 
-            public ResizeFilter(IRenderer renderer, IFilter inputFilter, Func<Size> getSizeFunc, 
+            public ResizeFilter(IFilter inputFilter, Func<Size> getSizeFunc, 
                 IScaler upscaler, IScaler downscaler)
                 : base(inputFilter)
             {
