@@ -225,13 +225,13 @@ namespace Mpdn.RenderScript
 
             public override void Render(IEnumerable<ITexture> inputs)
             {
-                StaticRenderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler);
+                Renderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler);
             }
         }
 
         #endregion
 
-        public class ResizerScript : ConfigurableRenderScript<Resizer, ResizerConfigDialog>
+        public class ResizerScript : ConfigurableRenderChainUi<Resizer, ResizerConfigDialog>
         {
             protected override string ConfigFileName
             {

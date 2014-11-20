@@ -38,7 +38,7 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public abstract class ConfigurableRenderScript<TChain, TDialog> : RenderScript<TChain>
+    public abstract class ConfigurableRenderChainUi<TChain, TDialog> : RenderChainUi<TChain>
         where TChain : class, IRenderChain, new()
         where TDialog : ScriptConfigDialog<TChain>, new()
     {
@@ -47,9 +47,9 @@ namespace Mpdn.RenderScript
 
         protected abstract string ConfigFileName { get; }
 
-        public override void Initialize(int instanceId)
+        public override void Initialize()
         {
-            ScriptConfig = new Config(ConfigFileName, instanceId);
+            ScriptConfig = new Config(ConfigFileName, 0);
         }
 
         public override ScriptDescriptor Descriptor

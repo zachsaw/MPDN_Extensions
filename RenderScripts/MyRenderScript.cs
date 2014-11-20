@@ -62,7 +62,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class MyRenderScript : RenderScript<MyRenderChain>
+        public class MyRenderScript : RenderChainUi<MyRenderChain>
         {
             protected override RenderScriptDescriptor ScriptDescriptor
             {

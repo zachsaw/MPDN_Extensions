@@ -142,7 +142,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class ImageProcessorScript : ConfigurableRenderScript<ImageProcessor, ImageProcessorConfigDialog>
+        public class ImageProcessorScript : ConfigurableRenderChainUi<ImageProcessor, ImageProcessorConfigDialog>
         {
             protected override string ConfigFileName
             {

@@ -17,8 +17,8 @@ namespace Mpdn.RenderScript
             private float B;
             private float C;
 
-            public ChromaFilter(IRenderer renderer, IShader shader, float B, float C, TransformFunc transform, params IFilter[] inputFilters)
-                : base(renderer, shader, transform, 0, false, inputFilters)
+            public ChromaFilter(IShader shader, float B, float C, TransformFunc transform, params IFilter[] inputFilters)
+                : base(shader, transform, 0, false, inputFilters)
             { 
                 this.B = B;
                 this.C = C;
@@ -111,19 +111,19 @@ namespace Mpdn.RenderScript
                 Func<Size, Size> transformHeight = s => new Size(s.Width, Renderer.VideoSize.Height);
                 Func<Size, Size> transformWidthHeight = s => Renderer.VideoSize;
 
-                var Yinput = new YSourceFilter(Renderer);
-                var Uinput = new USourceFilter(Renderer);
-                var Vinput = new VSourceFilter(Renderer);
+                var Yinput = new YSourceFilter();
+                var Uinput = new USourceFilter();
+                var Vinput = new VSourceFilter();
 
-                var chroma = new ChromaFilter(Renderer, m_ChromaShader, B, C, transformWidthHeight, Yinput, Uinput, Vinput);
-                var rgb = new RgbFilter(Renderer, chroma);
+                var chroma = new ChromaFilter(m_ChromaShader, B, C, transformWidthHeight, Yinput, Uinput, Vinput);
+                var rgb = new RgbFilter(chroma);
 
                 return rgb;
             }
         }
 
 
-        public class ChromaScaler : ConfigurableRenderScript<BicubicChroma, ChromaScalerConfigDialog>
+        public class ChromaScaler : ConfigurableRenderChainUi<BicubicChroma, ChromaScalerConfigDialog>
         {
             protected override string ConfigFileName
             {

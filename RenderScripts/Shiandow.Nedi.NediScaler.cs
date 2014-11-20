@@ -56,7 +56,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class NediScaler : ConfigurableRenderScript<Nedi, NediConfigDialog>
+        public class NediScaler : ConfigurableRenderChainUi<Nedi, NediConfigDialog>
         {
             protected override string ConfigFileName
             {
