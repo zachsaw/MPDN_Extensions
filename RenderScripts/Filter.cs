@@ -273,7 +273,7 @@ namespace Mpdn.RenderScript
 
         public override Size OutputSize
         {
-            get { return Renderer.InputSize; }
+            get { return Renderer.VideoSize; }
         }
 
         #endregion
