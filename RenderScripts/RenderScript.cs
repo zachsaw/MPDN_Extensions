@@ -93,16 +93,21 @@ namespace Mpdn.RenderScript
         public string Copyright = "";
     }
 
-    public abstract class RenderChainUi<TChain> : IRenderScriptUi
+    public interface IRenderChainUi : IRenderScriptUi
+    {
+        IRenderChain GetChain();
+        void SetChain(IRenderChain renderChain);
+    }
+
+    public abstract class RenderChainUi<TChain> : IRenderChainUi
         where TChain : class, IRenderChain, new()
     {
-        protected virtual TChain Chain { get { return m_Chain; } }
+        protected virtual TChain Chain { get; set; }
 
         protected abstract RenderScriptDescriptor ScriptDescriptor { get; }
 
         #region Implementation
 
-        private TChain m_Chain;
         private IRenderScript m_RenderScript;
         public IRenderScript RenderScript
         {
@@ -113,6 +118,21 @@ namespace Mpdn.RenderScript
 
                 return m_RenderScript;
             }
+        }
+
+        public virtual void Initialize()
+        {
+            Chain = new TChain();
+        }
+
+        public IRenderChain GetChain()
+        {
+            return Chain;
+        }
+
+        public void SetChain(IRenderChain renderChain)
+        {
+           Chain = renderChain as TChain;
         }
 
         public virtual ScriptDescriptor Descriptor
@@ -128,11 +148,6 @@ namespace Mpdn.RenderScript
                     Copyright = ScriptDescriptor.Copyright
                 };
             }
-        }
-
-        public virtual void Initialize()
-        {
-            m_Chain = new TChain();
         }
 
         public virtual bool ShowConfigDialog(IWin32Window owner)

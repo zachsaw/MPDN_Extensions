@@ -83,7 +83,7 @@ namespace Mpdn.RenderScript
             {
                 get
                 {
-                    return Preset;
+                    return m_Preset;
                 }
                 set
                 {
