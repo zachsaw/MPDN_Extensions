@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using SharpDX;
+using Mpdn.RenderScript.Scaler;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
@@ -264,6 +265,13 @@ namespace Mpdn.RenderScript
 
     public sealed class SourceFilter : BaseSourceFilter
     {
+        private Size m_PrescaleSize;
+
+        public SourceFilter(Size prescaleSize)
+        {
+            m_PrescaleSize = prescaleSize;
+        }
+
         #region IFilter Implementation
 
         public override ITexture OutputTexture
@@ -273,7 +281,7 @@ namespace Mpdn.RenderScript
 
         public override Size OutputSize
         {
-            get { return Renderer.VideoSize; }
+            get { return m_PrescaleSize; }
         }
 
         #endregion
@@ -345,6 +353,32 @@ namespace Mpdn.RenderScript
         public override void Render(IEnumerable<ITexture> inputs)
         {
             Renderer.ConvertToRgb(OutputTexture, inputs.Single(), Renderer.Colorimetric);
+        }
+    }
+
+    public class ResizeFilter : Filter
+    {
+        private readonly Func<Size> m_GetSizeFunc;
+        private readonly IScaler m_Upscaler;
+        private readonly IScaler m_Downscaler;
+
+        public ResizeFilter(IFilter inputFilter, Func<Size> getSizeFunc,
+            IScaler upscaler, IScaler downscaler)
+            : base(inputFilter)
+        {
+            m_GetSizeFunc = getSizeFunc;
+            m_Upscaler = upscaler;
+            m_Downscaler = downscaler;
+        }
+
+        public override Size OutputSize
+        {
+            get { return m_GetSizeFunc(); }
+        }
+
+        public override void Render(IEnumerable<ITexture> inputs)
+        {
+            Renderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler);
         }
     }
 

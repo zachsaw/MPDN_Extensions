@@ -201,36 +201,6 @@ namespace Mpdn.RenderScript
             #endregion
         }
 
-        #region Filter Definition
-
-        public class ResizeFilter : Filter
-        {
-            private readonly Func<Size> m_GetSizeFunc;
-            private readonly IScaler m_Upscaler;
-            private readonly IScaler m_Downscaler;
-
-            public ResizeFilter(IFilter inputFilter, Func<Size> getSizeFunc, 
-                IScaler upscaler, IScaler downscaler)
-                : base(inputFilter)
-            {
-                m_GetSizeFunc = getSizeFunc;
-                m_Upscaler = upscaler;
-                m_Downscaler = downscaler;
-            }
-
-            public override Size OutputSize
-            {
-                get { return m_GetSizeFunc(); }
-            }
-
-            public override void Render(IEnumerable<ITexture> inputs)
-            {
-                Renderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler);
-            }
-        }
-
-        #endregion
-
         public class ResizerScript : ConfigurableRenderChainUi<Resizer, ResizerConfigDialog>
         {
             protected override string ConfigFileName

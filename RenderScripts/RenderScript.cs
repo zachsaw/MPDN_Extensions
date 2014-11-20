@@ -37,7 +37,7 @@ namespace Mpdn.RenderScript
         public RenderChainScript(IRenderChain chain)
         {
             Chain = chain;
-            m_SourceFilter = new SourceFilter();
+            m_SourceFilter = new SourceFilter(chain.PrescaleSize);
             Cache = new TextureCache();
         }
 
@@ -47,9 +47,9 @@ namespace Mpdn.RenderScript
             {
                 return new ScriptInterfaceDescriptor
                 {
-                    WantYuv = false, // Not implemented yet
+                    WantYuv = Chain.WantYuv,
                     Prescale = (m_SourceFilter.LastDependentIndex > 0),
-                    PrescaleSize = Size.Empty // Not implemented yet
+                    PrescaleSize = Chain.PrescaleSize
                 };
             }
         }
