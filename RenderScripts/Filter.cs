@@ -281,7 +281,13 @@ namespace Mpdn.RenderScript
 
         public override Size OutputSize
         {
-            get { return m_PrescaleSize; }
+            get 
+            {
+                if (m_PrescaleSize.IsEmpty)
+                    return Renderer.VideoSize;
+                else
+                    return m_PrescaleSize; 
+            }
         }
 
         #endregion
