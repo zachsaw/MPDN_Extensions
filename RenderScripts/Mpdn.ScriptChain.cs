@@ -24,24 +24,23 @@ namespace Mpdn.RenderScript
                         m_ChainUi = CreateUi();
                     return m_ChainUi;
                 }
-                set
-                {
-                    m_ChainUi = ChainUi;
-                }
             }
 
             [YAXSerializeAs("RenderChainUi")]
             [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public String UiTypeName
             {
-                get
-                {
-                    return UiType.FullName;
-                }
-                set
-                {
-                    UiType = Assembly.GetExecutingAssembly().GetType(value, false);
-                }
+                get { return UiType.FullName; }
+                set { UiType = Assembly.GetExecutingAssembly().GetType(value, false); }
+            }
+
+            public ChainUiPair() { }
+
+            public ChainUiPair(IRenderChainUi scripUi)
+            {
+                Chain = scripUi.GetChain();
+                m_ChainUi = scripUi;
+                UiType = scripUi.GetType();
             }
             
             private IRenderChainUi m_ChainUi;
@@ -69,7 +68,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        
+
         public class ScriptChainScript : ConfigurableRenderChainUi<ScriptChain, ScriptChainDialog>
         {
             protected override string ConfigFileName

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Mpdn.RenderScript.Config;
 
 namespace Mpdn.RenderScript
 {
@@ -92,19 +93,12 @@ namespace Mpdn.RenderScript
             private readonly string m_ConfigName;
 
             public Config(string configName)
-                : base(false)
             {
                 m_ConfigName = configName;
                 Load();
             }
 
-            public Config(TChain Chain)
-                : base(false)
-            {
-                //Config = Chain;
-                m_ConfigName = "";
-                Load();
-            }
+            public Config(TChain Chain) : base(Chain) { }
 
             protected override string ScriptConfigFileName
             {
