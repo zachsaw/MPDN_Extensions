@@ -41,8 +41,6 @@ namespace Mpdn.RenderScript
                 public Type UiType;
                 public IRenderChainUi ChainUi;
 
-                public ChainAbstract() { }
-
                 public ChainAbstract(ChainUiPair Pair)
                 {
                     Chain = Pair.Chain;
@@ -54,7 +52,7 @@ namespace Mpdn.RenderScript
                 {
                     UiType = ScriptType;
                     ChainUi = (IRenderChainUi)UiType.GetConstructor(Type.EmptyTypes).Invoke(new object[0]);
-                    ChainUi.Initialize();
+                    ChainUi.Initialize(null);
                     Chain = ChainUi.GetChain();
                 }
 

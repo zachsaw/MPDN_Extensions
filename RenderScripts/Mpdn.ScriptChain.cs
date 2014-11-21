@@ -47,8 +47,7 @@ namespace Mpdn.RenderScript
             private IRenderChainUi m_ChainUi;
             private IRenderChainUi CreateUi() {
                 var Ui = (IRenderChainUi)UiType.GetConstructor(Type.EmptyTypes).Invoke(new object[0]);
-                Ui.Initialize();
-                Ui.SetChain(Chain);
+                Ui.Initialize(Chain);
                 return Ui;
             }
         }

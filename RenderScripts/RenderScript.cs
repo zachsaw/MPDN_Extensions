@@ -96,43 +96,44 @@ namespace Mpdn.RenderScript
     public interface IRenderChainUi : IRenderScriptUi
     {
         IRenderChain GetChain();
-        void SetChain(IRenderChain renderChain);
+        void Initialize(IRenderChain renderChain);
     }
 
     public abstract class RenderChainUi<TChain> : IRenderChainUi
         where TChain : class, IRenderChain, new()
     {
-        protected virtual TChain Chain { get; set; }
-
+        protected virtual TChain Chain { get { return m_Chain; } }
         protected abstract RenderScriptDescriptor ScriptDescriptor { get; }
 
-        #region Implementation
-
-        private IRenderScript m_RenderScript;
         public IRenderScript RenderScript
         {
             get
             {
-                if (m_RenderScript == null) 
+                if (m_RenderScript == null)
                     m_RenderScript = new RenderChainScript(Chain);
 
                 return m_RenderScript;
             }
         }
 
+        #region Implementation
+
+        private TChain m_Chain;
+        private IRenderScript m_RenderScript;
+
         public virtual void Initialize()
         {
-            Chain = new TChain();
+            m_Chain = new TChain();
+        }
+
+        public virtual void Initialize(IRenderChain renderChain)
+        {
+            m_Chain = renderChain as TChain;
         }
 
         public IRenderChain GetChain()
         {
             return Chain;
-        }
-
-        public void SetChain(IRenderChain renderChain)
-        {
-           Chain = renderChain as TChain;
         }
 
         public virtual ScriptDescriptor Descriptor
@@ -157,16 +158,12 @@ namespace Mpdn.RenderScript
 
         public virtual ScriptInterfaceDescriptor InterfaceDescriptor
         {
-            get
-            {
-                return RenderScript.Descriptor;
-            }
+            get { return RenderScript.Descriptor; }
         }
 
         public void Destroy()
         {
-            Common.Dispose(Chain);
-            Common.Dispose(RenderScript);
+            Common.Dispose(m_RenderScript);
         }
 
         #endregion Implementation

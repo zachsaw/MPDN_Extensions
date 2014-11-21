@@ -43,13 +43,18 @@ namespace Mpdn.RenderScript
         where TDialog : ScriptConfigDialog<TChain>, new()
     {
         protected Config ScriptConfig { get; private set; }
-        protected override TChain Chain { get { return ScriptConfig.Config; } set { /* Nop */ } }
+        protected override TChain Chain { get { return ScriptConfig.Config; } }
 
         protected abstract string ConfigFileName { get; }
 
         public override void Initialize()
         {
-            ScriptConfig = new Config(ConfigFileName, 0);
+            ScriptConfig = new Config(ConfigFileName);
+        }
+
+        public override void Initialize(IRenderChain renderChain)
+        {
+            ScriptConfig = new Config(renderChain as TChain);
         }
 
         public override ScriptDescriptor Descriptor
@@ -85,19 +90,25 @@ namespace Mpdn.RenderScript
         public class Config : ScriptSettings<TChain>
         {
             private readonly string m_ConfigName;
-            private readonly int m_InstanceId;
 
-            public Config(string configName, int instanceId)
+            public Config(string configName)
                 : base(false)
             {
-                m_InstanceId = instanceId;
                 m_ConfigName = configName;
+                Load();
+            }
+
+            public Config(TChain Chain)
+                : base(false)
+            {
+                //Config = Chain;
+                m_ConfigName = "";
                 Load();
             }
 
             protected override string ScriptConfigFileName
             {
-                get { return string.Format("{0}.{1}.config", m_ConfigName, m_InstanceId); }
+                get { return string.Format("{0}.config", m_ConfigName); }
             }
         }
 
