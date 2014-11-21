@@ -1,67 +1,156 @@
 ﻿using System;
+using System.IO;
 using System.Data;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
-    public abstract class RenderScript : IScriptRenderer, IDisposable
+    public static class ShaderCache
     {
-        protected IRenderer Renderer { get; private set; }
-        protected IFilter SourceFilter
+        private static Dictionary<String, IShader> CompiledShaders = new Dictionary<string, IShader>();
+
+        public static IShader CompileShader(String shaderPath)
         {
-            get { return m_SourceFilter ?? (m_SourceFilter = new SourceFilter(Renderer)); }
+            IShader shader;
+            CompiledShaders.TryGetValue(shaderPath, out shader);
+
+            if (shader == null)
+            {
+                shader = Renderer.CompileShader(shaderPath);
+                CompiledShaders.Add(shaderPath, shader);
+            }
+
+            return shader;
+        }
+    }
+
+    public class RenderChainScript : IRenderScript, IDisposable
+    {
+        protected IRenderChain Chain;
+        private TextureCache Cache;
+        private IFilter m_Filter;
+        private SourceFilter m_SourceFilter;
+
+        public RenderChainScript(IRenderChain chain)
+        {
+            Chain = chain;
+            m_SourceFilter = new SourceFilter(chain.PrescaleSize);
+            Cache = new TextureCache();
         }
 
-        public abstract ScriptDescriptor Descriptor { get; }
-
-        public virtual ScriptInterfaceDescriptor InterfaceDescriptor
-        {
-            get { return new ScriptInterfaceDescriptor(); }
-        }
-
-        public abstract IFilter CreateFilter();
-
-        protected abstract TextureAllocTrigger TextureAllocTrigger { get; }
-
-        public virtual void Initialize(int instanceId)
-        {
-        }
-
-        #region Implementation
-
-        private IFilter m_SourceFilter;
-        protected IFilter m_Filter;
-
-        protected virtual string ShaderPath
-        {
-            get { return GetType().FullName; }
-        }
-
-        protected string ShaderDataFilePath
+        public ScriptInterfaceDescriptor Descriptor
         {
             get
             {
-                var asmPath = typeof(IScriptRenderer).Assembly.Location;
-                return Path.Combine(Common.GetDirectoryName(asmPath), "RenderScripts", ShaderPath);
+                return new ScriptInterfaceDescriptor
+                {
+                    WantYuv = Chain.WantYuv,
+                    Prescale = (m_SourceFilter.LastDependentIndex > 0),
+                    PrescaleSize = Chain.PrescaleSize
+                };
             }
         }
 
-        public virtual IFilter GetFilter()
+        public void Update()
         {
-            return m_Filter;
+            Common.Dispose(m_Filter);
+
+            m_Filter = Chain.CreateFilter(m_SourceFilter);
+            m_Filter.Initialize();
+        }
+
+        public void Render()
+        {
+            Cache.PutTempTexture(Renderer.OutputRenderTarget);
+            m_Filter.NewFrame();
+            m_Filter.Render(Cache);
+            Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
+            m_Filter.ReleaseTexture(Cache);
+            Cache.FlushTextures();
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            Common.Dispose(Cache);
+            Common.Dispose(m_Filter);
+            Common.Dispose(m_SourceFilter);
         }
 
-        public virtual void Destroy()
+        private void Scale(ITexture output, ITexture input)
         {
+            Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+        }
+    }
+
+    public class RenderScriptDescriptor
+    {
+        public Guid Guid = Guid.Empty;
+        public string Name;
+        public string Description;
+        public string Copyright = "";
+    }
+
+    public interface IRenderChainUi : IRenderScriptUi
+    {
+        IRenderChain GetChain();
+        void Initialize(IRenderChain renderChain);
+    }
+
+    public abstract class RenderChainUi<TChain> : IRenderChainUi
+        where TChain : class, IRenderChain, new()
+    {
+        protected virtual TChain Chain { get { return m_Chain; } }
+        protected abstract RenderScriptDescriptor ScriptDescriptor { get; }
+
+        public IRenderScript RenderScript
+        {
+            get
+            {
+                if (m_RenderScript == null)
+                    m_RenderScript = new RenderChainScript(Chain);
+
+                return m_RenderScript;
+            }
+        }
+
+        #region Implementation
+
+        private TChain m_Chain;
+        private IRenderScript m_RenderScript;
+
+        public virtual void Initialize()
+        {
+            m_Chain = new TChain();
+        }
+
+        public virtual void Initialize(IRenderChain renderChain)
+        {
+            m_Chain = renderChain as TChain;
+
+            if (m_Chain == null) m_Chain = new TChain();
+        }
+
+        public IRenderChain GetChain()
+        {
+            return Chain;
+        }
+
+        public virtual ScriptDescriptor Descriptor
+        {
+            get
+            {
+                return new ScriptDescriptor
+                {
+                    HasConfigDialog = false,
+                    Guid = ScriptDescriptor.Guid,
+                    Name = ScriptDescriptor.Name,
+                    Description = ScriptDescriptor.Description,
+                    Copyright = ScriptDescriptor.Copyright
+                };
+            }
         }
 
         public virtual bool ShowConfigDialog(IWin32Window owner)
@@ -69,169 +158,16 @@ namespace Mpdn.RenderScript
             throw new NotImplementedException("Config dialog has not been implemented");
         }
 
-        public virtual void Setup(IRenderer renderer)
+        public virtual ScriptInterfaceDescriptor InterfaceDescriptor
         {
-            Renderer = renderer;
-            m_Filter = CreateFilter();
+            get { return RenderScript.Descriptor; }
         }
 
-        public virtual void OnInputSizeChanged()
+        public void Destroy()
         {
-            switch (TextureAllocTrigger)
-            {
-                case TextureAllocTrigger.OnInputOutputSizeChanged:
-                case TextureAllocTrigger.OnInputSizeChanged:
-                    AllocateTextures();
-                    break;
-            }
+            Common.Dispose(m_RenderScript);
         }
 
-        public virtual void OnOutputSizeChanged()
-        {
-            switch (TextureAllocTrigger)
-            {
-                case TextureAllocTrigger.OnInputOutputSizeChanged:
-                case TextureAllocTrigger.OnOutputSizeChanged:
-                    AllocateTextures();
-                    break;
-            }
-        }
-
-        public virtual void Render()
-        {
-            if (HandleFilterChanged(GetFilter()))
-            {
-                m_Filter.AllocateTextures();
-            }
-            Scale(Renderer.OutputRenderTarget, GetFrame(m_Filter));
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            // Not required, but is there in case SourceFilter is changed 
-            // such that it does something in its Dispose method
-            Common.Dispose(ref m_SourceFilter);
-            Common.Dispose(ref m_Filter);
-        }
-
-        ~RenderScript()
-        {
-            Dispose(false);
-        }
-
-        protected virtual ITexture GetFrame(IFilter filter)
-        {
-            EnsureFilterNotNull(filter);
-            filter.NewFrame();
-            filter.Render();
-            return filter.OutputTexture;
-        }
-
-        protected virtual void AllocateTextures()
-        {
-            if (Renderer == null)
-                return;
-
-            HandleFilterChanged(GetFilter());
-            m_Filter.AllocateTextures();
-        }
-
-        private bool HandleFilterChanged(IFilter filter)
-        {
-            EnsureFilterNotNull(filter);
-
-            if (m_Filter == filter)
-                return false;
-
-            if (m_Filter != null)
-            {
-                m_Filter.DeallocateTextures();
-            }
-            m_Filter = filter;
-            m_Filter.Initialize();
-            return true;
-        }
-
-        private static void EnsureFilterNotNull(IFilter filter)
-        {
-            if (filter == null)
-            {
-                throw new NoNullAllowedException("GetFilter must not return null");
-            }
-        }
-
-        #endregion
-
-        #region Convenience Functions
-
-        protected virtual void Scale(ITexture output, ITexture input)
-        {
-            Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
-        }
-
-        protected IShader CompileShader(string shaderFileName)
-        {
-            return Renderer.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
-        }
-
-        protected IFilter CreateFilter(IShader shader, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, bool linearSampling, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, 0, linearSampling, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, int sizeIndex, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, sizeIndex, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, s => new Size(s.Width, s.Height), sizeIndex, linearSampling, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform,
-            params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, transform, 0, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform, bool linearSampling,
-            params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, transform, 0, linearSampling, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform, int sizeIndex,
-            params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, transform, sizeIndex, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform, int sizeIndex,
-            bool linearSampling, params IFilter[] inputFilters)
-        {
-            if (shader == null)
-                throw new ArgumentNullException("shader");
-
-            if (Renderer == null)
-                throw new InvalidOperationException("CreateFilter is not available before Setup() is called");
-
-            return new ShaderFilter(Renderer, shader, transform, sizeIndex, linearSampling, inputFilters);
-        }
-
-        #endregion
-    }
-
-    public enum TextureAllocTrigger
-    {
-        None,
-        OnInputSizeChanged,
-        OnOutputSizeChanged,
-        OnInputOutputSizeChanged
+        #endregion Implementation
     }
 }

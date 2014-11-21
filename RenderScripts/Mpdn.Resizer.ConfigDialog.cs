@@ -22,12 +22,12 @@ namespace Mpdn.RenderScript
 
             protected override void LoadSettings()
             {
-                listBox.SelectedIndex = (int) Settings.Resizer;
+                listBox.SelectedIndex = (int) Settings.ResizerOption;
             }
 
             protected override void SaveSettings()
             {
-                Settings.Resizer = (ResizerOption) listBox.SelectedIndex;
+                Settings.ResizerOption = (ResizerOption) listBox.SelectedIndex;
             }
 
             private void ListBoxDoubleClick(object sender, EventArgs e)
@@ -36,7 +36,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public abstract class ResizerConfigDialogBase : ScriptConfigDialog<Settings>
+        public class ResizerConfigDialogBase : ScriptConfigDialog<Resizer>
         {
         }
     }

@@ -51,13 +51,13 @@ namespace Mpdn.RenderScript
                     return;
 
                 m_SettingPreset = true;
-                BSetter.Value = (Decimal) ChromaScaler.B_CONST[index];
-                CSetter.Value = (Decimal) ChromaScaler.C_CONST[index];
+                BSetter.Value = (Decimal) BicubicChroma.B_CONST[index];
+                CSetter.Value = (Decimal) BicubicChroma.C_CONST[index];
                 m_SettingPreset = false;
             }
         }
 
-        public abstract class ChromaScalerConfigDialogBase : ScriptConfigDialog<Settings>
+        public class ChromaScalerConfigDialogBase : ScriptConfigDialog<BicubicChroma>
         {
         }
     }
