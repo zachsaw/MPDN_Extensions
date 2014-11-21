@@ -35,8 +35,14 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            private class ChainAbstract : ChainUiPair
+            private class ChainAbstract
             {
+                public IRenderChain Chain;
+                public Type UiType;
+                public IRenderChainUi ChainUi;
+
+                public ChainAbstract() { }
+
                 public ChainAbstract(ChainUiPair Pair)
                 {
                     Chain = Pair.Chain;
@@ -47,12 +53,24 @@ namespace Mpdn.RenderScript
                 public ChainAbstract(Type ScriptType)
                 {
                     UiType = ScriptType;
+                    ChainUi = (IRenderChainUi)UiType.GetConstructor(Type.EmptyTypes).Invoke(new object[0]);
+                    ChainUi.Initialize();
                     Chain = ChainUi.GetChain();
                 }
 
                 public override String ToString()
                 {
                     return ChainUi.Descriptor.Name;
+                }
+
+                public ChainUiPair ToPair()
+                {
+                    return new ChainUiPair
+                    {
+                        Chain = Chain,
+                        UiType = UiType,
+                        ChainUi = ChainUi
+                    };
                 }
             }
 
@@ -83,7 +101,7 @@ namespace Mpdn.RenderScript
 
             protected override void SaveSettings()
             {
-                Settings.ScriptList = scriptListBox.Items.Cast<ChainUiPair>().ToList();
+                Settings.ScriptList = scriptListBox.Items.Cast<ChainAbstract>().Select(x => x.ToPair()).ToList();
             }
 
             private void UpdateButtons()
@@ -128,8 +146,8 @@ namespace Mpdn.RenderScript
 
             private void ButtonConfigureClick(object sender, EventArgs e)
             {
-                var item = (ScriptAbstract)scriptListBox.SelectedItem;
-                item.ScriptUi.ShowConfigDialog(Owner);
+                var item = (ChainAbstract)scriptListBox.SelectedItem;
+                item.ChainUi.ShowConfigDialog(Owner);
             }
         }
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.IO;
 using SharpDX;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
+using YAXLib;
 
 namespace Mpdn.RenderScript
 {
@@ -19,7 +20,9 @@ namespace Mpdn.RenderScript
     public abstract class RenderChain : IRenderChain
     {
         public abstract IFilter CreateFilter(IFilter sourceFilter);
+        [YAXDontSerialize]
         public virtual bool WantYuv { get; protected set; }
+        [YAXDontSerialize]
         public virtual Size PrescaleSize { get; protected set; }
 
         #region Convenience Functions
@@ -96,7 +99,9 @@ namespace Mpdn.RenderScript
     public class StaticChain : IRenderChain
     {
         private Func<IFilter, IFilter> Compiler;
+        [YAXDontSerialize]
         public virtual bool WantYuv { get; protected set; }
+        [YAXDontSerialize]
         public virtual Size PrescaleSize { get; protected set; }
 
         public StaticChain(Func<IFilter, IFilter> compiler)
@@ -147,7 +152,7 @@ namespace Mpdn.RenderScript
                 // Convert to/from YUV
                 if (previous.WantYuv && !current.WantYuv)
                     Filter = new RgbFilter(Filter);
-                else if (previous.WantYuv && !current.WantYuv)
+                else if (!previous.WantYuv && current.WantYuv)
                     throw new NotImplementedException();
                 //Filter = new YuvFilter(Filter);
 

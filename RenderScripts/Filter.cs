@@ -362,6 +362,24 @@ namespace Mpdn.RenderScript
         }
     }
 
+    public class YuvFilter : Filter
+    {
+        public YuvFilter(IFilter inputFilter)
+            : base(inputFilter)
+        {
+        }
+
+        public override Size OutputSize
+        {
+            get { return InputFilters[0].OutputSize; }
+        }
+
+        public override void Render(IEnumerable<ITexture> inputs)
+        {
+            Renderer.ConvertToYuv(OutputTexture, inputs.Single(), Renderer.Colorimetric);
+        }
+    }
+
     public class ResizeFilter : Filter
     {
         private readonly Func<Size> m_GetSizeFunc;

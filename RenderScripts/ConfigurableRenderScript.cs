@@ -43,7 +43,7 @@ namespace Mpdn.RenderScript
         where TDialog : ScriptConfigDialog<TChain>, new()
     {
         protected Config ScriptConfig { get; private set; }
-        protected override TChain Chain { get { return ScriptConfig.Config; } }
+        protected override TChain Chain { get { return ScriptConfig.Config; } set { /* Nop */ } }
 
         protected abstract string ConfigFileName { get; }
 

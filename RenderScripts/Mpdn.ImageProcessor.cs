@@ -64,80 +64,77 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                if (UseImageProcessor)
+                if (UseImageProcessor(sourceFilter))
                     return ShaderFileNames.Aggregate(sourceFilter, (current, filename) => CreateFilter(CompileShader(filename), current));
                 else
                     return sourceFilter;
             }
 
-            private bool UseImageProcessor
+            private bool UseImageProcessor(IFilter sourceFilter)
             {
-                get
+                bool notscalingVideo = false;
+                bool upscalingVideo = false;
+                bool downscalingVideo = false;
+                bool notscalingInput = false;
+                bool upscalingInput = false;
+                bool downscalingInput = false;
+
+                var usage = ImageProcessorUsage;
+                var inputSize = Renderer.VideoSize;
+                var outputSize = Renderer.TargetSize;
+                if (outputSize == inputSize)
                 {
-                    bool notscalingVideo = false;
-                    bool upscalingVideo = false;
-                    bool downscalingVideo = false;
-                    bool notscalingInput = false;
-                    bool upscalingInput = false;
-                    bool downscalingInput = false;
+                    // Not scaling video
+                    notscalingVideo = true;
+                }
+                else if (outputSize.Width > inputSize.Width)
+                {
+                    // Upscaling video
+                    upscalingVideo = true;
+                }
+                else
+                {
+                    // Downscaling video
+                    downscalingVideo = true;
+                }
 
-                    var usage = ImageProcessorUsage;
-                    var inputSize = Renderer.VideoSize;
-                    var outputSize = Renderer.TargetSize;
-                    if (outputSize == inputSize)
-                    {
-                        // Not scaling video
-                        notscalingVideo = true;
-                    }
-                    else if (outputSize.Width > inputSize.Width)
-                    {
-                        // Upscaling video
-                        upscalingVideo = true;
-                    }
-                    else
-                    {
-                        // Downscaling video
-                        downscalingVideo = true;
-                    }
-                    inputSize = Renderer.InputSize;
-                    outputSize = Renderer.OutputSize;
-                    if (outputSize == inputSize)
-                    {
-                        // Not scaling input
-                        notscalingInput = true;
-                    }
-                    else if (outputSize.Width > inputSize.Width)
-                    {
-                        // Upscaling input
-                        upscalingInput = true;
-                    }
-                    else
-                    {
-                        // Downscaling input
-                        downscalingInput = true;
-                    }
+                inputSize = sourceFilter.OutputSize;
+                if (outputSize == inputSize)
+                {
+                    // Not scaling input
+                    notscalingInput = true;
+                }
+                else if (outputSize.Width > inputSize.Width)
+                {
+                    // Upscaling input
+                    upscalingInput = true;
+                }
+                else
+                {
+                    // Downscaling input
+                    downscalingInput = true;
+                }
 
-                    switch (usage)
-                    {
-                        case ImageProcessorUsage.Always:
-                            return true;
-                        case ImageProcessorUsage.Never:
-                            return false;
-                        case ImageProcessorUsage.WhenUpscaling:
-                            return upscalingVideo;
-                        case ImageProcessorUsage.WhenDownscaling:
-                            return downscalingVideo;
-                        case ImageProcessorUsage.WhenNotScaling:
-                            return notscalingVideo;
-                        case ImageProcessorUsage.WhenUpscalingInput:
-                            return upscalingInput;
-                        case ImageProcessorUsage.WhenDownscalingInput:
-                            return downscalingInput;
-                        case ImageProcessorUsage.WhenNotScalingInput:
-                            return notscalingInput;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                switch (usage)
+                {
+                    case ImageProcessorUsage.Always:
+                        return true;
+                    case ImageProcessorUsage.Never:
+                        return false;
+                    case ImageProcessorUsage.WhenUpscaling:
+                        return upscalingVideo;
+                    case ImageProcessorUsage.WhenDownscaling:
+                        return downscalingVideo;
+                    case ImageProcessorUsage.WhenNotScaling:
+                        return notscalingVideo;
+                    case ImageProcessorUsage.WhenUpscalingInput:
+                        return upscalingInput;
+                    case ImageProcessorUsage.WhenDownscalingInput:
+                        return downscalingInput;
+                    case ImageProcessorUsage.WhenNotScalingInput:
+                        return notscalingInput;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
         }

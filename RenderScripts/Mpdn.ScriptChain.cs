@@ -10,11 +10,13 @@ namespace Mpdn.RenderScript
     {
         public class ChainUiPair
         {
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            [YAXSerializeAs("RenderChain")]
             public IRenderChain Chain { get; set; }
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+
+            [YAXDontSerialize]
             public Type UiType { get; set; }
 
+            [YAXDontSerialize]
             public IRenderChainUi ChainUi { 
                 get 
                 { 
@@ -22,9 +24,23 @@ namespace Mpdn.RenderScript
                         m_ChainUi = CreateUi();
                     return m_ChainUi;
                 }
-                protected set
+                set
                 {
                     m_ChainUi = ChainUi;
+                }
+            }
+
+            [YAXSerializeAs("RenderChainUi")]
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public String UiTypeName
+            {
+                get
+                {
+                    return UiType.FullName;
+                }
+                set
+                {
+                    UiType = Assembly.GetExecutingAssembly().GetType(value, false);
                 }
             }
             
@@ -45,7 +61,7 @@ namespace Mpdn.RenderScript
             }
 
             [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public IList<ChainUiPair> ScriptList { get; set; }
+            public List<ChainUiPair> ScriptList { get; set; }
 
             protected override void BuildChain(FilterChain Chain)
             {
