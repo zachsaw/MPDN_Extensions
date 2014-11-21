@@ -16,7 +16,7 @@ namespace Mpdn.RenderScript
         void PutTempTexture(ITexture texture);
     }
 
-    public interface IFilter : IDisposable
+    public interface IFilter
     {
         IFilter[] InputFilters { get; }
         ITexture OutputTexture { get; }
@@ -109,11 +109,6 @@ namespace Mpdn.RenderScript
         public int FilterIndex { get; private set; }
         public int LastDependentIndex { get; private set; }
 
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
         public virtual void Initialize(int time = 1)
         {
             LastDependentIndex = time;
@@ -180,38 +175,6 @@ namespace Mpdn.RenderScript
         public virtual void ReleaseTexture(ITextureCache Cache) {
             Cache.PutTexture(OutputTexture);
             OutputTexture = null;
-        }
-
-        #endregion
-
-        #region Destructors
-
-        private bool m_Disposed;
-
-        ~Filter()
-        {
-            Dispose(false);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (m_Disposed)
-                return;
-
-            DisposeInputFilters();
-
-            m_Disposed = true;
-        }
-
-        private void DisposeInputFilters()
-        {
-            if (InputFilters == null)
-                return;
-
-            foreach (var filter in InputFilters)
-            {
-                Common.Dispose(filter);
-            }
         }
 
         #endregion
