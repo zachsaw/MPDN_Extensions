@@ -153,8 +153,7 @@ namespace Mpdn.RenderScript
                 if (previous.WantYuv && !current.WantYuv)
                     Filter = new RgbFilter(Filter);
                 else if (!previous.WantYuv && current.WantYuv)
-                    throw new NotImplementedException();
-                //Filter = new YuvFilter(Filter);
+                    Filter = new YuvFilter(Filter);
 
                 // Scale if necessary
                 if (!current.PrescaleSize.IsEmpty && Filter.OutputSize != current.PrescaleSize)

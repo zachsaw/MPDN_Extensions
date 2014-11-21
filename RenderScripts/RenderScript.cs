@@ -129,6 +129,8 @@ namespace Mpdn.RenderScript
         public virtual void Initialize(IRenderChain renderChain)
         {
             m_Chain = renderChain as TChain;
+
+            if (m_Chain == null) m_Chain = new TChain();
         }
 
         public IRenderChain GetChain()
