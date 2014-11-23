@@ -37,7 +37,7 @@ namespace Mpdn.RenderScript
         public RenderChainScript(IRenderChain chain)
         {
             Chain = chain;
-            m_SourceFilter = new SourceFilter(chain.PrescaleSize);
+            m_SourceFilter = new SourceFilter();
             Cache = new TextureCache();
         }
 
@@ -47,15 +47,16 @@ namespace Mpdn.RenderScript
             {
                 return new ScriptInterfaceDescriptor
                 {
-                    WantYuv = Chain.WantYuv,
+                    WantYuv = m_SourceFilter.WantYuv,
                     Prescale = (m_SourceFilter.LastDependentIndex > 0),
-                    PrescaleSize = Chain.PrescaleSize
+                    PrescaleSize = m_SourceFilter.PrescaleSize
                 };
             }
         }
 
         public void Update()
         {
+            m_SourceFilter.PrescaleSize = Renderer.VideoSize;
             m_Filter = Chain.CreateFilter(m_SourceFilter);
             m_Filter.Initialize();
         }

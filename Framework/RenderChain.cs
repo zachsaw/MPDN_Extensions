@@ -13,17 +13,11 @@ namespace Mpdn.RenderScript
     public interface IRenderChain
     {
         IFilter CreateFilter(IFilter sourceFilter);
-        bool WantYuv { get; }
-        Size PrescaleSize { get;  }
     }
 
     public abstract class RenderChain : IRenderChain
     {
         public abstract IFilter CreateFilter(IFilter sourceFilter);
-        [YAXDontSerialize]
-        public virtual bool WantYuv { get; protected set; }
-        [YAXDontSerialize]
-        public virtual Size PrescaleSize { get; protected set; }
 
         #region Convenience Functions
 
@@ -99,10 +93,6 @@ namespace Mpdn.RenderScript
     public class StaticChain : IRenderChain
     {
         private Func<IFilter, IFilter> Compiler;
-        [YAXDontSerialize]
-        public virtual bool WantYuv { get; protected set; }
-        [YAXDontSerialize]
-        public virtual Size PrescaleSize { get; protected set; }
 
         public StaticChain(Func<IFilter, IFilter> compiler)
         {
@@ -118,51 +108,14 @@ namespace Mpdn.RenderScript
     public class FilterChain {
         public IFilter Filter;
 
-        public bool WantYuv { 
-            get {
-                if (first != null)
-                    return first.WantYuv;
-                else
-                    return false;
-            }
-        }
-        public Size PrescaleSize
-        {
-            get
-            {
-                if (first != null)
-                    return first.PrescaleSize;
-                else
-                    return Size.Empty;
-            }
-        }
-
-        private IRenderChain first;
-        private IRenderChain previous;
-
         public FilterChain(IFilter sourceFilter)
         {
             Filter = sourceFilter;
         }
 
-        public void Add(IRenderChain current)
+        public void Add(IRenderChain renderChain)
         {
-            if (previous != null)
-            {
-                // Convert to/from YUV
-                if (previous.WantYuv && !current.WantYuv)
-                    Filter = new RgbFilter(Filter);
-                else if (!previous.WantYuv && current.WantYuv)
-                    Filter = new YuvFilter(Filter);
-
-                // Scale if necessary
-                if (!current.PrescaleSize.IsEmpty && Filter.OutputSize != current.PrescaleSize)
-                    Filter = new ResizeFilter(Filter, () => current.PrescaleSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
-            }
-            else first = current;
-
-            Filter = current.CreateFilter(Filter);
-            previous = current;
+            Filter = renderChain.CreateFilter(Filter);
         }
 
         public Size OutputSize
@@ -179,8 +132,6 @@ namespace Mpdn.RenderScript
             var chain = new FilterChain(sourceFilter);
             BuildChain(chain);
 
-            WantYuv = chain.WantYuv;
-            PrescaleSize = chain.PrescaleSize;
             return chain.Filter;
         }
 

@@ -29,6 +29,16 @@ namespace Mpdn.RenderScript
         void Initialize(int time = 1);
     }
 
+    public interface IScaleableFilter : IFilter
+    {
+        Size PrescaleSize { set; }
+    }
+
+    public interface IConvertableFilter : IFilter
+    {
+        bool WantYuv { get; set; }
+    }
+
     public class TextureCache : ITextureCache
     {
         private List<ITexture> SavedTextures = new List<ITexture>();
@@ -100,6 +110,7 @@ namespace Mpdn.RenderScript
 
         protected bool Updated { get; set; }
         protected bool Initialized { get; set; }
+        protected virtual int Passthrough { get { return -1; } }
 
         public IFilter[] InputFilters { get; private set; }
         public ITexture OutputTexture { get; private set; }
@@ -160,15 +171,30 @@ namespace Mpdn.RenderScript
             foreach (var filter in InputFilters)
                 filter.Render(Cache);
 
-            OutputTexture = Cache.GetTexture(OutputSize);
-
             var inputTextures = InputFilters.Select(f => f.OutputTexture);
-            Render(inputTextures);
 
-            foreach (var filter in InputFilters)
+            if (Passthrough < 0)
             {
-                if (filter.LastDependentIndex == FilterIndex)
-                    filter.ReleaseTexture(Cache);
+                OutputTexture = Cache.GetTexture(OutputSize);
+
+                Render(inputTextures);
+
+                foreach (var filter in InputFilters)
+                {
+                    if (filter.LastDependentIndex <= FilterIndex)
+                        filter.ReleaseTexture(Cache);
+                }
+            }
+            else
+            {
+                OutputTexture = inputTextures.ElementAt(Passthrough);
+
+                foreach (var filter in InputFilters)
+                {
+                    if (filter.OutputTexture != OutputTexture
+                    &&  filter.LastDependentIndex <= FilterIndex)
+                        filter.ReleaseTexture(Cache);
+                }
             }
         }
 
@@ -226,14 +252,10 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public sealed class SourceFilter : BaseSourceFilter
+    public sealed class SourceFilter : BaseSourceFilter, IScaleableFilter, IConvertableFilter
     {
-        private Size m_PrescaleSize;
-
-        public SourceFilter(Size prescaleSize)
-        {
-            m_PrescaleSize = prescaleSize;
-        }
+        public Size PrescaleSize { get; set; }
+        public bool WantYuv      { get; set; }
 
         #region IFilter Implementation
 
@@ -244,13 +266,7 @@ namespace Mpdn.RenderScript
 
         public override Size OutputSize
         {
-            get 
-            {
-                if (m_PrescaleSize.IsEmpty)
-                    return Renderer.VideoSize;
-                else
-                    return m_PrescaleSize; 
-            }
+            get { return PrescaleSize; }
         }
 
         #endregion
@@ -307,11 +323,22 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class RgbFilter : Filter
+    public class RgbFilter : Filter, IConvertableFilter
     {
+        public bool WantYuv { get; set; }
+        protected override int Passthrough
+        {
+            get { return WantYuv ? 0 : -1; }
+        }
+
         public RgbFilter(IFilter inputFilter)
             : base(inputFilter)
         {
+            if (inputFilter is IConvertableFilter)
+            {
+                (inputFilter as IConvertableFilter).WantYuv = false;
+                WantYuv = true; // Skips conversion
+            }
         }
 
         public override Size OutputSize
@@ -325,11 +352,22 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class YuvFilter : Filter
+    public class YuvFilter : Filter, IConvertableFilter
     {
+        public bool WantYuv { get; set; }
+        protected override int Passthrough
+        {
+            get { return WantYuv ? -1 : 0; }
+        }
+
         public YuvFilter(IFilter inputFilter)
             : base(inputFilter)
         {
+            if (inputFilter is IConvertableFilter)
+            {
+                (inputFilter as IConvertableFilter).WantYuv = true;
+                WantYuv = false; // Skips conversion
+            }
         }
 
         public override Size OutputSize
@@ -345,22 +383,30 @@ namespace Mpdn.RenderScript
 
     public class ResizeFilter : Filter
     {
-        private readonly Func<Size> m_GetSizeFunc;
+        private readonly Size m_OutputSize;
         private readonly IScaler m_Upscaler;
         private readonly IScaler m_Downscaler;
 
-        public ResizeFilter(IFilter inputFilter, Func<Size> getSizeFunc,
+        protected override int Passthrough
+        {
+            get { return OutputSize == InputFilters[0].OutputSize ? 0 : -1; }
+        }
+
+        public ResizeFilter(IFilter inputFilter, Size outputSize,
             IScaler upscaler, IScaler downscaler)
             : base(inputFilter)
         {
-            m_GetSizeFunc = getSizeFunc;
+            if (InputFilters[0] is IScaleableFilter)
+                (InputFilters[0] as IScaleableFilter).PrescaleSize = outputSize;
+
+            m_OutputSize = outputSize;
             m_Upscaler = upscaler;
             m_Downscaler = downscaler;
         }
 
         public override Size OutputSize
         {
-            get { return m_GetSizeFunc(); }
+            get { return m_OutputSize; }
         }
 
         public override void Render(IEnumerable<ITexture> inputs)

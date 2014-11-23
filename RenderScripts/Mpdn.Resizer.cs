@@ -82,7 +82,7 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                return new ResizeFilter(sourceFilter, GetOutputSize,
+                return new ResizeFilter(sourceFilter, GetOutputSize(),
                     Upscaler ?? Renderer.LumaUpscaler, Downscaler ?? Renderer.LumaDownscaler);
             }
 
