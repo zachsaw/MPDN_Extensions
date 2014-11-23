@@ -49,14 +49,13 @@ namespace Mpdn.RenderScript
                 {
                     WantYuv = m_SourceFilter.WantYuv,
                     Prescale = (m_SourceFilter.LastDependentIndex > 0),
-                    PrescaleSize = m_SourceFilter.PrescaleSize
+                    PrescaleSize = m_SourceFilter.m_OutputSize
                 };
             }
         }
 
         public void Update()
         {
-            m_SourceFilter.PrescaleSize = Renderer.VideoSize;
             m_Filter = Chain.CreateFilter(m_SourceFilter);
             m_Filter.Initialize();
         }

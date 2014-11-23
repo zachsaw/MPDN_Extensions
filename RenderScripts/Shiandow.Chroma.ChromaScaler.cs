@@ -112,7 +112,7 @@ namespace Mpdn.RenderScript
                 var Vinput = new VSourceFilter();
 
                 var chroma = new ChromaFilter(m_ChromaShader, B, C, Yinput, Uinput, Vinput);
-                var rgb = new RgbFilter(chroma);
+                var rgb = chroma.ConvertToRgb();
 
                 return rgb;
             }
