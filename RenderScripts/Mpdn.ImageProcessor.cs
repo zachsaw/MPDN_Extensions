@@ -65,7 +65,7 @@ namespace Mpdn.RenderScript
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
                 if (UseImageProcessor(sourceFilter))
-                    return ShaderFileNames.Aggregate(sourceFilter, (current, filename) => CreateFilter(CompileShader(filename), current));
+                    return ShaderFileNames.Aggregate(sourceFilter, (current, filename) => new ShaderFilter(CompileShader(filename), current));
                 else
                     return sourceFilter;
             }

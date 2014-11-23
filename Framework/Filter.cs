@@ -417,14 +417,7 @@ namespace Mpdn.RenderScript
 
     public class ShaderFilter : Filter
     {
-        public ShaderFilter(IShader shader, int sizeIndex, bool linearSampling,
-            params IFilter[] inputFilters)
-            : this(shader, s => new Size(s.Width, s.Height), sizeIndex, linearSampling, inputFilters)
-        {
-        }
-
-        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex,
-            bool linearSampling, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
             : base(inputFilters)
         {
             if (sizeIndex < 0 || sizeIndex >= inputFilters.Length || inputFilters[sizeIndex] == null)
@@ -472,5 +465,30 @@ namespace Mpdn.RenderScript
                 false);
             Shader.SetConstant(1, new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
         }
+
+        #region Auxilary Constructors
+
+        public ShaderFilter(IShader shader, params IFilter[] inputFilters)
+            : this(shader, false, inputFilters) { }
+
+        public ShaderFilter(IShader shader, bool linearSampling, params IFilter[] inputFilters)
+            : this(shader, 0, linearSampling, inputFilters) { }
+
+        public ShaderFilter(IShader shader, int sizeIndex, params IFilter[] inputFilters)
+            : this(shader, sizeIndex, false, inputFilters) { }
+
+        public ShaderFilter(IShader shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
+            : this(shader, s => s, sizeIndex, linearSampling, inputFilters) { }
+
+        public ShaderFilter(IShader shader, TransformFunc transform, params IFilter[] inputFilters)
+            : this(shader, transform, 0, false, inputFilters) { }
+
+        public ShaderFilter(IShader shader, TransformFunc transform, bool linearSampling, params IFilter[] inputFilters)
+            : this(shader, transform, 0, linearSampling, inputFilters) { }
+
+        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, params IFilter[] inputFilters)
+            : this(shader, transform, sizeIndex, false, inputFilters) { }
+
+        #endregion
     }
 }

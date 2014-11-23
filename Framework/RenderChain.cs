@@ -19,7 +19,7 @@ namespace Mpdn.RenderScript
     {
         public abstract IFilter CreateFilter(IFilter sourceFilter);
 
-        #region Convenience Functions
+        #region Shader Compilation
 
         protected virtual string ShaderPath
         {
@@ -38,53 +38,6 @@ namespace Mpdn.RenderScript
         protected IShader CompileShader(string shaderFileName)
         {
             return ShaderCache.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
-        }
-
-        protected IFilter CreateFilter(IShader shader, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, bool linearSampling, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, 0, linearSampling, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, int sizeIndex, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, sizeIndex, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, s => new Size(s.Width, s.Height), sizeIndex, linearSampling, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform,
-            params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, transform, 0, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform, bool linearSampling,
-            params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, transform, 0, linearSampling, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform, int sizeIndex,
-            params IFilter[] inputFilters)
-        {
-            return CreateFilter(shader, transform, sizeIndex, false, inputFilters);
-        }
-
-        protected IFilter CreateFilter(IShader shader, TransformFunc transform, int sizeIndex,
-            bool linearSampling, params IFilter[] inputFilters)
-        {
-            if (shader == null)
-                throw new ArgumentNullException("shader");
-
-            return new ShaderFilter(shader, transform, sizeIndex, linearSampling, inputFilters);
         }
 
         #endregion

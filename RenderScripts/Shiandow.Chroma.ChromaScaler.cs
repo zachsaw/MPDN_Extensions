@@ -17,8 +17,8 @@ namespace Mpdn.RenderScript
             private float B;
             private float C;
 
-            public ChromaFilter(IShader shader, float B, float C, TransformFunc transform, params IFilter[] inputFilters)
-                : base(shader, transform, 0, false, inputFilters)
+            public ChromaFilter(IShader shader, float B, float C, params IFilter[] inputFilters)
+                : base(shader, s => Renderer.VideoSize, inputFilters)
             { 
                 this.B = B;
                 this.C = C;
@@ -107,15 +107,11 @@ namespace Mpdn.RenderScript
             {
                 var m_ChromaShader = CompileShader("Chroma.hlsl");
 
-                Func<Size, Size> transformWidth = s => new Size(Renderer.VideoSize.Width, s.Height);
-                Func<Size, Size> transformHeight = s => new Size(s.Width, Renderer.VideoSize.Height);
-                Func<Size, Size> transformWidthHeight = s => Renderer.VideoSize;
-
                 var Yinput = new YSourceFilter();
                 var Uinput = new USourceFilter();
                 var Vinput = new VSourceFilter();
 
-                var chroma = new ChromaFilter(m_ChromaShader, B, C, transformWidthHeight, Yinput, Uinput, Vinput);
+                var chroma = new ChromaFilter(m_ChromaShader, B, C, Yinput, Uinput, Vinput);
                 var rgb = new RgbFilter(chroma);
 
                 return rgb;

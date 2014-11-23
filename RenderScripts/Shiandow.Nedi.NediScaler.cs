@@ -41,16 +41,16 @@ namespace Mpdn.RenderScript
                 var m_NediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl");
                 var m_NediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl");
 
-                Func<Size, Size> transformWidth = s => new Size(2 * s.Width, s.Height);
-                Func<Size, Size> transformHeight = s => new Size(s.Width, s.Height * 2);
+                Func<Size, Size> transformWidth  = s => new Size(2 * s.Width, s.Height);
+                Func<Size, Size> transformHeight = s => new Size(s.Width, 2 * s.Height);
 
                 if (!UseNedi(SourceFilter))
                     return SourceFilter;
 
-                var nedi1 = CreateFilter(m_Nedi1Shader, SourceFilter);
-                var nediH = CreateFilter(m_NediHInterleaveShader, transformWidth, SourceFilter, nedi1);
-                var nedi2 = CreateFilter(m_Nedi2Shader, nediH);
-                var nediV = CreateFilter(m_NediVInterleaveShader, transformHeight, nediH, nedi2);
+                var nedi1 = new ShaderFilter(m_Nedi1Shader, SourceFilter);
+                var nediH = new ShaderFilter(m_NediHInterleaveShader, transformWidth, SourceFilter, nedi1);
+                var nedi2 = new ShaderFilter(m_Nedi2Shader, nediH);
+                var nediV = new ShaderFilter(m_NediVInterleaveShader, transformHeight, nediH, nedi2);
 
                 return nediV;
             }
