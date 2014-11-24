@@ -27,7 +27,7 @@ namespace Mpdn.RenderScript
 
             protected override void LoadSettings()
             {
-                m_ShaderPath = Settings.ShaderPath;
+                m_ShaderPath = Settings.FullShaderPath;
 
                 Add(Settings.ShaderFileNames);
 
@@ -137,7 +137,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class ImageProcessorConfigDialogBase : ScriptConfigDialog<Settings>
+        public class ImageProcessorConfigDialogBase : ScriptConfigDialog<ImageProcessor>
         {
         }
     }

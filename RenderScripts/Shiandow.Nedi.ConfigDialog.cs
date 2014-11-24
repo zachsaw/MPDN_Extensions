@@ -20,7 +20,7 @@
             }
         }
 
-        public class NediConfigDialogBase : ScriptConfigDialog<Settings>
+        public class NediConfigDialogBase : ScriptConfigDialog<Nedi>
         {
         }
     }
