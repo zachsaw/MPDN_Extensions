@@ -22,10 +22,7 @@ namespace Mpdn.RenderScript
             protected ScriptSettings(TSettings settings)
             {
                 m_InMemory = true;
-                Settings.Configuration = settings;
-
-                if (Settings.Configuration == null)
-                    Settings.Configuration = new TSettings();
+                Settings.Configuration = settings ?? new TSettings();
             }
 
             private ConfigProvider<TSettings> Settings

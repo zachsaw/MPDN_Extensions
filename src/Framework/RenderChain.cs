@@ -40,16 +40,16 @@ namespace Mpdn.RenderScript
 
     public class StaticChain : IRenderChain
     {
-        private readonly Func<IFilter, IFilter> Compiler;
+        private readonly Func<IFilter, IFilter> m_Compiler;
 
         public StaticChain(Func<IFilter, IFilter> compiler)
         {
-            Compiler = compiler;
+            m_Compiler = compiler;
         }
 
         public IFilter CreateFilter(IFilter sourceFilter)
         {
-            return Compiler(sourceFilter);
+            return m_Compiler(sourceFilter);
         }
     }
 
