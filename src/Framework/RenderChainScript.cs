@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
@@ -7,20 +8,41 @@ namespace Mpdn.RenderScript
 {
     public static class ShaderCache
     {
-        private static readonly Dictionary<String, IShader> s_CompiledShaders = new Dictionary<string, IShader>();
+        private static readonly Dictionary<string, ShaderWithDateTime> s_CompiledShaders =
+            new Dictionary<string, ShaderWithDateTime>();
 
-        public static IShader CompileShader(String shaderPath)
+        public static IShader CompileShader(string shaderPath)
         {
-            IShader shader;
-            s_CompiledShaders.TryGetValue(shaderPath, out shader);
+            var lastMod = File.GetLastWriteTimeUtc(shaderPath);
 
-            if (shader == null)
+            ShaderWithDateTime result;
+            if (s_CompiledShaders.TryGetValue(shaderPath, out result) &&
+                result.LastModified == lastMod)
             {
-                shader = Renderer.CompileShader(shaderPath);
-                s_CompiledShaders.Add(shaderPath, shader);
+                return result.Shader;
             }
 
+            if (result != null)
+            {
+                Common.Dispose(result.Shader);
+                s_CompiledShaders.Remove(shaderPath);
+            }
+
+            var shader = Renderer.CompileShader(shaderPath);
+            s_CompiledShaders.Add(shaderPath, new ShaderWithDateTime(shader, lastMod));
             return shader;
+        }
+
+        public class ShaderWithDateTime
+        {
+            public IShader Shader { get; private set; }
+            public DateTime LastModified { get; private set; }
+
+            public ShaderWithDateTime(IShader shader, DateTime lastModified)
+            {
+                Shader = shader;
+                LastModified = lastModified;
+            }
         }
     }
 

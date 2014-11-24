@@ -10,11 +10,11 @@ namespace Mpdn.RenderScript
     {
         public class MyRenderChain : CombinedChain
         {
-            private readonly string[] Deinterlace = {@"MPC-HC\Deinterlace (blend).hlsl"};
-            private readonly string[] PostProcess = {@"SweetFX\LumaSharpen.hlsl"};
-            private readonly string[] PreProcess = {@"SweetFX\Bloom.hlsl", @"SweetFX\LiftGammaGain.hlsl"};
-            private readonly string[] ToGamma = {@"ConvertToGammaLight.hlsl"};
-            private readonly string[] ToLinear = {@"ConvertToLinearLight.hlsl"};
+            private string[] Deinterlace = {@"MPC-HC\Deinterlace (blend).hlsl"};
+            private string[] PostProcess = {@"SweetFX\LumaSharpen.hlsl"};
+            private string[] PreProcess = {@"SweetFX\Bloom.hlsl", @"SweetFX\LiftGammaGain.hlsl"};
+            private string[] ToGamma = {@"ConvertToGammaLight.hlsl"};
+            private string[] ToLinear = {@"ConvertToLinearLight.hlsl"};
 
             protected override void BuildChain(FilterChain chain)
             {
@@ -33,7 +33,7 @@ namespace Mpdn.RenderScript
                 // Use NEDI once only.
                 // Note: To use NEDI as many times as required to get the image past target size,
                 //       Change the following *if* to *while*
-                if (IsUpscalingFrom(chain)) // See CombinedChain for other comparer methods
+                while (IsUpscalingFrom(chain)) // See CombinedChain for other comparer methods
                 {
                     chain.Add(new Nedi {AlwaysDoubleImage = true});
                 }

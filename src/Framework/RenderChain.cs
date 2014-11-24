@@ -35,6 +35,11 @@ namespace Mpdn.RenderScript
             return ShaderCache.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
         }
 
+        protected IShader LoadShader(string shaderFileName)
+        {
+            return Renderer.LoadShader(shaderFileName);
+        }
+
         #endregion
     }
 
