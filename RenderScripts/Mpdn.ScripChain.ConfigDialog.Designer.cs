@@ -75,7 +75,7 @@
             this.listViewAvail.Location = new System.Drawing.Point(18, 18);
             this.listViewAvail.MultiSelect = false;
             this.listViewAvail.Name = "listViewAvail";
-            this.listViewAvail.Size = new System.Drawing.Size(519, 166);
+            this.listViewAvail.Size = new System.Drawing.Size(461, 166);
             this.listViewAvail.TabIndex = 0;
             this.listViewAvail.UseCompatibleStateImageBehavior = false;
             this.listViewAvail.View = System.Windows.Forms.View.Details;
@@ -114,21 +114,22 @@
             // 
             // labelCopyright
             // 
-            this.labelCopyright.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelCopyright.Location = new System.Drawing.Point(51, 256);
+            this.labelCopyright.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelCopyright.Location = new System.Drawing.Point(117, 190);
             this.labelCopyright.Name = "labelCopyright";
-            this.labelCopyright.Size = new System.Drawing.Size(502, 23);
+            this.labelCopyright.Size = new System.Drawing.Size(308, 24);
             this.labelCopyright.TabIndex = 2;
-            this.labelCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.labelCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // buttonConfigure
             // 
             this.buttonConfigure.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonConfigure.Enabled = false;
-            this.buttonConfigure.Location = new System.Drawing.Point(18, 480);
+            this.buttonConfigure.Location = new System.Drawing.Point(18, 396);
             this.buttonConfigure.Name = "buttonConfigure";
             this.buttonConfigure.Size = new System.Drawing.Size(75, 23);
-            this.buttonConfigure.TabIndex = 6;
+            this.buttonConfigure.TabIndex = 5;
             this.buttonConfigure.Text = "Configure...";
             this.buttonConfigure.UseVisualStyleBackColor = true;
             this.buttonConfigure.Click += new System.EventHandler(this.ButtonConfigureClick);
@@ -148,8 +149,8 @@
             this.listViewChain.Location = new System.Drawing.Point(18, 220);
             this.listViewChain.MultiSelect = false;
             this.listViewChain.Name = "listViewChain";
-            this.listViewChain.Size = new System.Drawing.Size(519, 253);
-            this.listViewChain.TabIndex = 3;
+            this.listViewChain.Size = new System.Drawing.Size(461, 169);
+            this.listViewChain.TabIndex = 4;
             this.listViewChain.UseCompatibleStateImageBehavior = false;
             this.listViewChain.View = System.Windows.Forms.View.Details;
             this.listViewChain.SelectedIndexChanged += new System.EventHandler(this.ListViewChainSelectedIndexChanged);
@@ -214,7 +215,7 @@
             this.buttonAdd.Location = new System.Drawing.Point(18, 190);
             this.buttonAdd.Name = "buttonAdd";
             this.buttonAdd.Size = new System.Drawing.Size(27, 24);
-            this.buttonAdd.TabIndex = 2;
+            this.buttonAdd.TabIndex = 1;
             this.buttonAdd.Text = "+";
             this.toolTip1.SetToolTip(this.buttonAdd, "Add");
             this.buttonAdd.UseVisualStyleBackColor = true;
@@ -226,7 +227,7 @@
             this.buttonMinus.Location = new System.Drawing.Point(51, 190);
             this.buttonMinus.Name = "buttonMinus";
             this.buttonMinus.Size = new System.Drawing.Size(27, 24);
-            this.buttonMinus.TabIndex = 4;
+            this.buttonMinus.TabIndex = 2;
             this.buttonMinus.Text = "-";
             this.toolTip1.SetToolTip(this.buttonMinus, "Remove");
             this.buttonMinus.UseVisualStyleBackColor = true;
@@ -238,7 +239,7 @@
             this.buttonClear.Location = new System.Drawing.Point(84, 190);
             this.buttonClear.Name = "buttonClear";
             this.buttonClear.Size = new System.Drawing.Size(27, 24);
-            this.buttonClear.TabIndex = 5;
+            this.buttonClear.TabIndex = 3;
             this.buttonClear.Text = "c";
             this.toolTip1.SetToolTip(this.buttonClear, "Clear");
             this.buttonClear.UseVisualStyleBackColor = true;
@@ -283,20 +284,20 @@
             this.panelReorder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panelReorder.Controls.Add(this.buttonUp);
             this.panelReorder.Controls.Add(this.buttonDown);
-            this.panelReorder.Location = new System.Drawing.Point(489, 190);
+            this.panelReorder.Location = new System.Drawing.Point(431, 190);
             this.panelReorder.Name = "panelReorder";
             this.panelReorder.Size = new System.Drawing.Size(48, 24);
-            this.panelReorder.TabIndex = 7;
+            this.panelReorder.TabIndex = 6;
             this.panelReorder.Visible = false;
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(462, 480);
+            this.buttonCancel.Location = new System.Drawing.Point(404, 396);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
-            this.buttonCancel.TabIndex = 9;
+            this.buttonCancel.TabIndex = 8;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
             // 
@@ -304,20 +305,21 @@
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(381, 480);
+            this.buttonOk.Location = new System.Drawing.Point(323, 396);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
-            this.buttonOk.TabIndex = 8;
+            this.buttonOk.TabIndex = 7;
             this.buttonOk.Text = "OK";
             this.buttonOk.UseVisualStyleBackColor = true;
             // 
-            // RenderScriptFrame
+            // ScriptChainDialog
             // 
             this.AcceptButton = this.buttonOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(555, 521);
+            this.ClientSize = new System.Drawing.Size(497, 437);
+            this.Controls.Add(this.labelCopyright);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
             this.Controls.Add(this.panelReorder);
@@ -326,15 +328,16 @@
             this.Controls.Add(this.buttonAdd);
             this.Controls.Add(this.listViewChain);
             this.Controls.Add(this.buttonConfigure);
-            this.Controls.Add(this.labelCopyright);
             this.Controls.Add(this.listViewAvail);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(210, 125);
-            this.Name = "RenderScriptFrame";
+            this.MinimumSize = new System.Drawing.Size(500, 460);
+            this.Name = "ScriptChainDialog";
             this.Padding = new System.Windows.Forms.Padding(15);
+            this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "Script Chain";
             this.menuAvail.ResumeLayout(false);
             this.menuChain.ResumeLayout(false);
             this.panelReorder.ResumeLayout(false);
