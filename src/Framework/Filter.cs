@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using SharpDX;
 using Mpdn.RenderScript.Scaler;
+using SharpDX;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
@@ -24,8 +24,8 @@ namespace Mpdn.RenderScript
         int FilterIndex { get; }
         int LastDependentIndex { get; }
         void NewFrame();
-        void Render(ITextureCache Cache);
-        void ReleaseTexture(ITextureCache Cache);
+        void Render(ITextureCache cache);
+        void ReleaseTexture(ITextureCache cache);
         void Initialize(int time = 1);
         IFilter ConvertToRgb();
         IFilter ConvertToYuv();
@@ -34,13 +34,13 @@ namespace Mpdn.RenderScript
 
     public class TextureCache : ITextureCache
     {
-        private List<ITexture> SavedTextures = new List<ITexture>();
-        private List<ITexture> OldTextures = new List<ITexture>();
-        private List<ITexture> TempTextures = new List<ITexture>();
+        private List<ITexture> m_OldTextures = new List<ITexture>();
+        private List<ITexture> m_SavedTextures = new List<ITexture>();
+        private List<ITexture> m_TempTextures = new List<ITexture>();
 
         public ITexture GetTexture(Size textureSize)
         {
-            foreach (var list in new[] { SavedTextures, OldTextures })
+            foreach (var list in new[] {m_SavedTextures, m_OldTextures})
             {
                 var index = list.FindIndex(x => (x.Width == textureSize.Width) && (x.Height == textureSize.Height));
                 if (index < 0) continue;
@@ -55,26 +55,26 @@ namespace Mpdn.RenderScript
 
         public void PutTempTexture(ITexture texture)
         {
-            TempTextures.Add(texture);
-            SavedTextures.Add(texture);
+            m_TempTextures.Add(texture);
+            m_SavedTextures.Add(texture);
         }
 
         public void PutTexture(ITexture texture)
         {
-            SavedTextures.Add(texture);
+            m_SavedTextures.Add(texture);
         }
 
         public void FlushTextures()
         {
-            foreach (var texture in OldTextures)
+            foreach (var texture in m_OldTextures)
                 Common.Dispose(texture);
 
-            foreach (var texture in TempTextures)
-                SavedTextures.Remove(texture);
+            foreach (var texture in m_TempTextures)
+                m_SavedTextures.Remove(texture);
 
-            OldTextures = SavedTextures;
-            TempTextures = new List<ITexture>();
-            SavedTextures = new List<ITexture>();
+            m_OldTextures = m_SavedTextures;
+            m_TempTextures = new List<ITexture>();
+            m_SavedTextures = new List<ITexture>();
         }
 
         public void Dispose()
@@ -153,7 +153,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public virtual void Render(ITextureCache Cache)
+        public virtual void Render(ITextureCache cache)
         {
             if (Updated)
                 return;
@@ -161,23 +161,24 @@ namespace Mpdn.RenderScript
             Updated = true;
 
             foreach (var filter in InputFilters)
-                filter.Render(Cache);
+                filter.Render(cache);
 
             var inputTextures = InputFilters.Select(f => f.OutputTexture);
 
-            OutputTexture = Cache.GetTexture(OutputSize);
+            OutputTexture = cache.GetTexture(OutputSize);
 
             Render(inputTextures);
 
             foreach (var filter in InputFilters)
             {
                 if (filter.LastDependentIndex <= FilterIndex)
-                    filter.ReleaseTexture(Cache);
+                    filter.ReleaseTexture(cache);
             }
         }
 
-        public virtual void ReleaseTexture(ITextureCache Cache) {
-            Cache.PutTexture(OutputTexture);
+        public virtual void ReleaseTexture(ITextureCache cache)
+        {
+            cache.PutTexture(OutputTexture);
             OutputTexture = null;
         }
 
@@ -224,10 +225,6 @@ namespace Mpdn.RenderScript
 
         public virtual int LastDependentIndex { get; private set; }
 
-        public void Dispose()
-        {
-        }
-
         public void Initialize(int time = 1)
         {
             LastDependentIndex = time;
@@ -237,13 +234,17 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public void Render(ITextureCache Cache)
+        public void Render(ITextureCache cache)
         {
         }
 
-        public virtual void ReleaseTexture(ITextureCache Cache)
+        public virtual void ReleaseTexture(ITextureCache cache)
         {
-            Cache.PutTempTexture(OutputTexture);
+            cache.PutTempTexture(OutputTexture);
+        }
+
+        public void Dispose()
+        {
         }
 
         #endregion
@@ -270,8 +271,7 @@ namespace Mpdn.RenderScript
 
     public sealed class SourceFilter : BaseSourceFilter
     {
-        public Size m_OutputSize { get; private set; }
-        public bool WantYuv      { get; private set; }
+        public bool WantYuv { get; private set; }
 
         #region IFilter Implementation
 
@@ -282,12 +282,17 @@ namespace Mpdn.RenderScript
 
         public override Size OutputSize
         {
-            get { 
-                if (m_OutputSize.IsEmpty)
-                    return Renderer.VideoSize;
-                else
-                    return m_OutputSize; 
+            get
+            {
+                return GetOutputSize();
             }
+        }
+
+        private Size m_OutputSize;
+
+        public Size GetOutputSize(bool assumeVideoSizeIfEmpty = true)
+        {
+            return assumeVideoSizeIfEmpty ? (m_OutputSize.IsEmpty ? Renderer.VideoSize : m_OutputSize) : m_OutputSize;
         }
 
         public override IFilter ConvertToRgb()
@@ -323,7 +328,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.LumaSize; }
         }
 
-        public override void ReleaseTexture(ITextureCache Cache)
+        public override void ReleaseTexture(ITextureCache cache)
         {
         }
     }
@@ -340,7 +345,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.ChromaSize; }
         }
 
-        public override void ReleaseTexture(ITextureCache Cache)
+        public override void ReleaseTexture(ITextureCache cache)
         {
         }
     }
@@ -357,7 +362,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.ChromaSize; }
         }
 
-        public override void ReleaseTexture(ITextureCache Cache)
+        public override void ReleaseTexture(ITextureCache cache)
         {
         }
     }
@@ -366,7 +371,8 @@ namespace Mpdn.RenderScript
     {
         public RgbFilter(IFilter inputFilter)
             : base(inputFilter)
-        {  }
+        {
+        }
 
         public override Size OutputSize
         {
@@ -388,7 +394,8 @@ namespace Mpdn.RenderScript
     {
         public YuvFilter(IFilter inputFilter)
             : base(inputFilter)
-        { }
+        {
+        }
 
         public override Size OutputSize
         {
@@ -408,9 +415,8 @@ namespace Mpdn.RenderScript
 
     public class ResizeFilter : Filter
     {
-        private Size m_OutputSize { get; set; }
-        private readonly IScaler m_Upscaler;
         private readonly IScaler m_Downscaler;
+        private readonly IScaler m_Upscaler;
 
         public ResizeFilter(IFilter inputFilter, Size outputSize, IScaler upscaler, IScaler downscaler)
             : base(inputFilter)
@@ -419,6 +425,8 @@ namespace Mpdn.RenderScript
             m_Upscaler = upscaler;
             m_Downscaler = downscaler;
         }
+
+        private Size m_OutputSize;
 
         public override Size OutputSize
         {
@@ -439,7 +447,8 @@ namespace Mpdn.RenderScript
 
     public class ShaderFilter : Filter
     {
-        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, bool linearSampling,
+            params IFilter[] inputFilters)
             : base(inputFilters)
         {
             if (sizeIndex < 0 || sizeIndex >= inputFilters.Length || inputFilters[sizeIndex] == null)
@@ -491,25 +500,39 @@ namespace Mpdn.RenderScript
         #region Auxilary Constructors
 
         public ShaderFilter(IShader shader, params IFilter[] inputFilters)
-            : this(shader, false, inputFilters) { }
+            : this(shader, false, inputFilters)
+        {
+        }
 
         public ShaderFilter(IShader shader, bool linearSampling, params IFilter[] inputFilters)
-            : this(shader, 0, linearSampling, inputFilters) { }
+            : this(shader, 0, linearSampling, inputFilters)
+        {
+        }
 
         public ShaderFilter(IShader shader, int sizeIndex, params IFilter[] inputFilters)
-            : this(shader, sizeIndex, false, inputFilters) { }
+            : this(shader, sizeIndex, false, inputFilters)
+        {
+        }
 
         public ShaderFilter(IShader shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
-            : this(shader, s => s, sizeIndex, linearSampling, inputFilters) { }
+            : this(shader, s => s, sizeIndex, linearSampling, inputFilters)
+        {
+        }
 
         public ShaderFilter(IShader shader, TransformFunc transform, params IFilter[] inputFilters)
-            : this(shader, transform, 0, false, inputFilters) { }
+            : this(shader, transform, 0, false, inputFilters)
+        {
+        }
 
         public ShaderFilter(IShader shader, TransformFunc transform, bool linearSampling, params IFilter[] inputFilters)
-            : this(shader, transform, 0, linearSampling, inputFilters) { }
+            : this(shader, transform, 0, linearSampling, inputFilters)
+        {
+        }
 
         public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, params IFilter[] inputFilters)
-            : this(shader, transform, sizeIndex, false, inputFilters) { }
+            : this(shader, transform, sizeIndex, false, inputFilters)
+        {
+        }
 
         #endregion
     }

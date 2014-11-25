@@ -1,44 +1,68 @@
 ﻿using System;
-using System.IO;
-using System.Data;
-using System.Drawing;
-using System.Windows.Forms;
 using System.Collections.Generic;
+using System.IO;
+using System.Windows.Forms;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
     public static class ShaderCache
     {
-        private static Dictionary<String, IShader> CompiledShaders = new Dictionary<string, IShader>();
+        private static readonly Dictionary<string, ShaderWithDateTime> s_CompiledShaders =
+            new Dictionary<string, ShaderWithDateTime>();
 
-        public static IShader CompileShader(String shaderPath)
+        public static IShader CompileShader(string shaderPath)
         {
-            IShader shader;
-            CompiledShaders.TryGetValue(shaderPath, out shader);
+            var lastMod = File.GetLastWriteTimeUtc(shaderPath);
 
-            if (shader == null)
+            ShaderWithDateTime result;
+            if (s_CompiledShaders.TryGetValue(shaderPath, out result) &&
+                result.LastModified == lastMod)
             {
-                shader = Renderer.CompileShader(shaderPath);
-                CompiledShaders.Add(shaderPath, shader);
+                return result.Shader;
             }
 
+            if (result != null)
+            {
+                Common.Dispose(result.Shader);
+                s_CompiledShaders.Remove(shaderPath);
+            }
+
+            var shader = Renderer.CompileShader(shaderPath);
+            s_CompiledShaders.Add(shaderPath, new ShaderWithDateTime(shader, lastMod));
             return shader;
+        }
+
+        public class ShaderWithDateTime
+        {
+            public IShader Shader { get; private set; }
+            public DateTime LastModified { get; private set; }
+
+            public ShaderWithDateTime(IShader shader, DateTime lastModified)
+            {
+                Shader = shader;
+                LastModified = lastModified;
+            }
         }
     }
 
     public class RenderChainScript : IRenderScript, IDisposable
     {
+        private readonly TextureCache m_Cache;
+        private readonly SourceFilter m_SourceFilter;
         protected IRenderChain Chain;
-        private TextureCache Cache;
         private IFilter m_Filter;
-        private SourceFilter m_SourceFilter;
 
         public RenderChainScript(IRenderChain chain)
         {
             Chain = chain;
             m_SourceFilter = new SourceFilter();
-            Cache = new TextureCache();
+            m_Cache = new TextureCache();
+        }
+
+        public void Dispose()
+        {
+            Common.Dispose(m_Cache);
         }
 
         public ScriptInterfaceDescriptor Descriptor
@@ -49,7 +73,7 @@ namespace Mpdn.RenderScript
                 {
                     WantYuv = m_SourceFilter.WantYuv,
                     Prescale = (m_SourceFilter.LastDependentIndex > 0),
-                    PrescaleSize = m_SourceFilter.m_OutputSize
+                    PrescaleSize = m_SourceFilter.GetOutputSize(false)
                 };
             }
         }
@@ -62,17 +86,12 @@ namespace Mpdn.RenderScript
 
         public void Render()
         {
-            Cache.PutTempTexture(Renderer.OutputRenderTarget);
+            m_Cache.PutTempTexture(Renderer.OutputRenderTarget);
             m_Filter.NewFrame();
-            m_Filter.Render(Cache);
+            m_Filter.Render(m_Cache);
             Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
-            m_Filter.ReleaseTexture(Cache);
-            Cache.FlushTextures();
-        }
-
-        public void Dispose()
-        {
-            Common.Dispose(Cache);
+            m_Filter.ReleaseTexture(m_Cache);
+            m_Cache.FlushTextures();
         }
 
         private void Scale(ITexture output, ITexture input)
@@ -83,10 +102,10 @@ namespace Mpdn.RenderScript
 
     public class RenderScriptDescriptor
     {
+        public string Copyright = "";
+        public string Description;
         public Guid Guid = Guid.Empty;
         public string Name;
-        public string Description;
-        public string Copyright = "";
     }
 
     public interface IRenderChainUi : IRenderScriptUi
@@ -98,24 +117,27 @@ namespace Mpdn.RenderScript
     public abstract class RenderChainUi<TChain> : IRenderChainUi
         where TChain : class, IRenderChain, new()
     {
-        protected virtual TChain Chain { get { return m_Chain; } }
+        protected virtual TChain Chain
+        {
+            get { return m_Chain; }
+        }
+
         protected abstract RenderScriptDescriptor ScriptDescriptor { get; }
 
         public IRenderScript RenderScript
         {
-            get
-            {
-                if (m_RenderScript == null)
-                    m_RenderScript = new RenderChainScript(Chain);
-
-                return m_RenderScript;
-            }
+            get { return m_RenderScript ?? (m_RenderScript = new RenderChainScript(Chain)); }
         }
 
         #region Implementation
 
         private TChain m_Chain;
         private IRenderScript m_RenderScript;
+
+        public virtual ScriptInterfaceDescriptor InterfaceDescriptor
+        {
+            get { return RenderScript.Descriptor; }
+        }
 
         public virtual void Initialize()
         {
@@ -124,9 +146,7 @@ namespace Mpdn.RenderScript
 
         public virtual void Initialize(IRenderChain renderChain)
         {
-            m_Chain = renderChain as TChain;
-
-            if (m_Chain == null) m_Chain = new TChain();
+            m_Chain = renderChain as TChain ?? new TChain();
         }
 
         public IRenderChain GetChain()
@@ -152,11 +172,6 @@ namespace Mpdn.RenderScript
         public virtual bool ShowConfigDialog(IWin32Window owner)
         {
             throw new NotImplementedException("Config dialog has not been implemented");
-        }
-
-        public virtual ScriptInterfaceDescriptor InterfaceDescriptor
-        {
-            get { return RenderScript.Descriptor; }
         }
 
         public void Destroy()

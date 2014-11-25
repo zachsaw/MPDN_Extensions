@@ -44,19 +44,13 @@ namespace Mpdn.RenderScript
         where TDialog : ScriptConfigDialog<TChain>, new()
     {
         protected Config ScriptConfig { get; private set; }
-        protected override TChain Chain { get { return ScriptConfig.Config; } }
+
+        protected override TChain Chain
+        {
+            get { return ScriptConfig.Config; }
+        }
 
         protected abstract string ConfigFileName { get; }
-
-        public override void Initialize()
-        {
-            ScriptConfig = new Config(ConfigFileName);
-        }
-
-        public override void Initialize(IRenderChain renderChain)
-        {
-            ScriptConfig = new Config(renderChain as TChain);
-        }
 
         public override ScriptDescriptor Descriptor
         {
@@ -71,6 +65,16 @@ namespace Mpdn.RenderScript
                     Copyright = ScriptDescriptor.Copyright
                 };
             }
+        }
+
+        public override void Initialize()
+        {
+            ScriptConfig = new Config(ConfigFileName);
+        }
+
+        public override void Initialize(IRenderChain renderChain)
+        {
+            ScriptConfig = new Config(renderChain as TChain);
         }
 
         public override bool ShowConfigDialog(IWin32Window owner)
@@ -98,7 +102,9 @@ namespace Mpdn.RenderScript
                 Load();
             }
 
-            public Config(TChain Chain) : base(Chain) { }
+            public Config(TChain chain) : base(chain)
+            {
+            }
 
             protected override string ScriptConfigFileName
             {

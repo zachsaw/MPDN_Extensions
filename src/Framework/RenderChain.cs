@@ -1,12 +1,7 @@
 using System;
-using Mpdn.RenderScript.Scaler;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.IO;
-using SharpDX;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
-using YAXLib;
 
 namespace Mpdn.RenderScript
 {
@@ -30,7 +25,7 @@ namespace Mpdn.RenderScript
         {
             get
             {
-                var asmPath = typeof(IRenderScript).Assembly.Location;
+                var asmPath = typeof (IRenderScript).Assembly.Location;
                 return Path.Combine(Common.GetDirectoryName(asmPath), "RenderScripts", ShaderPath);
             }
         }
@@ -40,25 +35,31 @@ namespace Mpdn.RenderScript
             return ShaderCache.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
         }
 
+        protected IShader LoadShader(string shaderFileName)
+        {
+            return Renderer.LoadShader(shaderFileName);
+        }
+
         #endregion
     }
 
     public class StaticChain : IRenderChain
     {
-        private Func<IFilter, IFilter> Compiler;
+        private readonly Func<IFilter, IFilter> m_Compiler;
 
         public StaticChain(Func<IFilter, IFilter> compiler)
         {
-            Compiler = compiler;
+            m_Compiler = compiler;
         }
 
         public IFilter CreateFilter(IFilter sourceFilter)
         {
-            return Compiler(sourceFilter);
+            return m_Compiler(sourceFilter);
         }
     }
 
-    public class FilterChain {
+    public class FilterChain
+    {
         public IFilter Filter;
 
         public FilterChain(IFilter sourceFilter)
@@ -66,22 +67,23 @@ namespace Mpdn.RenderScript
             Filter = sourceFilter;
         }
 
-        public void Add(IRenderChain renderChain)
-        {
-            Filter = renderChain.CreateFilter(Filter);
-        }
-
         public Size OutputSize
         {
             get { return Filter.OutputSize; }
+        }
+
+        public void Add(IRenderChain renderChain)
+        {
+            Filter = renderChain.CreateFilter(Filter);
         }
     }
 
     public abstract class CombinedChain : RenderChain
     {
-        protected abstract void BuildChain(FilterChain Chain);
+        protected abstract void BuildChain(FilterChain chain);
 
-        public override IFilter CreateFilter(IFilter sourceFilter) {
+        public override IFilter CreateFilter(IFilter sourceFilter)
+        {
             var chain = new FilterChain(sourceFilter);
             BuildChain(chain);
 

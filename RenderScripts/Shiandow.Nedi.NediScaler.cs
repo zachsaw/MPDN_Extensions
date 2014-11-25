@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Windows.Forms;
 using YAXLib;
 
 namespace Mpdn.RenderScript
@@ -21,9 +20,9 @@ namespace Mpdn.RenderScript
 
             #endregion
 
-            private bool UseNedi(IFilter SourceFilter)
+            private bool UseNedi(IFilter sourceFilter)
             {
-                var size = SourceFilter.OutputSize;
+                var size = sourceFilter.OutputSize;
                 if (size.IsEmpty)
                     return false;
 
@@ -34,23 +33,23 @@ namespace Mpdn.RenderScript
                        Renderer.TargetSize.Height > size.Height;
             }
 
-            public override IFilter CreateFilter(IFilter SourceFilter)
+            public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                var m_Nedi1Shader = CompileShader("NEDI-I.hlsl");
-                var m_Nedi2Shader = CompileShader("NEDI-II.hlsl");
-                var m_NediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl");
-                var m_NediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl");
+                var nedi1Shader = CompileShader("NEDI-I.hlsl");
+                var nedi2Shader = CompileShader("NEDI-II.hlsl");
+                var nediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl");
+                var nediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl");
 
-                Func<Size, Size> transformWidth  = s => new Size(2 * s.Width, s.Height);
-                Func<Size, Size> transformHeight = s => new Size(s.Width, 2 * s.Height);
+                Func<Size, Size> transformWidth = s => new Size(2*s.Width, s.Height);
+                Func<Size, Size> transformHeight = s => new Size(s.Width, 2*s.Height);
 
-                if (!UseNedi(SourceFilter))
-                    return SourceFilter;
+                if (!UseNedi(sourceFilter))
+                    return sourceFilter;
 
-                var nedi1 = new ShaderFilter(m_Nedi1Shader, SourceFilter);
-                var nediH = new ShaderFilter(m_NediHInterleaveShader, transformWidth, SourceFilter, nedi1);
-                var nedi2 = new ShaderFilter(m_Nedi2Shader, nediH);
-                var nediV = new ShaderFilter(m_NediVInterleaveShader, transformHeight, nediH, nedi2);
+                var nedi1 = new ShaderFilter(nedi1Shader, sourceFilter);
+                var nediH = new ShaderFilter(nediHInterleaveShader, transformWidth, sourceFilter, nedi1);
+                var nedi2 = new ShaderFilter(nedi2Shader, nediH);
+                var nediV = new ShaderFilter(nediVInterleaveShader, transformHeight, nediH, nedi2);
 
                 return nediV;
             }

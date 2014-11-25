@@ -1,9 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using System.Collections.Generic;
-using Mpdn.RenderScript;
 
 namespace Mpdn.RenderScript
 {
@@ -19,10 +18,11 @@ namespace Mpdn.RenderScript
 
                 var renderScripts =
                     from t in Assembly.GetExecutingAssembly().GetTypes()
+                    let constructor = t.GetConstructor(Type.EmptyTypes)
                     where t.IsClass
-                        && typeof(IRenderChainUi).IsAssignableFrom(t)
-                        && t.GetConstructor(Type.EmptyTypes) != null
-                    select (IRenderChainUi)t.GetConstructor(Type.EmptyTypes).Invoke(new object[0]);
+                          && typeof (IRenderChainUi).IsAssignableFrom(t)
+                          && constructor != null
+                    select (IRenderChainUi) constructor.Invoke(new object[0]);
 
                 foreach (var script in renderScripts)
                 {
@@ -61,7 +61,7 @@ namespace Mpdn.RenderScript
             protected override void SaveSettings()
             {
                 var scripts = from item in listViewChain.Items.Cast<ListViewItem>()
-                              select new ChainUiPair((IRenderChainUi)item.Tag);
+                    select new ChainUiPair((IRenderChainUi) item.Tag);
                 Settings.ScriptList = scripts.ToList();
             }
 
@@ -78,7 +78,7 @@ namespace Mpdn.RenderScript
 
             private void RemoveScript(ListViewItem selectedItem)
             {
-                var renderScript = (IRenderChainUi)selectedItem.Tag;
+                var renderScript = (IRenderChainUi) selectedItem.Tag;
 
                 renderScript.Destroy();
 
@@ -111,7 +111,7 @@ namespace Mpdn.RenderScript
 
                 item.Text = SELECTED_INDICATOR_STR;
 
-                var script = (IRenderChainUi)item.Tag;
+                var script = (IRenderChainUi) item.Tag;
                 labelCopyright.Text = script == null ? string.Empty : script.Descriptor.Copyright;
             }
 
@@ -144,7 +144,7 @@ namespace Mpdn.RenderScript
                     var item = listViewChain.SelectedItems[0];
                     item.Text = SELECTED_INDICATOR_STR;
 
-                    var s = (IRenderChainUi)item.Tag;
+                    var s = (IRenderChainUi) item.Tag;
                     buttonConfigure.Enabled = s != null && s.Descriptor.HasConfigDialog;
                 }
 
@@ -157,7 +157,7 @@ namespace Mpdn.RenderScript
                     return;
 
                 var item = listViewChain.SelectedItems[0];
-                var script = (IRenderChainUi)item.Tag;
+                var script = (IRenderChainUi) item.Tag;
                 if (script.ShowConfigDialog(Owner))
                     UpdateItemText(item, script);
             }
@@ -199,17 +199,22 @@ namespace Mpdn.RenderScript
                 UpdateButtons();
             }
 
-            private IRenderChainUi CreateNew(IRenderChainUi scriptUi)
+            private static IRenderChainUi CreateNew(IRenderChainUi scriptUi)
             {
-                return (IRenderChainUi)scriptUi.GetType().GetConstructor(Type.EmptyTypes).Invoke(new object[0]);
+                var constructor = scriptUi.GetType().GetConstructor(Type.EmptyTypes);
+                if (constructor == null)
+                {
+                    throw new EntryPointNotFoundException("RenderChainUi must implement parameter-less constructor");
+                }
+                return (IRenderChainUi) constructor.Invoke(new object[0]);
             }
 
             private void AddScript(ListViewItem selectedItem)
             {
-                var item = (ListViewItem)selectedItem.Clone();
+                var item = (ListViewItem) selectedItem.Clone();
                 item.Text = string.Empty;
 
-                var scriptRenderer = (IRenderChainUi)item.Tag;
+                var scriptRenderer = (IRenderChainUi) item.Tag;
                 var renderScript = CreateNew(scriptRenderer);
                 renderScript.Initialize(null);
                 item.Tag = renderScript;
@@ -223,12 +228,6 @@ namespace Mpdn.RenderScript
                 item.SubItems[1].Text = renderScript.Descriptor.Name;
                 item.SubItems[2].Text = renderScript.Descriptor.Description;
             }
-
-            private enum MoveDirection
-            {
-                Up = -1,
-                Down = 1
-            };
 
             private static void MoveListViewItems(ListView listView, MoveDirection direction)
             {
@@ -285,8 +284,16 @@ namespace Mpdn.RenderScript
                 listView.EndUpdate();
                 listView.Focus();
             }
+
+            private enum MoveDirection
+            {
+                Up = -1,
+                Down = 1
+            };
         }
 
-        public class ScriptChainDialogBase : ScriptConfigDialog<ScriptChain> { }
+        public class ScriptChainDialogBase : ScriptConfigDialog<ScriptChain>
+        {
+        }
     }
 }

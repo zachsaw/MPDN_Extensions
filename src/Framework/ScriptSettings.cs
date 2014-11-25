@@ -9,26 +9,25 @@ namespace Mpdn.RenderScript
     {
         public abstract class ScriptSettings<TSettings> where TSettings : class, new()
         {
-            private bool m_InMemory;
-            private ConfigProvider<TSettings> m_ScriptSettings;
-            private ConfigProvider<TSettings> Settings
-            {
-                get { return m_ScriptSettings ?? (m_ScriptSettings = new ConfigProvider<TSettings>(ConfigFilePath)); }
-            }
-            private Exception m_LastException;
+            private readonly bool m_InMemory;
 
-            protected ScriptSettings() 
+            private Exception m_LastException;
+            private ConfigProvider<TSettings> m_ScriptSettings;
+
+            protected ScriptSettings()
             {
                 m_InMemory = false;
             }
 
             protected ScriptSettings(TSettings settings)
             {
-				m_InMemory = true;
-                Settings.Configuration = settings;
+                m_InMemory = true;
+                Settings.Configuration = settings ?? new TSettings();
+            }
 
-                if (Settings.Configuration == null)
-                    Settings.Configuration = new TSettings();
+            private ConfigProvider<TSettings> Settings
+            {
+                get { return m_ScriptSettings ?? (m_ScriptSettings = new ConfigProvider<TSettings>(ConfigFilePath)); }
             }
 
             protected abstract string ScriptConfigFileName { get; }
@@ -53,8 +52,9 @@ namespace Mpdn.RenderScript
                 {
                     const string rootNs = "MediaPlayerDotNet";
                     var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                    string extension = Environment.Is64BitProcess ? "64" : "32";
-                    var appConfigFolder = Path.Combine(localAppData, rootNs, string.Format("RenderScripts.{0}", extension));
+                    var extension = Environment.Is64BitProcess ? "64" : "32";
+                    var appConfigFolder = Path.Combine(localAppData, rootNs,
+                        string.Format("RenderScripts.{0}", extension));
                     return Path.Combine(appConfigFolder, ScriptConfigFileName);
                 }
             }
@@ -167,7 +167,7 @@ namespace Mpdn.RenderScript
                         throw new YAXException("Failed to deserialize from config file");
                     }
 
-                    m_Configuration = (T)obj;
+                    m_Configuration = (T) obj;
                     return true;
                 }
                 catch (Exception ex)
@@ -199,7 +199,8 @@ namespace Mpdn.RenderScript
 
             private static YAXSerializer CreateSerializer()
             {
-                return new YAXSerializer(typeof(T), YAXExceptionHandlingPolicies.ThrowErrorsOnly, YAXExceptionTypes.Warning);
+                return new YAXSerializer(typeof (T), YAXExceptionHandlingPolicies.ThrowErrorsOnly,
+                    YAXExceptionTypes.Warning);
             }
         }
     }

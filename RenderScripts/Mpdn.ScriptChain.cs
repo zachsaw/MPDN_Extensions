@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 using YAXLib;
 
 namespace Mpdn.RenderScript
@@ -10,6 +10,19 @@ namespace Mpdn.RenderScript
     {
         public class ChainUiPair
         {
+            private IRenderChainUi m_ChainUi;
+
+            public ChainUiPair()
+            {
+            }
+
+            public ChainUiPair(IRenderChainUi scripUi)
+            {
+                Chain = scripUi.GetChain();
+                m_ChainUi = scripUi;
+                UiType = scripUi.GetType();
+            }
+
             [YAXSerializeAs("RenderChain")]
             public IRenderChain Chain { get; set; }
 
@@ -17,13 +30,9 @@ namespace Mpdn.RenderScript
             public Type UiType { get; set; }
 
             [YAXDontSerialize]
-            public IRenderChainUi ChainUi { 
-                get 
-                { 
-                    if (m_ChainUi == null)
-                        m_ChainUi = CreateUi();
-                    return m_ChainUi;
-                }
+            public IRenderChainUi ChainUi
+            {
+                get { return m_ChainUi ?? (m_ChainUi = CreateUi()); }
             }
 
             [YAXSerializeAs("RenderChainUi")]
@@ -34,20 +43,17 @@ namespace Mpdn.RenderScript
                 set { UiType = Assembly.GetExecutingAssembly().GetType(value, false); }
             }
 
-            public ChainUiPair() { }
-
-            public ChainUiPair(IRenderChainUi scripUi)
+            private IRenderChainUi CreateUi()
             {
-                Chain = scripUi.GetChain();
-                m_ChainUi = scripUi;
-                UiType = scripUi.GetType();
-            }
-            
-            private IRenderChainUi m_ChainUi;
-            private IRenderChainUi CreateUi() {
-                var Ui = (IRenderChainUi)UiType.GetConstructor(Type.EmptyTypes).Invoke(new object[0]);
-                Ui.Initialize(Chain);
-                return Ui;
+                var constructor = UiType.GetConstructor(Type.EmptyTypes);
+                if (constructor == null)
+                {
+                    throw new EntryPointNotFoundException("RenderChainUi must implement parameter-less constructor");
+                }
+
+                var ui = (IRenderChainUi) constructor.Invoke(new object[0]);
+                ui.Initialize(Chain);
+                return ui;
             }
         }
 
@@ -61,10 +67,12 @@ namespace Mpdn.RenderScript
             [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public List<ChainUiPair> ScriptList { get; set; }
 
-            protected override void BuildChain(FilterChain Chain)
+            protected override void BuildChain(FilterChain chain)
             {
                 foreach (var pair in ScriptList)
-                    Chain.Add(pair.Chain);
+                {
+                    chain.Add(pair.Chain);
+                }
             }
         }
 

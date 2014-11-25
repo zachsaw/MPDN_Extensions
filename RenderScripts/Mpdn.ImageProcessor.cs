@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows.Forms;
 using YAXLib;
 
 namespace Mpdn.RenderScript
@@ -12,22 +11,14 @@ namespace Mpdn.RenderScript
 
         public enum ImageProcessorUsage
         {
-            [Description("Always")]
-            Always,
-            [Description("Never")]
-            Never,
-            [Description("When upscaling video")]
-            WhenUpscaling,
-            [Description("When downscaling video")]
-            WhenDownscaling,
-            [Description("When not scaling video")]
-            WhenNotScaling,
-            [Description("When upscaling input")]
-            WhenUpscalingInput,
-            [Description("When downscaling input")]
-            WhenDownscalingInput,
-            [Description("When not scaling input")]
-            WhenNotScalingInput
+            [Description("Always")] Always,
+            [Description("Never")] Never,
+            [Description("When upscaling video")] WhenUpscaling,
+            [Description("When downscaling video")] WhenDownscaling,
+            [Description("When not scaling video")] WhenNotScaling,
+            [Description("When upscaling input")] WhenUpscalingInput,
+            [Description("When downscaling input")] WhenDownscalingInput,
+            [Description("When not scaling input")] WhenNotScalingInput
         }
 
         #endregion
@@ -60,24 +51,27 @@ namespace Mpdn.RenderScript
                 get { return "ImageProcessingShaders"; }
             }
 
-            public string FullShaderPath { get { return ShaderDataFilePath; } }
+            public string FullShaderPath
+            {
+                get { return ShaderDataFilePath; }
+            }
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
                 if (UseImageProcessor(sourceFilter))
-                    return ShaderFileNames.Aggregate(sourceFilter, (current, filename) => new ShaderFilter(CompileShader(filename), current));
-                else
-                    return sourceFilter;
+                    return ShaderFileNames.Aggregate(sourceFilter,
+                        (current, filename) => new ShaderFilter(CompileShader(filename), current));
+                return sourceFilter;
             }
 
             private bool UseImageProcessor(IFilter sourceFilter)
             {
-                bool notscalingVideo = false;
-                bool upscalingVideo = false;
-                bool downscalingVideo = false;
-                bool notscalingInput = false;
-                bool upscalingInput = false;
-                bool downscalingInput = false;
+                var notscalingVideo = false;
+                var upscalingVideo = false;
+                var downscalingVideo = false;
+                var notscalingInput = false;
+                var upscalingInput = false;
+                var downscalingInput = false;
 
                 var usage = ImageProcessorUsage;
                 var inputSize = Renderer.VideoSize;
