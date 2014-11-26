@@ -418,6 +418,14 @@ namespace Mpdn.RenderScript
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
 
+        public ResizeFilter(IFilter inputFilter, Size outputSize)
+            : base(inputFilter)
+        {
+            m_OutputSize = outputSize;
+            m_Upscaler = Renderer.LumaUpscaler;
+            m_Downscaler = Renderer.LumaDownscaler;
+        }
+
         public ResizeFilter(IFilter inputFilter, Size outputSize, IScaler upscaler, IScaler downscaler)
             : base(inputFilter)
         {
