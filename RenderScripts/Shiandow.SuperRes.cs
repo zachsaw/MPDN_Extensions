@@ -9,7 +9,9 @@ namespace Mpdn.RenderScript
     {
         public class SuperRes : RenderChain
         {
-            private readonly int passes = 3;
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public int Passes { get; set; }
+
             private IScaler scaler;
 
             public Func<Size> TargetSize; // Not saved
@@ -17,7 +19,8 @@ namespace Mpdn.RenderScript
             public SuperRes()
             {
                 TargetSize = () => Renderer.TargetSize;
-                scaler = new Scaler.Bicubic(0.75f, false);
+                Passes = 3;
+                scaler = new Scaler.Bilinear();
             }
 
             public override IFilter CreateFilter(IFilter sourceFilter)
@@ -51,7 +54,7 @@ namespace Mpdn.RenderScript
                 lab      = new ShaderFilter(GammaToLab, initial);
                 original = new ShaderFilter(GammaToLab, original);
 
-                for (int i = 1; i <= passes; i++)
+                for (int i = 1; i <= Passes; i++)
                 {
                     IFilter res, diff;
 
@@ -72,14 +75,32 @@ namespace Mpdn.RenderScript
             }
         }
 
+        public class SuperNEDIRes : RenderChain
+        {
+            protected override string ShaderPath
+            {
+                get { return "SuperRes"; }
+            }
+
+            public override IFilter CreateFilter(IFilter sourceFilter)
+            {
+                var nedi    = new Nedi{ AlwaysDoubleImage = true }.CreateFilter(sourceFilter);
+                var shifted = new ShaderFilter(CompileShader("Shift.hlsl"), true, nedi).ScaleTo(Renderer.TargetSize);
+
+                return new SuperRes { Passes = 2 }.CreateFilter(sourceFilter, shifted);
+            }
+        }
+
         public class SuperChromaRes : RenderChain
         {
-            private readonly int passes = 2;
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public int passes { get; set; }
             private IScaler scaler;
 
             public SuperChromaRes()
             {
-                scaler = new Scaler.HwBilinear();
+                passes = 2;
+                scaler = new Scaler.Bilinear();
             }
 
             protected override string ShaderPath
@@ -158,6 +179,23 @@ namespace Mpdn.RenderScript
             }
         }
 
+        public class SuperNEDIResUi : RenderChainUi<SuperNEDIRes>
+        {
+            protected override RenderScriptDescriptor ScriptDescriptor
+            {
+                get
+                {
+                    return new RenderScriptDescriptor
+                    {
+                        Guid = new Guid("24E09DA6-EBDF-4980-A360-0F62B083BAA2"),
+                        Name = "SuperNEDIRes",
+                        Description = "Combines NEDI with SuperRes",
+                        Copyright = "SuperNEDIRes by Shiandow",
+                    };
+                }
+            }
+        }
+
         public class SuperChromaResUi : RenderChainUi<SuperChromaRes>
         {
             protected override RenderScriptDescriptor ScriptDescriptor
@@ -174,6 +212,5 @@ namespace Mpdn.RenderScript
                 }
             }
         }
-
     }
 }
