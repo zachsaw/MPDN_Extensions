@@ -1,5 +1,5 @@
 // -- Main parameters --
-#define strength 0.8
+#define strength 0.9
 #define softness 0.3
 
 // -- Edge detection options -- 

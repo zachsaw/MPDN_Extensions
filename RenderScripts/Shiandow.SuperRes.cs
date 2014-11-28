@@ -71,7 +71,7 @@ namespace Mpdn.RenderScript
                     lab = new ShaderFilter(SuperRes, lab, diff);
                 }
 
-                return new ShaderFilter(LabToGamma, lab); // Never reached
+                return new ShaderFilter(LabToGamma, lab);
             }
         }
 
@@ -123,18 +123,26 @@ namespace Mpdn.RenderScript
 
                 public ScalerTaps MaxTapCount
                 {
-                    get { return ScalerTaps.Eight; }
+                    get { return ScalerTaps.Six; }
                 } 
 
                 public float GetWeight(float n, int width)
                 {
-                    return (float)GaussianKernel(n + m_Offset, width);
+                    return (float)Kernel(n + m_Offset, width);
                 }
 
-                private static double GaussianKernel(double x, double radius)
+                private static double Kernel(double x, double radius)
                 {
-                    var sigma = 0.5;
-                    return Math.Exp(-(x * x / (2 * sigma * sigma)));
+                    x = Math.Abs(x);
+                    var B = 1.0/3.0;
+                    var C = 1.0/3.0;
+
+                    if (x > 2.0) 
+                        return 0;
+                    else if (x <= 1.0)
+                        return ((2-1.5*B-C)*x + (-3+2*B+C))*x*x + (1-B/3.0);
+                    else
+                        return (((-B / 6.0 - C) * x + (B + 5 * C)) * x + (-2 * B - 8 * C)) * x + ((4.0 / 3.0) * B + 4 * C);
                 }
             }
         }
