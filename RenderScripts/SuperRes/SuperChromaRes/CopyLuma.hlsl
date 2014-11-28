@@ -1,7 +1,6 @@
 // -- Misc --
-sampler s0 : register(s0);
-sampler sU : register(s1);
-sampler sV : register(s2);
+sampler sY : register(s0);
+sampler s1 : register(s1);
 float4 p0 :  register(c0);
 float2 p1 :  register(c1);
 
@@ -13,9 +12,8 @@ float2 p1 :  register(c1);
 
 // -- Main code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
-	float y = tex2D(s0, tex)[0];
-	float u = tex2D(sU, tex)[0];
-	float v = tex2D(sV, tex)[0];
+	float y = tex2D(sY, tex)[0];
+	float2 uv = tex2D(s1, tex).yz;
 
-	return float4(y, u, v, 1);
+		return float4(y, uv, 1);
 }

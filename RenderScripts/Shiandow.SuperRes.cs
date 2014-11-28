@@ -77,6 +77,13 @@ namespace Mpdn.RenderScript
 
         public class SuperNEDIRes : RenderChain
         {
+            private IScaler m_ShiftedScaler;
+
+            public SuperNEDIRes()
+            {
+                m_ShiftedScaler = new Scaler.Custom(new ShiftedScaler(0.5f), ScalerTaps.Six, false);
+            }
+
             protected override string ShaderPath
             {
                 get { return "SuperRes"; }
@@ -85,9 +92,50 @@ namespace Mpdn.RenderScript
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
                 var nedi    = new Nedi{ AlwaysDoubleImage = true }.CreateFilter(sourceFilter);
-                var shifted = new ShaderFilter(CompileShader("Shift.hlsl"), true, nedi).ScaleTo(Renderer.TargetSize);
+                var shifted = new ResizeFilter(nedi, Renderer.TargetSize, m_ShiftedScaler, m_ShiftedScaler);
 
-                return new SuperRes { Passes = 2 }.CreateFilter(sourceFilter, shifted);
+                return new SuperRes{ Passes = 2 }.CreateFilter(sourceFilter, shifted);
+            }
+
+            private class ShiftedScaler : ICustomLinearScaler
+            {
+                private float m_Offset;
+
+                public ShiftedScaler(float offset)
+                {
+                    m_Offset = offset;
+                }
+
+                public Guid Guid
+                {
+                    get { return new Guid(); }
+                }
+
+                public string Name
+                {
+                    get { return ""; }
+                }
+
+                public bool AllowDeRing
+                {
+                    get { return false; }
+                }
+
+                public ScalerTaps MaxTapCount
+                {
+                    get { return ScalerTaps.Eight; }
+                } 
+
+                public float GetWeight(float n, int width)
+                {
+                    return (float)GaussianKernel(n + m_Offset, width);
+                }
+
+                private static double GaussianKernel(double x, double radius)
+                {
+                    var sigma = 0.5;
+                    return Math.Exp(-(x * x / (2 * sigma * sigma)));
+                }
             }
         }
 
@@ -110,7 +158,7 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                IFilter rgb, lab, linear;
+                IFilter rgb, lab, linear, yuv, gamma;
 
                 var chromaSize = Renderer.ChromaSize;
                 var lumaSize = Renderer.LumaSize;
@@ -129,7 +177,7 @@ namespace Mpdn.RenderScript
                 var LinearToLab = CompileShader("LinearToLab.hlsl");
 
                 // Initial scaling
-                rgb = sourceFilter;
+                gamma = sourceFilter;
 
                 // Original values
                 var yInput = new YSourceFilter();
@@ -138,27 +186,26 @@ namespace Mpdn.RenderScript
 
                 for (int i = 1; i <= passes; i++)
                 {
-                    IFilter res, diff, yuv, gamma;
+                    IFilter res, diff;
 
+                    // Anti ringing
+                    yuv = gamma.ConvertToYuv();
+                    rgb = new ShaderFilter(AntiRinging, yuv, yInput, uInput, vInput).ConvertToRgb();
                     linear = new ShaderFilter(GammaToLinear, rgb);
 
                     // Compare to chroma
                     res = new ResizeFilter(linear, chromaSize, scaler, scaler);
                     yuv = new ShaderFilter(LinearToGamma, res).ConvertToYuv();
-                    rgb = new ShaderFilter(CopyLuma, yuv, uInput, vInput).ConvertToRgb();
+                    rgb = new ShaderFilter(CopyChroma, yuv, uInput, vInput).ConvertToRgb();
                     diff = new ShaderFilter(Diff, res, rgb);
                     diff = new ResizeFilter(diff, lumaSize, scaler, scaler);
 
                     // Update result
                     lab   = new ShaderFilter(LinearToLab, linear);
                     gamma = new ShaderFilter(SuperRes, lab, diff);
-
-                    // Fix Luma
-                    yuv = gamma.ConvertToYuv();
-                    rgb = new ShaderFilter(CopyChroma, yInput, yuv).ConvertToRgb();
                 }
 
-                return rgb;
+                return gamma;
             }
         }
 

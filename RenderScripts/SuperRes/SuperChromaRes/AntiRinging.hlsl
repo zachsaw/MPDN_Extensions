@@ -4,16 +4,20 @@
 
 // -- Misc --
 sampler s0 : register(s0);
-sampler s1 : register(s1); // Original
+sampler sY : register(s1);
+sampler sU : register(s2);
+sampler sV : register(s3);
 float4 p0 :  register(c0);
 float2 p1 :  register(c1);
-float4 size1 : register(c2);
+float4 size2 : register(c2);
+
+#define sizeUV size2
 
 #define width  (p0[0])
 #define height (p0[1])
 
-#define px (size1[2])
-#define py (size1[3])
+#define px (sizeUV[2])
+#define py (sizeUV[3])
 
 // -- Option values --
 #define None  1
@@ -58,7 +62,8 @@ float3 LabToRGB(float3 res) {
 }
 
 // -- Input processing --
-#define Get(x,y)	(tex2D(s1,float2(px,py)*(floor(pos2)+float2(x,y)+0.5)).rgb)
+#define Position(x,y) (float2(px,py)*(floor(pos2)+float2(x,y)+0.5))
+#define Get(x,y)	  (float2(tex2D(sU, Position(x,y))[0], tex2D(sV, Position(x,y))[0]))
 
 // -- Main code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
@@ -66,16 +71,17 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 
 	//Calculate position
 	int2 pos = floor(tex*p0.xy);
-	float2 pos2 = (pos + 0.5) * size1 / p0.xy - 0.5;
+	float2 pos2 = (pos + 0.5) * size2.xy / p0.xy - 0.5;
 
 	//Find extrema
-	float3 Min = min(min(Get(0, 0), Get(1, 0)),
+	float2 Min = min(min(Get(0, 0), Get(1, 0)),
 					 min(Get(0, 1), Get(1, 1)));
-	float3 Max = max(max(Get(0, 0), Get(1, 0)),
+	float2 Max = max(max(Get(0, 0), Get(1, 0)),
 					 max(Get(0, 1), Get(1, 1)));
 
 	//Apply anti-ringing
-	c0.xyz = min(Max, max(Min, c0.xyz));
+	c0.yz = min(Max, max(Min, c0.yz));
+	c0.x = tex2D(sY, tex)[0];
 
 	return c0;
 }
