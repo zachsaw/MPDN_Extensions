@@ -1,12 +1,11 @@
 // -- Main parameters --
-#define strength 0.9
-#define softness 0.3
+#define strength 0.8
+#define softness 0.5
 
 // -- Edge detection options -- 
-#define edge_adaptiveness 1.0
-#define baseline 0.25
-#define acuity 7.5
-#define radius 0.65
+#define edge_adaptiveness 1.5
+#define acuity 15.0
+#define radius 0.75
 
 // -- Color space options --
 #define GammaCurve sRGB
@@ -25,7 +24,7 @@ float2 p1	  : register(c1);
 #define py (p1[1])
 
 #define sqr(x) dot(x,x)
-#define spread (exp(-(radius*radius)/2.0))
+#define spread (exp(-1/(2.0*radius*radius)))
 
 // -- Option values --
 #define None  1
@@ -85,7 +84,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 	for (int j = -1; j <= 1; j++) {
 		float3 d = Get(0, 0) - Get(i, j);
 		float x2 = sqr(acuity*d);
-		float w = pow(spread, i*i + j*j)*lerp(1 / sqr(1 + x2), rsqrt(1 + x2), baseline);
+		float w = pow(spread, i*i + j*j)*exp(-x2);// lerp(1 / sqr(1 + x2), rsqrt(1 + x2), baseline);
 		stab += d*w;
 		W += w;
 	}

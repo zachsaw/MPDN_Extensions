@@ -12,15 +12,14 @@ namespace Mpdn.RenderScript
             [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public int Passes { get; set; }
 
-            private IScaler scaler;
-
+            public IScaler scaler; // Not saved
             public Func<Size> TargetSize; // Not saved
 
             public SuperRes()
             {
                 TargetSize = () => Renderer.TargetSize;
                 Passes = 3;
-                scaler = new Scaler.Bilinear();
+                scaler = new Scaler.Jinc( ScalerTaps.Four, false);
             }
 
             public override IFilter CreateFilter(IFilter sourceFilter)
@@ -91,10 +90,23 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                var nedi    = new Nedi{ AlwaysDoubleImage = true }.CreateFilter(sourceFilter);
-                var shifted = new ResizeFilter(nedi, Renderer.TargetSize, m_ShiftedScaler, m_ShiftedScaler);
+                var inputSize = sourceFilter.OutputSize;
+                var targetSize = Renderer.TargetSize;
+                var nedi = new Nedi{ AlwaysDoubleImage = false }.CreateFilter(sourceFilter);
 
-                return new SuperRes{ Passes = 2 }.CreateFilter(sourceFilter, shifted);
+                // Skip if downscaling
+                if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
+                    return sourceFilter;
+
+                // Select scaler
+                IScaler scaler;
+                if (targetSize.Width / inputSize.Width < 2)
+                    scaler = new Scaler.Bilinear();
+                else
+                    scaler = new Scaler.Jinc(ScalerTaps.Four, false);
+
+                var shifted = new ResizeFilter(nedi, Renderer.TargetSize, m_ShiftedScaler, m_ShiftedScaler);
+                return new SuperRes{ Passes = 2, scaler = scaler }.CreateFilter(sourceFilter, shifted);
             }
 
             private class ShiftedScaler : ICustomLinearScaler
@@ -133,16 +145,17 @@ namespace Mpdn.RenderScript
 
                 private static double Kernel(double x, double radius)
                 {
-                    x = Math.Abs(x);
-                    var B = 1.0/3.0;
-                    var C = 1.0/3.0;
+                    return Math.Exp(-x * x);
+                    /*x = Math.Abs(x);
+                    var B = 1.0;
+                    var C = 0.0;
 
                     if (x > 2.0) 
                         return 0;
                     else if (x <= 1.0)
                         return ((2-1.5*B-C)*x + (-3+2*B+C))*x*x + (1-B/3.0);
                     else
-                        return (((-B / 6.0 - C) * x + (B + 5 * C)) * x + (-2 * B - 8 * C)) * x + ((4.0 / 3.0) * B + 4 * C);
+                        return (((-B / 6.0 - C) * x + (B + 5 * C)) * x + (-2 * B - 8 * C)) * x + ((4.0 / 3.0) * B + 4 * C);*/
                 }
             }
         }
@@ -166,10 +179,10 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                IFilter rgb, lab, linear, yuv, gamma;
+                IFilter rgb, lab, linear, yuv, gamma, original;
 
                 var chromaSize = Renderer.ChromaSize;
-                var lumaSize = Renderer.LumaSize;
+                var targetSize = sourceFilter.OutputSize;
 
                 var Diff = CompileShader("SuperChromaRes/Diff.hlsl");
                 var CopyLuma = CompileShader("SuperChromaRes/CopyLuma.hlsl");
@@ -184,11 +197,15 @@ namespace Mpdn.RenderScript
                 var LabToLinear = CompileShader("LabToLinear.hlsl");
                 var LinearToLab = CompileShader("LinearToLab.hlsl");
 
+                // Skip if downscaling
+                if (targetSize.Width <= chromaSize.Width && targetSize.Height <= chromaSize.Height)
+                    return sourceFilter;
+
                 // Initial scaling
-                gamma = sourceFilter;
+                original = sourceFilter.ConvertToYuv();
+                yuv = original;
 
                 // Original values
-                var yInput = new YSourceFilter();
                 var uInput = new USourceFilter();
                 var vInput = new VSourceFilter();
 
@@ -197,8 +214,7 @@ namespace Mpdn.RenderScript
                     IFilter res, diff;
 
                     // Anti ringing
-                    yuv = gamma.ConvertToYuv();
-                    rgb = new ShaderFilter(AntiRinging, yuv, yInput, uInput, vInput).ConvertToRgb();
+                    rgb = new ShaderFilter(AntiRinging, yuv, original, uInput, vInput).ConvertToRgb();
                     linear = new ShaderFilter(GammaToLinear, rgb);
 
                     // Compare to chroma
@@ -206,14 +222,15 @@ namespace Mpdn.RenderScript
                     yuv = new ShaderFilter(LinearToGamma, res).ConvertToYuv();
                     rgb = new ShaderFilter(CopyChroma, yuv, uInput, vInput).ConvertToRgb();
                     diff = new ShaderFilter(Diff, res, rgb);
-                    diff = new ResizeFilter(diff, lumaSize, scaler, scaler);
+                    diff = new ResizeFilter(diff, targetSize, scaler, scaler);
 
                     // Update result
                     lab   = new ShaderFilter(LinearToLab, linear);
                     gamma = new ShaderFilter(SuperRes, lab, diff);
+                    yuv = gamma.ConvertToYuv();
                 }
 
-                return gamma;
+                return yuv.ConvertToRgb();
             }
         }
 
