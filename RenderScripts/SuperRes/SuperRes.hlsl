@@ -14,14 +14,19 @@
 // -- Misc --
 sampler s0 	  : register(s0);
 sampler sDiff : register(s1);
+sampler s2	  : register(s2); // Original
 float4 p0	  : register(c0);
 float2 p1	  : register(c1);
+float4 size2  : register(c2); // Original size
 
 #define width  (p0[0])
 #define height (p0[1])
 
 #define px (p1[0])
 #define py (p1[1])
+
+#define ppx (size2[2])
+#define ppy (size2[3])
 
 #define sqr(x) dot(x,x)
 #define spread (exp(-1/(2.0*radius*radius)))
@@ -73,12 +78,15 @@ float3 LabToRGB(float3 res) {
 #define Get(x,y)  	(tex2D(s0,tex+float2(px,py)*int2(x,y)).rgb)
 //Difference between downsampled result and original
 #define Diff(x,y)	(tex2D(sDiff,tex+float2(px,py)*int2(x,y)).rgb)
+//Original values
+#define Original(x,y)	(tex2D(s2,float2(ppx,ppy)*(pos2+float2(x,y)+0.5)).rgb)
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
 	float4 c0 = tex2D(s0, tex);
 
 	float3 stab = 0;
+	/*
 	float W = 0;
 	for (int i = -1; i <= 1; i++)
 	for (int j = -1; j <= 1; j++) {
@@ -89,12 +97,29 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 		W += w;
 	}
 	stab = (stab / W)*pow(W / (1 + 4 * spread + 4 * spread*spread), edge_adaptiveness - 1.0);
+	*/
 
 	//Calculate faithfulness force
 	float3 diff = Diff(0, 0);
 
 	//Apply forces
 	c0.xyz -= strength*(diff + stab*softness);
+
+	//Calculate position
+	int2 pos = floor(tex*p0.xy);
+	int2 pos2 = floor((pos + 0.5) * size2 / p0.xy - 0.5);
+
+	//Find extrema
+	float3 Min = min(min(Original(0, 0), Original(1, 0)),
+					 min(Original(0, 1), Original(1, 1)));
+	float3 Max = max(max(Original(0, 0), Original(1, 0)),
+					 max(Original(0, 1), Original(1, 1)));
+
+	//Apply anti-ringing
+	c0.xyz = min(Max, max(Min, c0.xyz));
+
+	//Convert to linear light
+	c0.rgb = LabToRGB(c0.xyz);
 
 	return c0;
 }

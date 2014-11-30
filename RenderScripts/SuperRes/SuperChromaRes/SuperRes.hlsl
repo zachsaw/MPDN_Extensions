@@ -95,6 +95,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 	float4 c0 = tex2D(s0, tex);
 
 	float3 stab = 0;
+	/*
 	float W = 0;
 	for (int i = -1; i <= 1; i++)
 	for (int j = -1; j <= 1; j++) {
@@ -105,6 +106,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 		W += w;
 	}
 	stab = (stab / W)*pow(W / (1 + 4 * spread + 4 * spread*spread), edge_adaptiveness - 1.0);
+	*/
 
 	//Calculate faithfulness force
 	float3 diff = Diff(0, 0);
