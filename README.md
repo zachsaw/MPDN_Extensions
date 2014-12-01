@@ -19,6 +19,8 @@ To use these render scripts (compatible with ***MPDN v2.12.0*** and above), clic
 
 Then extract the files and folders in the RenderScripts folder (located in RenderScripts-master folder) to your MPDN's RenderScripts folder.
 
+If you wish to try out the custom linear scaler examples, extract the files in the CustomLinearScalers folder to your MPDN's CustomLinearScalers folder.
+
 
 Developing / Debugging Render Scripts
 -------------------------------------
