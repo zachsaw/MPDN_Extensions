@@ -418,6 +418,10 @@ namespace Mpdn.RenderScript
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
 
+        public ResizeFilter(IFilter inputFilter, Size outputSize)
+            : this(inputFilter, outputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler)
+        { }
+
         public ResizeFilter(IFilter inputFilter, Size outputSize, IScaler upscaler, IScaler downscaler)
             : base(inputFilter)
         {
@@ -484,7 +488,7 @@ namespace Mpdn.RenderScript
             var i = 0;
             foreach (var input in inputs)
             {
-                Shader.SetTextureConstant(i, input.Texture, LinearSampling, false);
+                Shader.SetTextureConstant(i, input, LinearSampling, false);
                 Shader.SetConstant(String.Format("size{0}", i),
                     new Vector4(input.Width, input.Height, 1.0f/input.Width, 1.0f/input.Height), false);
                 i++;

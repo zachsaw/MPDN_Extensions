@@ -89,7 +89,8 @@ namespace Mpdn.RenderScript
             m_Cache.PutTempTexture(Renderer.OutputRenderTarget);
             m_Filter.NewFrame();
             m_Filter.Render(m_Cache);
-            Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
+            if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
+                Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
             m_Filter.ReleaseTexture(m_Cache);
             m_Cache.FlushTextures();
         }
