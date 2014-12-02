@@ -290,6 +290,12 @@ namespace Mpdn.RenderScript
 
         private Size m_OutputSize;
 
+        public void Reset()
+        {
+            m_OutputSize = Size.Empty;
+            WantYuv = false;
+        }
+
         public Size GetOutputSize(bool assumeVideoSizeIfEmpty = true)
         {
             return assumeVideoSizeIfEmpty ? (m_OutputSize.IsEmpty ? Renderer.VideoSize : m_OutputSize) : m_OutputSize;

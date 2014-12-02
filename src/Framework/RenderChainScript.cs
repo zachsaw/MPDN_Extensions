@@ -80,6 +80,7 @@ namespace Mpdn.RenderScript
 
         public void Update()
         {
+            m_SourceFilter.Reset();
             m_Filter = Chain.CreateFilter(m_SourceFilter);
             m_Filter.Initialize();
         }
