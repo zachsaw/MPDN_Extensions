@@ -181,6 +181,9 @@ namespace Mpdn.RenderScript
 
         public virtual void ReleaseTexture(ITextureCache cache)
         {
+            if (OutputTexture == null)
+                return;
+
             cache.PutTexture(OutputTexture);
             OutputTexture = null;
         }
@@ -497,10 +500,13 @@ namespace Mpdn.RenderScript
 
     public class ShaderFilter : GenericShaderFilter<IShader>
     {
-        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, bool linearSampling,
+        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, bool linearSampling, float[] arguments,
             params IFilter[] inputFilters)
             : base(shader, transform, sizeIndex, linearSampling, inputFilters)
         {
+            arguments = arguments ?? new float[0];
+            args = new float[4*((arguments.Length + 3) / 4)];
+            arguments.CopyTo(args, 0);
         }
 
         protected int Counter { get; private set; }
@@ -546,22 +552,57 @@ namespace Mpdn.RenderScript
         }
 
         public ShaderFilter(IShader shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
-            : this(shader, s => s, sizeIndex, linearSampling, inputFilters)
+            : this(shader, s => s, sizeIndex, linearSampling, new float[0], inputFilters)
         {
         }
 
         public ShaderFilter(IShader shader, TransformFunc transform, params IFilter[] inputFilters)
-            : this(shader, transform, 0, false, inputFilters)
+            : this(shader, transform, 0, false, new float[0], inputFilters)
         {
         }
 
         public ShaderFilter(IShader shader, TransformFunc transform, bool linearSampling, params IFilter[] inputFilters)
-            : this(shader, transform, 0, linearSampling, inputFilters)
+            : this(shader, transform, 0, linearSampling, new float[0], inputFilters)
         {
         }
 
         public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, params IFilter[] inputFilters)
-            : this(shader, transform, sizeIndex, false, inputFilters)
+            : this(shader, transform, sizeIndex, false, new float[0], inputFilters)
+        {
+        }
+
+        public ShaderFilter(IShader shader, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, false, arguments, inputFilters)
+        {
+        }
+
+        public ShaderFilter(IShader shader, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, 0, linearSampling, arguments, inputFilters)
+        {
+        }
+
+        public ShaderFilter(IShader shader, int sizeIndex, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, sizeIndex, false, arguments, inputFilters)
+        {
+        }
+
+        public ShaderFilter(IShader shader, int sizeIndex, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, s => s, sizeIndex, linearSampling, arguments, inputFilters)
+        {
+        }
+
+        public ShaderFilter(IShader shader, TransformFunc transform, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, transform, 0, false, arguments, inputFilters)
+        {
+        }
+
+        public ShaderFilter(IShader shader, TransformFunc transform, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, transform, 0, linearSampling, arguments, inputFilters)
+        {
+        }
+
+        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, transform, sizeIndex, false, arguments, inputFilters)
         {
         }
 
