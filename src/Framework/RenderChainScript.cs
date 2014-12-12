@@ -6,12 +6,12 @@ using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
-    public static class ShaderCache
+    public static class ShaderCache<T> where T: class
     {
         private static readonly Dictionary<string, ShaderWithDateTime> s_CompiledShaders =
             new Dictionary<string, ShaderWithDateTime>();
 
-        public static IShader CompileShader(string shaderPath)
+        public static T CompileShader(string shaderPath, Func<string, T> compileFunc)
         {
             var lastMod = File.GetLastWriteTimeUtc(shaderPath);
 
@@ -28,17 +28,17 @@ namespace Mpdn.RenderScript
                 s_CompiledShaders.Remove(shaderPath);
             }
 
-            var shader = Renderer.CompileShader(shaderPath);
+            var shader = compileFunc(shaderPath);
             s_CompiledShaders.Add(shaderPath, new ShaderWithDateTime(shader, lastMod));
             return shader;
         }
 
         public class ShaderWithDateTime
         {
-            public IShader Shader { get; private set; }
+            public T Shader { get; private set; }
             public DateTime LastModified { get; private set; }
 
-            public ShaderWithDateTime(IShader shader, DateTime lastModified)
+            public ShaderWithDateTime(T shader, DateTime lastModified)
             {
                 Shader = shader;
                 LastModified = lastModified;
@@ -91,12 +91,14 @@ namespace Mpdn.RenderScript
             m_Filter.NewFrame();
             m_Filter.Render(m_Cache);
             if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
+            {
                 Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
+            }
             m_Filter.ReleaseTexture(m_Cache);
             m_Cache.FlushTextures();
         }
 
-        private void Scale(ITexture output, ITexture input)
+        private static void Scale(ITexture output, ITexture input)
         {
             Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }
@@ -176,7 +178,7 @@ namespace Mpdn.RenderScript
             throw new NotImplementedException("Config dialog has not been implemented");
         }
 
-        public void Destroy()
+        public virtual void Destroy()
         {
             Common.Dispose(m_RenderScript);
         }

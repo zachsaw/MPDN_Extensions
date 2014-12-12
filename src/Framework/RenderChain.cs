@@ -32,12 +32,29 @@ namespace Mpdn.RenderScript
 
         protected IShader CompileShader(string shaderFileName)
         {
-            return ShaderCache.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
+            return ShaderCache<IShader>.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName),
+                s => Renderer.CompileShader(s));
         }
 
         protected IShader LoadShader(string shaderFileName)
         {
             return Renderer.LoadShader(shaderFileName);
+        }
+
+        protected IShader11 CompileShader11(string shaderFileName, string profile)
+        {
+            return CompileShader11(shaderFileName, "main", profile);
+        }
+
+        protected IShader11 CompileShader11(string shaderFileName, string entryPoint, string profile)
+        {
+            return ShaderCache<IShader11>.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName),
+                s => Renderer.CompileShader11(s, entryPoint, profile));
+        }
+
+        protected IShader11 LoadShader11(string shaderFileName)
+        {
+            return Renderer.LoadShader11(shaderFileName);
         }
 
         #endregion
