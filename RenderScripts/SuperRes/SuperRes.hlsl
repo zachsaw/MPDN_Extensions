@@ -1,6 +1,6 @@
 // -- Main parameters --
 #define strength (args0[0])
-#define softness (args0[1])
+#define sharpness (args0[1])
 #define anti_aliasing (args0[2])
 #define anti_ringing (args0[3])
 
@@ -102,7 +102,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 		normalize(float2(Ix[2], Iy[2]))
 	));
 	float3 stab = -anti_aliasing*(I[0] * I[0] * Iyy - 2 * I[0] * I[1] * Ixy + I[1] * I[1] * Ixx);
-	stab -= softness*0.5*(Ixx + Iyy);
+	stab += sharpness*0.5*(Ixx + Iyy);
 
 	//Calculate faithfulness force
 	float3 diff = Diff(0, 0);
