@@ -500,6 +500,8 @@ namespace Mpdn.RenderScript
 
     public class ShaderFilter : GenericShaderFilter<IShader>
     {
+        protected float[] args;
+
         public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, bool linearSampling, float[] arguments,
             params IFilter[] inputFilters)
             : base(shader, transform, sizeIndex, linearSampling, inputFilters)
@@ -521,6 +523,9 @@ namespace Mpdn.RenderScript
                     new Vector4(input.Width, input.Height, 1.0f/input.Width, 1.0f/input.Height), false);
                 i++;
             }
+
+            for (i = 0; 4 * i < args.Length; i++)
+                Shader.SetConstant(String.Format("args{0}", i), new Vector4(args[4 * i], args[4 * i + 1], args[4 * i + 2], args[4 * i + 3]), false);
 
             // Legacy constants 
             var output = OutputTexture;
