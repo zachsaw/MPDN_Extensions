@@ -61,12 +61,12 @@ namespace Mpdn.RenderScript
                 IFilter initial;
                 if (UseNEDI)
                 {
-                    initial = new Shiandow.Nedi.Nedi { AlwaysDoubleImage = false }.CreateFilter(sourceFilter);
+                    initial = new Shiandow.Nedi.Nedi { AlwaysDoubleImage = false, Centered = false }.CreateFilter(sourceFilter);
                     initial = new ResizeFilter(initial, targetSize, m_ShiftedScaler, m_ShiftedScaler);
                 }
                 else
                 {
-                    initial = new ResizeFilter(sourceFilter, targetSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+                    initial = new ResizeFilter(sourceFilter, targetSize);
                 }
 
                 // Skip if downscaling
@@ -101,7 +101,7 @@ namespace Mpdn.RenderScript
                 float AA = AntiAliasing;
                 for (int i = 1; i <= Passes; i++)
                 {
-                    IFilter res, diff;            
+                    IFilter res, diff;
                     bool useBilinear = (upscaler is Scaler.Bilinear) || (FirstPassOnly && !(i == 1));
 
                     // Calculate difference

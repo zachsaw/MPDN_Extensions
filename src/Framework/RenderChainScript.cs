@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Drawing;
 using System.Windows.Forms;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
@@ -49,14 +50,13 @@ namespace Mpdn.RenderScript
     public class RenderChainScript : IRenderScript, IDisposable
     {
         private readonly TextureCache m_Cache;
-        private readonly SourceFilter m_SourceFilter;
+        private IFilter m_SourceFilter;
         protected IRenderChain Chain;
         private IFilter m_Filter;
 
         public RenderChainScript(IRenderChain chain)
         {
             Chain = chain;
-            m_SourceFilter = new SourceFilter();
             m_Cache = new TextureCache();
         }
 
@@ -71,30 +71,29 @@ namespace Mpdn.RenderScript
             {
                 return new ScriptInterfaceDescriptor
                 {
-                    WantYuv = m_SourceFilter.WantYuv,
+                    WantYuv = true,
                     Prescale = (m_SourceFilter.LastDependentIndex > 0),
-                    PrescaleSize = m_SourceFilter.GetOutputSize(false)
+                    PrescaleSize = m_SourceFilter.OutputSize
                 };
             }
         }
 
         public void Update()
         {
-            m_SourceFilter.Reset();
+            m_SourceFilter = new RgbFilter(new SourceFilter());
             m_Filter = Chain.CreateFilter(m_SourceFilter);
-            m_Filter.Initialize();
+            m_Filter = m_Filter.Initialize();
         }
 
         public void Render()
         {
             m_Cache.PutTempTexture(Renderer.OutputRenderTarget);
-            m_Filter.NewFrame();
             m_Filter.Render(m_Cache);
             if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
             {
                 Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
             }
-            m_Filter.ReleaseTexture(m_Cache);
+            m_Filter.Reset(m_Cache);
             m_Cache.FlushTextures();
         }
 
