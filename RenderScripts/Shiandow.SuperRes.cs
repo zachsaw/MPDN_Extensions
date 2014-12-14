@@ -1,31 +1,79 @@
 ﻿using System;
 using System.Drawing;
 using Mpdn.RenderScript.Scaler;
+using SharpDX;
 using YAXLib;
+using Mpdn.RenderScript.Shiandow.Nedi;
 
 namespace Mpdn.RenderScript
 {
-    namespace Shiandow.Nedi
+    namespace Shiandow.SuperRes
     {
         public class SuperRes : RenderChain
         {
+            #region Settings
+
             [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public int Passes { get; set; }
 
-            public IScaler upscaler, downscaler; // Not saved
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public float Strength { get; set; }
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public float Sharpness { get; set; }
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public float AntiAliasing { get; set; }
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public float AntiRinging { get; set; }
+
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public bool UseNEDI { get; set; }
+            //[YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public bool FirstPassOnly;// { get; set; }
+
+            #endregion
+
             public Func<Size> TargetSize; // Not saved
+            private IScaler downscaler, upscaler;
 
             public SuperRes()
             {
                 TargetSize = () => Renderer.TargetSize;
-                Passes = 3;
-                upscaler = new Scaler.Jinc(ScalerTaps.Four, false);
+                m_ShiftedScaler = new Scaler.Custom(new ShiftedScaler(0.5f), ScalerTaps.Six, false);
+
+                Passes = 2;
+
+                Strength = 0.8f;
+                Sharpness = 0.5f;
+                AntiAliasing = 1.0f;
+                AntiRinging = 0.8f;
+
+                UseNEDI = false;
+                FirstPassOnly = false;
+                upscaler = new Scaler.Bicubic(2.0f/3.0f, false);
                 downscaler = new Scaler.Bilinear();
             }
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                return CreateFilter(sourceFilter, new ResizeFilter(sourceFilter, TargetSize()));
+                var inputSize = sourceFilter.OutputSize;
+                var targetSize = TargetSize();
+
+                IFilter initial;
+                if (UseNEDI)
+                {
+                    initial = new Shiandow.Nedi.Nedi { AlwaysDoubleImage = false, Centered = false }.CreateFilter(sourceFilter);
+                    initial = new ResizeFilter(initial, targetSize, m_ShiftedScaler, m_ShiftedScaler);
+                }
+                else
+                {
+                    initial = new ResizeFilter(sourceFilter, targetSize);
+                }
+
+                // Skip if downscaling
+                if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
+                    return sourceFilter;
+                else
+                    return CreateFilter(sourceFilter, initial);
             }
 
             public IFilter CreateFilter(IFilter original, IFilter initial)
@@ -37,7 +85,7 @@ namespace Mpdn.RenderScript
 
                 var Diff = CompileShader("Diff.hlsl");
                 var SuperRes = CompileShader("SuperRes.hlsl");
-                var AntiRinging = CompileShader("AntiRinging.hlsl");
+                var ARShader = CompileShader("AntiRinging.hlsl");
 
                 var GammaToLab = CompileShader("GammaToLab.hlsl");
                 var LabToGamma = CompileShader("LabToGamma.hlsl");
@@ -46,71 +94,33 @@ namespace Mpdn.RenderScript
                 var LabToLinear = CompileShader("LabToLinear.hlsl");
                 var LinearToLab = CompileShader("LinearToLab.hlsl");
 
-                // Skip if downscaling
-                if (targetSize.Width  <= inputSize.Width && targetSize.Height <= inputSize.Height)
-                    return original;
-
                 // Initial scaling
                 linear   = new ShaderFilter(GammaToLinear, initial);
                 original = new ShaderFilter(GammaToLab, original);
 
+                float AA = AntiAliasing;
                 for (int i = 1; i <= Passes; i++)
                 {
-                    IFilter res, diff;                  
+                    IFilter res, diff;
+                    bool useBilinear = (upscaler is Scaler.Bilinear) || (FirstPassOnly && !(i == 1));
 
                     // Calculate difference
                     res = new ResizeFilter(linear, inputSize, upscaler, downscaler); // Downscale result
-                    diff = new ShaderFilter(Diff, res, original);               // Compare with original
-                    diff = new ResizeFilter(diff, targetSize, upscaler, downscaler);  // Scale to output size
+                    diff = new ShaderFilter(Diff, res, original);                    // Compare with original
+                    if (!useBilinear)
+                        diff = new ResizeFilter(diff, targetSize, upscaler, downscaler); // Scale to output size
 
                     // Update result
                     lab = new ShaderFilter(LinearToLab, linear);
-                    linear = new ShaderFilter(SuperRes, lab, diff, original);
+                    linear = new ShaderFilter(SuperRes, useBilinear, new[] { Strength, Sharpness, AA, AntiRinging }, lab, diff, original);
+
+                    AA *= 0.5f;
                 }
 
                 return new ShaderFilter(LinearToGamma, linear);
             }
-        }
 
-        public class SuperNEDIRes : RenderChain
-        {
             private IScaler m_ShiftedScaler;
-
-            public SuperNEDIRes()
-            {
-                m_ShiftedScaler = new Scaler.Custom(new ShiftedScaler(0.5f), ScalerTaps.Six, false);
-            }
-
-            protected override string ShaderPath
-            {
-                get { return "SuperRes"; }
-            }
-
-            public override IFilter CreateFilter(IFilter sourceFilter)
-            {
-                var inputSize = sourceFilter.OutputSize;
-                var targetSize = Renderer.TargetSize;
-                var nedi = new Nedi{ AlwaysDoubleImage = false }.CreateFilter(sourceFilter);
-
-                // Skip if downscaling
-                if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
-                    return sourceFilter;
-
-                IScaler upscaler;
-                if (targetSize.Width < 1.7 * inputSize.Width)
-                    upscaler = new Scaler.Bilinear();
-                else
-                    upscaler = new Scaler.Jinc(ScalerTaps.Four, false);
-
-                var shifted = new ResizeFilter(nedi, Renderer.TargetSize, m_ShiftedScaler, m_ShiftedScaler);
-                var superres =  new SuperRes{ Passes = 2, upscaler = upscaler }.CreateFilter(sourceFilter, shifted);
-
-                // Skip if downscaling
-                if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
-                    return sourceFilter;
-                else
-                    return superres;
-            }
 
             private class ShiftedScaler : ICustomLinearScaler
             {
@@ -148,93 +158,27 @@ namespace Mpdn.RenderScript
 
                 private static double Kernel(double x, double radius)
                 {
-                    return Math.Exp(-x * x);
-                    /*x = Math.Abs(x);
-                    var B = 1.0;
-                    var C = 0.0;
+                    x = Math.Abs(x);
+                    var B = 1.0/3.0;
+                    var C = 1.0/3.0;
 
-                    if (x > 2.0) 
+                    if (x > 2.0)
                         return 0;
                     else if (x <= 1.0)
-                        return ((2-1.5*B-C)*x + (-3+2*B+C))*x*x + (1-B/3.0);
+                        return ((2 - 1.5 * B - C) * x + (-3 + 2 * B + C)) * x * x + (1 - B / 3.0);
                     else
-                        return (((-B / 6.0 - C) * x + (B + 5 * C)) * x + (-2 * B - 8 * C)) * x + ((4.0 / 3.0) * B + 4 * C);*/
+                        return (((-B / 6.0 - C) * x + (B + 5 * C)) * x + (-2 * B - 8 * C)) * x + ((4.0 / 3.0) * B + 4 * C);
                 }
             }
         }
 
-        public class SuperChromaRes : RenderChain
+        public class SuperResUi : ConfigurableRenderChainUi<SuperRes, SuperResConfigDialog>
         {
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public int passes { get; set; }
-            private IScaler upscaler, downscaler;
-
-            public SuperChromaRes()
+            protected override string ConfigFileName
             {
-                passes = 2;
-                upscaler = new Scaler.Bilinear();
-                downscaler = new Scaler.Bilinear();
+                get { return "Shiandow.SuperRes"; }
             }
 
-            protected override string ShaderPath
-            {
-                get { return "SuperRes"; }
-            }
-
-            public override IFilter CreateFilter(IFilter sourceFilter)
-            {
-                IFilter linear, original;
-
-                var chromaSize = Renderer.ChromaSize;
-                var targetSize = sourceFilter.OutputSize;
-
-                var Diff = CompileShader("SuperChromaRes/Diff.hlsl");
-                var CopyLuma = CompileShader("SuperChromaRes/CopyLuma.hlsl");
-                var CopyChroma = CompileShader("SuperChromaRes/CopyChroma.hlsl");
-                var SuperRes = CompileShader("SuperChromaRes/SuperRes.hlsl");
-                var AntiRinging = CompileShader("SuperChromaRes/AntiRinging.hlsl");
-
-                var GammaToLab = CompileShader("GammaToLab.hlsl");
-                var LabToGamma = CompileShader("LabToGamma.hlsl");
-                var LinearToGamma = CompileShader("LinearToGamma.hlsl");
-                var GammaToLinear = CompileShader("GammaToLinear.hlsl");
-                var LabToLinear = CompileShader("LabToLinear.hlsl");
-                var LinearToLab = CompileShader("LinearToLab.hlsl");
-
-                // Initial scaling
-                original = sourceFilter.ConvertToYuv();
-                linear = new ShaderFilter(GammaToLinear, new RgbFilter(original));
-
-                // Original values
-                var uInput = new USourceFilter();
-                var vInput = new VSourceFilter();
-
-                for (int i = 1; i <= passes; i++)
-                {
-                    IFilter lab, yuv, rgb, res, diff;
-
-                    // Compare to chroma
-                    res = new ResizeFilter(linear, chromaSize, upscaler, downscaler);
-                    yuv = new ShaderFilter(LinearToGamma, res).ConvertToYuv();
-                    rgb = new ShaderFilter(CopyChroma, yuv, uInput, vInput).ConvertToRgb();
-                    diff = new ShaderFilter(Diff, res, rgb);
-                    diff = new ResizeFilter(diff, targetSize, upscaler, downscaler);
-
-                    // Update result
-                    lab = new ShaderFilter(LinearToLab, linear);
-                    yuv = new ShaderFilter(SuperRes, lab, diff).ConvertToYuv();
-
-                    // Anti ringing
-                    rgb = new ShaderFilter(AntiRinging, yuv, original, uInput, vInput).ConvertToRgb();
-                    linear = new ShaderFilter(GammaToLinear, rgb);
-                }
-
-                return new ShaderFilter(LinearToGamma, linear);
-            }
-        }
-
-        public class SuperResUi : RenderChainUi<SuperRes>
-        {
             protected override RenderScriptDescriptor ScriptDescriptor
             {
                 get
@@ -245,40 +189,6 @@ namespace Mpdn.RenderScript
                         Name = "SuperRes",
                         Description = "SuperRes image scaling",
                         Copyright = "SuperRes by Shiandow",
-                    };
-                }
-            }
-        }
-
-        public class SuperNEDIResUi : RenderChainUi<SuperNEDIRes>
-        {
-            protected override RenderScriptDescriptor ScriptDescriptor
-            {
-                get
-                {
-                    return new RenderScriptDescriptor
-                    {
-                        Guid = new Guid("24E09DA6-EBDF-4980-A360-0F62B083BAA2"),
-                        Name = "SuperNEDIRes",
-                        Description = "Combines NEDI with SuperRes",
-                        Copyright = "SuperNEDIRes by Shiandow",
-                    };
-                }
-            }
-        }
-
-        public class SuperChromaResUi : RenderChainUi<SuperChromaRes>
-        {
-            protected override RenderScriptDescriptor ScriptDescriptor
-            {
-                get
-                {
-                    return new RenderScriptDescriptor
-                    {
-                        Guid = new Guid("AC6F46E2-C04E-4A20-AF68-EFA8A6CA7FCD"),
-                        Name = "SuperChromaRes",
-                        Description = "SuperChromaRes chroma scaling",
-                        Copyright = "SuperChromaRes by Shiandow",
                     };
                 }
             }

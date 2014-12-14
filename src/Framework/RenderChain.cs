@@ -92,6 +92,7 @@ namespace Mpdn.RenderScript
         public void Add(IRenderChain renderChain)
         {
             Filter = renderChain.CreateFilter(Filter);
+            Filter = new ResizeFilter(Filter, OutputSize, true);
         }
     }
 

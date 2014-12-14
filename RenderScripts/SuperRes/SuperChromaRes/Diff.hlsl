@@ -4,7 +4,8 @@
 
 // -- Misc --
 sampler s0 : register(s0);
-sampler s1 : register(s1);
+sampler sU : register(s1);
+sampler sV : register(s2);
 float4 p0 :  register(c0);
 float2 p1 :  register(c1);
 
@@ -75,10 +76,10 @@ float3 LabtoRGB(float3 res) {
 // -- Main code --
 float4 main(float2 tex : TEXCOORD0) : COLOR {
 	float4 c0 = tex2D(s0, tex);
-	float4 c1 = tex2D(s1, tex);
+	float u = tex2D(sU, tex)[0];
+	float v = tex2D(sV, tex)[0];
 
-	c0.xyz = RGBtoLab(c0.rgb);
-	c1.xyz = RGBtoLab(GammaInv(c1.rgb));
+	c0.yz -= float2(u, v);
 
-	return c0 - c1;
+	return c0;
 }

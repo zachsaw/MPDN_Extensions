@@ -13,10 +13,13 @@ namespace Mpdn.RenderScript
             public Nedi()
             {
                 AlwaysDoubleImage = false;
+                Centered = true;
             }
 
             [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public bool AlwaysDoubleImage { get; set; }
+            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+            public bool Centered { get; set; }
 
             #endregion
 
@@ -40,11 +43,19 @@ namespace Mpdn.RenderScript
                 var nediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl");
                 var nediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl");
 
-                Func<Size, Size> transformWidth = s => new Size(2*s.Width, s.Height);
-                Func<Size, Size> transformHeight = s => new Size(s.Width, 2*s.Height);
+                Func<Size, Size> transformWidth;
+                Func<Size, Size> transformHeight;
+                if (Centered)
+                {
+                    transformWidth = s => new Size(2 * s.Width - 1, s.Height);
+                    transformHeight = s => new Size(s.Width, 2 * s.Height - 1);
+                } else {
+                    transformWidth = s => new Size(2 * s.Width, s.Height);
+                    transformHeight = s => new Size(s.Width, 2 * s.Height);
+                }
 
-                if (!UseNedi(sourceFilter))
-                    return sourceFilter;
+                    if (!UseNedi(sourceFilter))
+                        return sourceFilter;
 
                 var nedi1 = new ShaderFilter(nedi1Shader, sourceFilter);
                 var nediH = new ShaderFilter(nediHInterleaveShader, transformWidth, sourceFilter, nedi1);
