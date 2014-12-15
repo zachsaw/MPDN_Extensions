@@ -426,9 +426,9 @@ namespace Mpdn.RenderScript
 
         #region Auxilary class(es)
 
-        private class TransformedResizeableFilter : Filter, IResizeableFilter
+        private sealed class TransformedResizeableFilter : Filter, IResizeableFilter
         {
-            private IResizeableFilter m_InputFilter;
+            private readonly IResizeableFilter m_InputFilter;
 
             public TransformedResizeableFilter(Func<IFilter, IFilter> transformation, IResizeableFilter inputFilter)
                 : base(new IFilter[0])
@@ -447,7 +447,9 @@ namespace Mpdn.RenderScript
             private void CheckSize()
             {
                 if (m_InputFilter.OutputSize != PassthroughFilter.OutputSize)
+                {
                     throw new InvalidOperationException("Transformation is not allowed to change the size.");
+                }
             }
 
             public override Size OutputSize
