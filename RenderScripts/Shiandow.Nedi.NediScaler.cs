@@ -36,7 +36,7 @@ namespace Mpdn.RenderScript
                        Renderer.TargetSize.Height > size.Height;
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
                 var nedi1Shader = CompileShader("NEDI-I.hlsl");
                 var nedi2Shader = CompileShader("NEDI-II.hlsl");

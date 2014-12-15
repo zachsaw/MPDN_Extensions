@@ -7,12 +7,12 @@ namespace Mpdn.RenderScript
 {
     public interface IRenderChain
     {
-        IFilter CreateFilter(IFilter sourceFilter);
+        IFilter CreateFilter(IResizeableFilter sourceFilter);
     }
 
     public abstract class RenderChain : IRenderChain
     {
-        public abstract IFilter CreateFilter(IFilter sourceFilter);
+        public abstract IFilter CreateFilter(IResizeableFilter sourceFilter);
 
         #region Shader Compilation
 
@@ -62,14 +62,14 @@ namespace Mpdn.RenderScript
 
     public class StaticChain : IRenderChain
     {
-        private readonly Func<IFilter, IFilter> m_Compiler;
+        private readonly Func<IResizeableFilter, IFilter> m_Compiler;
 
-        public StaticChain(Func<IFilter, IFilter> compiler)
+        public StaticChain(Func<IResizeableFilter, IFilter> compiler)
         {
             m_Compiler = compiler;
         }
 
-        public IFilter CreateFilter(IFilter sourceFilter)
+        public IFilter CreateFilter(IResizeableFilter sourceFilter)
         {
             return m_Compiler(sourceFilter);
         }
@@ -77,9 +77,9 @@ namespace Mpdn.RenderScript
 
     public class FilterChain
     {
-        public IFilter Filter;
+        public IResizeableFilter Filter;
 
-        public FilterChain(IFilter sourceFilter)
+        public FilterChain(IResizeableFilter sourceFilter)
         {
             Filter = sourceFilter;
         }
@@ -91,8 +91,7 @@ namespace Mpdn.RenderScript
 
         public void Add(IRenderChain renderChain)
         {
-            Filter = renderChain.CreateFilter(Filter);
-            Filter = new ResizeFilter(Filter, OutputSize);
+            Filter = renderChain.CreateFilter(Filter).MakeResizeable();
         }
     }
 
@@ -100,7 +99,7 @@ namespace Mpdn.RenderScript
     {
         protected abstract void BuildChain(FilterChain chain);
 
-        public override IFilter CreateFilter(IFilter sourceFilter)
+        public override IFilter CreateFilter(IResizeableFilter sourceFilter)
         {
             var chain = new FilterChain(sourceFilter);
             BuildChain(chain);

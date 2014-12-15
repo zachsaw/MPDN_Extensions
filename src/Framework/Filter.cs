@@ -27,6 +27,11 @@ namespace Mpdn.RenderScript
         IFilter Initialize(int time = 1);
     }
 
+    public interface IResizeableFilter : IFilter
+    {
+        void SetSize(Size outputSize);
+    }
+
     public class TextureCache : ITextureCache, IDisposable
     {
         private List<ITexture> m_OldTextures = new List<ITexture>();
@@ -87,7 +92,7 @@ namespace Mpdn.RenderScript
     {
         protected Filter(params IFilter[] inputFilters)
         {
-            if (inputFilters == null || inputFilters.Length == 0 || inputFilters.Any(f => f == null))
+            if (inputFilters == null || inputFilters.Any(f => f == null))
             {
                 throw new ArgumentNullException("inputFilters");
             }
@@ -230,7 +235,7 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public sealed class SourceFilter : BaseSourceFilter
+    public sealed class SourceFilter : BaseSourceFilter, IResizeableFilter
     {
         private Size m_OutputSize;
 
@@ -347,7 +352,7 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class ResizeFilter : Filter
+    public class ResizeFilter : Filter, IResizeableFilter
     {
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
@@ -403,6 +408,60 @@ namespace Mpdn.RenderScript
         {
             return new YuvFilter(filter);
         }
+
+        public static IResizeableFilter MakeResizeable(this IFilter filter)
+        {
+            return (filter as IResizeableFilter) ?? new ResizeFilter(filter, filter.OutputSize);
+        }
+
+        public static IResizeableFilter Transform(this IResizeableFilter filter, Func<IFilter, IFilter> transformation)
+        {
+            return new TransformedResizeableFilter(transformation, filter);
+        }
+
+        public static IFilter Apply(this IFilter filter, Func<IFilter, IFilter> map)
+        {
+            return map(filter);
+        }
+
+        #region Auxilary class(es)
+
+        private class TransformedResizeableFilter : Filter, IResizeableFilter
+        {
+            private IResizeableFilter m_InputFilter;
+
+            public TransformedResizeableFilter(Func<IFilter, IFilter> transformation, IResizeableFilter inputFilter)
+                : base(new IFilter[0])
+            {
+                m_InputFilter = inputFilter;
+                PassthroughFilter = transformation(m_InputFilter);
+                CheckSize();
+            }
+
+            public void SetSize(Size outputSize)
+            {
+                m_InputFilter.SetSize(outputSize);
+                CheckSize();
+            }
+
+            private void CheckSize()
+            {
+                if (m_InputFilter.OutputSize != PassthroughFilter.OutputSize)
+                    throw new InvalidOperationException("Transformation is not allowed to change the size.");
+            }
+
+            public override Size OutputSize
+            {
+                get { return m_InputFilter.OutputSize; }
+            }
+
+            protected override void Render(IEnumerable<ITexture> inputs)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        #endregion
     }
 
     public abstract class GenericShaderFilter<T> : Filter where T: class
