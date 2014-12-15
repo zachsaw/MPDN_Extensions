@@ -154,7 +154,9 @@ namespace Mpdn.RenderScript
             Updated = true;
 
             foreach (var filter in InputFilters)
+            {
                 filter.Render(cache);
+            }
 
             var inputTextures = InputFilters.Select(f => f.OutputTexture);
 
@@ -165,7 +167,9 @@ namespace Mpdn.RenderScript
             foreach (var filter in InputFilters)
             {
                 if (filter.LastDependentIndex <= FilterIndex)
+                {
                     filter.Reset(cache);
+                }
             }
         }
 
@@ -173,8 +177,11 @@ namespace Mpdn.RenderScript
         {
             Updated = false;
 
-            if (OutputTexture != null) 
+            if (OutputTexture != null)
+            {
                 cache.PutTexture(OutputTexture);
+            }
+
             OutputTexture = null;
         }
 
@@ -259,7 +266,7 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public class YSourceFilter : BaseSourceFilter
+    public sealed class YSourceFilter : BaseSourceFilter
     {
         public override ITexture OutputTexture
         {
@@ -276,7 +283,7 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class USourceFilter : BaseSourceFilter
+    public sealed class USourceFilter : BaseSourceFilter
     {
         public override ITexture OutputTexture
         {
@@ -293,7 +300,7 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class VSourceFilter : BaseSourceFilter
+    public sealed class VSourceFilter : BaseSourceFilter
     {
         public override ITexture OutputTexture
         {
@@ -310,12 +317,14 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class RgbFilter : Filter
+    public sealed class RgbFilter : Filter
     {
         public RgbFilter(IFilter inputFilter) : base(inputFilter) 
         {
             if (inputFilter is YuvFilter)
-                PassthroughFilter = inputFilter.InputFilters[0];        
+            {
+                PassthroughFilter = inputFilter.InputFilters[0];
+            }        
         }
 
         public override Size OutputSize
@@ -330,16 +339,18 @@ namespace Mpdn.RenderScript
 
         public override bool SetSize(Size targetSize)
         {
-            return base.SetSize(targetSize) || InputFilters[0].SetSize(targetSize);
+            return targetSize == OutputSize || InputFilters[0].SetSize(targetSize);
         }
     }
 
-    public class YuvFilter : Filter
+    public sealed class YuvFilter : Filter
     {
         public YuvFilter(IFilter inputFilter) : base(inputFilter)
         {
             if (inputFilter is RgbFilter)
+            {
                 PassthroughFilter = inputFilter.InputFilters[0];
+            }
         }
 
         public override Size OutputSize
@@ -354,7 +365,7 @@ namespace Mpdn.RenderScript
 
         public override bool SetSize(Size targetSize)
         {
-            return base.SetSize(targetSize) || InputFilters[0].SetSize(targetSize);
+            return targetSize == OutputSize || InputFilters[0].SetSize(targetSize);
         }
     }
 
@@ -363,7 +374,6 @@ namespace Mpdn.RenderScript
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
         private readonly bool m_OverrideInputSize;
-        private IFilter m_PassthroughFilter;
         private Size m_OutputSize;
 
         public ResizeFilter(IFilter inputFilter, Size outputSize, bool overrideInputSize = false)
@@ -377,13 +387,16 @@ namespace Mpdn.RenderScript
             m_Upscaler = upscaler;
             m_Downscaler = downscaler;
             m_OverrideInputSize = overrideInputSize;
-            SetSize(outputSize);
+            m_OutputSize = outputSize;
         }
 
         public override IFilter Initialize(int time = 1)
         {
-            if (InputFilters[0].OutputSize == m_OutputSize || (m_OverrideInputSize && InputFilters[0].SetSize(m_OutputSize)))
+            if (InputFilters[0].OutputSize == m_OutputSize ||
+                (m_OverrideInputSize && InputFilters[0].SetSize(m_OutputSize)))
+            {
                 PassthroughFilter = InputFilters[0];
+            }
 
             return base.Initialize(time);
         }
@@ -420,7 +433,7 @@ namespace Mpdn.RenderScript
 
     public abstract class GenericShaderFilter<T> : Filter where T: class
     {
-        protected GenericShaderFilter(T shader, TransformFunc transform, int sizeIndex, bool linearSampling,
+        protected GenericShaderFilter(T shader, TransformFunc transform, int sizeIndex, bool linearSampling, float[] arguments,
             params IFilter[] inputFilters)
             : base(inputFilters)
         {
@@ -433,13 +446,17 @@ namespace Mpdn.RenderScript
             LinearSampling = linearSampling;
             Transform = transform;
             SizeIndex = sizeIndex;
+
+            arguments = arguments ?? new float[0];
+            Args = new float[4 * ((arguments.Length + 3) / 4)];
+            arguments.CopyTo(Args, 0);
         }
 
         protected T Shader { get; private set; }
         protected bool LinearSampling { get; private set; }
         protected TransformFunc Transform { get; private set; }
         protected int SizeIndex { get; private set; }
-        protected virtual bool ResizeInputfilter { get { return false; } }
+        protected float[] Args { get; private set; }
 
         public override Size OutputSize
         {
@@ -458,15 +475,10 @@ namespace Mpdn.RenderScript
 
     public class ShaderFilter : GenericShaderFilter<IShader>
     {
-        protected float[] args;
-
         public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, bool linearSampling, float[] arguments,
             params IFilter[] inputFilters)
-            : base(shader, transform, sizeIndex, linearSampling, inputFilters)
+            : base(shader, transform, sizeIndex, linearSampling, arguments, inputFilters)
         {
-            arguments = arguments ?? new float[0];
-            args = new float[4*((arguments.Length + 3) / 4)];
-            arguments.CopyTo(args, 0);
         }
 
         protected int Counter { get; private set; }
@@ -482,8 +494,11 @@ namespace Mpdn.RenderScript
                 i++;
             }
 
-            for (i = 0; 4 * i < args.Length; i++)
-                Shader.SetConstant(String.Format("args{0}", i), new Vector4(args[4 * i], args[4 * i + 1], args[4 * i + 2], args[4 * i + 3]), false);
+            for (i = 0; 4*i < Args.Length; i++)
+            {
+                Shader.SetConstant(String.Format("args{0}", i),
+                    new Vector4(Args[4*i], Args[4*i + 1], Args[4*i + 2], Args[4*i + 3]), false);
+            }
 
             // Legacy constants 
             var output = OutputTexture;
@@ -575,8 +590,8 @@ namespace Mpdn.RenderScript
     public class Shader11Filter : GenericShaderFilter<IShader11>
     {
         public Shader11Filter(IShader11 shader, TransformFunc transform, int sizeIndex, bool linearSampling,
-            params IFilter[] inputFilters)
-            : base(shader, transform, sizeIndex, linearSampling, inputFilters)
+            float[] arguments, params IFilter[] inputFilters)
+            : base(shader, transform, sizeIndex, linearSampling, arguments, inputFilters)
         {
         }
 
@@ -591,6 +606,12 @@ namespace Mpdn.RenderScript
                 Shader.SetConstantBuffer(String.Format("size{0}", i),
                     new Vector4(input.Width, input.Height, 1.0f / input.Width, 1.0f / input.Height), false);
                 i++;
+            }
+
+            for (i = 0; 4 * i < Args.Length; i++)
+            {
+                Shader.SetConstantBuffer(String.Format("args{0}", i),
+                    new Vector4(Args[4 * i], Args[4 * i + 1], Args[4 * i + 2], Args[4 * i + 3]), false);
             }
 
             // Legacy constants 
@@ -622,22 +643,57 @@ namespace Mpdn.RenderScript
         }
 
         public Shader11Filter(IShader11 shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
-            : this(shader, s => s, sizeIndex, linearSampling, inputFilters)
+            : this(shader, s => s, sizeIndex, linearSampling, new float[0], inputFilters)
         {
         }
 
         public Shader11Filter(IShader11 shader, TransformFunc transform, params IFilter[] inputFilters)
-            : this(shader, transform, 0, false, inputFilters)
+            : this(shader, transform, 0, false, new float[0], inputFilters)
         {
         }
 
         public Shader11Filter(IShader11 shader, TransformFunc transform, bool linearSampling, params IFilter[] inputFilters)
-            : this(shader, transform, 0, linearSampling, inputFilters)
+            : this(shader, transform, 0, linearSampling, new float[0], inputFilters)
         {
         }
 
         public Shader11Filter(IShader11 shader, TransformFunc transform, int sizeIndex, params IFilter[] inputFilters)
-            : this(shader, transform, sizeIndex, false, inputFilters)
+            : this(shader, transform, sizeIndex, false, new float[0], inputFilters)
+        {
+        }
+
+        public Shader11Filter(IShader11 shader, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, false, arguments, inputFilters)
+        {
+        }
+
+        public Shader11Filter(IShader11 shader, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, 0, linearSampling, arguments, inputFilters)
+        {
+        }
+
+        public Shader11Filter(IShader11 shader, int sizeIndex, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, sizeIndex, false, arguments, inputFilters)
+        {
+        }
+
+        public Shader11Filter(IShader11 shader, int sizeIndex, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, s => s, sizeIndex, linearSampling, arguments, inputFilters)
+        {
+        }
+
+        public Shader11Filter(IShader11 shader, TransformFunc transform, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, transform, 0, false, arguments, inputFilters)
+        {
+        }
+
+        public Shader11Filter(IShader11 shader, TransformFunc transform, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, transform, 0, linearSampling, arguments, inputFilters)
+        {
+        }
+
+        public Shader11Filter(IShader11 shader, TransformFunc transform, int sizeIndex, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, transform, sizeIndex, false, arguments, inputFilters)
         {
         }
 
@@ -647,8 +703,9 @@ namespace Mpdn.RenderScript
     public class DirectComputeFilter : Shader11Filter
     {
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            TransformFunc transform, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
-            : base(shader, transform, sizeIndex, linearSampling, inputFilters)
+            TransformFunc transform, int sizeIndex, bool linearSampling, float[] arguments,
+            params IFilter[] inputFilters)
+            : base(shader, transform, sizeIndex, linearSampling, arguments, inputFilters)
         {
             ThreadGroupX = threadGroupX;
             ThreadGroupY = threadGroupY;
@@ -678,33 +735,85 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, 
-            int sizeIndex, params IFilter[] inputFilters)
+        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, int sizeIndex,
+            params IFilter[] inputFilters)
             : this(shader, threadGroupX, threadGroupY, threadGroupZ, sizeIndex, false, inputFilters)
         {
         }
 
-        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, 
-            int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
-            : this(shader, threadGroupX, threadGroupY, threadGroupZ, s => s, sizeIndex, linearSampling, inputFilters)
+        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, int sizeIndex,
+            bool linearSampling, params IFilter[] inputFilters)
+            : this(
+                shader, threadGroupX, threadGroupY, threadGroupZ, s => s, sizeIndex, linearSampling, new float[0],
+                inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
             TransformFunc transform, params IFilter[] inputFilters)
-            : this(shader, threadGroupX, threadGroupY, threadGroupZ, transform, 0, false, inputFilters)
+            : this(shader, threadGroupX, threadGroupY, threadGroupZ, transform, 0, false, new float[0], inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
             TransformFunc transform, bool linearSampling, params IFilter[] inputFilters)
-            : this(shader, threadGroupX, threadGroupY, threadGroupZ, transform, 0, linearSampling, inputFilters)
+            : this(
+                shader, threadGroupX, threadGroupY, threadGroupZ, transform, 0, linearSampling, new float[0],
+                inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
             TransformFunc transform, int sizeIndex, params IFilter[] inputFilters)
-            : this(shader, threadGroupX, threadGroupY, threadGroupZ, transform, sizeIndex, false, inputFilters)
+            : this(
+                shader, threadGroupX, threadGroupY, threadGroupZ, transform, sizeIndex, false, new float[0],
+                inputFilters)
+        {
+        }
+
+        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
+            float[] arguments, params IFilter[] inputFilters)
+            : this(shader, threadGroupX, threadGroupY, threadGroupZ, false, arguments, inputFilters)
+        {
+        }
+
+        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
+            bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, threadGroupX, threadGroupY, threadGroupZ, 0, linearSampling, arguments, inputFilters)
+        {
+        }
+
+        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, int sizeIndex,
+            float[] arguments, params IFilter[] inputFilters)
+            : this(shader, threadGroupX, threadGroupY, threadGroupZ, sizeIndex, false, arguments, inputFilters)
+        {
+        }
+
+        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, int sizeIndex,
+            bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            : this(
+                shader, threadGroupX, threadGroupY, threadGroupZ, s => s, sizeIndex, linearSampling, arguments,
+                inputFilters)
+        {
+        }
+
+        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
+            TransformFunc transform, float[] arguments, params IFilter[] inputFilters)
+            : this(shader, threadGroupX, threadGroupY, threadGroupZ, transform, 0, false, arguments, inputFilters)
+        {
+        }
+
+        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
+            TransformFunc transform, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            : this(
+                shader, threadGroupX, threadGroupY, threadGroupZ, transform, 0, linearSampling, arguments, inputFilters)
+        {
+        }
+
+        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
+            TransformFunc transform, int sizeIndex, float[] arguments, params IFilter[] inputFilters)
+            : this(
+                shader, threadGroupX, threadGroupY, threadGroupZ, transform, sizeIndex, false, arguments, inputFilters)
         {
         }
 
