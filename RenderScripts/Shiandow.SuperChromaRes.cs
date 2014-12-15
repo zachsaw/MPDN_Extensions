@@ -29,7 +29,7 @@ namespace Mpdn.RenderScript
                 get { return "SuperRes"; }
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
                 IFilter yuv;
 

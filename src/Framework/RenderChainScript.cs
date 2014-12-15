@@ -50,7 +50,7 @@ namespace Mpdn.RenderScript
     public class RenderChainScript : IRenderScript, IDisposable
     {
         private readonly TextureCache m_Cache;
-        private IFilter m_SourceFilter;
+        private SourceFilter m_SourceFilter;
         protected IRenderChain Chain;
         private IFilter m_Filter;
 
@@ -80,8 +80,9 @@ namespace Mpdn.RenderScript
 
         public void Update()
         {
-            m_SourceFilter = new RgbFilter(new SourceFilter());
-            m_Filter = Chain.CreateFilter(m_SourceFilter);
+            m_SourceFilter = new SourceFilter();
+            var rgbInput = m_SourceFilter.Transform(x => new RgbFilter(x));
+            m_Filter = Chain.CreateFilter(rgbInput);
             m_Filter = m_Filter.Initialize();
         }
 

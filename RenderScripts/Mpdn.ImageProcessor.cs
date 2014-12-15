@@ -56,11 +56,13 @@ namespace Mpdn.RenderScript
                 get { return ShaderDataFilePath; }
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
                 if (UseImageProcessor(sourceFilter))
-                    return ShaderFileNames.Aggregate(sourceFilter,
-                        (current, filename) => new ShaderFilter(CompileShader(filename), current));
+                {
+                    return ShaderFileNames.Aggregate((IFilter)sourceFilter,
+                        (current, filename) => new ShaderFilter(CompileShader(filename), current)).MakeResizeable();
+                }
                 return sourceFilter;
             }
 

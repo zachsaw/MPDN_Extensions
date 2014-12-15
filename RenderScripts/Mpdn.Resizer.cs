@@ -56,7 +56,7 @@ namespace Mpdn.RenderScript
 
             #endregion
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
                 return new ResizeFilter(sourceFilter, GetOutputSize(),
                     Upscaler ?? Renderer.LumaUpscaler, Downscaler ?? Renderer.LumaDownscaler);
