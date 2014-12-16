@@ -60,8 +60,8 @@ namespace Mpdn.RenderScript
             {
                 if (UseImageProcessor(sourceFilter))
                 {
-                    return ShaderFileNames.Aggregate((IFilter)sourceFilter,
-                        (current, filename) => new ShaderFilter(CompileShader(filename), current)).MakeResizeable();
+                    return ShaderFileNames.Aggregate((IFilter) sourceFilter,
+                        (current, filename) => new ShaderFilter(CompileShader(filename), current));
                 }
                 return sourceFilter;
             }
