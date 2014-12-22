@@ -4,11 +4,9 @@ using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions.ZachSaw
 {
-    public class GoToTime : IPlayerExtension
+    public class GoToTime : PlayerExtension
     {
-        private IPlayerControl m_PlayerControl;
-
-        public ExtensionDescriptor Descriptor
+        public override ExtensionDescriptor Descriptor
         {
             get
             {
@@ -22,18 +20,7 @@ namespace Mpdn.PlayerExtensions.ZachSaw
             }
         }
 
-        public void Initialize(IPlayerControl playerControl)
-        {
-            m_PlayerControl = playerControl;
-            m_PlayerControl.KeyDown += PlayerKeyDown;
-        }
-
-        public void Destroy()
-        {
-            m_PlayerControl.KeyDown -= PlayerKeyDown;
-        }
-
-        public IList<Verb> Verbs
+        public override IList<Verb> Verbs
         {
             get
             {
@@ -48,28 +35,18 @@ namespace Mpdn.PlayerExtensions.ZachSaw
         {
             using (var form = new GoToTimeForm())
             {
-                if (form.ShowDialog(m_PlayerControl.Form) != DialogResult.OK)
+                if (form.ShowDialog(PlayerControl.Form) != DialogResult.OK)
                     return;
 
-                if (m_PlayerControl.PlayerState == PlayerState.Closed)
+                if (PlayerControl.PlayerState == PlayerState.Closed)
                     return;
 
-                if (m_PlayerControl.PlayerState == PlayerState.Stopped)
+                if (PlayerControl.PlayerState == PlayerState.Stopped)
                 {
-                    m_PlayerControl.PauseMedia(false);
+                    PlayerControl.PauseMedia(false);
                 }
 
-                m_PlayerControl.SeekMedia(form.Position * 1000);
-            }
-        }
-
-        private void PlayerKeyDown(object sender, PlayerKeyEventArgs e)
-        {
-            switch (e.Key.KeyData)
-            {
-                case Keys.Control | Keys.G:
-                    GotoPosition();
-                    break;
+                PlayerControl.SeekMedia(form.Position * 1000);
             }
         }
     }
