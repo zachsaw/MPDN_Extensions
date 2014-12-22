@@ -14,13 +14,11 @@ namespace Mpdn.PlayerExtensions
 
         public abstract ExtensionDescriptor Descriptor { get; }
 
-        public virtual void Initialize() { }
-
         public abstract IList<Verb> Verbs { get; }
 
         #region Implementation
 
-        public void Initialize(IPlayerControl playerControl)
+        public virtual void Initialize(IPlayerControl playerControl)
         {
             PlayerControl = playerControl;
             PlayerControl.KeyDown += PlayerKeyDown;
@@ -30,11 +28,9 @@ namespace Mpdn.PlayerExtensions
                 var keys = DecodeKeyString(verb.ShortcutDisplayStr);
                 Actions.Add(keys, verb.Action);
             }
-
-            Initialize();
         }
 
-        public void Destroy()
+        public virtual void Destroy()
         {
             PlayerControl.KeyDown -= PlayerKeyDown;
         }
@@ -52,7 +48,7 @@ namespace Mpdn.PlayerExtensions
             keyString = String.Join(", ", keyWords.Select(DecodeKeyWord).ToArray());
 
             Keys keys;
-            if (Enum.TryParse<Keys>(keyString, false, out keys))
+            if (Enum.TryParse<Keys>(keyString, true, out keys))
                 return keys;
             else
                 throw new ArgumentException("Can't convert string to keys.");
@@ -60,9 +56,9 @@ namespace Mpdn.PlayerExtensions
 
         private String DecodeKeyWord(String keyWord)
         {
-            switch (keyWord)
+            switch (keyWord.ToLower())
             {
-                case "Ctrl":
+                case "ctrl":
                     return "Control";
                 case "0":
                     return "D0";
