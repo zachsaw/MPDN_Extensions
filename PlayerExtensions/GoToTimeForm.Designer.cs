@@ -1,4 +1,4 @@
-﻿namespace Mpdn.PlayerExtensions.ZachSaw
+﻿namespace Mpdn.PlayerExtensions.Example
 {
     partial class GoToTimeForm
     {

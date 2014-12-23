@@ -1,7 +1,6 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -9,12 +8,14 @@ namespace Mpdn.PlayerExtensions
 {
     public abstract class PlayerExtension : IPlayerExtension
     {
+        private readonly IDictionary<Keys, Action> m_Actions = new Dictionary<Keys, Action>();
+
         protected IPlayerControl PlayerControl { get; private set; }
-        private IDictionary<Keys, Action> Actions;
 
         public abstract ExtensionDescriptor Descriptor { get; }
 
         public abstract IList<Verb> Verbs { get; }
+
 
         #region Implementation
 
@@ -23,10 +24,10 @@ namespace Mpdn.PlayerExtensions
             PlayerControl = playerControl;
             PlayerControl.KeyDown += PlayerKeyDown;
 
-            Actions = new Dictionary<Keys, Action>();
-            foreach (var verb in Verbs) {
-                var keys = DecodeKeyString(verb.ShortcutDisplayStr);
-                Actions.Add(keys, verb.Action);
+            foreach (var verb in Verbs)
+            {
+                var shortcut = DecodeKeyString(verb.ShortcutDisplayStr);
+                m_Actions.Add(shortcut, verb.Action);
             }
         }
 
@@ -35,26 +36,28 @@ namespace Mpdn.PlayerExtensions
             PlayerControl.KeyDown -= PlayerKeyDown;
         }
 
-        private void PlayerKeyDown(object sender, PlayerKeyEventArgs e)
+        private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
         {
             Action action;
-            if (Actions.TryGetValue(e.Key.KeyData, out action))
-                action.Invoke();
+            if (m_Actions.TryGetValue(e.InputArgs.KeyData, out action))
+            {
+                action();
+            }
         }
 
-        private Keys DecodeKeyString(String keyString)
+        private static Keys DecodeKeyString(String keyString)
         {
             var keyWords = Regex.Split(keyString, @"\W+");
             keyString = String.Join(", ", keyWords.Select(DecodeKeyWord).ToArray());
 
             Keys keys;
-            if (Enum.TryParse<Keys>(keyString, true, out keys))
+            if (Enum.TryParse(keyString, true, out keys))
                 return keys;
-            else
-                throw new ArgumentException("Can't convert string to keys.");
+
+            throw new ArgumentException("Can't convert string to keys.");
         }
 
-        private String DecodeKeyWord(String keyWord)
+        private static String DecodeKeyWord(String keyWord)
         {
             switch (keyWord.ToLower())
             {
@@ -80,11 +83,11 @@ namespace Mpdn.PlayerExtensions
                     return "D8";
                 case "9":
                     return "D9";
-                default: return keyWord;
+                default: 
+                    return keyWord;
             }
         }
 
         #endregion
     }
 }
-

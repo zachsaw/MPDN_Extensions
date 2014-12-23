@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.ZachSaw
+namespace Mpdn.PlayerExtensions.Example
 {
     public class GoToTime : PlayerExtension
     {
@@ -15,7 +15,7 @@ namespace Mpdn.PlayerExtensions.ZachSaw
                     Guid = new Guid("7C3BA1E2-EE7B-47D2-B174-6AE76D65EC04"),
                     Name = "Go To Time",
                     Description = "Jump to a specified timecode in media",
-                    Copyright = "Copyright Zach Saw © 2014. All rights reserved."
+                    Copyright = "Copyright Example © 2014. All rights reserved."
                 };
             }
         }

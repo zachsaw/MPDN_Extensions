@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.ZachSaw
+namespace Mpdn.PlayerExtensions.Example
 {
     public partial class GoToTimeForm : Form
     {
