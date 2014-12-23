@@ -200,8 +200,7 @@
             // addFilesToolStripMenuItem
             // 
             this.addFilesToolStripMenuItem.Name = "addFilesToolStripMenuItem";
-            this.addFilesToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.Insert)));
+            this.addFilesToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.Insert;
             this.addFilesToolStripMenuItem.Size = new System.Drawing.Size(218, 22);
             this.addFilesToolStripMenuItem.Text = "Add files...";
             this.addFilesToolStripMenuItem.Click += new System.EventHandler(this.ButtonAddClick);
@@ -209,8 +208,7 @@
             // removeFilesToolStripMenuItem
             // 
             this.removeFilesToolStripMenuItem.Name = "removeFilesToolStripMenuItem";
-            this.removeFilesToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.Delete)));
+            this.removeFilesToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.Delete;
             this.removeFilesToolStripMenuItem.Size = new System.Drawing.Size(218, 22);
             this.removeFilesToolStripMenuItem.Text = "Remove files";
             this.removeFilesToolStripMenuItem.Click += new System.EventHandler(this.ButtonDelClick);
@@ -269,7 +267,6 @@
             // openFileDialog
             // 
             this.openFileDialog.Multiselect = true;
-            this.openFileDialog.Filter = "Media files (all types) (*.avi; *.mp4; *.mkv; ...) |*.mkv;*.mp4;*.m4v;*.mp4v;*.3g2;*.3gp2;*.3gp;*.3gpp;*.mov;*.m2ts;*.ts;*.asf;*.wma;*.wmv;*.wm;*.asx,*.wax,*.wvx,*.wmx;*.wpl;*.dvr-ms;*.avi;*.mpg;*.mpeg;*.m1v;*.mp2;*.mp3;*.mpa;*.mpe;*.m3u;*.wav;*.mid;*.midi;*.rmi|All files (*.*)|*.*";
             this.openFileDialog.RestoreDirectory = true;
             this.openFileDialog.SupportMultiDottedExtensions = true;
             this.openFileDialog.Title = "Add file...";
