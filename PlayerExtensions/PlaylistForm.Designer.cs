@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PlaylistForm));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.buttonAdd = new Mpdn.PlayerExtensions.Example.ButtonStripItem();
             this.buttonDel = new Mpdn.PlayerExtensions.Example.ButtonStripItem();
@@ -269,8 +268,8 @@
             // 
             // openFileDialog
             // 
-            this.openFileDialog.Filter = resources.GetString("openFileDialog.Filter");
             this.openFileDialog.Multiselect = true;
+            this.openFileDialog.Filter = "Media files (all types) (*.avi; *.mp4; *.mkv; ...) |*.mkv;*.mp4;*.m4v;*.mp4v;*.3g2;*.3gp2;*.3gp;*.3gpp;*.mov;*.m2ts;*.ts;*.asf;*.wma;*.wmv;*.wm;*.asx,*.wax,*.wvx,*.wmx;*.wpl;*.dvr-ms;*.avi;*.mpg;*.mpeg;*.m1v;*.mp2;*.mp3;*.mpa;*.mpe;*.m3u;*.wav;*.mid;*.midi;*.rmi|All files (*.*)|*.*";
             this.openFileDialog.RestoreDirectory = true;
             this.openFileDialog.SupportMultiDottedExtensions = true;
             this.openFileDialog.Title = "Add file...";
