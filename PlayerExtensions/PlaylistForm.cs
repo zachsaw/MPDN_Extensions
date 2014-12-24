@@ -9,8 +9,6 @@ using System.Windows.Forms.Design;
 
 namespace Mpdn.PlayerExtensions.Example
 {
-    // TODO: Drag and drop to rearrange items
-
     public partial class PlaylistForm : FormEx
     {
         private const double MAX_OPACITY = 1.0;
@@ -338,83 +336,43 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void ListBoxDragDrop(object sender, DragEventArgs e)
         {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+                return;
+
             var files = (string[]) e.Data.GetData(DataFormats.FileDrop);
-            if (files != null)
-            {
-                HandleExternalDrop(files);
-            }
-            else
-            {
-                ReorderItems(e);
-            }
+            if (files == null) 
+                return;
+
+            HandleExternalDrop(files);
         }
 
         private void HandleExternalDrop(IList<string> files)
         {
-            if (files.Count > 1)
-            {
-                // Add multiple files to playlist
-                AddFiles(files);
-            }
-            else
+            if (files.Count == 1)
             {
                 var extension = Path.GetExtension(files[0]);
                 if (extension != null && extension.ToLower() == ".mpl")
                 {
                     // Playlist file
                     OpenPlaylist(files[0]);
+                    return;
                 }
             }
+            // Enqueue files
+            AddFiles(files);
         }
 
-        private void ReorderItems(DragEventArgs e)
+        private void ListBoxDropped(object sender, DroppedEventArgs e)
         {
-            var point = listBox.PointToClient(new Point(e.X, e.Y));
-            int index = listBox.IndexFromPoint(point);
-            if (index < 0)
-            {
-                index = listBox.Items.Count - 1;
-            }
-            var items = listBox.SelectedItems.Cast<PlaylistItem>().ToArray();
-            RemoveSelectedItems();
-
-            for (int i = items.Length - 1; i >= 0; i--)
-            {
-                var item = items[i];
-                listBox.Items.Insert(index, item);
-            }
-
             for (int i = 0; i < listBox.Items.Count; i++)
             {
-                if (!((PlaylistItem) listBox.Items[i]).Active) 
+                var item = (PlaylistItem) listBox.Items[i];
+                if (!item.Active) 
                     continue;
 
                 m_CurrentIndex = i;
                 break;
             }
-
-            listBox.SelectedIndices.Clear();
-            for (int i = index; i < index + items.Length; i++)
-            {
-                listBox.SelectedIndices.Add(i);
-            }
-        }
-
-        private void ListBoxDragOver(object sender, DragEventArgs e)
-        {
-//            e.Effect = DragDropEffects.Move;
-        }
-
-        private void ListBoxMouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.Button != MouseButtons.Left)
-                return;
-
-            if (listBox.SelectedIndex < 0)
-                return;
-
-            // Note: This causes double click to fail intermittently
-//            listBox.DoDragDrop(listBox.SelectedIndex, DragDropEffects.Move);
         }
 
         #endregion

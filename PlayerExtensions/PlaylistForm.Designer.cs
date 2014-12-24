@@ -38,7 +38,7 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.buttonOpen = new Mpdn.PlayerExtensions.Example.ButtonStripItem();
             this.buttonSave = new Mpdn.PlayerExtensions.Example.ButtonStripItem();
-            this.listBox = new System.Windows.Forms.ListBox();
+            this.listBox = new DragDropListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
@@ -154,19 +154,20 @@
             this.listBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listBox.FormattingEnabled = true;
             this.listBox.IntegralHeight = false;
-            this.listBox.ItemHeight = 17;
+            this.listBox.IsDragDropCopySource = false;
+            this.listBox.IsDragDropMoveSource = false;
+            this.listBox.ItemHeight = 15;
             this.listBox.Location = new System.Drawing.Point(0, 0);
             this.listBox.Name = "listBox";
             this.listBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.listBox.Size = new System.Drawing.Size(224, 194);
             this.listBox.TabIndex = 0;
+            this.listBox.Dropped += new System.EventHandler<DroppedEventArgs>(this.ListBoxDropped);
             this.listBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.ListBoxDrawItem);
             this.listBox.SizeChanged += new System.EventHandler(this.ListBoxSizeChanged);
             this.listBox.DragDrop += new System.Windows.Forms.DragEventHandler(this.ListBoxDragDrop);
             this.listBox.DragEnter += new System.Windows.Forms.DragEventHandler(this.ListBoxDragEnter);
-            this.listBox.DragOver += new System.Windows.Forms.DragEventHandler(this.ListBoxDragOver);
             this.listBox.DoubleClick += new System.EventHandler(this.ListBoxDoubleClick);
-            this.listBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ListBoxMouseMove);
             // 
             // contextMenuStrip1
             // 
@@ -319,7 +320,7 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
         private ButtonStripItem buttonOpen;
         private ButtonStripItem buttonSave;
-        private System.Windows.Forms.ListBox listBox;
+        private DragDropListBox listBox;
         private System.Windows.Forms.Timer timer;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
