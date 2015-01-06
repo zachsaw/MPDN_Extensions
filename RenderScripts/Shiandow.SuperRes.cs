@@ -4,6 +4,7 @@ using Mpdn.RenderScript.Scaler;
 using SharpDX;
 using YAXLib;
 using Mpdn.RenderScript.Shiandow.Nedi;
+using Mpdn.CustomLinearScaler.Example;
 
 namespace Mpdn.RenderScript
 {
@@ -43,13 +44,15 @@ namespace Mpdn.RenderScript
                 Passes = 2;
 
                 Strength = 0.8f;
-                Sharpness = 0.5f;
-                AntiAliasing = 1.0f;
+                Sharpness = 0.85f;
+                AntiAliasing = 0.65f;
                 AntiRinging = 0.8f;
 
                 UseNEDI = false;
                 FirstPassOnly = false;
-                upscaler = new Scaler.Bicubic(2.0f/3.0f, false);
+                //upscaler = new Scaler.Bicubic(2.0f/3.0f, false);
+                //upscaler = new Scaler.Custom(new Gaussian(), ScalerTaps.Four, false);
+                upscaler = new Scaler.Jinc(ScalerTaps.Four, false);
                 downscaler = new Scaler.Bilinear();
             }
 
@@ -58,15 +61,15 @@ namespace Mpdn.RenderScript
                 var inputSize = sourceFilter.OutputSize;
                 var targetSize = TargetSize();
 
-                IFilter initial;
+                IResizeableFilter initial;
                 if (UseNEDI)
                 {
-                    initial = new Shiandow.Nedi.Nedi { AlwaysDoubleImage = false, Centered = false }.CreateFilter(sourceFilter);
-                    initial = new ResizeFilter(initial, targetSize, m_ShiftedScaler, m_ShiftedScaler);
+                    var nedi = new Shiandow.Nedi.Nedi { AlwaysDoubleImage = false, Centered = false }.CreateFilter(sourceFilter);
+                    initial = new ResizeFilter(nedi, targetSize, m_ShiftedScaler, m_ShiftedScaler);
                 }
                 else
                 {
-                    initial = new ResizeFilter(sourceFilter, targetSize);
+                    initial = new ResizeFilter(sourceFilter, inputSize); // SetSize must *not* affect original. 
                 }
 
                 // Skip if downscaling
@@ -76,11 +79,12 @@ namespace Mpdn.RenderScript
                     return CreateFilter(sourceFilter, initial);
             }
 
-            public IFilter CreateFilter(IFilter original, IFilter initial)
+            public IFilter CreateFilter(IFilter original, IResizeableFilter initial)
             {
-                IFilter lab, linear;
+                IFilter lab, linear, result = initial;
 
                 var inputSize = original.OutputSize;
+                var currentSize = initial.OutputSize;
                 var targetSize = TargetSize();
 
                 var Diff = CompileShader("Diff.hlsl");
@@ -95,29 +99,55 @@ namespace Mpdn.RenderScript
                 var LinearToLab = CompileShader("LinearToLab.hlsl");
 
                 // Initial scaling
-                linear   = new ShaderFilter(GammaToLinear, initial);
+                lab = new ShaderFilter(GammaToLab, initial);
                 original = new ShaderFilter(GammaToLab, original);
 
                 float AA = AntiAliasing;
                 for (int i = 1; i <= Passes; i++)
                 {
                     IFilter res, diff;
+
+                    // Initial calculations
                     bool useBilinear = (upscaler is Scaler.Bilinear) || (FirstPassOnly && !(i == 1));
+                    /*
+                    if (i == Passes) currentSize = targetSize;
+                    else currentSize = CalculateSize(currentSize, targetSize, i);
+                     */
+                    currentSize = targetSize;
+                    
+                    // Resize and Convert
+                    lab = new ResizeFilter(lab, currentSize);
+                    linear = new ShaderFilter(LabToLinear, lab);
 
                     // Calculate difference
                     res = new ResizeFilter(linear, inputSize, upscaler, downscaler); // Downscale result
                     diff = new ShaderFilter(Diff, res, original);                    // Compare with original
                     if (!useBilinear)
-                        diff = new ResizeFilter(diff, targetSize, upscaler, downscaler); // Scale to output size
-
+                        diff = new ResizeFilter(diff, currentSize, upscaler, downscaler); // Scale to output size
+                    
                     // Update result
-                    lab = new ShaderFilter(LinearToLab, linear);
-                    linear = new ShaderFilter(SuperRes, useBilinear, new[] { Strength, Sharpness, AA, AntiRinging }, lab, diff, original);
+                    lab = new ShaderFilter(SuperRes, useBilinear, new[] { Strength, Sharpness, AA, AntiRinging }, lab, diff, original);
+                    result = new ShaderFilter(LabToGamma, lab);
 
-                    AA *= 0.5f;
+                    AA *= 0.65f;
                 }
 
-                return new ShaderFilter(LinearToGamma, linear);
+                return result;
+            }
+
+            private Size CalculateSize(Size sizeA, Size sizeB, int k)
+            {
+                int minW = sizeA.Width; int minH = sizeA.Height;
+                int maxW = sizeB.Width; int maxH = sizeB.Height;
+
+                int steps = (int)Math.Floor(Math.Log((double)(maxH * maxW) / (double)(minH * minW)) / (2 * Math.Log(1.5)));
+                if (steps < 1) steps = 1;
+
+                double w = minW * Math.Pow((double)maxW / (double)minW, (double)Math.Min(k, steps) / (double)steps);
+                double h = minW * Math.Pow((double)maxH / (double)minH, (double)Math.Min(k, steps) / (double)steps);
+
+                return new Size(Math.Min(maxW, Math.Max(minW, (int)Math.Round(w))),
+                                Math.Min(maxH, Math.Max(minH, (int)Math.Round(h))));
             }
 
             private IScaler m_ShiftedScaler;
