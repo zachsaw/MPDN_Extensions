@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Drawing;
 using System.Windows.Forms;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 

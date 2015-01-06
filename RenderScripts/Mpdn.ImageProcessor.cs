@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq;
-using YAXLib;
 
 namespace Mpdn.RenderScript
 {
@@ -34,14 +33,12 @@ namespace Mpdn.RenderScript
                 ImageProcessorUsage = ImageProcessorUsage.Always;
             }
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public string[] ShaderFileNames
             {
                 get { return m_ShaderFileNames ?? (m_ShaderFileNames = new string[0]); }
                 set { m_ShaderFileNames = value; }
             }
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public ImageProcessorUsage ImageProcessorUsage { get; set; }
 
             #endregion
@@ -60,8 +57,8 @@ namespace Mpdn.RenderScript
             {
                 if (UseImageProcessor(sourceFilter))
                 {
-                    return ShaderFileNames.Aggregate((IFilter)sourceFilter,
-                        (current, filename) => new ShaderFilter(CompileShader(filename), current)).MakeResizeable();
+                    return ShaderFileNames.Aggregate((IFilter) sourceFilter,
+                        (current, filename) => new ShaderFilter(CompileShader(filename), current));
                 }
                 return sourceFilter;
             }

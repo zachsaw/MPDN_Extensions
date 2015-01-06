@@ -40,7 +40,7 @@
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(432, 249);
+            this.buttonCancel.Location = new System.Drawing.Point(389, 249);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 2;
@@ -51,7 +51,7 @@
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(351, 249);
+            this.buttonOk.Location = new System.Drawing.Point(308, 249);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 1;
@@ -76,7 +76,7 @@
             this.listBox.IntegralHeight = false;
             this.listBox.Location = new System.Drawing.Point(15, 33);
             this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(492, 195);
+            this.listBox.Size = new System.Drawing.Size(449, 195);
             this.listBox.TabIndex = 0;
             this.listBox.DoubleClick += new System.EventHandler(this.ListBoxDoubleClick);
             // 
@@ -86,8 +86,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(519, 284);
-            this.ControlBox = false;
+            this.ClientSize = new System.Drawing.Size(476, 284);
             this.Controls.Add(this.listBox);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.buttonCancel);
@@ -96,9 +95,10 @@
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(400, 300);
             this.Name = "ResizerConfigDialog";
+            this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Size Specifier Configuration";
+            this.Text = "Resizer Configuration";
             this.ResumeLayout(false);
             this.PerformLayout();
 

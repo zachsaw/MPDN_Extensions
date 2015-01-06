@@ -36,7 +36,6 @@ namespace Mpdn.RenderScript
             }
 
             [YAXSerializeAs("RenderChainUi")]
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public String UiTypeName
             {
                 get { return UiType.FullName; }
@@ -64,7 +63,6 @@ namespace Mpdn.RenderScript
                 ScriptList = new List<ChainUiPair>();
             }
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public List<ChainUiPair> ScriptList { get; set; }
 
             protected override void BuildChain(FilterChain chain)

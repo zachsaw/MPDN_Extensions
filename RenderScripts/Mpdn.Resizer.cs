@@ -1,8 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
-using Mpdn.RenderScript.Scaler;
-using YAXLib;
 
 namespace Mpdn.RenderScript
 {
@@ -51,7 +49,6 @@ namespace Mpdn.RenderScript
                 ResizerOption = ResizerOption.TargetSize100Percent;
             }
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public ResizerOption ResizerOption { get; set; }
 
             #endregion

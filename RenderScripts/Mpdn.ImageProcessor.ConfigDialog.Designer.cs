@@ -186,7 +186,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(384, 304);
-            this.ControlBox = false;
             this.Controls.Add(this.label2);
             this.Controls.Add(this.comboBoxUsage);
             this.Controls.Add(this.buttonClear);
@@ -202,6 +201,7 @@
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(400, 300);
             this.Name = "ImageProcessorConfigDialog";
+            this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Image Processor Configuration";

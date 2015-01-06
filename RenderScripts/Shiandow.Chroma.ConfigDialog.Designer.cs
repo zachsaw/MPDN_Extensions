@@ -158,7 +158,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(218, 141);
-            this.ControlBox = false;
             this.Controls.Add(this.label3);
             this.Controls.Add(this.PresetBox);
             this.Controls.Add(this.ButtonCancel);
@@ -171,6 +170,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ChromaScalerConfigDialog";
+            this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "ChromaScaler Settings";

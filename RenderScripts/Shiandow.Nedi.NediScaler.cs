@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using YAXLib;
 
 namespace Mpdn.RenderScript
 {
@@ -16,9 +15,7 @@ namespace Mpdn.RenderScript
                 Centered = true;
             }
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public bool AlwaysDoubleImage { get; set; }
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public bool Centered { get; set; }
 
             #endregion

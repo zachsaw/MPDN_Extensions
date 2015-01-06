@@ -75,7 +75,7 @@
             65536});
             this.StrengthSetter.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
-            // SoftnessSetter
+            // SharpnessSetter
             // 
             this.SharpnessSetter.DecimalPlaces = 2;
             this.SharpnessSetter.Increment = new decimal(new int[] {
@@ -94,7 +94,7 @@
             0,
             0,
             -2147483648});
-            this.SharpnessSetter.Name = "SoftnessSetter";
+            this.SharpnessSetter.Name = "SharpnessSetter";
             this.SharpnessSetter.Size = new System.Drawing.Size(44, 20);
             this.SharpnessSetter.TabIndex = 1;
             this.SharpnessSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
@@ -257,7 +257,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(287, 128);
-            this.ControlBox = false;
             this.Controls.Add(this.label5);
             this.Controls.Add(this.PassesSetter);
             this.Controls.Add(this.UseNediBox);
@@ -275,6 +274,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "SuperResConfigDialog";
+            this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "SuperRes Settings";
