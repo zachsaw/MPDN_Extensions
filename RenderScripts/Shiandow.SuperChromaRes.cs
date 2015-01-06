@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Drawing;
-using Mpdn.RenderScript.Scaler;
-using SharpDX;
 using YAXLib;
 
 namespace Mpdn.RenderScript
@@ -10,7 +7,6 @@ namespace Mpdn.RenderScript
     {
         public class SuperChromaRes : RenderChain
         {
-            //[YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             [YAXDontSerialize]
             public int Passes { get; set; }
             private IScaler upscaler, downscaler;

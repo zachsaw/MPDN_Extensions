@@ -327,7 +327,7 @@ namespace Mpdn.RenderScript
 
         protected override void Render(IEnumerable<ITexture> inputs)
         {
-            Renderer.ConvertToRgb(OutputTexture, inputs.Single(), Renderer.Colorimetric);
+            Renderer.ConvertToRgb(OutputTexture, inputs.Single(), Renderer.Colorimetric, Renderer.OutputLimitedRange);
         }
     }
 
@@ -348,7 +348,7 @@ namespace Mpdn.RenderScript
 
         protected override void Render(IEnumerable<ITexture> inputs)
         {
-            Renderer.ConvertToYuv(OutputTexture, inputs.Single(), Renderer.Colorimetric);
+            Renderer.ConvertToYuv(OutputTexture, inputs.Single(), Renderer.Colorimetric, Renderer.OutputLimitedRange);
         }
     }
 

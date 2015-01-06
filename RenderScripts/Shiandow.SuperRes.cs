@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using Mpdn.RenderScript.Scaler;
-using SharpDX;
-using YAXLib;
-using Mpdn.RenderScript.Shiandow.Nedi;
 
 namespace Mpdn.RenderScript
 {
@@ -13,22 +9,16 @@ namespace Mpdn.RenderScript
         {
             #region Settings
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public int Passes { get; set; }
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public float Strength { get; set; }
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public float Sharpness { get; set; }
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public float AntiAliasing { get; set; }
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public float AntiRinging { get; set; }
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public bool UseNEDI { get; set; }
-            //[YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
-            public bool FirstPassOnly;// { get; set; }
+
+            public bool FirstPassOnly;
 
             #endregion
 

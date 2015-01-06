@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using SharpDX;
-using YAXLib;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
@@ -74,13 +73,10 @@ namespace Mpdn.RenderScript
                 Preset = Presets.Custom;
             }
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public float B { get; set; }
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public float C { get; set; }
 
-            [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
             public Presets Preset
             {
                 get { return m_Preset; }
