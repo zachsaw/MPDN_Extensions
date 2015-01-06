@@ -53,7 +53,7 @@ namespace Mpdn.RenderScript
                 downscaler = new Scaler.Bilinear();
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
                 var inputSize = sourceFilter.OutputSize;
                 var targetSize = TargetSize();

@@ -25,7 +25,11 @@ namespace Mpdn.RenderScript
         void Render(ITextureCache cache);
         void Reset(ITextureCache cache);
         IFilter Initialize(int time = 1);
-        bool SetSize(Size targetSize);
+    }
+
+    public interface IResizeableFilter : IFilter
+    {
+        void SetSize(Size outputSize);
     }
 
     public class TextureCache : ITextureCache, IDisposable
@@ -88,7 +92,7 @@ namespace Mpdn.RenderScript
     {
         protected Filter(params IFilter[] inputFilters)
         {
-            if (inputFilters == null || inputFilters.Length == 0 || inputFilters.Any(f => f == null))
+            if (inputFilters == null || inputFilters.Any(f => f == null))
             {
                 throw new ArgumentNullException("inputFilters");
             }
@@ -185,11 +189,6 @@ namespace Mpdn.RenderScript
             OutputTexture = null;
         }
 
-        public virtual bool SetSize(Size targetSize)
-        {
-            return targetSize == OutputSize;
-        }
-
         #endregion
     }
 
@@ -233,17 +232,17 @@ namespace Mpdn.RenderScript
             cache.PutTempTexture(OutputTexture);
         }
 
-        public virtual bool SetSize(Size targetSize)
-        {
-            return targetSize == OutputSize;
-        }
-
         #endregion
     }
 
-    public sealed class SourceFilter : BaseSourceFilter
+    public sealed class SourceFilter : BaseSourceFilter, IResizeableFilter
     {
         private Size m_OutputSize;
+
+        public void SetSize(Size targetSize)
+        {
+            m_OutputSize = targetSize;
+        }
 
         #region IFilter Implementation
 
@@ -255,12 +254,6 @@ namespace Mpdn.RenderScript
         public override Size OutputSize
         {
             get { return (m_OutputSize.IsEmpty ? Renderer.VideoSize : m_OutputSize); }
-        }
-
-        public override bool SetSize(Size targetSize)
-        {
-            m_OutputSize = targetSize;
-            return true;
         }
 
         #endregion
@@ -336,11 +329,6 @@ namespace Mpdn.RenderScript
         {
             Renderer.ConvertToRgb(OutputTexture, inputs.Single(), Renderer.Colorimetric);
         }
-
-        public override bool SetSize(Size targetSize)
-        {
-            return targetSize == OutputSize || InputFilters[0].SetSize(targetSize);
-        }
     }
 
     public sealed class YuvFilter : Filter
@@ -362,49 +350,40 @@ namespace Mpdn.RenderScript
         {
             Renderer.ConvertToYuv(OutputTexture, inputs.Single(), Renderer.Colorimetric);
         }
-
-        public override bool SetSize(Size targetSize)
-        {
-            return targetSize == OutputSize || InputFilters[0].SetSize(targetSize);
-        }
     }
 
-    public class ResizeFilter : Filter
+    public class ResizeFilter : Filter, IResizeableFilter
     {
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
-        private readonly bool m_OverrideInputSize;
         private Size m_OutputSize;
 
-        public ResizeFilter(IFilter inputFilter, Size outputSize, bool overrideInputSize = false)
-            : this(inputFilter, outputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler, overrideInputSize)
+        public ResizeFilter(IFilter inputFilter, Size outputSize)
+            : this(inputFilter, outputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler)
         {
         }
 
-        public ResizeFilter(IFilter inputFilter, Size outputSize, IScaler upscaler, IScaler downscaler, bool overrideInputSize = false)
+        public ResizeFilter(IFilter inputFilter, Size outputSize, IScaler upscaler, IScaler downscaler)
             : base(inputFilter)
         {
             m_Upscaler = upscaler;
             m_Downscaler = downscaler;
-            m_OverrideInputSize = overrideInputSize;
             m_OutputSize = outputSize;
+        }
+
+        public void SetSize(Size targetSize)
+        {
+            m_OutputSize = targetSize;
         }
 
         public override IFilter Initialize(int time = 1)
         {
-            if (InputFilters[0].OutputSize == m_OutputSize ||
-                (m_OverrideInputSize && InputFilters[0].SetSize(m_OutputSize)))
+            if (InputFilters[0].OutputSize == m_OutputSize)
             {
                 PassthroughFilter = InputFilters[0];
             }
 
             return base.Initialize(time);
-        }
-
-        public override bool SetSize(Size targetSize)
-        {
-            m_OutputSize = targetSize;
-            return true;
         }
 
         public override Size OutputSize
@@ -429,6 +408,60 @@ namespace Mpdn.RenderScript
         {
             return new YuvFilter(filter);
         }
+
+        public static IResizeableFilter MakeResizeable(this IFilter filter)
+        {
+            return (filter as IResizeableFilter) ?? new ResizeFilter(filter, filter.OutputSize);
+        }
+
+        public static IResizeableFilter Transform(this IResizeableFilter filter, Func<IFilter, IFilter> transformation)
+        {
+            return new TransformedResizeableFilter(transformation, filter);
+        }
+
+        public static IFilter Apply(this IFilter filter, Func<IFilter, IFilter> map)
+        {
+            return map(filter);
+        }
+
+        #region Auxilary class(es)
+
+        private class TransformedResizeableFilter : Filter, IResizeableFilter
+        {
+            private IResizeableFilter m_InputFilter;
+
+            public TransformedResizeableFilter(Func<IFilter, IFilter> transformation, IResizeableFilter inputFilter)
+                : base(new IFilter[0])
+            {
+                m_InputFilter = inputFilter;
+                PassthroughFilter = transformation(m_InputFilter);
+                CheckSize();
+            }
+
+            public void SetSize(Size outputSize)
+            {
+                m_InputFilter.SetSize(outputSize);
+                CheckSize();
+            }
+
+            private void CheckSize()
+            {
+                if (m_InputFilter.OutputSize != PassthroughFilter.OutputSize)
+                    throw new InvalidOperationException("Transformation is not allowed to change the size.");
+            }
+
+            public override Size OutputSize
+            {
+                get { return m_InputFilter.OutputSize; }
+            }
+
+            protected override void Render(IEnumerable<ITexture> inputs)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        #endregion
     }
 
     public abstract class GenericShaderFilter<T> : Filter where T: class

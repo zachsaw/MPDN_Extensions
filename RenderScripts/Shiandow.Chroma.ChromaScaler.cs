@@ -102,7 +102,7 @@ namespace Mpdn.RenderScript
                 get { return "ChromaScaler"; }
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
                 var chromaShader = CompileShader("Chroma.hlsl");
 
