@@ -17,7 +17,7 @@ namespace Mpdn.PlayerExtensions.Example
                     Guid = new Guid("2FC1DF6F-5A0E-4B95-A364-9DD0D756AA67"),
                     Name = "Key / Mouse Remapper",
                     Description = "Remaps keys and mouse buttons",
-                    Copyright = "Copyright Example © 2014. All rights reserved."
+                    Copyright = "Copyright Example © 2014-2015. All rights reserved."
                 };
             }
         }
@@ -60,6 +60,9 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void PlayerMouseWheel(object sender, PlayerControlEventArgs<MouseEventArgs> e)
         {
+            if (m_PlayerControl.PlayerState == PlayerState.Closed)
+                return;
+
             var pos = m_PlayerControl.MediaPosition;
             pos += e.InputArgs.Delta*1000000/40;
             pos = Math.Max(pos, 0);
