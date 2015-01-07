@@ -6,6 +6,7 @@ MPDN project page - http://forum.doom9.org/showthread.php?t=171120
 <H3>Developers</H3>
 <ul>
 <li>Zachs</li>
+<li>Shiandow</li>
 </ul>
 
 
