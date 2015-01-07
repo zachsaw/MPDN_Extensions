@@ -16,7 +16,6 @@ namespace Mpdn.PlayerExtensions
 
         public abstract IList<Verb> Verbs { get; }
 
-
         #region Implementation
 
         public virtual void Initialize(IPlayerControl playerControl)
