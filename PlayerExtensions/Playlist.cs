@@ -21,7 +21,7 @@ namespace Mpdn.PlayerExtensions.Example
                     Guid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B"),
                     Name = "Playlist",
                     Description = "Playlist Support",
-                    Copyright = "Copyright Example © 2014. All rights reserved."
+                    Copyright = "Copyright Example © 2014-2015. All rights reserved."
                 };
             }
         }

@@ -19,7 +19,7 @@ namespace Mpdn.PlayerExtensions.Example
                     Guid = new Guid("79FFF20D-785B-497C-9716-066787F2A3AC"),
                     Name = "Navigation",
                     Description = "Adds shortcuts for rewinding / forwarding playback",
-                    Copyright = "Copyright Example © 2014. All rights reserved."
+                    Copyright = "Copyright Example © 2014-2015. All rights reserved."
                 };
             }
         }
