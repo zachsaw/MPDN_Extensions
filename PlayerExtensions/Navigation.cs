@@ -43,7 +43,7 @@ namespace Mpdn.PlayerExtensions.Example
                     new Verb(Category.Play, "Navigation", "Forward (30 seconds)", "Ctrl+Shift+Right", string.Empty, Jump(30)),
                     new Verb(Category.Play, "Navigation", "Backward (30 seconds)", "Ctrl+Shift+Left", string.Empty, Jump(-30)),
                     new Verb(Category.Play, "Navigation", "Play Next file in folder", "Ctrl+PageDown", string.Empty, PlayNextFileInFolder),
-                    new Verb(Category.Play, "Navigation", "Play Next file in folder", "Ctrl+PageUp", string.Empty, PlayPreviousFileInFolder)
+                    new Verb(Category.Play, "Navigation", "Play Previous file in folder", "Ctrl+PageUp", string.Empty, PlayPreviousFileInFolder)
                 };
             }
         }
