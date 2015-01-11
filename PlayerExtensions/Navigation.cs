@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -59,7 +59,7 @@ namespace Mpdn.PlayerExtensions.Example
                 return;
 
             var files = Directory.EnumerateFiles(mediaDir)
-                .Where(file => m_FileExtensions.Contains(Path.GetExtension(file)));
+                .OrderBy(filename => filename).Where(file => m_FileExtensions.Contains(Path.GetExtension(file)));
             var nextFile = files.SkipWhile(file => file != mediaPath).Skip(1).FirstOrDefault();
 
             if (nextFile != null)
@@ -79,7 +79,7 @@ namespace Mpdn.PlayerExtensions.Example
                 return;
 
             var files = Directory.EnumerateFiles(mediaDir)
-                .Where(file => m_FileExtensions.Contains(Path.GetExtension(file)));
+                .OrderBy(filename => filename).Where(file => m_FileExtensions.Contains(Path.GetExtension(file)));
             var nextFile = files.TakeWhile(file => file != mediaPath).LastOrDefault();
 
             if (nextFile != null)
