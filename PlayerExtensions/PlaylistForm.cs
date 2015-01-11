@@ -21,20 +21,8 @@ namespace Mpdn.PlayerExtensions.Example
         private IPlayerControl m_PlayerControl;
         private int m_CurrentIndex = -1;
 
-        static int _playlistCount;
+        public static int PlaylistCount { get; set; }
 
-        public static int PlaylistCount
-            {
-            get
-            {
-                return _playlistCount;
-            }
-            set
-            {
-                _playlistCount = value;
-            }
-        }
-        
         public PlaylistForm()
         {
             InitializeComponent();
