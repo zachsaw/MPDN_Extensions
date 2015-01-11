@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -21,6 +21,20 @@ namespace Mpdn.PlayerExtensions.Example
         private IPlayerControl m_PlayerControl;
         private int m_CurrentIndex = -1;
 
+        static int _playlistCount;
+
+        public static int PlaylistCount
+            {
+            get
+            {
+                return _playlistCount;
+            }
+            set
+            {
+                _playlistCount = value;
+            }
+        }
+        
         public PlaylistForm()
         {
             InitializeComponent();
@@ -45,6 +59,7 @@ namespace Mpdn.PlayerExtensions.Example
             timer.Enabled = true;
             listBox.Focus();
             base.Show(owner);
+            PlaylistCount = listBox.Items.Count;
         }
 
         public void OpenPlaylist(string filename)
@@ -61,6 +76,7 @@ namespace Mpdn.PlayerExtensions.Example
 
                 m_CurrentIndex = i-1;
                 PlayNext();
+                PlaylistCount = listBox.Items.Count;
                 break;
             }
         }
@@ -83,6 +99,7 @@ namespace Mpdn.PlayerExtensions.Example
                 return;
 
             OpenPlaylist(openPlaylistDialog.FileName);
+            PlaylistCount = listBox.Items.Count;
         }
 
         public void SavePlaylist()
@@ -123,6 +140,7 @@ namespace Mpdn.PlayerExtensions.Example
         {
             var startPlaying = listBox.Items.Count == 0;
             AddFiles(files, startPlaying);
+            PlaylistCount = listBox.Items.Count;
         }
 
         public void AddFiles(IEnumerable<string> files, bool startPlaying)
@@ -141,6 +159,7 @@ namespace Mpdn.PlayerExtensions.Example
 
             m_CurrentIndex = -1;
             PlayNext();
+            PlaylistCount = listBox.Items.Count;
         }
 
         #region Implementation
