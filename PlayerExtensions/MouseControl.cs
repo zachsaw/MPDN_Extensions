@@ -62,6 +62,12 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void PlayerMouseClick(object sender, PlayerControlEventArgs<MouseEventArgs> e)
         {
+            if (e.InputArgs.Button == MouseButtons.Middle)
+            {
+                ToggleMode();
+                return;
+            }
+
             if (PlaylistForm.PlaylistCount <= 1)
             {
                 switch (e.InputArgs.Button)
@@ -87,6 +93,20 @@ namespace Mpdn.PlayerExtensions.Example
                 }
             }
         }
+        private void ToggleMode()
+        {
+            if (!Settings.EnableMiddleClickFsToggle)
+                return;
+
+            if (PlayerControl.InFullScreenMode)
+            {
+                PlayerControl.GoWindowed();
+            }
+            else
+            {
+                PlayerControl.GoFullScreen();
+            }
+        }
     }
 
     public class MouseControlSettings
@@ -94,8 +114,10 @@ namespace Mpdn.PlayerExtensions.Example
         public MouseControlSettings()
         {
             EnableMouseWheelSeek = false;
+            EnableMiddleClickFsToggle = false;
         }
 
         public bool EnableMouseWheelSeek { get; set; }
+        public bool EnableMiddleClickFsToggle { get; set; }
     }
 }

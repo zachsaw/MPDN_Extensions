@@ -12,11 +12,13 @@
             protected override void LoadSettings()
             {
                 checkBoxMouseWheelSeek.Checked = Settings.EnableMouseWheelSeek;
+                checkBoxFsToggle.Checked = Settings.EnableMiddleClickFsToggle;
             }
 
             protected override void SaveSettings()
             {
                 Settings.EnableMouseWheelSeek = checkBoxMouseWheelSeek.Checked;
+                Settings.EnableMiddleClickFsToggle = checkBoxFsToggle.Checked;
             }
         }
 
