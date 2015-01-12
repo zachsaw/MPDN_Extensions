@@ -34,7 +34,7 @@ namespace Mpdn.PlayerExtensions.Example
         public void SetPlayerControl(IPlayerControl playerControl)
         {
             m_PlayerControl = playerControl;
-
+            Icon = m_PlayerControl.Form.Icon;
             m_PlayerControl.PlaybackCompleted += PlaybackCompleted;
         }
 
