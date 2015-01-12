@@ -54,19 +54,17 @@ namespace Mpdn.PlayerExtensions.Example
             if (e.OldState != PlayerState.Closed)
                 return;
 
-            int frequency = 0;
-
-            int iCount = 0;
-            int iRet = 1;
-
             var screen = Screen.FromControl(PlayerControl.Form);
 
+            int frequency = 0;
+            int index = 0;
+
             // loop over all supported settings
-            while (iRet != 0)
+            while (true)
             {
                 var dm = NativeMethods.CreateDevmode(screen.DeviceName);
-                iRet = GetSettings(ref dm, screen.DeviceName, iCount++);
-//                Debug.WriteLine("{0} {1} {2} {3} {4}", dm.dmPelsWidth, dm.dmPelsHeight, dm.dmBitsPerPel, dm.dmDisplayFrequency, dm.dmDisplayFlags);
+                if (GetSettings(ref dm, screen.DeviceName, index++) == 0)
+                    break;
 
                 if (dm.dmBitsPerPel != 32)
                     continue;
@@ -80,7 +78,7 @@ namespace Mpdn.PlayerExtensions.Example
                 if (dm.dmPelsHeight != screen.Bounds.Height)
                     continue;
 
-                var fps = 1000000 / (long)PlayerControl.VideoInfo.AvgTimePerFrame;
+                var fps = 1000000 / (int) PlayerControl.VideoInfo.AvgTimePerFrame;
                 if (fps <= 30) // We use the higher refresh rates
                 {
                     fps *= 2;
@@ -89,7 +87,7 @@ namespace Mpdn.PlayerExtensions.Example
                 if (dm.dmDisplayFrequency != fps) 
                     continue;
 
-                frequency = (int) fps;
+                frequency = fps;
                 break;
             }
 
@@ -102,7 +100,9 @@ namespace Mpdn.PlayerExtensions.Example
         private void ChangeRefreshRate(Screen screen, int frequency)
         {
             var dm = NativeMethods.CreateDevmode(screen.DeviceName);
-            GetSettings(ref dm, screen.DeviceName);
+            if (GetSettings(ref dm, screen.DeviceName) == 0)
+                return;
+
             dm.dmFields = (int) DM.DisplayFrequency;
             dm.dmDisplayFrequency = frequency;
             dm.dmDeviceName = screen.DeviceName;
@@ -116,7 +116,7 @@ namespace Mpdn.PlayerExtensions.Example
             if (NativeMethods.ChangeDisplaySettingsEx(dm.dmDeviceName, ref dm, IntPtr.Zero, 0, IntPtr.Zero) !=
                 NativeMethods.DISP_CHANGE_SUCCESSFUL)
             {
-                Debug.Write("Failed to change display refresh rate");
+                Trace.Write("Failed to change display refresh rate");
             }
         }
 
