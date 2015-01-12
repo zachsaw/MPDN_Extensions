@@ -44,6 +44,11 @@ namespace Mpdn.PlayerExtensions.Example
             get { return new Verb[0]; }
         }
 
+        public bool ShowConfigDialog(IWin32Window owner)
+        {
+            return false;
+        }
+
         private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
         {
             switch (e.InputArgs.KeyData)

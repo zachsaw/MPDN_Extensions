@@ -35,6 +35,11 @@ namespace Mpdn.PlayerExtensions
             PlayerControl.KeyDown -= PlayerKeyDown;
         }
 
+        public virtual bool ShowConfigDialog(IWin32Window owner)
+        {
+            throw new NotImplementedException();
+        }
+
         private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
         {
             Action action;

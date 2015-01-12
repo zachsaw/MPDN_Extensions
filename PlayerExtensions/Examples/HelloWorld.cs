@@ -17,7 +17,7 @@ namespace Mpdn.PlayerExtensions.Example
                     Guid = new Guid("9714174F-B64D-43D8-BB16-52C5FEE2417B"),
                     Name = "Hello World",
                     Description = "Player Extension Example",
-                    Copyright = "Copyright Example © 2014. All rights reserved."
+                    Copyright = "Copyright Example © 2014-2015. All rights reserved."
                 };
             }
         }
@@ -43,6 +43,11 @@ namespace Mpdn.PlayerExtensions.Example
                     new Verb(Category.Help, "My subcategory", "Another Hello World", "Ctrl+Shift+Y", "Say hello world too", HelloWorld2Click)
                 };
             }
+        }
+
+        public bool ShowConfigDialog(IWin32Window owner)
+        {
+            return false;
         }
 
         private void HelloWorldClick()
