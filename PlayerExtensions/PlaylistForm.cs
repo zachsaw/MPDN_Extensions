@@ -20,6 +20,7 @@ namespace Mpdn.PlayerExtensions.Example
         private bool m_FirstShow = true;
         private IPlayerControl m_PlayerControl;
         private int m_CurrentIndex = -1;
+        private Form m_OwnerForm;
 
         public static int PlaylistCount { get; set; }
 
@@ -40,9 +41,8 @@ namespace Mpdn.PlayerExtensions.Example
 
         public void Show(Form owner)
         {
-            if (Visible)
-                return;
-
+            Hide();
+            m_OwnerForm = owner;
             SetLocation(owner);
             timer.Enabled = true;
             listBox.Focus();
@@ -202,6 +202,20 @@ namespace Mpdn.PlayerExtensions.Example
         }
 
         private void TimerTick(object sender, EventArgs e)
+        {
+            HandleOpacity();
+            RebaseOwner();
+        }
+
+        private void RebaseOwner()
+        {
+            if (m_OwnerForm != m_PlayerControl.Form)
+            {
+                Show(m_PlayerControl.Form);
+            }
+        }
+
+        private void HandleOpacity()
         {
             var pos = MousePosition;
             bool inForm = pos.X >= Left && pos.Y >= Top && pos.X < Right && pos.Y < Bottom;
