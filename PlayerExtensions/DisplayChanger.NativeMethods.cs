@@ -81,6 +81,12 @@ namespace Mpdn.PlayerExtensions.Example.DisplayChangerNativeMethods
         // PInvoke declaration for EnumDisplaySettings Win32 API
 
         // constants
+        public static readonly IntPtr HWND_BROADCAST = new IntPtr(0xffff);
+        public const int SPI_SETNONCLIENTMETRICS = 42;
+        public const int CDS_UPDATEREGISTRY = 1;
+
+        public const int WM_DISPLAYCHANGE = 0x7E;
+
         public const int ENUM_CURRENT_SETTINGS = -1;
 
         public const int DISP_CHANGE_SUCCESSFUL = 0;
@@ -91,6 +97,9 @@ namespace Mpdn.PlayerExtensions.Example.DisplayChangerNativeMethods
         public const int DISP_CHANGE_FAILED = -1;
         public const int DISP_CHANGE_NOTUPDATED = -3;
         public const int DISP_CHANGE_RESTART = 1;
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr PostMessage(IntPtr hWnd, UInt32 msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll", CharSet = CharSet.Ansi)]
         public static extern int EnumDisplaySettings(string lpszDeviceName, int iModeNum, ref DEVMODE lpDevMode);
