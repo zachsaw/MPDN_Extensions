@@ -87,9 +87,9 @@
             this.checkBoxRestricted.AutoSize = true;
             this.checkBoxRestricted.Location = new System.Drawing.Point(22, 74);
             this.checkBoxRestricted.Name = "checkBoxRestricted";
-            this.checkBoxRestricted.Size = new System.Drawing.Size(184, 17);
+            this.checkBoxRestricted.Size = new System.Drawing.Size(230, 17);
             this.checkBoxRestricted.TabIndex = 1008;
-            this.checkBoxRestricted.Text = "Activate only for the follow videos";
+            this.checkBoxRestricted.Text = "Activate only for the following video formats";
             this.checkBoxRestricted.UseVisualStyleBackColor = true;
             // 
             // textBoxVideoTypes
