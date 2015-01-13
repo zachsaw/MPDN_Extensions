@@ -265,6 +265,8 @@ namespace Mpdn.PlayerExtensions.Example
                     m_CurrentIndex--;
                 }
             }
+
+            PlaylistCount = listBox.Items.Count;
         }
 
         private void ButtonOpenClick(object sender, EventArgs e)
