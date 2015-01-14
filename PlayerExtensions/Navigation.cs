@@ -42,8 +42,10 @@ namespace Mpdn.PlayerExtensions.Example
                     GetVerb("Backward (1 frame)", "Ctrl+Left", JumpFrame(-1)),
                     GetVerb("Forward (30 seconds)", "Ctrl+Shift+Right", Jump(30)),
                     GetVerb("Backward (30 seconds)", "Ctrl+Shift+Left", Jump(-30)),
-                    GetVerb("Play Next file in folder", "Ctrl+PageDown", PlayFileInFolder(true)),
-                    GetVerb("Play Previous file in folder", "Ctrl+PageUp", PlayFileInFolder(false))
+                    GetVerb("Play next chapter", "Shift+Right", PlayChapter(true)),
+                    GetVerb("Play previous chapter", "Shift+Left", PlayChapter(false)),
+                    GetVerb("Play next file in folder", "Ctrl+PageDown", PlayFileInFolder(true)),
+                    GetVerb("Play previous file in folder", "Ctrl+PageUp", PlayFileInFolder(false))
                 };
             }
         }
@@ -51,6 +53,27 @@ namespace Mpdn.PlayerExtensions.Example
         private static Verb GetVerb(string menuItemText, string shortCutString, Action action)
         {
             return new Verb(Category.Play, "Navigation", menuItemText, shortCutString, string.Empty, action);
+        }
+
+        private Action PlayChapter(bool next)
+        {
+            return () => SelectChapter(next);
+        }
+
+        private void SelectChapter(bool next)
+        {
+            if (PlayerControl.PlayerState == PlayerState.Closed)
+                return;
+
+            var chapters = PlayerControl.Chapters.OrderBy(chapter => chapter.Position);
+            var pos = PlayerControl.MediaPosition;
+            var nextChapter = next
+                ? chapters.SkipWhile(chapter => chapter.Position < pos).FirstOrDefault()
+                : chapters.TakeWhile(chapter => chapter.Position < Math.Max(pos-1000000, 0)).LastOrDefault();
+            if (nextChapter != null)
+            {
+                PlayerControl.SeekMedia(nextChapter.Position);
+            }
         }
 
         private Action PlayFileInFolder(bool next)

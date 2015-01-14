@@ -5,11 +5,9 @@ using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions.Example
 {
-    public class KeyBindings : IPlayerExtension
+    public class KeyBindings : PlayerExtension
     {
-        private IPlayerControl m_PlayerControl;
-
-        public ExtensionDescriptor Descriptor
+        public override ExtensionDescriptor Descriptor
         {
             get
             {
@@ -23,23 +21,24 @@ namespace Mpdn.PlayerExtensions.Example
             }
         }
 
-        public void Initialize(IPlayerControl playerControl)
+        public override void Initialize(IPlayerControl playerControl)
         {
-            m_PlayerControl = playerControl;
-            m_PlayerControl.KeyDown += PlayerKeyDown;
+            base.Initialize(playerControl);
+            PlayerControl.KeyDown += PlayerKeyDown;
         }
 
-        public void Destroy()
+        public override void Destroy()
         {
-            m_PlayerControl.KeyDown -= PlayerKeyDown;
+            PlayerControl.KeyDown -= PlayerKeyDown;
+            base.Destroy();
         }
 
-        public IList<Verb> Verbs
+        public override IList<Verb> Verbs
         {
             get { return new Verb[0]; }
         }
 
-        public bool ShowConfigDialog(IWin32Window owner)
+        public override bool ShowConfigDialog(IWin32Window owner)
         {
             return false;
         }
@@ -52,9 +51,9 @@ namespace Mpdn.PlayerExtensions.Example
                     e.OutputArgs = new KeyEventArgs(Keys.Alt | Keys.Enter);
                     break;
                 case Keys.Escape:
-                    if (m_PlayerControl.InFullScreenMode)
+                    if (PlayerControl.InFullScreenMode)
                     {
-                        m_PlayerControl.GoWindowed();
+                        PlayerControl.GoWindowed();
                     }
                     break;
                 case Keys.F11:
@@ -77,51 +76,51 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void SelectAudioTrack(bool next)
         {
-            if (m_PlayerControl.PlayerState == PlayerState.Closed)
+            if (PlayerControl.PlayerState == PlayerState.Closed)
                 return;
 
-            var activeTrack = m_PlayerControl.ActiveAudioTrack;
+            var activeTrack = PlayerControl.ActiveAudioTrack;
             if (activeTrack == null)
                 return;
 
-            var tracks = m_PlayerControl.AudioTracks;
+            var tracks = PlayerControl.AudioTracks;
             var audioTrack = next
                 ? tracks.SkipWhile(track => !track.Equals(activeTrack)).Skip(1).FirstOrDefault()
                 : tracks.TakeWhile(track => !track.Equals(activeTrack)).LastOrDefault();
             if (audioTrack != null)
             {
-                m_PlayerControl.SelectAudioTrack(audioTrack);
+                PlayerControl.SelectAudioTrack(audioTrack);
             }
         }
 
         private void SelectSubtitleTrack(bool next)
         {
-            if (m_PlayerControl.PlayerState == PlayerState.Closed)
+            if (PlayerControl.PlayerState == PlayerState.Closed)
                 return;
 
-            var activeTrack = m_PlayerControl.ActiveSubtitleTrack;
+            var activeTrack = PlayerControl.ActiveSubtitleTrack;
             if (activeTrack == null)
                 return;
 
-            var tracks = m_PlayerControl.SubtitleTracks;
+            var tracks = PlayerControl.SubtitleTracks;
             var subtitleTrack = next
                 ? tracks.SkipWhile(track => !track.Equals(activeTrack)).Skip(1).FirstOrDefault()
                 : tracks.TakeWhile(track => !track.Equals(activeTrack)).LastOrDefault();
             if (subtitleTrack != null)
             {
-                m_PlayerControl.SelectSubtitleTrack(subtitleTrack);
+                PlayerControl.SelectSubtitleTrack(subtitleTrack);
             }
         }
 
         private void ToggleMode()
         {
-            if (m_PlayerControl.InFullScreenMode)
+            if (PlayerControl.InFullScreenMode)
             {
-                m_PlayerControl.GoWindowed();
+                PlayerControl.GoWindowed();
             }
             else
             {
-                m_PlayerControl.GoFullScreen();
+                PlayerControl.GoFullScreen();
             }
         }
     }
