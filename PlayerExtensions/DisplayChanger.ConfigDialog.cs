@@ -13,6 +13,8 @@
             {
                 checkBoxActivate.Checked = Settings.Activate;
                 checkBoxRestore.Checked = Settings.Restore;
+                checkBoxRestoreExit.Checked = Settings.RestoreOnExit;
+                checkBoxHighestRate.Checked = Settings.HighestRate;
                 checkBoxRestricted.Checked = Settings.Restricted;
                 textBoxVideoTypes.Text = Settings.VideoTypes;
             }
@@ -21,6 +23,8 @@
             {
                 Settings.Activate = checkBoxActivate.Checked;
                 Settings.Restore = checkBoxRestore.Checked;
+                Settings.RestoreOnExit = checkBoxRestoreExit.Checked;
+                Settings.HighestRate = checkBoxHighestRate.Checked;
                 Settings.Restricted = checkBoxRestricted.Checked;
                 Settings.VideoTypes = textBoxVideoTypes.Text;
             }

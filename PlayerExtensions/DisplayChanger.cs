@@ -14,6 +14,8 @@ namespace Mpdn.PlayerExtensions.Example
         private Screen m_RestoreScreen;
         private int m_RestoreFrequency;
 
+        private readonly List<int> m_AllRefreshRates = new List<int>();
+
         protected override PlayerExtensionDescriptor ScriptDescriptor
         {
             get
@@ -39,6 +41,11 @@ namespace Mpdn.PlayerExtensions.Example
 
             PlayerControl.PlayerStateChanged += PlayerStateChanged;
             PlayerControl.FormClosed += FormClosed;
+
+            foreach (var screen in Screen.AllScreens)
+            {
+                m_AllRefreshRates.Add(GetRefreshRate(screen));
+            }
         }
 
         public override void Destroy()
@@ -57,6 +64,15 @@ namespace Mpdn.PlayerExtensions.Example
         private void FormClosed(object sender, EventArgs eventArgs)
         {
             RestoreSettings();
+
+            if (Settings.RestoreOnExit)
+            {
+                for (int i = 0; i < m_AllRefreshRates.Count; i++)
+                {
+                    var rate = m_AllRefreshRates[i];
+                    ChangeRefreshRate(Screen.AllScreens[i], rate);
+                }
+            }
         }
 
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
@@ -82,14 +98,47 @@ namespace Mpdn.PlayerExtensions.Example
             if (!frequencies.Any())
                 return;
 
-            var fps = 1000000 / PlayerControl.VideoInfo.AvgTimePerFrame;
+            var timePerFrame = PlayerControl.VideoInfo.AvgTimePerFrame;
+            if (Math.Abs(timePerFrame) < 1)
+                return;
+
+            var fps = Math.Round(1000000 / timePerFrame, 3);
+            if (Math.Abs(fps) < 1) 
+                return;
 
             // Find the highest frequency that matches fps
-            var frequency = frequencies.OrderByDescending(f => f).FirstOrDefault(f => f % (int)Math.Round(fps) == 0);
+            var frequenciesDescending = frequencies.OrderByDescending(f => f).ToArray();
+            var frequency = frequenciesDescending.FirstOrDefault(f => MatchFrequencies(f, fps));
             if (frequency == 0)
-                return;
+            {
+                // Exact match (23 for 23.976) not found
+                // Find the closest one that matches fps (e.g. 24 for 23.976)
+                frequency = frequenciesDescending.FirstOrDefault(f => MatchRoundedFrequencies(f, fps));
+            }
+            if (frequency == 0)
+            {
+                // Still couldn't find a match
+                if (!Settings.HighestRate)
+                    return;
+
+                // Use the highest rate available
+                frequency = frequenciesDescending.First();
+            }
             
             ChangeRefreshRate(screen, frequency);
+        }
+
+        private static bool MatchRoundedFrequencies(int f, double fps)
+        {
+            return f % (int) Math.Round(fps) == 0;
+        }
+
+        private static bool MatchFrequencies(int f, double fps)
+        {
+            var multiples = Math.Round(f/fps);
+            fps *= multiples;
+
+            return f % (int) fps == 0;
         }
 
         private bool Activated()
@@ -150,6 +199,49 @@ namespace Mpdn.PlayerExtensions.Example
             m_RestoreFrequency = 0;
         }
 
+        private void ChangeRefreshRate(Screen screen, int frequency)
+        {
+            bool wasFullScreen = false;
+            if (PlayerControl.InFullScreenMode)
+            {
+                wasFullScreen = true;
+                // We can't change frequency in exclusive mode
+                PlayerControl.GoWindowed();
+            }
+
+            var dm = NativeMethods.CreateDevmode(screen.DeviceName);
+            if (GetSettings(ref dm, screen.DeviceName) == 0)
+                return;
+
+            if (dm.dmDisplayFrequency == frequency)
+                return;
+
+            var oldFreq = dm.dmDisplayFrequency;
+            m_RestoreScreen = screen;
+
+            dm.dmFields = (int) DM.DisplayFrequency;
+            dm.dmDisplayFrequency = frequency;
+            dm.dmDeviceName = screen.DeviceName;
+            bool continuePlaying = false;
+            if (PlayerControl.PlayerState == PlayerState.Playing)
+            {
+                continuePlaying = true;
+                PlayerControl.PauseMedia(false);
+            }
+            if (ChangeSettings(dm))
+            {
+                m_RestoreFrequency = oldFreq;
+            }
+            if (continuePlaying)
+            {
+                PlayerControl.PlayMedia(false);
+            }
+            if (wasFullScreen)
+            {
+                PlayerControl.GoFullScreen();
+            }
+        }
+
         private static IList<int> GetFrequencies(Screen screen)
         {
             var frequencies = new List<int>();
@@ -178,47 +270,10 @@ namespace Mpdn.PlayerExtensions.Example
             return frequencies;
         }
 
-        private void ChangeRefreshRate(Screen screen, int frequency)
+        private static int GetRefreshRate(Screen screen)
         {
-            bool wasFullScreen = false;
-            if (PlayerControl.InFullScreenMode)
-            {
-                wasFullScreen = true;
-                // We can't change frequency in exclusive mode
-                PlayerControl.GoWindowed();
-            }
-
             var dm = NativeMethods.CreateDevmode(screen.DeviceName);
-            if (GetSettings(ref dm, screen.DeviceName) == 0)
-                return;
-
-            if (dm.dmDisplayFrequency == frequency)
-                return;
-
-            var oldFreq = dm.dmDisplayFrequency;
-            m_RestoreScreen = screen;
-
-            dm.dmFields = (int) DM.DisplayFrequency;
-            dm.dmDisplayFrequency = frequency;
-            dm.dmDeviceName = screen.DeviceName;
-            bool continuePlaying = false;
-            if (PlayerControl.PlayerState == PlayerState.Playing)
-            {
-                continuePlaying = true;
-                PlayerControl.StopMedia();
-            }
-            if (ChangeSettings(dm))
-            {
-                m_RestoreFrequency = oldFreq;
-            }
-            if (continuePlaying)
-            {
-                PlayerControl.PlayMedia(false);
-            }
-            if (wasFullScreen)
-            {
-                PlayerControl.GoFullScreen();
-            }
+            return GetSettings(ref dm, screen.DeviceName) == 0 ? 0 : dm.dmDisplayFrequency;
         }
 
         private static bool ChangeSettings(DEVMODE dm)
@@ -253,11 +308,15 @@ namespace Mpdn.PlayerExtensions.Example
         {
             Activate = false;
             Restore = false;
+            RestoreOnExit = false;
+            HighestRate = false;
             Restricted = false;
         }
 
         public bool Activate { get; set; }
         public bool Restore { get; set; }
+        public bool RestoreOnExit { get; set; }
+        public bool HighestRate { get; set; }
         public bool Restricted { get; set; }
         public string VideoTypes { get; set; }
     }
