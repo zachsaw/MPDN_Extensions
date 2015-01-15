@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -63,14 +63,15 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void PlayerMouseClick(object sender, PlayerControlEventArgs<MouseEventArgs> e)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed)
-                return;
-
             if (e.InputArgs.Button == MouseButtons.Middle)
             {
                 ToggleMode();
                 return;
             }
+
+            if (PlayerControl.PlayerState == PlayerState.Closed)
+                return;
+
             var chapters = PlayerControl.Chapters.OrderBy(chapter => chapter.Position);
 
             var pos = PlayerControl.MediaPosition;

@@ -83,7 +83,7 @@ namespace Mpdn.PlayerExtensions.Example
         public void OpenPlaylist()
         {
             openPlaylistDialog.FileName = savePlaylistDialog.FileName;
-            if (openPlaylistDialog.ShowDialog(m_PlayerControl.VideoPanel) != DialogResult.OK)
+            if (openPlaylistDialog.ShowDialog(m_PlayerControl.Form) != DialogResult.OK)
                 return;
 
             OpenPlaylist(openPlaylistDialog.FileName);
@@ -98,7 +98,7 @@ namespace Mpdn.PlayerExtensions.Example
             }
 
             savePlaylistDialog.FileName = openPlaylistDialog.FileName;
-            if (savePlaylistDialog.ShowDialog(m_PlayerControl.VideoPanel) != DialogResult.OK)
+            if (savePlaylistDialog.ShowDialog(m_PlayerControl.Form) != DialogResult.OK)
                 return;
 
             SavePlaylist(savePlaylistDialog.FileName);
@@ -209,9 +209,9 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void RebaseOwner()
         {
-            if (m_OwnerForm != m_PlayerControl.VideoPanel)
+            if (m_OwnerForm != m_PlayerControl.Form)
             {
-                Show(m_PlayerControl.VideoPanel);
+                Show(m_PlayerControl.Form);
             }
         }
 
