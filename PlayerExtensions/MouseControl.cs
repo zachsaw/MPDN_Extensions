@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace Mpdn.PlayerExtensions.Example
 {
@@ -15,7 +16,7 @@ namespace Mpdn.PlayerExtensions.Example
                     Guid = new Guid("DCF7797B-9D36-41F3-B28C-0A92793B94F5"),
                     Name = "Mouse Control",
                     Description =
-                        string.Format("Use mouse {0}forward/back buttons to navigate playlist/folder",
+                        string.Format("Use mouse {0}forward/back buttons to navigate chapters/playlist/folder",
                             Settings.EnableMouseWheelSeek ? "wheel to seek and " : string.Empty),
                     Copyright = "Copyright Example © 2015. All rights reserved."
                 };
@@ -33,6 +34,7 @@ namespace Mpdn.PlayerExtensions.Example
 
             PlayerControl.MouseClick += PlayerMouseClick;
             PlayerControl.MouseWheel += PlayerMouseWheel;
+            PlayerControl.MouseDoubleClick += PlayerMouseDoubleClick;
         }
 
         public override void Destroy()
@@ -41,6 +43,7 @@ namespace Mpdn.PlayerExtensions.Example
 
             PlayerControl.MouseClick -= PlayerMouseClick;
             PlayerControl.MouseWheel -= PlayerMouseWheel;
+            PlayerControl.MouseDoubleClick -= PlayerMouseDoubleClick;
         }
 
         public override IList<Verb> Verbs
@@ -60,14 +63,50 @@ namespace Mpdn.PlayerExtensions.Example
             e.Handled = true;
         }
 
+        private void PlayerMouseDoubleClick(object sender, PlayerControlEventArgs<MouseEventArgs> e)
+        {
+            if (e.InputArgs.Button != MouseButtons.Left)
+            {
+                e.Handled = true;
+                return;
+            }
+        }
+
         private void PlayerMouseClick(object sender, PlayerControlEventArgs<MouseEventArgs> e)
         {
+            if (PlayerControl.PlayerState == PlayerState.Closed)
+                return;
+            
             if (e.InputArgs.Button == MouseButtons.Middle)
             {
                 ToggleMode();
                 return;
             }
 
+            var chapters = PlayerControl.Chapters.OrderBy(chapter => chapter.Position);
+            var pos = PlayerControl.MediaPosition;
+            bool next = true;
+
+            switch (e.InputArgs.Button)
+            {
+                case MouseButtons.XButton2:
+                    next = true;
+                    break;
+                case MouseButtons.XButton1:
+                    next = false;
+                    break;
+                default:
+                    return;
+                    break;
+            }        
+            var nextChapter = next
+                ? chapters.SkipWhile(chapter => chapter.Position < pos).FirstOrDefault()
+                : chapters.TakeWhile(chapter => chapter.Position < Math.Max(pos - 1000000, 0)).LastOrDefault();
+            if (nextChapter != null)
+            {
+                PlayerControl.SeekMedia(nextChapter.Position);
+                return;
+            }
             if (PlaylistForm.PlaylistCount <= 1)
             {
                 switch (e.InputArgs.Button)
@@ -93,6 +132,7 @@ namespace Mpdn.PlayerExtensions.Example
                 }
             }
         }
+
         private void ToggleMode()
         {
             if (!Settings.EnableMiddleClickFsToggle)
