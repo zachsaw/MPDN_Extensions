@@ -12,11 +12,13 @@
             protected override void LoadSettings()
             {
                 checkBoxAlwaysEnabled.Checked = Settings.AlwaysDoubleImage;
+                checkBoxCentered.Checked = Settings.Centered;
             }
 
             protected override void SaveSettings()
             {
                 Settings.AlwaysDoubleImage = checkBoxAlwaysEnabled.Checked;
+                Settings.Centered = checkBoxCentered.Checked;
             }
         }
 

@@ -33,7 +33,7 @@
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
             this.checkBoxAlwaysEnabled = new System.Windows.Forms.CheckBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.checkBoxCentered = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // buttonCancel
@@ -70,13 +70,13 @@
             // 
             // checkBox1
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(21, 48);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(106, 17);
-            this.checkBox1.TabIndex = 1007;
-            this.checkBox1.Text = "Center the image";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBoxCentered.AutoSize = true;
+            this.checkBoxCentered.Location = new System.Drawing.Point(21, 48);
+            this.checkBoxCentered.Name = "checkBox1";
+            this.checkBoxCentered.Size = new System.Drawing.Size(106, 17);
+            this.checkBoxCentered.TabIndex = 1007;
+            this.checkBoxCentered.Text = "Center the image";
+            this.checkBoxCentered.UseVisualStyleBackColor = true;
             // 
             // NediConfigDialog
             // 
@@ -85,7 +85,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(332, 125);
-            this.Controls.Add(this.checkBox1);
+            this.Controls.Add(this.checkBoxCentered);
             this.Controls.Add(this.checkBoxAlwaysEnabled);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
@@ -106,7 +106,7 @@
             private System.Windows.Forms.Button buttonCancel;
             private System.Windows.Forms.Button buttonOk;
             private System.Windows.Forms.CheckBox checkBoxAlwaysEnabled;
-            private System.Windows.Forms.CheckBox checkBox1;
+            private System.Windows.Forms.CheckBox checkBoxCentered;
 
         }
     }

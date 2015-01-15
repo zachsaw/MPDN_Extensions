@@ -20,6 +20,8 @@ namespace Mpdn.RenderScript
 
             #endregion
 
+            public float[] LumaConstants = {0.2126f, 0.7152f, 0.0722f};
+
             private bool UseNedi(IFilter sourceFilter)
             {
                 var size = sourceFilter.OutputSize;
@@ -51,12 +53,12 @@ namespace Mpdn.RenderScript
                     transformHeight = s => new Size(s.Width, 2 * s.Height);
                 }
 
-                    if (!UseNedi(sourceFilter))
-                        return sourceFilter;
+                if (!UseNedi(sourceFilter))
+                    return sourceFilter;
 
-                var nedi1 = new ShaderFilter(nedi1Shader, sourceFilter);
+                var nedi1 = new ShaderFilter(nedi1Shader, LumaConstants, sourceFilter);
                 var nediH = new ShaderFilter(nediHInterleaveShader, transformWidth, sourceFilter, nedi1);
-                var nedi2 = new ShaderFilter(nedi2Shader, nediH);
+                var nedi2 = new ShaderFilter(nedi2Shader, LumaConstants, nediH);
                 var nediV = new ShaderFilter(nediVInterleaveShader, transformHeight, nediH, nedi2);
 
                 return nediV;
