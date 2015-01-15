@@ -28,12 +28,12 @@ namespace Mpdn.CustomLinearScaler
 
             public float GetWeight(float n, int width)
             {
-                return (float) GaussianKernel(n, width);
+                return (float) GaussianKernel(n, width / 2);
             }
 
             private static double GaussianKernel(double x, double radius)
             {
-                var sigma = radius/6;
+                var sigma = radius / 4;
                 return Math.Exp(-(x*x/(2*sigma*sigma)));
             }
         }
