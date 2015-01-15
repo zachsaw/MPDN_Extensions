@@ -13,7 +13,7 @@ MPDN project page - http://forum.doom9.org/showthread.php?t=171120
 How to use Player Extensions?
 -----------------------------
 
-To use these player extensions (compatible with ***MPDN v2.18.0*** and above), click the **Download ZIP** button on the right to download the whole repository.
+To use these player extensions (compatible with ***MPDN v2.18.2*** and above), click the **Download ZIP** button on the right to download the whole repository.
 
 Then extract the files and folders in the PlayerExtensions folder (located in PlayerExtensions-master folder) to your MPDN's PlayerExtensions folder.
 

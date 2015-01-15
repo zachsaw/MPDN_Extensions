@@ -35,7 +35,7 @@ namespace Mpdn.PlayerExtensions.Example
         {
             using (var form = new GoToTimeForm())
             {
-                if (form.ShowDialog(PlayerControl.Form) != DialogResult.OK)
+                if (form.ShowDialog(PlayerControl.VideoPanel) != DialogResult.OK)
                     return;
 
                 if (PlayerControl.PlayerState == PlayerState.Closed)

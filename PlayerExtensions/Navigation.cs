@@ -73,6 +73,7 @@ namespace Mpdn.PlayerExtensions.Example
             if (nextChapter != null)
             {
                 PlayerControl.SeekMedia(nextChapter.Position);
+                PlayerControl.ShowOsdText(nextChapter.Name);
             }
         }
 

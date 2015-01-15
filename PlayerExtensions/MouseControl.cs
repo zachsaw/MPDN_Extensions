@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions.Example
 {
@@ -34,7 +34,6 @@ namespace Mpdn.PlayerExtensions.Example
 
             PlayerControl.MouseClick += PlayerMouseClick;
             PlayerControl.MouseWheel += PlayerMouseWheel;
-            PlayerControl.MouseDoubleClick += PlayerMouseDoubleClick;
         }
 
         public override void Destroy()
@@ -43,7 +42,6 @@ namespace Mpdn.PlayerExtensions.Example
 
             PlayerControl.MouseClick -= PlayerMouseClick;
             PlayerControl.MouseWheel -= PlayerMouseWheel;
-            PlayerControl.MouseDoubleClick -= PlayerMouseDoubleClick;
         }
 
         public override IList<Verb> Verbs
@@ -63,30 +61,21 @@ namespace Mpdn.PlayerExtensions.Example
             e.Handled = true;
         }
 
-        private void PlayerMouseDoubleClick(object sender, PlayerControlEventArgs<MouseEventArgs> e)
-        {
-            if (e.InputArgs.Button != MouseButtons.Left)
-            {
-                e.Handled = true;
-                return;
-            }
-        }
-
         private void PlayerMouseClick(object sender, PlayerControlEventArgs<MouseEventArgs> e)
         {
             if (PlayerControl.PlayerState == PlayerState.Closed)
                 return;
-            
+
             if (e.InputArgs.Button == MouseButtons.Middle)
             {
                 ToggleMode();
                 return;
             }
-
             var chapters = PlayerControl.Chapters.OrderBy(chapter => chapter.Position);
-            var pos = PlayerControl.MediaPosition;
-            bool next = true;
 
+            var pos = PlayerControl.MediaPosition;
+
+            bool next;
             switch (e.InputArgs.Button)
             {
                 case MouseButtons.XButton2:
@@ -97,8 +86,8 @@ namespace Mpdn.PlayerExtensions.Example
                     break;
                 default:
                     return;
-                    break;
-            }        
+            }
+
             var nextChapter = next
                 ? chapters.SkipWhile(chapter => chapter.Position < pos).FirstOrDefault()
                 : chapters.TakeWhile(chapter => chapter.Position < Math.Max(pos - 1000000, 0)).LastOrDefault();
@@ -107,6 +96,7 @@ namespace Mpdn.PlayerExtensions.Example
                 PlayerControl.SeekMedia(nextChapter.Position);
                 return;
             }
+
             if (PlaylistForm.PlaylistCount <= 1)
             {
                 switch (e.InputArgs.Button)

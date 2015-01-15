@@ -61,13 +61,13 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void OpenPlaylist()
         {
-            m_Form.Show(m_PlayerControl.Form);
+            m_Form.Show(m_PlayerControl.VideoPanel);
             m_Form.OpenPlaylist();
         }
 
         private void ViewPlaylist()
         {
-            m_Form.Show(m_PlayerControl.Form);
+            m_Form.Show(m_PlayerControl.VideoPanel);
         }
 
         private void OnDragEnter(object sender, PlayerControlEventArgs<DragEventArgs> e)

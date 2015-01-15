@@ -91,7 +91,7 @@ namespace Mpdn.PlayerExtensions.Example
 
             m_RestoreFrequency = 0;
 
-            var screen = Screen.FromControl(PlayerControl.Form);
+            var screen = Screen.FromControl(PlayerControl.VideoPanel);
 
             var frequencies = GetFrequencies(screen);
 

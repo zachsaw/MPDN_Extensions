@@ -52,12 +52,12 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void HelloWorldClick()
         {
-            MessageBox.Show(m_PlayerControl.Form, "Hello World!");
+            MessageBox.Show(m_PlayerControl.VideoPanel, "Hello World!");
         }
 
         private void HelloWorld2Click()
         {
-            MessageBox.Show(m_PlayerControl.Form, "Hello World Too!");
+            MessageBox.Show(m_PlayerControl.VideoPanel, "Hello World Too!");
         }
 
         private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
