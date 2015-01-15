@@ -209,6 +209,9 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void RebaseOwner()
         {
+            if (!Visible)
+                return;
+
             if (m_OwnerForm != m_PlayerControl.Form)
             {
                 Show(m_PlayerControl.Form);
