@@ -10,7 +10,8 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 	float4 c0 = tex2D(s0, tex);
 	float4 avg = tex2D(s1, tex);
 
-	// maximum at 0.5 + margin * (sqrt(57) - 5) / 16 ~= 0.5 + margin*0.159365
+	// maximum at (10*a + b + sqrt(3)*sqrt(12 a^2 - 4*a*b + 11*b^2))/16  
+	// a = threshold, b = margin, (maximum at 0.75 with default settings)
 	c0.rgb = lerp(c0, avg, smoothstep(0, margin, threshold + margin - abs((avg - c0).rgb*acuity)));
 
 	return c0;
