@@ -36,6 +36,7 @@ namespace Mpdn.RenderScript
                 var CopyLuma = CompileShader("SuperChromaRes/CopyLuma.hlsl");
                 var CopyChroma = CompileShader("SuperChromaRes/CopyChroma.hlsl");
                 var SuperRes = CompileShader("SuperChromaRes/SuperRes.hlsl");
+                var AntiRinging = CompileShader("SuperChromaRes/AntiRinging.hlsl");
 
                 var GammaToLab = CompileShader("GammaToLab.hlsl");
                 var LabToGamma = CompileShader("LabToGamma.hlsl");
@@ -55,19 +56,6 @@ namespace Mpdn.RenderScript
 
                 yuv = sourceFilter.ConvertToYuv();
 
-                float[] YuvConsts = new float[2];
-                switch (Renderer.Colorimetric)
-                {
-                    case YuvColorimetric.Auto : return sourceFilter;
-                    case YuvColorimetric.FullRange : return sourceFilter;
-                    case YuvColorimetric.FullRangePc601: YuvConsts = new[] { 0.114f, 0.299f }; break;
-                    case YuvColorimetric.FullRangePc709: YuvConsts = new[] { 0.0722f, 0.2126f }; break;
-                    case YuvColorimetric.FullRangePc2020: YuvConsts = new[] { 0.0593f, 0.2627f }; break;
-                    case YuvColorimetric.ItuBt601: YuvConsts = new[] { 0.114f, 0.299f }; break;
-                    case YuvColorimetric.ItuBt709: YuvConsts = new[] { 0.0722f, 0.2126f }; break;
-                    case YuvColorimetric.ItuBt2020: YuvConsts = new[] { 0.0593f, 0.2627f }; break;
-                }
-
                 for (int i = 1; i <= Passes; i++)
                 {
                     IFilter linear, res, diff;
@@ -76,12 +64,12 @@ namespace Mpdn.RenderScript
                     linear = new ShaderFilter(GammaToLinear, new RgbFilter(yuv));
                     res = new ResizeFilter(linear, chromaSize, upscaler, downscaler);
                     res = new ShaderFilter(LinearToGamma, res).ConvertToYuv();
-                    diff = new ShaderFilter(Diff, YuvConsts, res, uInput, vInput);
+                    diff = new ShaderFilter(Diff, res, uInput, vInput);
                     if (!(upscaler is Scaler.Bilinear))
                         diff = new ResizeFilter(diff, targetSize, upscaler, downscaler); // Scale to output size
 
                     // Update result
-                    yuv = new ShaderFilter(SuperRes, (upscaler is Scaler.Bilinear), new[]{ 0.8f, 0.25f, 0.5f, 0f, YuvConsts[0], YuvConsts[1] }, yuv, diff, uInput, vInput);
+                    yuv = new ShaderFilter(SuperRes, (upscaler is Scaler.Bilinear), new[]{ 0.7f, 1.0f, 0.5f }, yuv, diff, uInput, vInput);
 
                     if (FirstPassOnly == true)
                         upscaler = new Scaler.Bilinear();
