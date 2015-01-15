@@ -99,7 +99,7 @@ namespace Mpdn.RenderScript
     {
         protected abstract void BuildChain(FilterChain chain);
 
-        public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+        public sealed override IFilter CreateFilter(IResizeableFilter sourceFilter)
         {
             var chain = new FilterChain(sourceFilter);
             BuildChain(chain);
