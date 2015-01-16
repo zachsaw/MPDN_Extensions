@@ -30,50 +30,50 @@
             /// </summary>
             private void InitializeComponent()
             {
-            this.StrengthSetter = new System.Windows.Forms.NumericUpDown();
+            this.ThresholdSetter = new System.Windows.Forms.NumericUpDown();
             this.MarginSetter = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.ButtonOK = new System.Windows.Forms.Button();
             this.ButtonCancel = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
-            this.PassesSetter = new System.Windows.Forms.NumericUpDown();
+            this.MaxBitdepthSetter = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.MaxErrorLabel = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.AdvancedBox = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            ((System.ComponentModel.ISupportInitialize)(this.StrengthSetter)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ThresholdSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MarginSetter)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.PassesSetter)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxBitdepthSetter)).BeginInit();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // StrengthSetter
+            // ThresholdSetter
             // 
-            this.StrengthSetter.DecimalPlaces = 1;
-            this.StrengthSetter.Increment = new decimal(new int[] {
+            this.ThresholdSetter.DecimalPlaces = 1;
+            this.ThresholdSetter.Increment = new decimal(new int[] {
             1,
             0,
             0,
             65536});
-            this.StrengthSetter.Location = new System.Drawing.Point(133, 3);
-            this.StrengthSetter.Maximum = new decimal(new int[] {
+            this.ThresholdSetter.Location = new System.Drawing.Point(133, 3);
+            this.ThresholdSetter.Maximum = new decimal(new int[] {
             256,
             0,
             0,
             0});
-            this.StrengthSetter.Name = "StrengthSetter";
-            this.StrengthSetter.Size = new System.Drawing.Size(44, 20);
-            this.StrengthSetter.TabIndex = 1;
-            this.StrengthSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.StrengthSetter.Value = new decimal(new int[] {
+            this.ThresholdSetter.Name = "ThresholdSetter";
+            this.ThresholdSetter.Size = new System.Drawing.Size(44, 20);
+            this.ThresholdSetter.TabIndex = 1;
+            this.ThresholdSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.ThresholdSetter.Value = new decimal(new int[] {
             5,
             0,
             0,
             65536});
-            this.StrengthSetter.ValueChanged += new System.EventHandler(this.ValueChanged);
+            this.ThresholdSetter.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // MarginSetter
             // 
@@ -156,24 +156,24 @@
             this.label5.TabIndex = 11;
             this.label5.Text = "Disable when bitdepth >";
             // 
-            // PassesSetter
+            // MaxBitdepthSetter
             // 
-            this.PassesSetter.Location = new System.Drawing.Point(145, 9);
-            this.PassesSetter.Maximum = new decimal(new int[] {
+            this.MaxBitdepthSetter.Location = new System.Drawing.Point(145, 9);
+            this.MaxBitdepthSetter.Maximum = new decimal(new int[] {
             32,
             0,
             0,
             0});
-            this.PassesSetter.Minimum = new decimal(new int[] {
+            this.MaxBitdepthSetter.Minimum = new decimal(new int[] {
             8,
             0,
             0,
             0});
-            this.PassesSetter.Name = "PassesSetter";
-            this.PassesSetter.Size = new System.Drawing.Size(44, 20);
-            this.PassesSetter.TabIndex = 0;
-            this.PassesSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.PassesSetter.Value = new decimal(new int[] {
+            this.MaxBitdepthSetter.Name = "MaxBitdepthSetter";
+            this.MaxBitdepthSetter.Size = new System.Drawing.Size(44, 20);
+            this.MaxBitdepthSetter.TabIndex = 0;
+            this.MaxBitdepthSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.MaxBitdepthSetter.Value = new decimal(new int[] {
             8,
             0,
             0,
@@ -229,7 +229,7 @@
             // panel1
             // 
             this.panel1.Controls.Add(this.label1);
-            this.panel1.Controls.Add(this.StrengthSetter);
+            this.panel1.Controls.Add(this.ThresholdSetter);
             this.panel1.Controls.Add(this.label6);
             this.panel1.Controls.Add(this.MarginSetter);
             this.panel1.Controls.Add(this.MaxErrorLabel);
@@ -252,7 +252,7 @@
             this.Controls.Add(this.AdvancedBox);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label5);
-            this.Controls.Add(this.PassesSetter);
+            this.Controls.Add(this.MaxBitdepthSetter);
             this.Controls.Add(this.ButtonCancel);
             this.Controls.Add(this.ButtonOK);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -263,9 +263,9 @@
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Deband Settings";
-            ((System.ComponentModel.ISupportInitialize)(this.StrengthSetter)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ThresholdSetter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.MarginSetter)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.PassesSetter)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxBitdepthSetter)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.ResumeLayout(false);
@@ -275,14 +275,14 @@
 
             #endregion
 
-            private System.Windows.Forms.NumericUpDown StrengthSetter;
+            private System.Windows.Forms.NumericUpDown ThresholdSetter;
             private System.Windows.Forms.NumericUpDown MarginSetter;
             private System.Windows.Forms.Label label1;
             private System.Windows.Forms.Label label2;
             private System.Windows.Forms.Button ButtonOK;
             private System.Windows.Forms.Button ButtonCancel;
             private System.Windows.Forms.Label label5;
-            private System.Windows.Forms.NumericUpDown PassesSetter;
+            private System.Windows.Forms.NumericUpDown MaxBitdepthSetter;
             private System.Windows.Forms.Label label3;
             private System.Windows.Forms.Label label4;
             private System.Windows.Forms.Label MaxErrorLabel;
