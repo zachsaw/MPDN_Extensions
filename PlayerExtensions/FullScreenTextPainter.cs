@@ -5,7 +5,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Timer = System.Windows.Forms.Timer;
 
-namespace Mpdn.PlayerExtensions.Example
+namespace Mpdn.PlayerExtensions.GitHub
 {
     public class FullScreenTextPainter : IPlayerExtension
     {
@@ -28,8 +28,7 @@ namespace Mpdn.PlayerExtensions.Example
                 {
                     Guid = new Guid("D24FA2D6-B3BE-40C1-B3A5-25D1639EB994"),
                     Name = "Text Painter",
-                    Description = "Paints current media time code on top of seek bar in full screen mode",
-                    Copyright = "Copyright Example © 2015. All rights reserved."
+                    Description = "Paints current media time code on top of seek bar in full screen mode"
                 };
             }
         }
@@ -124,12 +123,17 @@ namespace Mpdn.PlayerExtensions.Example
             {
                 var position = AtomicRead(m_Position);
                 var duration = AtomicRead(m_Duration);
-                var text = string.Format(" {0} / {1} ", GetTimeString(position), GetTimeString(duration));
+                var text = string.Format("{0} / {1}", GetTimeString(position), GetTimeString(duration));
                 var width = m_Text.MeasureWidth(text);
                 var size = m_ScreenSize;
                 var seekBarHeight = PlayerControl.FullScreenSeekBarHeight; // Note: This property is thread safe
-                m_Text.Show(text, new Point(size.Width - width, size.Height - seekBarHeight - TEXT_HEIGHT),
-                    Color.FromArgb(255, 0xBB, 0xBB, 0xBB), Color.FromArgb(255 * 60/100, Color.Black), 0);
+                const int rightOffset = 12;
+                const int bottomOffset = 1;
+                var location =
+                    new Point(size.Width - width - rightOffset,
+                              size.Height - seekBarHeight - TEXT_HEIGHT - bottomOffset);
+                m_Text.Show(text, location, Color.FromArgb(255, 0xBB, 0xBB, 0xBB),
+                    Color.FromArgb(255*60/100, Color.Black), new Padding(5, 0, rightOffset, bottomOffset));
             }
             else
             {

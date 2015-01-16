@@ -1,4 +1,4 @@
-﻿namespace Mpdn.PlayerExtensions.Example
+﻿namespace Mpdn.PlayerExtensions.GitHub
 {
     partial class PlaylistForm
     {
@@ -30,14 +30,14 @@
         {
             this.components = new System.ComponentModel.Container();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.buttonAdd = new Mpdn.PlayerExtensions.Example.ButtonStripItem();
-            this.buttonDel = new Mpdn.PlayerExtensions.Example.ButtonStripItem();
+            this.buttonAdd = new ButtonStripItem();
+            this.buttonDel = new ButtonStripItem();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.buttonLeft = new Mpdn.PlayerExtensions.Example.ButtonStripItem();
-            this.buttonRight = new Mpdn.PlayerExtensions.Example.ButtonStripItem();
+            this.buttonLeft = new ButtonStripItem();
+            this.buttonRight = new ButtonStripItem();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.buttonOpen = new Mpdn.PlayerExtensions.Example.ButtonStripItem();
-            this.buttonSave = new Mpdn.PlayerExtensions.Example.ButtonStripItem();
+            this.buttonOpen = new ButtonStripItem();
+            this.buttonSave = new ButtonStripItem();
             this.listBox = new DragDropListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();

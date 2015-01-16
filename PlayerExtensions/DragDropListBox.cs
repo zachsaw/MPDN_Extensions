@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.Example
+namespace Mpdn.PlayerExtensions.GitHub
 {
     /// <summary>
     ///     ListBox which provides a fully integrated drag-and-drop functionality, which also works when multiple ListBox items

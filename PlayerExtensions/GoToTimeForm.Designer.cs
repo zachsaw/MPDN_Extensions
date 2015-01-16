@@ -1,4 +1,4 @@
-﻿namespace Mpdn.PlayerExtensions.Example
+﻿namespace Mpdn.PlayerExtensions.GitHub
 {
     partial class GoToTimeForm
     {

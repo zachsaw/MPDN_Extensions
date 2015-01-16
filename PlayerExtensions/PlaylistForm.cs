@@ -7,7 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
-namespace Mpdn.PlayerExtensions.Example
+namespace Mpdn.PlayerExtensions.GitHub
 {
     public partial class PlaylistForm : FormEx
     {

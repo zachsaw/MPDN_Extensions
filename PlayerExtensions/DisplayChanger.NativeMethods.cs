@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Mpdn.PlayerExtensions.Example.DisplayChangerNativeMethods
+namespace Mpdn.PlayerExtensions.GitHub.DisplayChangerNativeMethods
 {
     [Flags]
     internal enum DM

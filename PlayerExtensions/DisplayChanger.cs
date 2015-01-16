@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using DirectShowLib;
-using Mpdn.PlayerExtensions.Example.DisplayChangerNativeMethods;
+using Mpdn.PlayerExtensions.GitHub.DisplayChangerNativeMethods;
 
-namespace Mpdn.PlayerExtensions.Example
+namespace Mpdn.PlayerExtensions.GitHub
 {
     public class DisplayChanger : ConfigurablePlayerExtension<DisplayChangerSettings, DisplayChangerConfigDialog>
     {
@@ -24,8 +24,7 @@ namespace Mpdn.PlayerExtensions.Example
                 {
                     Guid = new Guid("9C1BBA5B-B956-43E1-9A91-58B72571EF82"),
                     Name = "Display Changer",
-                    Description = "Changes display refresh rate based on video",
-                    Copyright = "Copyright Example © 2015. All rights reserved."
+                    Description = "Changes display refresh rate based on video"
                 };
             }
         }

@@ -1,6 +1,6 @@
 ﻿namespace Mpdn.PlayerExtensions
 {
-    namespace Example
+    namespace GitHub
     {
         public partial class DisplayChangerConfigDialog : DisplayChangerConfigBase
         {

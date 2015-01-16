@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.Example
+namespace Mpdn.PlayerExtensions.GitHub
 {
     public class Playlist : PlayerExtension
     {
@@ -20,8 +20,7 @@ namespace Mpdn.PlayerExtensions.Example
                 {
                     Guid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B"),
                     Name = "Playlist",
-                    Description = "Playlist Support",
-                    Copyright = "Copyright Example © 2014-2015. All rights reserved."
+                    Description = "Playlist Support"
                 };
             }
         }

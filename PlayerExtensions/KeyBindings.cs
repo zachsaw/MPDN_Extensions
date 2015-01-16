@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.Example
+namespace Mpdn.PlayerExtensions.GitHub
 {
     public class KeyBindings : PlayerExtension
     {
@@ -15,8 +15,7 @@ namespace Mpdn.PlayerExtensions.Example
                 {
                     Guid = new Guid("E3E54699-0B2B-4B1B-8F6B-4739273670CD"),
                     Name = "Key Bindings",
-                    Description = "Extra shortcut key bindings",
-                    Copyright = "Copyright Example © 2014-2015. All rights reserved."
+                    Description = "Extra shortcut key bindings"
                 };
             }
         }

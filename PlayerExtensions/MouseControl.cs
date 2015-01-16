@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.Example
+namespace Mpdn.PlayerExtensions.GitHub
 {
     public class MouseControl : ConfigurablePlayerExtension<MouseControlSettings, MouseControlConfigDialog>
     {
@@ -17,8 +17,7 @@ namespace Mpdn.PlayerExtensions.Example
                     Name = "Mouse Control",
                     Description =
                         string.Format("Use mouse {0}forward/back buttons to navigate chapters/playlist/folder",
-                            Settings.EnableMouseWheelSeek ? "wheel to seek and " : string.Empty),
-                    Copyright = "Copyright Example © 2015. All rights reserved."
+                            Settings.EnableMouseWheelSeek ? "wheel to seek and " : string.Empty)
                 };
             }
         }
