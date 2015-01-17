@@ -79,9 +79,9 @@ namespace Mpdn.PlayerExtensions
             }
         }
 
-        public override void Initialize(IPlayerControl playerControl)
+        public override void Initialize()
         {
-            base.Initialize(playerControl);
+            base.Initialize();
 
             ScriptConfig = new Config(ConfigFileName);
         }

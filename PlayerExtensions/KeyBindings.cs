@@ -20,9 +20,9 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
         }
 
-        public override void Initialize(IPlayerControl playerControl)
+        public override void Initialize()
         {
-            base.Initialize(playerControl);
+            base.Initialize();
             PlayerControl.KeyDown += PlayerKeyDown;
         }
 

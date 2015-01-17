@@ -18,11 +18,21 @@ namespace Mpdn.PlayerExtensions
 
         #region Implementation
 
-        public virtual void Initialize(IPlayerControl playerControl)
+        public void Initialize(IPlayerControl playerControl)
         {
             PlayerControl = playerControl;
             PlayerControl.KeyDown += PlayerKeyDown;
 
+            LoadVerbs();
+            Initialize();
+        }
+
+        public virtual void Initialize()
+        {
+        }
+
+        public void LoadVerbs()
+        {
             foreach (var verb in Verbs)
             {
                 var shortcut = DecodeKeyString(verb.ShortcutDisplayStr);

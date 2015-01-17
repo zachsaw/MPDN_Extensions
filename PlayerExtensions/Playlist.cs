@@ -10,7 +10,6 @@ namespace Mpdn.PlayerExtensions.GitHub
         private const string SUBCATEGORY = "Playlist";
 
         private readonly PlaylistForm m_Form = new PlaylistForm();
-        private IPlayerControl m_PlayerControl;
 
         public override ExtensionDescriptor Descriptor
         {
@@ -25,16 +24,15 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
         }
 
-        public override void Initialize(IPlayerControl playerControl)
+        public override void Initialize()
         {
-            base.Initialize(playerControl);
+            base.Initialize();
 
-            m_Form.SetPlayerControl(playerControl);
-            m_PlayerControl = playerControl;
+            m_Form.SetPlayerControl(PlayerControl);
 
-            playerControl.DragEnter += OnDragEnter;
-            playerControl.DragDrop += OnDragDrop;
-            playerControl.CommandLineFileOpen += OnCommandLineFileOpen;
+            PlayerControl.DragEnter += OnDragEnter;
+            PlayerControl.DragDrop += OnDragDrop;
+            PlayerControl.CommandLineFileOpen += OnCommandLineFileOpen;
         }
 
         public override void Destroy()
@@ -60,13 +58,13 @@ namespace Mpdn.PlayerExtensions.GitHub
 
         private void OpenPlaylist()
         {
-            m_Form.Show(m_PlayerControl.Form);
+            m_Form.Show(PlayerControl.Form);
             m_Form.OpenPlaylist();
         }
 
         private void ViewPlaylist()
         {
-            m_Form.Show(m_PlayerControl.Form);
+            m_Form.Show(PlayerControl.Form);
         }
 
         private void OnDragEnter(object sender, PlayerControlEventArgs<DragEventArgs> e)
