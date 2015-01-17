@@ -141,9 +141,10 @@ namespace Mpdn.PlayerExtensions.GitHub
                 if (Directory.Exists(file))
                 {
                     filesindir.AddRange(Directory.GetFiles(file));
-
+                    
                     if (filesindir != null)
                     {
+                        filesindir.Sort();
                         foreach (var fileindir in filesindir)
                         {
                             var extensionindir = Path.GetExtension(fileindir);
