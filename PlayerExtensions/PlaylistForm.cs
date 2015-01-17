@@ -133,8 +133,32 @@ namespace Mpdn.PlayerExtensions.GitHub
 
         public void AddFiles(IEnumerable<string> files, bool startPlaying)
         {
+            List<string> filesindir = new List<string>();
+            List<string> validfiles = new List<string>() {".mkv", ".mp4", ".m4v", ".mp4v", ".3g2", ".3gp2", ".3gp", ".3gpp", ".mov", ".m2ts", ".ts", ".asf", ".wma", ".wmv", ".wm", ".asx", ".wax", ".wvx", ".wmx", ".wpl", ".dvr-ms", ".avi", ".mpg", ".mpeg", ".m1v", ".mp2", ".mp3", ".mpa", ".mpe", ".m3u", ".wav", ".mid", ".midi", ".rmi"};
+            
             foreach (var file in files)
             {
+                if (Directory.Exists(file))
+                {
+                    filesindir.AddRange(Directory.GetFiles(file));
+                    
+                    if (filesindir != null)
+                    {
+                        filesindir.Sort();
+                        foreach (var fileindir in filesindir)
+                        {
+                            var extensionindir = Path.GetExtension(fileindir);
+                            if (extensionindir != null && validfiles.Contains(extensionindir.ToLower()))
+                                listBox.Items.Add(new PlaylistItem(fileindir));
+
+                        }
+                    }
+                    continue;
+                }
+                
+
+                var extension = Path.GetExtension(file);
+                if (extension != null && validfiles.Contains(extension.ToLower()))
                 listBox.Items.Add(new PlaylistItem(file));
             }
 
