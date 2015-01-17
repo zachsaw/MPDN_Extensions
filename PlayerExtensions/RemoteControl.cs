@@ -19,6 +19,7 @@ namespace ACMPlugin
         private IPlayerControl m_PlayerControl;
         private SynchronizationContext context;
         private Dictionary<Guid, StreamWriter> writers = new Dictionary<Guid, StreamWriter>();
+        private Dictionary<Guid, string> clients = new Dictionary<Guid, string>();
         #endregion
 
         public ExtensionDescriptor Descriptor
@@ -112,14 +113,24 @@ namespace ACMPlugin
             {
                 return new[]
                 {
-                    new Verb(Category.Help, string.Empty, "Test", "Ctrl+Shift+T", "test test test 1", Test1Click),
+                    new Verb(Category.Help, string.Empty, "Connected Clients", "", "Show Remote Client connections", Test1Click),
                 };
             }
         }
 
         private void Test1Click()
         {
-            MessageBox.Show("Hello World!");
+            StringBuilder clientSB = new StringBuilder();
+            clientSB.Append("Clients: " + clients.Count + "\r\n");
+            if (clients.Count > 0)
+            {
+                clientSB.Append("IPs:\r\n");
+                foreach (var client in clients)
+                {
+                    clientSB.Append(client.Value + "\r\n");
+                }
+            }
+            MessageBox.Show(clientSB.ToString(), "Connected Clients",MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Server()
@@ -145,6 +156,8 @@ namespace ACMPlugin
         private void ClientHandler(Socket client)
         {
             Guid clientGuid = Guid.NewGuid();
+            IPEndPoint remoteIpEndPoint = client.RemoteEndPoint as IPEndPoint;
+            clients.Add(clientGuid, remoteIpEndPoint.Address + ":" + remoteIpEndPoint.Port);
 
             NetworkStream nStream = new NetworkStream(client);
             StreamReader reader = new StreamReader(nStream);
@@ -218,6 +231,7 @@ namespace ACMPlugin
         {
             Guid callerGUID = Guid.Parse(GUID);
             writers.Remove(callerGUID);
+            clients.Remove(callerGUID);
         }
 
         private void OpenMedia(object file)
