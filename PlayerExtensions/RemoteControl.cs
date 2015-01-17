@@ -56,7 +56,19 @@ namespace ACMPlugin
             m_PlayerControl = playerControl;
             m_PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
             m_PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
+            m_PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
+            m_PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
             Task.Run(() => Server());
+        }
+
+        void m_PlayerControl_ExitingFullScreenMode(object sender, EventArgs e)
+        {
+            PushToAllListeners("Fullscreen|False");
+        }
+
+        void m_PlayerControl_EnteringFullScreenMode(object sender, EventArgs e)
+        {
+            PushToAllListeners("Fullscreen|True");
         }
 
 
@@ -196,7 +208,9 @@ namespace ACMPlugin
                 case "GetCurrentState":
                     context.Send(new SendOrPostCallback(GetCurrentState), command[1]);
                     break;
-
+                case "FullScreen":
+                    context.Send(new SendOrPostCallback(FullScreen), command[1]);
+                    break
             }
         }
 
@@ -272,6 +286,36 @@ namespace ACMPlugin
             {
                 callerItem.WriteLine(m_PlayerControl.PlayerState + "|" + m_PlayerControl.MediaFilePath);
                 callerItem.Flush();
+                callerItem.WriteLine("Fullscreen|" + m_PlayerControl.InFullScreenMode);
+                callerItem.Flush();
+            }
+        }
+
+        private void FullScreen(object FullScreen)
+        {
+            bool goFullscreen = false;
+            Boolean.TryParse(FullScreen.ToString(), out goFullscreen);
+            if(goFullscreen)
+            {
+                m_PlayerControl.GoFullScreen();
+            }
+            else
+            {
+                m_PlayerControl.GoWindowed();
+            }
+        }
+
+        private void PushToAllListeners(string msg)
+        {
+            foreach (var writer in writers)
+            {
+                try
+                {
+                    writer.Value.WriteLine(msg);
+                    writer.Value.Flush();
+                }
+                catch
+                { }
             }
         }
     }
