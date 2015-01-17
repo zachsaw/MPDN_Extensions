@@ -135,7 +135,7 @@ namespace ACMPlugin
                     var clientSocket = serverSocket.Accept();
                     Task.Run(() => ClientHandler(clientSocket));
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     break;
                 }
@@ -210,7 +210,7 @@ namespace ACMPlugin
                     break;
                 case "FullScreen":
                     context.Send(new SendOrPostCallback(FullScreen), command[1]);
-                    break
+                    break;
             }
         }
 
