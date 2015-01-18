@@ -170,6 +170,12 @@ namespace ACMPlugin
             {
                 ClientAuth(clientGUID.ToString(), clientGuid);
             }
+            else
+            {
+                WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
+                WriteToSpesificClient("ClientGUID|" + clientGuid.ToString(), clientGuid.ToString());
+                authHandler.AddAuthedClient(clientGUID);
+            }
             while (true)
             {
                 try
