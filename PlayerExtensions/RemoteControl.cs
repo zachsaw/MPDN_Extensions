@@ -19,7 +19,8 @@ namespace ACMPlugin
         private IPlayerControl m_PlayerControl;
         private SynchronizationContext context;
         private Dictionary<Guid, StreamWriter> writers = new Dictionary<Guid, StreamWriter>();
-        private Dictionary<Guid, string> clients = new Dictionary<Guid, string>();
+        private Dictionary<Guid, Socket> clients = new Dictionary<Guid, Socket>();
+        private RemoteControl_AuthHandler authHandler = new RemoteControl_AuthHandler();
         #endregion
 
         public ExtensionDescriptor Descriptor
@@ -127,7 +128,9 @@ namespace ACMPlugin
                 clientSB.Append("IPs:\r\n");
                 foreach (var client in clients)
                 {
-                    clientSB.Append(client.Value + "\r\n");
+                    IPEndPoint remoteIpEndPoint = client.Value.RemoteEndPoint as IPEndPoint;
+
+                    clientSB.Append(remoteIpEndPoint.Address.ToString() + ":" + remoteIpEndPoint.Port.ToString() + "\r\n");
                 }
             }
             MessageBox.Show(clientSB.ToString(), "Connected Clients",MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -156,16 +159,17 @@ namespace ACMPlugin
         private void ClientHandler(Socket client)
         {
             Guid clientGuid = Guid.NewGuid();
-            IPEndPoint remoteIpEndPoint = client.RemoteEndPoint as IPEndPoint;
-            clients.Add(clientGuid, remoteIpEndPoint.Address + ":" + remoteIpEndPoint.Port);
+            clients.Add(clientGuid, client);
 
             NetworkStream nStream = new NetworkStream(client);
             StreamReader reader = new StreamReader(nStream);
             StreamWriter writer = new StreamWriter(nStream);
             writers.Add(clientGuid, writer);
-            writer.WriteLine("ClientGUID|" + clientGuid);
-            writer.Flush();
-
+            var clientGUID = reader.ReadLine();
+            if (!authHandler.IsGUIDAuthed(clientGUID))
+            {
+                ClientAuth(clientGUID.ToString(), clientGuid);
+            }
             while (true)
             {
                 try
@@ -187,6 +191,43 @@ namespace ACMPlugin
                     break;
                 }
             }
+        }
+
+        private void ClientAuth(string msgValue, Guid clientGuid)
+        {
+            WriteToSpesificClient("AuthCode|" + msgValue, clientGuid.ToString());
+            if(MessageBox.Show("Allow Remote Connection for " + msgValue, "Remote Authentication", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
+                authHandler.AddAuthedClient(msgValue);
+            }
+            else
+            {
+                DisconnectClient("Unauthorized", clientGuid);
+            }
+        }
+
+        private void WriteToSpesificClient(string msg, string clientGUID)
+        {
+            Guid pushGUID;
+            Guid.TryParse(clientGUID, out pushGUID);
+
+            if (pushGUID != null)
+            {
+                if (writers.ContainsKey(pushGUID))
+                {
+                    writers[pushGUID].WriteLine(msg);
+                    writers[pushGUID].Flush();
+                }
+            }
+        }
+
+        private void DisconnectClient(string exitMessage, Guid clientGUID)
+        {
+            WriteToSpesificClient("Exit|" + exitMessage, clientGUID.ToString());
+
+            clients[clientGUID].Disconnect(true);
+            RemoveWriter(clientGUID.ToString());
         }
 
         private void handleData(string data)
@@ -272,37 +313,18 @@ namespace ACMPlugin
 
         private void GetLocation(object GUID)
         {
-            Guid callerGUID = Guid.Parse(GUID.ToString());
-            var callerItem = writers[callerGUID];
-            if (callerItem != null)
-            {
-                callerItem.WriteLine("Postion|" + m_PlayerControl.MediaPosition);
-                callerItem.Flush();
-            }
+            WriteToSpesificClient("Postion|" + m_PlayerControl.MediaPosition, GUID.ToString());
         }
 
         private void GetFullDuration(object GUID)
         {
-            Guid callerGUID = Guid.Parse(GUID.ToString());
-            var callerItem = writers[callerGUID];
-            if(callerItem != null)
-            {
-                callerItem.WriteLine("FullLength|" + m_PlayerControl.MediaDuration);
-                callerItem.Flush();
-            }
+            WriteToSpesificClient("FullLength|" + m_PlayerControl.MediaDuration, GUID.ToString());
         }
 
         private void GetCurrentState(object GUID)
         {
-            Guid callerGUID = Guid.Parse(GUID.ToString());
-            var callerItem = writers[callerGUID];
-            if (callerItem != null)
-            {
-                callerItem.WriteLine(m_PlayerControl.PlayerState + "|" + m_PlayerControl.MediaFilePath);
-                callerItem.Flush();
-                callerItem.WriteLine("Fullscreen|" + m_PlayerControl.InFullScreenMode);
-                callerItem.Flush();
-            }
+            WriteToSpesificClient(m_PlayerControl.PlayerState + "|" + m_PlayerControl.MediaFilePath, GUID.ToString());
+            WriteToSpesificClient("Fullscreen|" + m_PlayerControl.InFullScreenMode, GUID.ToString());
         }
 
         private void FullScreen(object FullScreen)
