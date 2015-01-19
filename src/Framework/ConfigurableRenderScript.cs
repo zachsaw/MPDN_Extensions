@@ -46,9 +46,11 @@ namespace Mpdn.RenderScript
     {
         protected Config ScriptConfig { get; private set; }
 
-        protected override TChain Chain
-        {
+        [YAXSerializeAs("Settings")]
+        public override TChain Chain
+        { 
             get { return ScriptConfig.Config; }
+            set { ScriptConfig = new Config(value); } 
         }
 
         protected abstract string ConfigFileName { get; }

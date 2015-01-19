@@ -53,8 +53,7 @@ namespace Mpdn.RenderScript
         private SourceFilter m_SourceFilter;
         private IFilter m_Filter;
 
-        [YAXSerializableField]
-        public RenderChain Chain { get; set; }
+        protected RenderChain Chain;
 
         public RenderChainScript(RenderChain chain)
         {
@@ -67,7 +66,6 @@ namespace Mpdn.RenderScript
             Common.Dispose(m_Cache);
         }
 
-        [YAXDontSerialize]
         public ScriptInterfaceDescriptor Descriptor
         {
             get
@@ -126,13 +124,12 @@ namespace Mpdn.RenderScript
     public abstract class RenderChainUi<TChain> : IRenderChainUi
         where TChain : RenderChain, new()
     {
-        protected virtual TChain Chain
-        {
-            get { return m_Chain ?? new TChain(); }
-        }
+        [YAXSerializeAs("Settings")]
+        public virtual TChain Chain { get; set; }
 
         protected abstract RenderScriptDescriptor ScriptDescriptor { get; }
 
+        [YAXDontSerialize]
         public IRenderScript RenderScript
         {
             get { return m_RenderScript ?? (m_RenderScript = new RenderChainScript(Chain)); }
@@ -140,8 +137,7 @@ namespace Mpdn.RenderScript
 
         #region Implementation
 
-        private TChain m_Chain;
-        private IRenderScript m_RenderScript;
+        private RenderChainScript m_RenderScript;
 
         [YAXDontSerialize]
         public virtual ScriptInterfaceDescriptor InterfaceDescriptor
@@ -151,7 +147,7 @@ namespace Mpdn.RenderScript
 
         public virtual void Initialize()
         {
-            m_Chain = new TChain();
+            Chain = new TChain();
         }
 
         public RenderChain GetChain()

@@ -10,17 +10,7 @@ namespace Mpdn.RenderScript
     {
         public class ScriptChain : RenderChain
         {
-            private List<IRenderChainUi> m_ScriptList;
-            public List<IRenderChainUi> ScriptList 
-            {
-                get { return m_ScriptList; }
-
-                set
-                {
-                    m_ScriptList = value;
-                    foreach (var script in m_ScriptList) script.Initialize();
-                }
-            }
+            public List<IRenderChainUi> ScriptList { get; set; }
 
             public ScriptChain()
             {
