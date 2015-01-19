@@ -24,7 +24,7 @@ namespace Mpdn.RenderScript
             }
 
             [YAXSerializeAs("RenderChain")]
-            public IRenderChain Chain { get; set; }
+            public RenderChain Chain { get; set; }
 
             [YAXDontSerialize]
             public Type UiType { get; set; }
@@ -56,7 +56,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class ScriptChain : CombinedChain
+        public class ScriptChain : RenderChain
         {
             public ScriptChain()
             {
@@ -65,15 +65,11 @@ namespace Mpdn.RenderScript
 
             public List<ChainUiPair> ScriptList { get; set; }
 
-            protected override void BuildChain(FilterChain chain)
+            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                foreach (var pair in ScriptList)
-                {
-                    chain.Add(pair.Chain);
-                }
+                return ScriptList.Select(pair => pair.Chain).Aggregate(sourceFilter, (a, b) => a + b);
             }
         }
-
 
         public class ScriptChainScript : ConfigurableRenderChainUi<ScriptChain, ScriptChainDialog>
         {
