@@ -8,54 +8,56 @@ namespace Mpdn.RenderScript
 {
     namespace MyOwnUniqueNameSpace // e.g. Replace with your user name
     {
-        public class MyRenderChain : CombinedChain
+        public class MyRenderChain : RenderChain
         {
-            private string[] Deinterlace = {@"MPC-HC\Deinterlace (blend).hlsl"};
-            private string[] PostProcess = {@"SweetFX\LumaSharpen.hlsl"};
-            private string[] PreProcess = {@"SweetFX\Bloom.hlsl", @"SweetFX\LiftGammaGain.hlsl"};
-            private string[] ToGamma = {@"ConvertToGammaLight.hlsl"};
-            private string[] ToLinear = {@"ConvertToLinearLight.hlsl"};
+            private string[] Deinterlace = { @"MPC-HC\Deinterlace (blend).hlsl" };
+            private string[] PostProcess = { @"SweetFX\LumaSharpen.hlsl" };
+            private string[] PreProcess = { @"SweetFX\Bloom.hlsl", @"SweetFX\LiftGammaGain.hlsl" };
+            private string[] ToGamma = { @"ConvertToGammaLight.hlsl" };
+            private string[] ToLinear = { @"ConvertToLinearLight.hlsl" };
 
-            protected override void BuildChain(FilterChain chain)
+            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
                 // Scale chroma first (this bypasses MPDN's chroma scaler)
-                chain.Add(new BicubicChroma {Preset = Presets.MitchellNetravali});
+                sourceFilter += new BicubicChroma { Preset = Presets.MitchellNetravali };
 
                 if (Renderer.InterlaceFlags.HasFlag(InterlaceFlags.IsInterlaced))
                 {
                     // Deinterlace using blend
-                    chain.Add(new ImageProcessor {ShaderFileNames = Deinterlace});
+                    sourceFilter += new ImageProcessor { ShaderFileNames = Deinterlace };
                 }
 
                 // Pre resize shaders, followed by NEDI image doubler
-                chain.Add(new ImageProcessor {ShaderFileNames = PreProcess});
+                sourceFilter += new ImageProcessor { ShaderFileNames = PreProcess };
 
                 // Use NEDI once only.
                 // Note: To use NEDI as many times as required to get the image past target size,
                 //       Change the following *if* to *while*
-                while (IsUpscalingFrom(chain)) // See CombinedChain for other comparer methods
+                if (IsUpscalingFrom(sourceFilter)) // See CombinedChain for other comparer methods
                 {
-                    chain.Add(new Nedi {AlwaysDoubleImage = true});
+                    sourceFilter += new Nedi { AlwaysDoubleImage = true };
                 }
 
-                if (IsDownscalingFrom(chain))
+                if (IsDownscalingFrom(sourceFilter))
                 {
                     // Use linear light for downscaling
-                    chain.Add(new ImageProcessor {ShaderFileNames = ToLinear});
-                    chain.Add(new Resizer {ResizerOption = ResizerOption.TargetSize100Percent});
-                    chain.Add(new ImageProcessor {ShaderFileNames = ToGamma});
+                    sourceFilter += new ImageProcessor { ShaderFileNames = ToLinear }
+                                  + new Resizer { ResizerOption = ResizerOption.TargetSize100Percent }
+                                  + new ImageProcessor { ShaderFileNames = ToGamma };
                 }
                 else
                 {
                     // Otherwise, scale with gamma light
-                    chain.Add(new Resizer {ResizerOption = ResizerOption.TargetSize100Percent});
+                    sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
                 }
 
-                if (Renderer.VideoSize.Width >= 1920)
+                if (Renderer.VideoSize.Width < 1920)
                 {
                     // Sharpen only if video isn't full HD
-                    chain.Add(new ImageProcessor {ShaderFileNames = PostProcess});
+                    sourceFilter += new ImageProcessor { ShaderFileNames = PostProcess };
                 }
+
+                return sourceFilter;
             }
         }
 

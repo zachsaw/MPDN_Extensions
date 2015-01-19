@@ -5,14 +5,35 @@ using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
-    public interface IRenderChain
-    {
-        IFilter CreateFilter(IResizeableFilter sourceFilter);
-    }
-
-    public abstract class RenderChain : IRenderChain
+    public abstract class RenderChain
     {
         public abstract IFilter CreateFilter(IResizeableFilter sourceFilter);
+
+        #region Operators
+
+        public static RenderChain Identity = new StaticChain(x => x);
+
+        public static implicit operator Func<IResizeableFilter, IFilter>(RenderChain map)
+        {
+            return map.CreateFilter;
+        }
+
+        public static implicit operator RenderChain(Func<IFilter, IFilter> map)
+        {
+            return new StaticChain(map);
+        }
+
+        public static IResizeableFilter operator +(IFilter filter, RenderChain map)
+        {
+            return filter.Apply(map).MakeResizeable();
+        }
+
+        public static RenderChain operator +(RenderChain f, RenderChain g)
+        {
+            return (RenderChain)(filter => (filter + f) + g);
+        }
+
+        #endregion
 
         #region Shader Compilation
 
@@ -58,56 +79,8 @@ namespace Mpdn.RenderScript
         }
 
         #endregion
-    }
 
-    public class StaticChain : IRenderChain
-    {
-        private readonly Func<IResizeableFilter, IFilter> m_Compiler;
-
-        public StaticChain(Func<IResizeableFilter, IFilter> compiler)
-        {
-            m_Compiler = compiler;
-        }
-
-        public IFilter CreateFilter(IResizeableFilter sourceFilter)
-        {
-            return m_Compiler(sourceFilter);
-        }
-    }
-
-    public class FilterChain
-    {
-        public IResizeableFilter Filter;
-
-        public FilterChain(IResizeableFilter sourceFilter)
-        {
-            Filter = sourceFilter;
-        }
-
-        public Size OutputSize
-        {
-            get { return Filter.OutputSize; }
-        }
-
-        public void Add(IRenderChain renderChain)
-        {
-            Filter = renderChain.CreateFilter(Filter).MakeResizeable();
-        }
-    }
-
-    public abstract class CombinedChain : RenderChain
-    {
-        protected abstract void BuildChain(FilterChain chain);
-
-        public sealed override IFilter CreateFilter(IResizeableFilter sourceFilter)
-        {
-            var chain = new FilterChain(sourceFilter);
-            BuildChain(chain);
-
-            return chain.Filter;
-        }
-
-        #region Convenience functions
+        #region Size Calculations
 
         protected bool IsDownscalingFrom(Size size)
         {
@@ -125,21 +98,36 @@ namespace Mpdn.RenderScript
             return targetSize.Width > size.Width || targetSize.Height > size.Height;
         }
 
-        protected bool IsDownscalingFrom(FilterChain chain)
+        protected bool IsDownscalingFrom(IFilter chain)
         {
             return IsDownscalingFrom(chain.OutputSize);
         }
 
-        protected bool IsNotScalingFrom(FilterChain chain)
+        protected bool IsNotScalingFrom(IFilter chain)
         {
             return IsNotScalingFrom(chain.OutputSize);
         }
 
-        protected bool IsUpscalingFrom(FilterChain chain)
+        protected bool IsUpscalingFrom(IFilter chain)
         {
             return IsUpscalingFrom(chain.OutputSize);
         }
 
         #endregion
+    }
+
+    public class StaticChain : RenderChain
+    {
+        private readonly Func<IResizeableFilter, IFilter> m_Compiler;
+
+        public StaticChain(Func<IResizeableFilter, IFilter> compiler)
+        {
+            m_Compiler = compiler;
+        }
+
+        public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+        {
+            return m_Compiler(sourceFilter);
+        }
     }
 }

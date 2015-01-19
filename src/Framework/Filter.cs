@@ -424,6 +424,11 @@ namespace Mpdn.RenderScript
             return map(filter);
         }
 
+        public static IFilter Apply(this IFilter filter, Func<IResizeableFilter, IFilter> map)
+        {
+            return map(filter.MakeResizeable());
+        }
+
         #region Auxilary class(es)
 
         private sealed class TransformedResizeableFilter : Filter, IResizeableFilter

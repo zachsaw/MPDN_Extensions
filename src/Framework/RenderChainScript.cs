@@ -50,10 +50,10 @@ namespace Mpdn.RenderScript
     {
         private readonly TextureCache m_Cache;
         private SourceFilter m_SourceFilter;
-        protected IRenderChain Chain;
+        protected RenderChain Chain;
         private IFilter m_Filter;
 
-        public RenderChainScript(IRenderChain chain)
+        public RenderChainScript(RenderChain chain)
         {
             Chain = chain;
             m_Cache = new TextureCache();
@@ -113,12 +113,12 @@ namespace Mpdn.RenderScript
 
     public interface IRenderChainUi : IRenderScriptUi
     {
-        IRenderChain GetChain();
-        void Initialize(IRenderChain renderChain);
+        RenderChain GetChain();
+        void Initialize(RenderChain renderChain);
     }
 
     public abstract class RenderChainUi<TChain> : IRenderChainUi
-        where TChain : class, IRenderChain, new()
+        where TChain : RenderChain, new()
     {
         protected virtual TChain Chain
         {
@@ -147,12 +147,12 @@ namespace Mpdn.RenderScript
             m_Chain = new TChain();
         }
 
-        public virtual void Initialize(IRenderChain renderChain)
+        public virtual void Initialize(RenderChain renderChain)
         {
             m_Chain = renderChain as TChain ?? new TChain();
         }
 
-        public IRenderChain GetChain()
+        public RenderChain GetChain()
         {
             return Chain;
         }
