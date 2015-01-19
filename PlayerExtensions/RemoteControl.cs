@@ -21,6 +21,15 @@ namespace ACMPlugin
         private Dictionary<Guid, StreamWriter> writers = new Dictionary<Guid, StreamWriter>();
         private Dictionary<Guid, Socket> clients = new Dictionary<Guid, Socket>();
         private RemoteControl_AuthHandler authHandler = new RemoteControl_AuthHandler();
+        private System.Timers.Timer hideTimer;
+        private RemoteClients clientManager;
+        #endregion
+
+        #region Properties
+        public Dictionary<Guid, Socket> getClients
+        {
+            get { return clients; }
+        }
         #endregion
 
         public ExtensionDescriptor Descriptor
@@ -60,6 +69,7 @@ namespace ACMPlugin
             m_PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
             m_PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
             m_PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
+            clientManager = new RemoteClients(this);
             Task.Run(() => Server());
         }
 
@@ -121,19 +131,7 @@ namespace ACMPlugin
 
         private void Test1Click()
         {
-            StringBuilder clientSB = new StringBuilder();
-            clientSB.Append("Clients: " + clients.Count + "\r\n");
-            if (clients.Count > 0)
-            {
-                clientSB.Append("IPs:\r\n");
-                foreach (var client in clients)
-                {
-                    IPEndPoint remoteIpEndPoint = client.Value.RemoteEndPoint as IPEndPoint;
-
-                    clientSB.Append(remoteIpEndPoint.Address.ToString() + ":" + remoteIpEndPoint.Port.ToString() + "\r\n");
-                }
-            }
-            MessageBox.Show(clientSB.ToString(), "Connected Clients",MessageBoxButtons.OK, MessageBoxIcon.Information);
+            clientManager.ShowDialog();
         }
 
         private void Server()
@@ -172,9 +170,12 @@ namespace ACMPlugin
             }
             else
             {
+                DisplayTextMessage("Remote Connected");
                 WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
                 WriteToSpesificClient("ClientGUID|" + clientGuid.ToString(), clientGuid.ToString());
                 authHandler.AddAuthedClient(clientGUID);
+                if(clientManager.Visible)
+                    clientManager.ForceUpdate();
             }
             while (true)
             {
@@ -204,8 +205,11 @@ namespace ACMPlugin
             WriteToSpesificClient("AuthCode|" + msgValue, clientGuid.ToString());
             if(MessageBox.Show("Allow Remote Connection for " + msgValue, "Remote Authentication", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
+                DisplayTextMessage("Remote Connected");
                 WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
                 authHandler.AddAuthedClient(msgValue);
+                if (clientManager.Visible)
+                    clientManager.ForceUpdate();
             }
             else
             {
@@ -271,6 +275,9 @@ namespace ACMPlugin
                 case "FullScreen":
                     context.Send(new SendOrPostCallback(FullScreen), command[1]);
                     break;
+                case "WriteToScreen":
+                    context.Send(new SendOrPostCallback(DisplayTextMessage), command[1]);
+                    break;
             }
         }
 
@@ -279,6 +286,7 @@ namespace ACMPlugin
             Guid callerGUID = Guid.Parse(GUID);
             writers.Remove(callerGUID);
             clients.Remove(callerGUID);
+            clientManager.ForceUpdate();
         }
 
         private void OpenMedia(object file)
@@ -359,6 +367,21 @@ namespace ACMPlugin
                 catch
                 { }
             }
+        }
+
+        private void DisplayTextMessage(object msg)
+        {
+            m_PlayerControl.ShowOsdText(msg.ToString());
+            //This is a temporary workaround as ShowOsdText doesn't seem to auto hide OSD text
+            hideTimer = new System.Timers.Timer(1000);
+            hideTimer.Elapsed += hideTimer_Elapsed;
+            hideTimer.AutoReset = false;
+            hideTimer.Start();
+        }
+
+        void hideTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            m_PlayerControl.HideOsdText();
         }
     }
 }
