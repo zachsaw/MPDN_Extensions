@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using Mpdn.RenderScript.Config;
+using YAXLib;
 
 namespace Mpdn.RenderScript
 {
@@ -52,6 +53,7 @@ namespace Mpdn.RenderScript
 
         protected abstract string ConfigFileName { get; }
 
+        [YAXDontSerialize]
         public override ScriptDescriptor Descriptor
         {
             get
@@ -70,11 +72,6 @@ namespace Mpdn.RenderScript
         public override void Initialize()
         {
             ScriptConfig = new Config(ConfigFileName);
-        }
-
-        public override void Initialize(RenderChain renderChain)
-        {
-            ScriptConfig = new Config(renderChain as TChain);
         }
 
         public override bool ShowConfigDialog(IWin32Window owner)

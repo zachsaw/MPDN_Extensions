@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
+using YAXLib;
 
 namespace Mpdn.RenderScript
 {
@@ -50,8 +51,10 @@ namespace Mpdn.RenderScript
     {
         private readonly TextureCache m_Cache;
         private SourceFilter m_SourceFilter;
-        protected RenderChain Chain;
         private IFilter m_Filter;
+
+        [YAXSerializableField]
+        public RenderChain Chain { get; set; }
 
         public RenderChainScript(RenderChain chain)
         {
@@ -64,10 +67,14 @@ namespace Mpdn.RenderScript
             Common.Dispose(m_Cache);
         }
 
+        [YAXDontSerialize]
         public ScriptInterfaceDescriptor Descriptor
         {
             get
             {
+                if (m_SourceFilter == null)
+                    return null;
+
                 return new ScriptInterfaceDescriptor
                 {
                     WantYuv = true,
@@ -114,7 +121,6 @@ namespace Mpdn.RenderScript
     public interface IRenderChainUi : IRenderScriptUi
     {
         RenderChain GetChain();
-        void Initialize(RenderChain renderChain);
     }
 
     public abstract class RenderChainUi<TChain> : IRenderChainUi
@@ -122,7 +128,7 @@ namespace Mpdn.RenderScript
     {
         protected virtual TChain Chain
         {
-            get { return m_Chain; }
+            get { return m_Chain ?? new TChain(); }
         }
 
         protected abstract RenderScriptDescriptor ScriptDescriptor { get; }
@@ -137,6 +143,7 @@ namespace Mpdn.RenderScript
         private TChain m_Chain;
         private IRenderScript m_RenderScript;
 
+        [YAXDontSerialize]
         public virtual ScriptInterfaceDescriptor InterfaceDescriptor
         {
             get { return RenderScript.Descriptor; }
@@ -147,16 +154,12 @@ namespace Mpdn.RenderScript
             m_Chain = new TChain();
         }
 
-        public virtual void Initialize(RenderChain renderChain)
-        {
-            m_Chain = renderChain as TChain ?? new TChain();
-        }
-
         public RenderChain GetChain()
         {
             return Chain;
         }
 
+        [YAXDontSerialize]
         public virtual ScriptDescriptor Descriptor
         {
             get

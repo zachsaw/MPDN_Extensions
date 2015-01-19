@@ -8,66 +8,28 @@ namespace Mpdn.RenderScript
 {
     namespace Mpdn.ScriptChain
     {
-        public class ChainUiPair
-        {
-            private IRenderChainUi m_ChainUi;
-
-            public ChainUiPair()
-            {
-            }
-
-            public ChainUiPair(IRenderChainUi scripUi)
-            {
-                Chain = scripUi.GetChain();
-                m_ChainUi = scripUi;
-                UiType = scripUi.GetType();
-            }
-
-            [YAXSerializeAs("RenderChain")]
-            public RenderChain Chain { get; set; }
-
-            [YAXDontSerialize]
-            public Type UiType { get; set; }
-
-            [YAXDontSerialize]
-            public IRenderChainUi ChainUi
-            {
-                get { return m_ChainUi ?? (m_ChainUi = CreateUi()); }
-            }
-
-            [YAXSerializeAs("RenderChainUi")]
-            public String UiTypeName
-            {
-                get { return UiType.FullName; }
-                set { UiType = Assembly.GetExecutingAssembly().GetType(value, false); }
-            }
-
-            private IRenderChainUi CreateUi()
-            {
-                var constructor = UiType.GetConstructor(Type.EmptyTypes);
-                if (constructor == null)
-                {
-                    throw new EntryPointNotFoundException("RenderChainUi must implement parameter-less constructor");
-                }
-
-                var ui = (IRenderChainUi) constructor.Invoke(new object[0]);
-                ui.Initialize(Chain);
-                return ui;
-            }
-        }
-
         public class ScriptChain : RenderChain
         {
-            public ScriptChain()
+            private List<IRenderChainUi> m_ScriptList;
+            public List<IRenderChainUi> ScriptList 
             {
-                ScriptList = new List<ChainUiPair>();
+                get { return m_ScriptList; }
+
+                set
+                {
+                    m_ScriptList = value;
+                    foreach (var script in m_ScriptList) script.Initialize();
+                }
             }
 
-            public List<ChainUiPair> ScriptList { get; set; }
+            public ScriptChain()
+            {
+                ScriptList = new List<IRenderChainUi>();
+            }
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                return ScriptList.Select(pair => pair.Chain).Aggregate(sourceFilter, (a, b) => a + b);
+                return ScriptList.Select(pair => pair.GetChain()).Aggregate(sourceFilter, (a, b) => a + b);
             }
         }
 
@@ -95,7 +57,7 @@ namespace Mpdn.RenderScript
             {
                 return ScriptConfig == null || Chain.ScriptList.Count == 0
                     ? "Chain of render scripts"
-                    : string.Join(" ➔ ", Chain.ScriptList.Select(x => x.ChainUi.Descriptor.Name));
+                    : string.Join(" ➔ ", Chain.ScriptList.Select(x => x.Descriptor.Name));
             }
         }
     }
