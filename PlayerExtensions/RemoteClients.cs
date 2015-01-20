@@ -39,6 +39,7 @@ namespace ACMPlugin
         }
         #endregion
 
+        #region Private Methods
         void RemoteClients_Load(object sender, EventArgs e)
         {
             PopulateGrid();
@@ -77,6 +78,24 @@ namespace ACMPlugin
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+        #endregion
+
+        private void dgMainGrid_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dgMainGrid.SelectedRows.Count != 0)
+                btnDisconnect.Enabled = true;
+            else
+                btnDisconnect.Enabled = false;
+        }
+
+        private void btnDisconnect_Click(object sender, EventArgs e)
+        {
+            if(dgMainGrid.SelectedRows.Count == 1)
+            {
+                var clientGUID = dgMainGrid.SelectedRows[0].Cells[0].Value.ToString();
+                mainRemote.DisconnectClient(clientGUID);
+            }
         }
     }
 }

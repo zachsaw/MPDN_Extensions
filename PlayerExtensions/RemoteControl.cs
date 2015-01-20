@@ -383,5 +383,12 @@ namespace ACMPlugin
         {
             m_PlayerControl.HideOsdText();
         }
+
+        public void DisconnectClient(string GUID)
+        {
+            Guid clientGuid;
+            Guid.TryParse(GUID, out clientGuid);
+            DisconnectClient("Disconnected by User", clientGuid);
+        }
     }
 }
