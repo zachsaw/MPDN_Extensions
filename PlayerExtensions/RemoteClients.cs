@@ -7,10 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ACMPlugin;
 using System.Net;
 
-namespace ACMPlugin
+namespace Mpdn.PlayerExtensions
 {
     public partial class RemoteClients : Form
     {

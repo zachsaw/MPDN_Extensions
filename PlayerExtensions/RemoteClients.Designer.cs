@@ -1,4 +1,4 @@
-﻿namespace ACMPlugin
+﻿namespace Mpdn.PlayerExtensions
 {
     partial class RemoteClients
     {

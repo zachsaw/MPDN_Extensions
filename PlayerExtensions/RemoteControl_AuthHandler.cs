@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ACMPlugin
+namespace Mpdn.PlayerExtensions
 {
     public class RemoteControl_AuthHandler
     {

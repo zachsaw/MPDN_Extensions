@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 
-namespace ACMPlugin
+namespace Mpdn.PlayerExtensions
 {
     public class ACMPlug : IPlayerExtension
     {
@@ -246,6 +246,7 @@ namespace ACMPlugin
             switch(command[0])
             {
                 case "Exit":
+                    DisplayTextMessage("Remote Disconnected");
                     RemoveWriter(command[1]);
                     break;
                 case "Open":
