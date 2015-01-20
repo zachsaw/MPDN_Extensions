@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace Mpdn.PlayerExtensions
 {
-    public class ACMPlug : IPlayerExtension
+    public class ACMPlug : ConfigurablePlayerExtension<RemoteControlSettings, RemoteControlConfig>
     {
         #region Variables
         private Socket serverSocket;
@@ -32,11 +32,11 @@ namespace Mpdn.PlayerExtensions
         }
         #endregion
 
-        public ExtensionDescriptor Descriptor
+        protected override PlayerExtensionDescriptor ScriptDescriptor
         {
             get 
             {
-                return new ExtensionDescriptor
+                return new PlayerExtensionDescriptor
                 {
                     Guid = new Guid("C7FC1078-6471-409D-A2F1-34FF8903D6DA"),
                     Name = "Remote Control",
@@ -46,7 +46,13 @@ namespace Mpdn.PlayerExtensions
             }
         }
 
-        public void Destroy()
+
+        protected override string ConfigFileName
+        {
+            get { return "Example.RemoteSettings"; }
+        }
+
+        public override void Destroy()
         {
             foreach (var writer in writers)
             {
@@ -61,8 +67,9 @@ namespace Mpdn.PlayerExtensions
             serverSocket.Close();
         }
 
-        public void Initialize(IPlayerControl playerControl)
+        public override void Initialize(IPlayerControl playerControl)
         {
+            base.Initialize(playerControl);
             context = WindowsFormsSynchronizationContext.Current;
             m_PlayerControl = playerControl;
             m_PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
@@ -113,18 +120,20 @@ namespace Mpdn.PlayerExtensions
         }
 
 
-        public bool ShowConfigDialog(System.Windows.Forms.IWin32Window owner)
-        {
-            return false;
-        }
+        //public override bool ShowConfigDialog(System.Windows.Forms.IWin32Window owner)
+        //{
+        //    //RemoteControlConfig myConfig = new RemoteControlConfig();
+        //    //myConfig.ShowDialog();
+        //    return true;
+        //}
 
-        public IList<Verb> Verbs
+        public override IList<Verb> Verbs
         {
             get
             {
                 return new[]
                 {
-                    new Verb(Category.Help, string.Empty, "Connected Clients", "", "Show Remote Client connections", Test1Click),
+                    new Verb(Category.Help, string.Empty, "Connected Clients", "Ctrl+Shift+R", "Show Remote Client connections", Test1Click),
                 };
             }
         }
@@ -136,7 +145,7 @@ namespace Mpdn.PlayerExtensions
 
         private void Server()
         {
-            IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, 6545);
+            IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, Settings.ConnectionPort);
             serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             serverSocket.Bind(localEndpoint);
             serverSocket.Listen(10);
@@ -390,6 +399,18 @@ namespace Mpdn.PlayerExtensions
             Guid clientGuid;
             Guid.TryParse(GUID, out clientGuid);
             DisconnectClient("Disconnected by User", clientGuid);
+        }
+    }
+
+    public class RemoteControlSettings
+    {
+        #region Variables
+        public int ConnectionPort { get; set; }
+        #endregion
+
+        public RemoteControlSettings()
+        {
+            ConnectionPort = 6545;
         }
     }
 }
