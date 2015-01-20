@@ -119,14 +119,6 @@ namespace Mpdn.PlayerExtensions
             }
         }
 
-
-        //public override bool ShowConfigDialog(System.Windows.Forms.IWin32Window owner)
-        //{
-        //    //RemoteControlConfig myConfig = new RemoteControlConfig();
-        //    //myConfig.ShowDialog();
-        //    return true;
-        //}
-
         public override IList<Verb> Verbs
         {
             get
