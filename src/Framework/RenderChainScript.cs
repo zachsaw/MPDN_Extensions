@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
+using YAXLib;
 
 namespace Mpdn.RenderScript
 {
@@ -50,8 +51,9 @@ namespace Mpdn.RenderScript
     {
         private readonly TextureCache m_Cache;
         private SourceFilter m_SourceFilter;
-        protected RenderChain Chain;
         private IFilter m_Filter;
+
+        protected RenderChain Chain;
 
         public RenderChainScript(RenderChain chain)
         {
@@ -68,6 +70,9 @@ namespace Mpdn.RenderScript
         {
             get
             {
+                if (m_SourceFilter == null)
+                    return null;
+
                 return new ScriptInterfaceDescriptor
                 {
                     WantYuv = true,
@@ -114,42 +119,34 @@ namespace Mpdn.RenderScript
     public interface IRenderChainUi : IRenderScriptUi
     {
         RenderChain GetChain();
-        void Initialize(RenderChain renderChain);
     }
 
     public abstract class RenderChainUi<TChain> : IRenderChainUi
         where TChain : RenderChain, new()
     {
-        protected virtual TChain Chain
-        {
-            get { return m_Chain; }
-        }
+        [YAXSerializeAs("Settings")]
+        public virtual TChain Chain { get; set; }
 
         protected abstract RenderScriptDescriptor ScriptDescriptor { get; }
 
-        public IRenderScript RenderScript
+        public IRenderScript CreateRenderScript()
         {
-            get { return m_RenderScript ?? (m_RenderScript = new RenderChainScript(Chain)); }
+            return m_RenderScript ?? (m_RenderScript = new RenderChainScript(Chain));
         }
 
         #region Implementation
 
-        private TChain m_Chain;
-        private IRenderScript m_RenderScript;
+        private RenderChainScript m_RenderScript;
 
+        [YAXDontSerialize]
         public virtual ScriptInterfaceDescriptor InterfaceDescriptor
         {
-            get { return RenderScript.Descriptor; }
+            get { return CreateRenderScript().Descriptor; }
         }
 
         public virtual void Initialize()
         {
-            m_Chain = new TChain();
-        }
-
-        public virtual void Initialize(RenderChain renderChain)
-        {
-            m_Chain = renderChain as TChain ?? new TChain();
+            Chain = new TChain();
         }
 
         public RenderChain GetChain()
@@ -157,6 +154,7 @@ namespace Mpdn.RenderScript
             return Chain;
         }
 
+        [YAXDontSerialize]
         public virtual ScriptDescriptor Descriptor
         {
             get

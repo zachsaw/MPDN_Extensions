@@ -55,13 +55,14 @@ namespace Mpdn.RenderScript
 
             protected override void LoadSettings()
             {
-                AddScripts(Settings.ScriptList.Select(x => x.ChainUi));
+                AddScripts(Settings.ScriptList);
+                UpdateButtons();
             }
 
             protected override void SaveSettings()
             {
                 var scripts = from item in listViewChain.Items.Cast<ListViewItem>()
-                    select new ChainUiPair((IRenderChainUi) item.Tag);
+                    select (IRenderChainUi) item.Tag;
                 Settings.ScriptList = scripts.ToList();
             }
 
@@ -216,7 +217,7 @@ namespace Mpdn.RenderScript
 
                 var scriptRenderer = (IRenderChainUi) item.Tag;
                 var renderScript = CreateNew(scriptRenderer);
-                renderScript.Initialize(null);
+                renderScript.Initialize();
                 item.Tag = renderScript;
                 UpdateItemText(item, renderScript);
                 listViewChain.Items.Add(item);

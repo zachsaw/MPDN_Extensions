@@ -13,12 +13,12 @@ namespace Mpdn.RenderScript
 
         public static RenderChain Identity = new StaticChain(x => x);
 
-        public static implicit operator Func<IResizeableFilter, IFilter>(RenderChain map)
+        public static implicit operator Func<IFilter, IFilter>(RenderChain map)
         {
-            return map.CreateFilter;
+            return filter => map.CreateFilter(filter.MakeResizeable());
         }
 
-        public static implicit operator RenderChain(Func<IFilter, IFilter> map)
+        public static implicit operator RenderChain(Func<IResizeableFilter, IFilter> map)
         {
             return new StaticChain(map);
         }
