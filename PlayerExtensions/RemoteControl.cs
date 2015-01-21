@@ -10,23 +10,33 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 
-namespace ACMPlugin
+namespace Mpdn.PlayerExtensions
 {
-    public class ACMPlug : IPlayerExtension
+    public class ACMPlug : ConfigurablePlayerExtension<RemoteControlSettings, RemoteControlConfig>
     {
         #region Variables
         private Socket serverSocket;
         private IPlayerControl m_PlayerControl;
         private SynchronizationContext context;
         private Dictionary<Guid, StreamWriter> writers = new Dictionary<Guid, StreamWriter>();
-        private Dictionary<Guid, string> clients = new Dictionary<Guid, string>();
+        private Dictionary<Guid, Socket> clients = new Dictionary<Guid, Socket>();
+        private RemoteControl_AuthHandler authHandler = new RemoteControl_AuthHandler();
+        private System.Timers.Timer hideTimer;
+        private RemoteClients clientManager;
         #endregion
 
-        public ExtensionDescriptor Descriptor
+        #region Properties
+        public Dictionary<Guid, Socket> getClients
+        {
+            get { return clients; }
+        }
+        #endregion
+
+        protected override PlayerExtensionDescriptor ScriptDescriptor
         {
             get 
             {
-                return new ExtensionDescriptor
+                return new PlayerExtensionDescriptor
                 {
                     Guid = new Guid("C7FC1078-6471-409D-A2F1-34FF8903D6DA"),
                     Name = "Remote Control",
@@ -36,7 +46,13 @@ namespace ACMPlugin
             }
         }
 
-        public void Destroy()
+
+        protected override string ConfigFileName
+        {
+            get { return "Example.RemoteSettings"; }
+        }
+
+        public override void Destroy()
         {
             foreach (var writer in writers)
             {
@@ -51,14 +67,16 @@ namespace ACMPlugin
             serverSocket.Close();
         }
 
-        public void Initialize(IPlayerControl playerControl)
+        public override void Initialize(IPlayerControl playerControl)
         {
+            base.Initialize(playerControl);
             context = WindowsFormsSynchronizationContext.Current;
             m_PlayerControl = playerControl;
             m_PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
             m_PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
             m_PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
             m_PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
+            clientManager = new RemoteClients(this);
             Task.Factory.StartNew(Server);
         }
 
@@ -101,41 +119,25 @@ namespace ACMPlugin
             }
         }
 
-
-        public bool ShowConfigDialog(System.Windows.Forms.IWin32Window owner)
-        {
-            return false;
-        }
-
-        public IList<Verb> Verbs
+        public override IList<Verb> Verbs
         {
             get
             {
                 return new[]
                 {
-                    new Verb(Category.Help, string.Empty, "Connected Clients", "", "Show Remote Client connections", Test1Click),
+                    new Verb(Category.Help, string.Empty, "Connected Clients", "Ctrl+Shift+R", "Show Remote Client connections", Test1Click),
                 };
             }
         }
 
         private void Test1Click()
         {
-            StringBuilder clientSB = new StringBuilder();
-            clientSB.Append("Clients: " + clients.Count + "\r\n");
-            if (clients.Count > 0)
-            {
-                clientSB.Append("IPs:\r\n");
-                foreach (var client in clients)
-                {
-                    clientSB.Append(client.Value + "\r\n");
-                }
-            }
-            MessageBox.Show(clientSB.ToString(), "Connected Clients",MessageBoxButtons.OK, MessageBoxIcon.Information);
+            clientManager.ShowDialog();
         }
 
         private void Server()
         {
-            IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, 6545);
+            IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, Settings.ConnectionPort);
             serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             serverSocket.Bind(localEndpoint);
             serverSocket.Listen(10);
@@ -156,16 +158,26 @@ namespace ACMPlugin
         private void ClientHandler(Socket client)
         {
             Guid clientGuid = Guid.NewGuid();
-            IPEndPoint remoteIpEndPoint = client.RemoteEndPoint as IPEndPoint;
-            clients.Add(clientGuid, remoteIpEndPoint.Address + ":" + remoteIpEndPoint.Port);
+            clients.Add(clientGuid, client);
 
             NetworkStream nStream = new NetworkStream(client);
             StreamReader reader = new StreamReader(nStream);
             StreamWriter writer = new StreamWriter(nStream);
             writers.Add(clientGuid, writer);
-            writer.WriteLine("ClientGUID|" + clientGuid);
-            writer.Flush();
-
+            var clientGUID = reader.ReadLine();
+            if (!authHandler.IsGUIDAuthed(clientGUID))
+            {
+                ClientAuth(clientGUID.ToString(), clientGuid);
+            }
+            else
+            {
+                DisplayTextMessage("Remote Connected");
+                WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
+                WriteToSpesificClient("ClientGUID|" + clientGuid.ToString(), clientGuid.ToString());
+                authHandler.AddAuthedClient(clientGUID);
+                if(clientManager.Visible)
+                    clientManager.ForceUpdate();
+            }
             while (true)
             {
                 try
@@ -189,12 +201,53 @@ namespace ACMPlugin
             }
         }
 
+        private void ClientAuth(string msgValue, Guid clientGuid)
+        {
+            WriteToSpesificClient("AuthCode|" + msgValue, clientGuid.ToString());
+            if(MessageBox.Show("Allow Remote Connection for " + msgValue, "Remote Authentication", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                DisplayTextMessage("Remote Connected");
+                WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
+                authHandler.AddAuthedClient(msgValue);
+                if (clientManager.Visible)
+                    clientManager.ForceUpdate();
+            }
+            else
+            {
+                DisconnectClient("Unauthorized", clientGuid);
+            }
+        }
+
+        private void WriteToSpesificClient(string msg, string clientGUID)
+        {
+            Guid pushGUID;
+            Guid.TryParse(clientGUID, out pushGUID);
+
+            if (pushGUID != null)
+            {
+                if (writers.ContainsKey(pushGUID))
+                {
+                    writers[pushGUID].WriteLine(msg);
+                    writers[pushGUID].Flush();
+                }
+            }
+        }
+
+        private void DisconnectClient(string exitMessage, Guid clientGUID)
+        {
+            WriteToSpesificClient("Exit|" + exitMessage, clientGUID.ToString());
+
+            clients[clientGUID].Disconnect(true);
+            RemoveWriter(clientGUID.ToString());
+        }
+
         private void handleData(string data)
         {
             var command = data.Split('|');
             switch(command[0])
             {
                 case "Exit":
+                    DisplayTextMessage("Remote Disconnected");
                     RemoveWriter(command[1]);
                     break;
                 case "Open":
@@ -224,6 +277,9 @@ namespace ACMPlugin
                 case "FullScreen":
                     context.Send(new SendOrPostCallback(FullScreen), command[1]);
                     break;
+                case "WriteToScreen":
+                    context.Send(new SendOrPostCallback(DisplayTextMessage), command[1]);
+                    break;
             }
         }
 
@@ -232,6 +288,7 @@ namespace ACMPlugin
             Guid callerGUID = Guid.Parse(GUID);
             writers.Remove(callerGUID);
             clients.Remove(callerGUID);
+            clientManager.ForceUpdate();
         }
 
         private void OpenMedia(object file)
@@ -272,37 +329,18 @@ namespace ACMPlugin
 
         private void GetLocation(object GUID)
         {
-            Guid callerGUID = Guid.Parse(GUID.ToString());
-            var callerItem = writers[callerGUID];
-            if (callerItem != null)
-            {
-                callerItem.WriteLine("Postion|" + m_PlayerControl.MediaPosition);
-                callerItem.Flush();
-            }
+            WriteToSpesificClient("Postion|" + m_PlayerControl.MediaPosition, GUID.ToString());
         }
 
         private void GetFullDuration(object GUID)
         {
-            Guid callerGUID = Guid.Parse(GUID.ToString());
-            var callerItem = writers[callerGUID];
-            if(callerItem != null)
-            {
-                callerItem.WriteLine("FullLength|" + m_PlayerControl.MediaDuration);
-                callerItem.Flush();
-            }
+            WriteToSpesificClient("FullLength|" + m_PlayerControl.MediaDuration, GUID.ToString());
         }
 
         private void GetCurrentState(object GUID)
         {
-            Guid callerGUID = Guid.Parse(GUID.ToString());
-            var callerItem = writers[callerGUID];
-            if (callerItem != null)
-            {
-                callerItem.WriteLine(m_PlayerControl.PlayerState + "|" + m_PlayerControl.MediaFilePath);
-                callerItem.Flush();
-                callerItem.WriteLine("Fullscreen|" + m_PlayerControl.InFullScreenMode);
-                callerItem.Flush();
-            }
+            WriteToSpesificClient(m_PlayerControl.PlayerState + "|" + m_PlayerControl.MediaFilePath, GUID.ToString());
+            WriteToSpesificClient("Fullscreen|" + m_PlayerControl.InFullScreenMode, GUID.ToString());
         }
 
         private void FullScreen(object FullScreen)
@@ -331,6 +369,40 @@ namespace ACMPlugin
                 catch
                 { }
             }
+        }
+
+        private void DisplayTextMessage(object msg)
+        {
+            m_PlayerControl.ShowOsdText(msg.ToString());
+            //This is a temporary workaround as ShowOsdText doesn't seem to auto hide OSD text
+            hideTimer = new System.Timers.Timer(1000);
+            hideTimer.Elapsed += hideTimer_Elapsed;
+            hideTimer.AutoReset = false;
+            hideTimer.Start();
+        }
+
+        void hideTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            m_PlayerControl.HideOsdText();
+        }
+
+        public void DisconnectClient(string GUID)
+        {
+            Guid clientGuid;
+            Guid.TryParse(GUID, out clientGuid);
+            DisconnectClient("Disconnected by User", clientGuid);
+        }
+    }
+
+    public class RemoteControlSettings
+    {
+        #region Variables
+        public int ConnectionPort { get; set; }
+        #endregion
+
+        public RemoteControlSettings()
+        {
+            ConnectionPort = 6545;
         }
     }
 }
