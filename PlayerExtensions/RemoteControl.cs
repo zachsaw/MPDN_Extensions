@@ -40,7 +40,7 @@ namespace Mpdn.PlayerExtensions
                 {
                     Guid = new Guid("C7FC1078-6471-409D-A2F1-34FF8903D6DA"),
                     Name = "Remote Control",
-                    Description = "Remote Control extension to allow control of MPDN over the network. Server example can be found here: https://github.com/DeadlyEmbrace/MPDN_RemoteControl",
+                    Description = "Remote Control extension to allow control of MPDN over the network.",
                     Copyright = "Copyright DeadlyEmbrace © 2015. All rights reserved."
                 };
             }
@@ -77,7 +77,7 @@ namespace Mpdn.PlayerExtensions
             m_PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
             m_PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
             clientManager = new RemoteClients(this);
-            Task.Run(() => Server());
+            Task.Factory.StartNew(Server);
         }
 
         void m_PlayerControl_ExitingFullScreenMode(object sender, EventArgs e)
@@ -146,7 +146,7 @@ namespace Mpdn.PlayerExtensions
                 try
                 {
                     var clientSocket = serverSocket.Accept();
-                    Task.Run(() => ClientHandler(clientSocket));
+                    Task.Factory.StartNew(() => ClientHandler(clientSocket));
                 }
                 catch (Exception)
                 {
