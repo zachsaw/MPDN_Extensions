@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace Mpdn.RenderScript
 {
@@ -17,6 +16,7 @@ namespace Mpdn.RenderScript
                 MaxBitdepthSetter.Value = (Decimal)Settings.maxbitdepth;
                 ThresholdSetter.Value = (Decimal)Settings.threshold;
                 MarginSetter.Value = (Decimal)Settings.margin;
+                AdvancedBox.Checked = Settings.advancedMode;
 
                 UpdateText();
             }
@@ -26,6 +26,7 @@ namespace Mpdn.RenderScript
                 Settings.maxbitdepth = (int)MaxBitdepthSetter.Value;
                 Settings.threshold = (float)ThresholdSetter.Value;
                 Settings.margin = (float)MarginSetter.Value;
+                Settings.advancedMode = AdvancedBox.Checked;
             }
 
             private void ValueChanged(object sender, EventArgs e)

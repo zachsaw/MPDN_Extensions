@@ -129,10 +129,9 @@ namespace Mpdn.RenderScript
 
         protected abstract RenderScriptDescriptor ScriptDescriptor { get; }
 
-        [YAXDontSerialize]
-        public IRenderScript RenderScript
+        public IRenderScript CreateRenderScript()
         {
-            get { return m_RenderScript ?? (m_RenderScript = new RenderChainScript(Chain)); }
+            return m_RenderScript ?? (m_RenderScript = new RenderChainScript(Chain));
         }
 
         #region Implementation
@@ -142,7 +141,7 @@ namespace Mpdn.RenderScript
         [YAXDontSerialize]
         public virtual ScriptInterfaceDescriptor InterfaceDescriptor
         {
-            get { return RenderScript.Descriptor; }
+            get { return CreateRenderScript().Descriptor; }
         }
 
         public virtual void Initialize()

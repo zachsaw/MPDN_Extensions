@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using Mpdn.RenderScript.Shiandow.SuperRes;
 
 namespace Mpdn.RenderScript
 {
@@ -10,15 +8,20 @@ namespace Mpdn.RenderScript
     {
         public class Deband : RenderChain
         {
+            private const float DEFAULT_THRESHOLD = 0.5f;
+            private const float DEFAULT_MARGIN = 1.0f;
+
             public int maxbitdepth { get; set; }
             public float threshold { get; set; }
             public float margin { get; set; }
+            public bool advancedMode { get; set; }
 
             public Deband()
             {
                 maxbitdepth = 8;
-                threshold = 0.5f;
-                margin = 1.0f;
+                threshold = DEFAULT_THRESHOLD;
+                margin = DEFAULT_MARGIN;
+                advancedMode = false;
             }
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
@@ -55,7 +58,15 @@ namespace Mpdn.RenderScript
 
                 var deband = downscaled.Pop();
                 while (downscaled.Count > 0)
-                    deband = new ShaderFilter(CompileShader("Deband.hlsl"), true, new[] { (1 << bits) - 1, threshold, margin }, downscaled.Pop(), deband);
+                {
+                    deband = new ShaderFilter(CompileShader("Deband.hlsl"), true,
+                        new[]
+                        {
+                            (1 << bits) - 1, 
+                            advancedMode ? threshold : DEFAULT_THRESHOLD,
+                            advancedMode ? margin : DEFAULT_MARGIN
+                        }, downscaled.Pop(), deband);
+                }
 
                 return deband.ConvertToRgb();
             }
@@ -91,10 +102,10 @@ namespace Mpdn.RenderScript
 
                 public float GetWeight(float n, int width)
                 {
-                    return (float)GaussianKernel(n, width / 2);
+                    return (float)GaussianKernel(n);
                 }
 
-                private double GaussianKernel(double x, double radius)
+                private double GaussianKernel(double x)
                 {
                     var sigma = m_Sigma;
                     return Math.Exp(-(x * x / (2 * sigma * sigma)));
