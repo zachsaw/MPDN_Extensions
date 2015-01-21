@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions
@@ -35,7 +28,7 @@ namespace Mpdn.PlayerExtensions
         #endregion
 
         #region Private Methods
-        private void validateTextBox(TextBox txb)
+        private void ValidateTextBox(TextBox txb)
         {
             int value = 0;
             if (!int.TryParse(txb.Text, out value))
@@ -54,7 +47,7 @@ namespace Mpdn.PlayerExtensions
             }
         }
 
-        private void validatePortNumber()
+        private void ValidatePortNumber()
         {
             var portString = txbPort.Text;
             int port = 0;
@@ -68,8 +61,8 @@ namespace Mpdn.PlayerExtensions
 
         private void txbPort_KeyUp(object sender, KeyEventArgs e)
         {
-            validateTextBox(txbPort);
-            validatePortNumber();
+            ValidateTextBox(txbPort);
+            ValidatePortNumber();
         }
         #endregion
     }

@@ -1,34 +1,34 @@
-﻿using Mpdn;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Windows.Forms;
+using Timer = System.Timers.Timer;
 
 namespace Mpdn.PlayerExtensions
 {
-    public class ACMPlug : ConfigurablePlayerExtension<RemoteControlSettings, RemoteControlConfig>
+    public class AcmPlug : ConfigurablePlayerExtension<RemoteControlSettings, RemoteControlConfig>
     {
         #region Variables
-        private Socket serverSocket;
-        private IPlayerControl m_PlayerControl;
-        private SynchronizationContext context;
-        private Dictionary<Guid, StreamWriter> writers = new Dictionary<Guid, StreamWriter>();
-        private Dictionary<Guid, Socket> clients = new Dictionary<Guid, Socket>();
-        private RemoteControl_AuthHandler authHandler = new RemoteControl_AuthHandler();
-        private System.Timers.Timer hideTimer;
-        private RemoteClients clientManager;
+        private Socket _serverSocket;
+        private IPlayerControl _mPlayerControl;
+        private SynchronizationContext _context;
+        private readonly Dictionary<Guid, StreamWriter> _writers = new Dictionary<Guid, StreamWriter>();
+        private readonly Dictionary<Guid, Socket> _clients = new Dictionary<Guid, Socket>();
+        private readonly RemoteControlAuthHandler _authHandler = new RemoteControlAuthHandler();
+        private Timer _hideTimer;
+        private RemoteClients _clientManager;
+        private Timer _locationTimer;
         #endregion
 
         #region Properties
-        public Dictionary<Guid, Socket> getClients
+        public Dictionary<Guid, Socket> GetClients
         {
-            get { return clients; }
+            get { return _clients; }
         }
         #endregion
 
@@ -54,7 +54,7 @@ namespace Mpdn.PlayerExtensions
 
         public override void Destroy()
         {
-            foreach (var writer in writers)
+            foreach (var writer in _writers)
             {
                 try
                 {
@@ -64,20 +64,27 @@ namespace Mpdn.PlayerExtensions
                 catch
                 { }
             }
-            serverSocket.Close();
+            _serverSocket.Close();
         }
 
         public override void Initialize(IPlayerControl playerControl)
         {
             base.Initialize(playerControl);
-            context = WindowsFormsSynchronizationContext.Current;
-            m_PlayerControl = playerControl;
-            m_PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
-            m_PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
-            m_PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
-            m_PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
-            clientManager = new RemoteClients(this);
+            _context = SynchronizationContext.Current;
+            _mPlayerControl = playerControl;
+            _mPlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
+            _mPlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
+            _mPlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
+            _mPlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
+            _clientManager = new RemoteClients(this);
+            _locationTimer = new Timer(100);
+            _locationTimer.Elapsed += _locationTimer_Elapsed;
             Task.Factory.StartNew(Server);
+        }
+
+        void _locationTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            PushToAllListeners("Postion|" + _mPlayerControl.MediaPosition);
         }
 
         void m_PlayerControl_ExitingFullScreenMode(object sender, EventArgs e)
@@ -93,25 +100,29 @@ namespace Mpdn.PlayerExtensions
 
         void m_PlayerControl_PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
-            foreach (var writer in writers)
+            switch (e.NewState)
             {
-                try
-                {
-                    writer.Value.WriteLine(e.NewState.ToString() + "|" + m_PlayerControl.MediaFilePath);
-                    writer.Value.Flush();
-                }
-                catch
-                { }
+                    case PlayerState.Playing:
+                        _locationTimer.Start();
+                        break;
+                    case PlayerState.Stopped:
+                        _locationTimer.Stop();
+                        break;
+                    case PlayerState.Paused:
+                        _locationTimer.Stop();
+                        break;
             }
+
+            PushToAllListeners(e.NewState.ToString() + "|" + _mPlayerControl.MediaFilePath);
         }
 
         void m_PlayerControl_PlaybackCompleted(object sender, EventArgs e)
         {
-            foreach(var writer in writers)
+            foreach(var writer in _writers)
             {
                 try
                 {
-                    writer.Value.WriteLine("Finished" + "|" + m_PlayerControl.MediaFilePath);
+                    writer.Value.WriteLine("Finished" + "|" + _mPlayerControl.MediaFilePath);
                     writer.Value.Flush();
                 }
                 catch
@@ -132,20 +143,20 @@ namespace Mpdn.PlayerExtensions
 
         private void Test1Click()
         {
-            clientManager.ShowDialog();
+            _clientManager.ShowDialog();
         }
 
         private void Server()
         {
             IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, Settings.ConnectionPort);
-            serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            serverSocket.Bind(localEndpoint);
-            serverSocket.Listen(10);
+            _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _serverSocket.Bind(localEndpoint);
+            _serverSocket.Listen(10);
             while (true)
             {
                 try
                 {
-                    var clientSocket = serverSocket.Accept();
+                    var clientSocket = _serverSocket.Accept();
                     Task.Factory.StartNew(() => ClientHandler(clientSocket));
                 }
                 catch (Exception)
@@ -158,14 +169,14 @@ namespace Mpdn.PlayerExtensions
         private void ClientHandler(Socket client)
         {
             Guid clientGuid = Guid.NewGuid();
-            clients.Add(clientGuid, client);
+            _clients.Add(clientGuid, client);
 
             NetworkStream nStream = new NetworkStream(client);
             StreamReader reader = new StreamReader(nStream);
             StreamWriter writer = new StreamWriter(nStream);
-            writers.Add(clientGuid, writer);
+            _writers.Add(clientGuid, writer);
             var clientGUID = reader.ReadLine();
-            if (!authHandler.IsGUIDAuthed(clientGUID))
+            if (!_authHandler.IsGuidAuthed(clientGUID))
             {
                 ClientAuth(clientGUID.ToString(), clientGuid);
             }
@@ -174,9 +185,9 @@ namespace Mpdn.PlayerExtensions
                 DisplayTextMessage("Remote Connected");
                 WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
                 WriteToSpesificClient("ClientGUID|" + clientGuid.ToString(), clientGuid.ToString());
-                authHandler.AddAuthedClient(clientGUID);
-                if(clientManager.Visible)
-                    clientManager.ForceUpdate();
+                _authHandler.AddAuthedClient(clientGUID);
+                if(_clientManager.Visible)
+                    _clientManager.ForceUpdate();
             }
             while (true)
             {
@@ -185,13 +196,13 @@ namespace Mpdn.PlayerExtensions
                     var data = reader.ReadLine();
                     if (data == "Exit")
                     {
-                        handleData(data);
+                        HandleData(data);
                         client.Close();
                         break;
                     }
                     else
                     {
-                        handleData(data);
+                        HandleData(data);
                     }
                 }
                 catch(Exception ex)
@@ -208,9 +219,9 @@ namespace Mpdn.PlayerExtensions
             {
                 DisplayTextMessage("Remote Connected");
                 WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
-                authHandler.AddAuthedClient(msgValue);
-                if (clientManager.Visible)
-                    clientManager.ForceUpdate();
+                _authHandler.AddAuthedClient(msgValue);
+                if (_clientManager.Visible)
+                    _clientManager.ForceUpdate();
             }
             else
             {
@@ -218,30 +229,30 @@ namespace Mpdn.PlayerExtensions
             }
         }
 
-        private void WriteToSpesificClient(string msg, string clientGUID)
+        private void WriteToSpesificClient(string msg, string clientGuid)
         {
-            Guid pushGUID;
-            Guid.TryParse(clientGUID, out pushGUID);
+            Guid pushGuid;
+            Guid.TryParse(clientGuid, out pushGuid);
 
-            if (pushGUID != null)
+            if (pushGuid != null)
             {
-                if (writers.ContainsKey(pushGUID))
+                if (_writers.ContainsKey(pushGuid))
                 {
-                    writers[pushGUID].WriteLine(msg);
-                    writers[pushGUID].Flush();
+                    _writers[pushGuid].WriteLine(msg);
+                    _writers[pushGuid].Flush();
                 }
             }
         }
 
-        private void DisconnectClient(string exitMessage, Guid clientGUID)
+        private void DisconnectClient(string exitMessage, Guid clientGuid)
         {
-            WriteToSpesificClient("Exit|" + exitMessage, clientGUID.ToString());
+            WriteToSpesificClient("Exit|" + exitMessage, clientGuid.ToString());
 
-            clients[clientGUID].Disconnect(true);
-            RemoveWriter(clientGUID.ToString());
+            _clients[clientGuid].Disconnect(true);
+            RemoveWriter(clientGuid.ToString());
         }
 
-        private void handleData(string data)
+        private void HandleData(string data)
         {
             var command = data.Split('|');
             switch(command[0])
@@ -251,68 +262,65 @@ namespace Mpdn.PlayerExtensions
                     RemoveWriter(command[1]);
                     break;
                 case "Open":
-                    context.Send(new SendOrPostCallback(OpenMedia), command[1]);
+                    _context.Send(OpenMedia, command[1]);
                     break;
                 case "Pause":
-                    context.Send(new SendOrPostCallback(PauseMedia), command[1]);
+                    _context.Send(PauseMedia, command[1]);
                     break;
                 case "Play":
-                    context.Send(new SendOrPostCallback(PlayMedia), command[1]);
+                    _context.Send(PlayMedia, command[1]);
                     break;
                 case "Stop":
-                    context.Send(new SendOrPostCallback(StopMedia), command[1]);
+                    _context.Send(StopMedia, command[1]);
                     break;
                 case "Seek":
-                    context.Send(new SendOrPostCallback(SeekMedia), command[1]);
-                    break;
-                case "GetLocation":
-                    context.Send(new SendOrPostCallback(GetLocation), command[1]);
+                    _context.Send(SeekMedia, command[1]);
                     break;
                 case "GetDuration":
-                    context.Send(new SendOrPostCallback(GetFullDuration), command[1]);
+                    _context.Send(GetFullDuration, command[1]);
                     break;
                 case "GetCurrentState":
-                    context.Send(new SendOrPostCallback(GetCurrentState), command[1]);
+                    _context.Send(GetCurrentState, command[1]);
                     break;
                 case "FullScreen":
-                    context.Send(new SendOrPostCallback(FullScreen), command[1]);
+                    _context.Send(FullScreen, command[1]);
                     break;
                 case "WriteToScreen":
-                    context.Send(new SendOrPostCallback(DisplayTextMessage), command[1]);
+                    _context.Send(DisplayTextMessage, command[1]);
                     break;
             }
         }
 
-        private void RemoveWriter(string GUID)
+        private void RemoveWriter(string guid)
         {
-            Guid callerGUID = Guid.Parse(GUID);
-            writers.Remove(callerGUID);
-            clients.Remove(callerGUID);
-            clientManager.ForceUpdate();
+            Guid callerGuid = Guid.Parse(guid);
+            _writers.Remove(callerGuid);
+            _clients.Remove(callerGuid);
+            _clientManager.ForceUpdate();
         }
 
         private void OpenMedia(object file)
         {
-            m_PlayerControl.OpenMedia(file.ToString());
+            _mPlayerControl.OpenMedia(file.ToString());
         }
 
-        private void PauseMedia(object showOSD)
+        private void PauseMedia(object showOsd)
         {
-            bool dispOSD = false;
-            Boolean.TryParse(showOSD.ToString(), out dispOSD);
-            m_PlayerControl.PauseMedia(dispOSD);
+            bool dispOsd = false;
+            Boolean.TryParse(showOsd.ToString(), out dispOsd);
+            _mPlayerControl.PauseMedia(dispOsd);
         }
 
-        private void PlayMedia(object showOSD)
+        private void PlayMedia(object showOsd)
         {
-            bool dispOSD = false;
-            Boolean.TryParse(showOSD.ToString(), out dispOSD);
-            m_PlayerControl.PlayMedia(dispOSD);
+            bool dispOsd = false;
+            Boolean.TryParse(showOsd.ToString(), out dispOsd);
+            _mPlayerControl.PlayMedia(dispOsd);
         }
 
         private void StopMedia(object blank)
         {
-            m_PlayerControl.StopMedia();
+            _mPlayerControl.StopMedia();
         }
 
         private void SeekMedia(object seekLocation)
@@ -321,45 +329,40 @@ namespace Mpdn.PlayerExtensions
             double.TryParse(seekLocation.ToString(), out location);
             if(location != -1)
             {
-                m_PlayerControl.SeekMedia((long)location);
-                m_PlayerControl.PlayMedia();
-                m_PlayerControl.PauseMedia();
+                _mPlayerControl.SeekMedia((long)location);
+                _mPlayerControl.PlayMedia();
+                _mPlayerControl.PauseMedia();
             }
         }
 
-        private void GetLocation(object GUID)
+        private void GetFullDuration(object guid)
         {
-            WriteToSpesificClient("Postion|" + m_PlayerControl.MediaPosition, GUID.ToString());
+            WriteToSpesificClient("FullLength|" + _mPlayerControl.MediaDuration, guid.ToString());
         }
 
-        private void GetFullDuration(object GUID)
+        private void GetCurrentState(object guid)
         {
-            WriteToSpesificClient("FullLength|" + m_PlayerControl.MediaDuration, GUID.ToString());
+            WriteToSpesificClient(_mPlayerControl.PlayerState + "|" + _mPlayerControl.MediaFilePath, guid.ToString());
+            WriteToSpesificClient("Fullscreen|" + _mPlayerControl.InFullScreenMode, guid.ToString());
         }
 
-        private void GetCurrentState(object GUID)
-        {
-            WriteToSpesificClient(m_PlayerControl.PlayerState + "|" + m_PlayerControl.MediaFilePath, GUID.ToString());
-            WriteToSpesificClient("Fullscreen|" + m_PlayerControl.InFullScreenMode, GUID.ToString());
-        }
-
-        private void FullScreen(object FullScreen)
+        private void FullScreen(object fullScreen)
         {
             bool goFullscreen = false;
-            Boolean.TryParse(FullScreen.ToString(), out goFullscreen);
+            Boolean.TryParse(fullScreen.ToString(), out goFullscreen);
             if(goFullscreen)
             {
-                m_PlayerControl.GoFullScreen();
+                _mPlayerControl.GoFullScreen();
             }
             else
             {
-                m_PlayerControl.GoWindowed();
+                _mPlayerControl.GoWindowed();
             }
         }
 
         private void PushToAllListeners(string msg)
         {
-            foreach (var writer in writers)
+            foreach (var writer in _writers)
             {
                 try
                 {
@@ -373,23 +376,23 @@ namespace Mpdn.PlayerExtensions
 
         private void DisplayTextMessage(object msg)
         {
-            m_PlayerControl.ShowOsdText(msg.ToString());
+            _mPlayerControl.ShowOsdText(msg.ToString());
             //This is a temporary workaround as ShowOsdText doesn't seem to auto hide OSD text
-            hideTimer = new System.Timers.Timer(1000);
-            hideTimer.Elapsed += hideTimer_Elapsed;
-            hideTimer.AutoReset = false;
-            hideTimer.Start();
+            _hideTimer = new Timer(1000);
+            _hideTimer.Elapsed += hideTimer_Elapsed;
+            _hideTimer.AutoReset = false;
+            _hideTimer.Start();
         }
 
-        void hideTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        void hideTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            m_PlayerControl.HideOsdText();
+            _mPlayerControl.HideOsdText();
         }
 
-        public void DisconnectClient(string GUID)
+        public void DisconnectClient(string guid)
         {
             Guid clientGuid;
-            Guid.TryParse(GUID, out clientGuid);
+            Guid.TryParse(guid, out clientGuid);
             DisconnectClient("Disconnected by User", clientGuid);
         }
     }
