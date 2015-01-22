@@ -8,10 +8,12 @@ namespace Mpdn.PlayerExtensions
         where TSettings : class, new()
     {
         protected TSettings Settings { get; private set; }
+        protected IPlayerControl PlayerControl { get; private set; }
 
-        public virtual void Setup(TSettings settings)
+        public virtual void Setup(TSettings settings, IPlayerControl playerControl)
         {
             Settings = settings;
+            PlayerControl = playerControl;
 
             LoadSettings();
         }
@@ -39,21 +41,11 @@ namespace Mpdn.PlayerExtensions
         }
     }
 
-    public class PlayerExtensionDescriptor
-    {
-        public string Copyright = "";
-        public string Description;
-        public Guid Guid = Guid.Empty;
-        public string Name;
-    }
-
     public abstract class ConfigurablePlayerExtension<TSettings, TDialog> : PlayerExtension
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
         protected Config ScriptConfig { get; private set; }
-
-        protected abstract PlayerExtensionDescriptor ScriptDescriptor { get; }
 
         protected abstract string ConfigFileName { get; }
 
@@ -90,7 +82,7 @@ namespace Mpdn.PlayerExtensions
         {
             using (var dialog = new TDialog())
             {
-                dialog.Setup(ScriptConfig.Config);
+                dialog.Setup(ScriptConfig.Config, PlayerControl);
                 if (dialog.ShowDialog(owner) != DialogResult.OK)
                     return false;
 

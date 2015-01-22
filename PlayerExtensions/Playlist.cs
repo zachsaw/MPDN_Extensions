@@ -11,11 +11,11 @@ namespace Mpdn.PlayerExtensions.GitHub
 
         private readonly PlaylistForm m_Form = new PlaylistForm();
 
-        public override ExtensionDescriptor Descriptor
+        protected override PlayerExtensionDescriptor ScriptDescriptor
         {
             get
             {
-                return new ExtensionDescriptor
+                return new PlayerExtensionDescriptor
                 {
                     Guid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B"),
                     Name = "Playlist",

@@ -7,11 +7,11 @@ namespace Mpdn.PlayerExtensions.GitHub
 {
     public class KeyBindings : PlayerExtension
     {
-        public override ExtensionDescriptor Descriptor
+        protected override PlayerExtensionDescriptor ScriptDescriptor
         {
             get
             {
-                return new ExtensionDescriptor
+                return new PlayerExtensionDescriptor
                 {
                     Guid = new Guid("E3E54699-0B2B-4B1B-8F6B-4739273670CD"),
                     Name = "Key Bindings",
