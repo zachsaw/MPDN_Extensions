@@ -27,6 +27,12 @@ namespace Mpdn.PlayerExtensions.GitHub
         public List<RenderScriptPreset> PresetList { get; set; }
 
         public RenderScriptPreset ActivePreset { get; set; }
+
+        public PresetSettings()
+        {
+            PresetList = new List<RenderScriptPreset>();
+            ActivePreset = new RenderScriptPreset();
+        }
     }
 
     public class PresetExtension : ConfigurablePlayerExtension<PresetSettings, PresetDialog>
@@ -74,7 +80,7 @@ namespace Mpdn.PlayerExtensions.GitHub
 
         protected override string ConfigFileName
         {
-            get { return "RenderScript"; }
+            get { return "Mpdn.Presets"; }
         }
 
         protected override PlayerExtensionDescriptor ScriptDescriptor
@@ -84,7 +90,7 @@ namespace Mpdn.PlayerExtensions.GitHub
                 return new PlayerExtensionDescriptor
                 {
                     Guid = new Guid("26B49403-28D3-4C75-88C0-AB5372796CCC"),
-                    Name = "RenderScript extension",
+                    Name = "RenderScript presets",
                     Description = "Extends renderscript funciontality with presets"
                 };
             }
