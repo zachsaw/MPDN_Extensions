@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -101,6 +102,7 @@ namespace Mpdn.PlayerExtensions
             {
                     case PlayerState.Playing:
                         _locationTimer.Start();
+                        PushToAllListeners(GetAllChapters());
                         break;
                     case PlayerState.Stopped:
                         _locationTimer.Stop();
@@ -111,6 +113,28 @@ namespace Mpdn.PlayerExtensions
             }
 
             PushToAllListeners(e.NewState + "|" + _mPlayerControl.MediaFilePath);
+        }
+
+        private string GetAllChapters()
+        {
+            if (_mPlayerControl.PlayerState == PlayerState.Playing || _mPlayerControl.PlayerState == PlayerState.Paused)
+            {
+                var chapters = _mPlayerControl.Chapters;
+                int counter = 1;
+                StringBuilder chapterSb = new StringBuilder();
+                foreach (var chapter in chapters)
+                {
+                    if (counter > 1)
+                        chapterSb.Append("]]");
+                    chapterSb.Append(counter + ">>" + chapter.Name + ">>" + chapter.Position);
+                    counter++;
+                }
+                return "Chapters|" + chapterSb;
+            }
+            else
+            {
+                return String.Empty;
+            }
         }
 
         void m_PlayerControl_PlaybackCompleted(object sender, EventArgs e)
@@ -337,7 +361,7 @@ namespace Mpdn.PlayerExtensions
             double.TryParse(seekLocation.ToString(), out location);
             if(location != -1)
             {
-                _mPlayerControl.PlayMedia();
+                _mPlayerControl.SeekMedia((long)location);
             }
         }
 
@@ -352,6 +376,7 @@ namespace Mpdn.PlayerExtensions
             WriteToSpesificClient("Fullscreen|" + _mPlayerControl.InFullScreenMode, guid.ToString());
             WriteToSpesificClient("Mute|" + _mPlayerControl.Mute, guid.ToString());
             WriteToSpesificClient("Volume|" + _mPlayerControl.Volume.ToString(), guid.ToString());
+            WriteToSpesificClient(GetAllChapters(), guid.ToString());
         }
 
         private void FullScreen(object fullScreen)
