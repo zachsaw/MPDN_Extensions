@@ -290,6 +290,12 @@ namespace Mpdn.PlayerExtensions
                     Boolean.TryParse(command[1], out mute);
                     _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => Mute(mute)));
                     break;
+                case "Volume":
+                    int vol = 0;
+                    int.TryParse(command[1], out vol);
+
+                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetVolume(vol)));
+                    break;
             }
         }
 
@@ -331,9 +337,7 @@ namespace Mpdn.PlayerExtensions
             double.TryParse(seekLocation.ToString(), out location);
             if(location != -1)
             {
-                _mPlayerControl.SeekMedia((long)location);
                 _mPlayerControl.PlayMedia();
-                _mPlayerControl.PauseMedia();
             }
         }
 
@@ -347,6 +351,7 @@ namespace Mpdn.PlayerExtensions
             WriteToSpesificClient(_mPlayerControl.PlayerState + "|" + _mPlayerControl.MediaFilePath, guid.ToString());
             WriteToSpesificClient("Fullscreen|" + _mPlayerControl.InFullScreenMode, guid.ToString());
             WriteToSpesificClient("Mute|" + _mPlayerControl.Mute, guid.ToString());
+            WriteToSpesificClient("Volume|" + _mPlayerControl.Volume.ToString(), guid.ToString());
         }
 
         private void FullScreen(object fullScreen)
@@ -393,6 +398,11 @@ namespace Mpdn.PlayerExtensions
             Guid clientGuid;
             Guid.TryParse(guid, out clientGuid);
             DisconnectClient("Disconnected by User", clientGuid);
+        }
+
+        private void SetVolume(int level)
+        {
+            _mPlayerControl.Volume = level;
         }
     }
 
