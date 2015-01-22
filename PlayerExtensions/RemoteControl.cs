@@ -285,6 +285,11 @@ namespace Mpdn.PlayerExtensions
                 case "WriteToScreen":
                     DisplayTextMessage(command[1]);
                     break;
+                case "Mute":
+                    bool mute = false;
+                    Boolean.TryParse(command[1], out mute);
+                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => Mute(mute)));
+                    break;
             }
         }
 
@@ -341,6 +346,7 @@ namespace Mpdn.PlayerExtensions
         {
             WriteToSpesificClient(_mPlayerControl.PlayerState + "|" + _mPlayerControl.MediaFilePath, guid.ToString());
             WriteToSpesificClient("Fullscreen|" + _mPlayerControl.InFullScreenMode, guid.ToString());
+            WriteToSpesificClient("Mute|" + _mPlayerControl.Mute, guid.ToString());
         }
 
         private void FullScreen(object fullScreen)
@@ -376,6 +382,11 @@ namespace Mpdn.PlayerExtensions
             _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => _mPlayerControl.ShowOsdText(msg.ToString())));
         }
 
+        private void Mute(bool silence)
+        {
+            _mPlayerControl.Mute = silence;
+            PushToAllListeners("Mute|" + silence);
+        }
 
         public void DisconnectClient(string guid)
         {
