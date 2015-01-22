@@ -14,7 +14,7 @@ namespace Mpdn.RenderScript
         {
             protected abstract RenderScriptPreset Preset { get; }
 
-            protected virtual IRenderScriptUi Script { get { return Preset.Script; } }
+            protected virtual IRenderScriptUi Script { get { return Preset.Script ?? new ScriptChainScript(); } }
 
             public virtual IRenderScript CreateRenderScript()
             {
@@ -36,7 +36,7 @@ namespace Mpdn.RenderScript
             public virtual ScriptDescriptor Descriptor
             {
                 get 
-                { 
+                {
                     var descriptor = Script.Descriptor;
                     descriptor.Guid = Preset.Guid;
                     return descriptor;
@@ -50,7 +50,7 @@ namespace Mpdn.RenderScript
 
             protected override RenderScriptPreset Preset 
             {
-                get { return PresetExtension.ActivePreset ?? new RenderScriptPreset() { Script = new ScriptChainScript() }; } 
+                get { return PresetExtension.ActivePreset ?? new RenderScriptPreset() { Script = Script }; } 
             }
 
             public override void Initialize()
