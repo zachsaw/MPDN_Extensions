@@ -68,7 +68,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             var chapters = PlayerControl.Chapters.OrderBy(chapter => chapter.Position);
             var pos = PlayerControl.MediaPosition;
             var nextChapter = next
-                ? chapters.SkipWhile(chapter => chapter.Position < pos).FirstOrDefault()
+                ? chapters.SkipWhile(chapter => chapter.Position < pos+1).FirstOrDefault()
                 : chapters.TakeWhile(chapter => chapter.Position < Math.Max(pos-1000000, 0)).LastOrDefault();
 
             if (nextChapter != null)

@@ -134,7 +134,16 @@ namespace Mpdn.PlayerExtensions.GitHub
         public void AddFiles(IEnumerable<string> files, bool startPlaying)
         {
             List<string> filesindir = new List<string>();
-            List<string> validfiles = new List<string>() {".mkv", ".mp4", ".m4v", ".mp4v", ".3g2", ".3gp2", ".3gp", ".3gpp", ".mov", ".m2ts", ".ts", ".asf", ".wma", ".wmv", ".wm", ".asx", ".wax", ".wvx", ".wmx", ".wpl", ".dvr-ms", ".avi", ".mpg", ".mpeg", ".m1v", ".mp2", ".mp3", ".mpa", ".mpe", ".m3u", ".wav", ".mid", ".midi", ".rmi"};
+            List<string> validfiles = new List<string>() {".avi", ".mpg", ".mpeg", ".mpe", ".m1v", ".m2v",
+            ".mpv2", ".mp2v", ".pva", ".evo", ".m2p", ".ts", ".tp", ".trp", ".m2t", ".m2ts", ".mts", ".rec",
+            ".vob", ".mkv", ".webm", ".mp4", ".m4v", ".mp4v", ".mpv4", ".hdmov", ".mov", ".3gp", ".3gpp", ".3g2",
+            ".3gp2", ".flv", ".f4v", ".ogm", ".ogv", ".rm", ".ram", ".rpm", ".rmm", ".rt", ".rp", ".smi",
+            ".smil", ".wmv", ".wmp", ".wm", ".asf", ".smk", ".bik", ".fli", ".flc", ".flic", ".dsm", ".dsv",
+            ".dsa", ".dss", ".ivf", ".swf", ".divx", ".rmvb", ".amv", ".ac3", ".dts", ".aif", ".aifc", ".aiff",
+            ".alac", ".amr", ".ape", ".apl", ".au", ".snd", ".cda", ".flac", ".m4a", ".m4b", ".aac", ".mid",
+            ".midi", ".rmi", ".mka", ".mp3", ".mpa", ".mp2", ".m1a", ".m2a", ".mpc", ".ofr", ".ofs", ".ogg",
+            ".oga", ".opus", ".ra", ".tak", ".tta", ".wav", ".wma", ".wv", ".aob", ".mlp", ".asx", ".m3u",
+            ".m3u8", ".pls", ".wvx", ".wax", ".wmx", ".mpcpl", ".mpls", ".bdmv"};
             
             foreach (var file in files)
             {
