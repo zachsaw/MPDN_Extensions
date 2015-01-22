@@ -31,7 +31,7 @@ namespace Mpdn.PlayerExtensions.GitHub
 
     public class PresetExtension : ConfigurablePlayerExtension<PresetSettings, PresetDialog>
     {
-        protected static PresetSettings Config = new PresetSettings();
+        protected new static PresetSettings Config = new PresetSettings();
         public static List<RenderScriptPreset> PresetList { get { return Config.PresetList; } }
         public static RenderScriptPreset ActivePreset 
         {

@@ -67,11 +67,11 @@ namespace Mpdn.PlayerExtensions
             serverSocket.Close();
         }
 
-        public override void Initialize(IPlayerControl playerControl)
+        public override void Initialize()
         {
-            base.Initialize(playerControl);
+            base.Initialize();
             context = WindowsFormsSynchronizationContext.Current;
-            m_PlayerControl = playerControl;
+            m_PlayerControl = PlayerControl;
             m_PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
             m_PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
             m_PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
