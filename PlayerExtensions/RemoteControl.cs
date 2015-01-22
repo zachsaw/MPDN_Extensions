@@ -16,11 +16,9 @@ namespace Mpdn.PlayerExtensions
         #region Variables
         private Socket _serverSocket;
         private IPlayerControl _mPlayerControl;
-        private SynchronizationContext _context;
         private readonly Dictionary<Guid, StreamWriter> _writers = new Dictionary<Guid, StreamWriter>();
         private readonly Dictionary<Guid, Socket> _clients = new Dictionary<Guid, Socket>();
         private readonly RemoteControlAuthHandler _authHandler = new RemoteControlAuthHandler();
-        private Timer _hideTimer;
         private RemoteClients _clientManager;
         private Timer _locationTimer;
         #endregion
@@ -70,7 +68,6 @@ namespace Mpdn.PlayerExtensions
         public override void Initialize(IPlayerControl playerControl)
         {
             base.Initialize(playerControl);
-            _context = SynchronizationContext.Current;
             _mPlayerControl = playerControl;
             _mPlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
             _mPlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
@@ -113,7 +110,7 @@ namespace Mpdn.PlayerExtensions
                         break;
             }
 
-            PushToAllListeners(e.NewState.ToString() + "|" + _mPlayerControl.MediaFilePath);
+            PushToAllListeners(e.NewState + "|" + _mPlayerControl.MediaFilePath);
         }
 
         void m_PlayerControl_PlaybackCompleted(object sender, EventArgs e)
@@ -262,31 +259,31 @@ namespace Mpdn.PlayerExtensions
                     RemoveWriter(command[1]);
                     break;
                 case "Open":
-                    _context.Send(OpenMedia, command[1]);
+                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => OpenMedia(command[1])));
                     break;
                 case "Pause":
-                    _context.Send(PauseMedia, command[1]);
+                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => PauseMedia(command[1])));
                     break;
                 case "Play":
-                    _context.Send(PlayMedia, command[1]);
+                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => PlayMedia(command[1])));
                     break;
                 case "Stop":
-                    _context.Send(StopMedia, command[1]);
+                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => StopMedia(command[1])));
                     break;
                 case "Seek":
-                    _context.Send(SeekMedia, command[1]);
+                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => SeekMedia(command[1])));
                     break;
                 case "GetDuration":
-                    _context.Send(GetFullDuration, command[1]);
+                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => GetFullDuration(command[1])));
                     break;
                 case "GetCurrentState":
-                    _context.Send(GetCurrentState, command[1]);
+                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => GetCurrentState(command[1])));
                     break;
                 case "FullScreen":
-                    _context.Send(FullScreen, command[1]);
+                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => FullScreen(command[1])));
                     break;
                 case "WriteToScreen":
-                    _context.Send(DisplayTextMessage, command[1]);
+                    DisplayTextMessage(command[1]);
                     break;
             }
         }
@@ -376,18 +373,9 @@ namespace Mpdn.PlayerExtensions
 
         private void DisplayTextMessage(object msg)
         {
-            _mPlayerControl.ShowOsdText(msg.ToString());
-            //This is a temporary workaround as ShowOsdText doesn't seem to auto hide OSD text
-            _hideTimer = new Timer(1000);
-            _hideTimer.Elapsed += hideTimer_Elapsed;
-            _hideTimer.AutoReset = false;
-            _hideTimer.Start();
+            _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => _mPlayerControl.ShowOsdText(msg.ToString())));
         }
 
-        void hideTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            _mPlayerControl.HideOsdText();
-        }
 
         public void DisconnectClient(string guid)
         {
