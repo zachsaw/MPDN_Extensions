@@ -7,18 +7,18 @@ using Mpdn.RenderScript;
 
 namespace Mpdn.PlayerExtensions.GitHub
 {
-    public partial class RenderScriptExtensionDialog : RenderScriptExtensionDialogBase
+    public partial class PresetDialog : PresetDialogBase
     {
         private List<IRenderScriptUi> RenderScripts;
-        
-        public RenderScriptExtensionDialog()
+
+        public PresetDialog()
         {
             InitializeComponent();
 
             UpdateButtons();
         }
 
-        public override void Setup(List<RenderScriptPreset> settings, IPlayerControl playerControl)
+        public override void Setup(PresetSettings settings, IPlayerControl playerControl)
         {
             base.Setup(settings, playerControl);
 
@@ -28,7 +28,7 @@ namespace Mpdn.PlayerExtensions.GitHub
                     && typeof(IRenderScriptUi).IsAssignableFrom(t)
                     && t.GetConstructor(Type.EmptyTypes) != null)
                 .Select(t => (IRenderScriptUi)Activator.CreateInstance(t))
-                .Where(s => s.Descriptor.Guid != RenderScriptExtension.ScriptGuid).ToList();
+                .Where(s => s.Descriptor.Guid != PresetExtension.ScriptGuid).ToList();
 
             scriptBox.DataSource = RenderScripts.Select(x => new KeyValuePair<string, IRenderScriptUi>(x.Descriptor.Name, x)).ToList();
             scriptBox.DisplayMember = "Key";
@@ -37,7 +37,14 @@ namespace Mpdn.PlayerExtensions.GitHub
 
         protected override void LoadSettings()
         {
-            AddPresetRange(Settings.Cast<RenderScriptPreset>());
+            AddPresetRange(Settings.PresetList);
+
+            foreach (DataGridViewRow row in presetGrid.Rows) 
+            { 
+                row.Selected = ((row.Tag as RenderScriptPreset) == Settings.ActivePreset);
+                if (row.Selected) presetGrid.CurrentCell = row.Cells[0];
+            }
+
             UpdateButtons();
         }
 
@@ -47,8 +54,13 @@ namespace Mpdn.PlayerExtensions.GitHub
                           let preset = (RenderScriptPreset)row.Tag
                           where preset != null
                           select preset;
-            Settings.Clear();
-            Settings.AddRange(presets);
+
+            RenderScriptPreset selectedPreset = null;
+            if (presetGrid.SelectedRows.Count > 0) selectedPreset = (presetGrid.SelectedRows[0].Tag as RenderScriptPreset);
+
+            Settings.PresetList.Clear();
+            Settings.PresetList.AddRange(presets);
+            Settings.ActivePreset = selectedPreset;
         }
 
         private void AddPresetRange(IEnumerable<RenderScriptPreset> presets)
@@ -81,7 +93,6 @@ namespace Mpdn.PlayerExtensions.GitHub
             RenderScriptPreset selectedPreset = null;
             if (presetGrid.SelectedRows.Count > 0) selectedPreset = (presetGrid.SelectedRows[0].Tag as RenderScriptPreset);
 
-            RenderScriptExtension.ActivePreset = selectedPreset;
             buttonConfigure.Enabled = selectedPreset != null && selectedPreset.Script.Descriptor.HasConfigDialog;
             menuRemove.Enabled = selectedPreset != null;
             menuConfigure.Enabled = buttonConfigure.Enabled;
@@ -153,7 +164,7 @@ namespace Mpdn.PlayerExtensions.GitHub
         }
     }
 
-    public class RenderScriptExtensionDialogBase : ScriptConfigDialog<List<RenderScriptPreset>>
+    public class PresetDialogBase : ScriptConfigDialog<PresetSettings>
     {
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Mpdn.PlayerExtensions.GitHub
 {
-    partial class RenderScriptExtensionDialog
+    partial class PresetDialog
     {
         /// <summary> 
         /// Required designer variable.
