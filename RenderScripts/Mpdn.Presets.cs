@@ -8,13 +8,13 @@ using YAXLib;
 
 namespace Mpdn.RenderScript
 {
-    namespace Mpdn.ScriptChain
+    namespace Mpdn.Presets
     {
         public abstract class PresetRenderScript : IRenderScriptUi
         {
             protected abstract RenderScriptPreset Preset { get; }
 
-            protected virtual IRenderScriptUi Script { get { return Preset.Script ?? new ScriptChainScript(); } }
+            protected virtual IRenderScriptUi Script { get { return Preset.Script ?? new Mpdn.ScriptChain.ScriptChainScript(); } }
 
             public virtual IRenderScript CreateRenderScript()
             {
@@ -50,7 +50,7 @@ namespace Mpdn.RenderScript
 
             protected override RenderScriptPreset Preset 
             {
-                get { return PresetExtension.ActivePreset ?? new RenderScriptPreset() { Script = Script }; } 
+                get { return PresetExtension.ActivePreset ?? new RenderScriptPreset() { Script = new Mpdn.ScriptChain.ScriptChainScript() }; } 
             }
 
             public override void Initialize()
