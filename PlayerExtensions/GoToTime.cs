@@ -6,11 +6,11 @@ namespace Mpdn.PlayerExtensions.GitHub
 {
     public class GoToTime : PlayerExtension
     {
-        public override ExtensionDescriptor Descriptor
+        protected override PlayerExtensionDescriptor ScriptDescriptor
         {
             get
             {
-                return new ExtensionDescriptor
+                return new PlayerExtensionDescriptor
                 {
                     Guid = new Guid("7C3BA1E2-EE7B-47D2-B174-6AE76D65EC04"),
                     Name = "Go To Time",

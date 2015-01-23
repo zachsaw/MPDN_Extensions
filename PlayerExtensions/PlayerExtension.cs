@@ -6,26 +6,51 @@ using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions
 {
+    public class PlayerExtensionDescriptor
+    {
+        public string Copyright = "";
+        public string Description;
+        public Guid Guid = Guid.Empty;
+        public string Name;
+    }
+
     public abstract class PlayerExtension : IPlayerExtension
     {
         private readonly IDictionary<Keys, Action> m_Actions = new Dictionary<Keys, Action>();
 
-        protected IPlayerControl PlayerControl { get; private set; }
-
-        public abstract ExtensionDescriptor Descriptor { get; }
+        protected virtual PlayerExtensionDescriptor ScriptDescriptor { get { return new PlayerExtensionDescriptor(); } }
 
         public abstract IList<Verb> Verbs { get; }
 
         #region Implementation
 
-        public virtual void Initialize(IPlayerControl playerControl)
+        public virtual ExtensionDescriptor Descriptor
         {
-            PlayerControl = playerControl;
-            PlayerControl.KeyDown += PlayerKeyDown;
+            get
+            {
+                return new ExtensionDescriptor
+                {
+                    HasConfigDialog = false,
+                    Copyright = ScriptDescriptor.Copyright,
+                    Description = ScriptDescriptor.Description,
+                    Guid = ScriptDescriptor.Guid,
+                    Name = ScriptDescriptor.Name
+                };
+            }
+        }
 
+        public virtual void Initialize()
+        {
+            PlayerControl.KeyDown += PlayerKeyDown;
+            LoadVerbs();
+        }
+
+        public void LoadVerbs()
+        {
             foreach (var verb in Verbs)
             {
                 var shortcut = DecodeKeyString(verb.ShortcutDisplayStr);
+                m_Actions.Remove(shortcut); //Prevent duplicates FIFO.
                 m_Actions.Add(shortcut, verb.Action);
             }
         }

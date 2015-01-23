@@ -6,11 +6,11 @@ namespace Mpdn.PlayerExtensions.GitHub
 {
     public class ViewMediaInfo : PlayerExtension
     {
-        public override ExtensionDescriptor Descriptor
+        protected override PlayerExtensionDescriptor ScriptDescriptor
         {
             get
             {
-                return new ExtensionDescriptor
+                return new PlayerExtensionDescriptor
                 {
                     Guid = new Guid("6FD61379-FF5D-4143-8A7B-97516BB7822F"),
                     Name = "Media Info",

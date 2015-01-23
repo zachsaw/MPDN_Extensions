@@ -27,9 +27,9 @@ namespace Mpdn.PlayerExtensions.GitHub
             get { return "Example.MouseControl"; }
         }
 
-        public override void Initialize(IPlayerControl playerControl)
+        public override void Initialize()
         {
-            base.Initialize(playerControl);
+            base.Initialize();
 
             PlayerControl.MouseClick += PlayerMouseClick;
             PlayerControl.MouseWheel += PlayerMouseWheel;

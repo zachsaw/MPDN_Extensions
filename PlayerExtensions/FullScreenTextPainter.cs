@@ -18,8 +18,6 @@ namespace Mpdn.PlayerExtensions.GitHub
         private long m_Duration;
         private Size m_ScreenSize;
 
-        private IPlayerControl PlayerControl { get; set; }
-
         public ExtensionDescriptor Descriptor
         {
             get
@@ -33,9 +31,8 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
         }
 
-        public void Initialize(IPlayerControl playerControl)
+        public void Initialize()
         {
-            PlayerControl = playerControl;
             m_Text = PlayerControl.CreateText("Verdana", TEXT_HEIGHT, TextFontStyle.Regular);
             m_Timer = new Timer {Interval = 100};
             m_Timer.Tick += TimerOnTick;
