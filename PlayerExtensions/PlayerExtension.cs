@@ -18,8 +18,6 @@ namespace Mpdn.PlayerExtensions
     {
         private readonly IDictionary<Keys, Action> m_Actions = new Dictionary<Keys, Action>();
 
-        protected IPlayerControl PlayerControl { get; private set; }
-
         protected virtual PlayerExtensionDescriptor ScriptDescriptor { get { return new PlayerExtensionDescriptor(); } }
 
         public abstract IList<Verb> Verbs { get; }
@@ -41,16 +39,9 @@ namespace Mpdn.PlayerExtensions
             }
         }
 
-        public virtual void Initialize(IPlayerControl playerControl)
-        {
-            PlayerControl = playerControl;
-            PlayerControl.KeyDown += PlayerKeyDown;
-
-            Initialize();
-        }
-
         public virtual void Initialize()
         {
+            PlayerControl.KeyDown += PlayerKeyDown;
             LoadVerbs();
         }
 

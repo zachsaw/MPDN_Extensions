@@ -18,9 +18,9 @@ namespace Mpdn.PlayerExtensions.GitHub
             UpdateButtons();
         }
 
-        public override void Setup(PresetSettings settings, IPlayerControl playerControl)
+        public override void Setup(PresetSettings settings)
         {
-            base.Setup(settings, playerControl);
+            base.Setup(settings);
 
             RenderScripts = 
                 PlayerControl.RenderScriptAssemblies.SelectMany(a => a.GetTypes())

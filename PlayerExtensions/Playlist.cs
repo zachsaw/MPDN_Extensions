@@ -28,7 +28,7 @@ namespace Mpdn.PlayerExtensions.GitHub
         {
             base.Initialize();
 
-            m_Form.SetPlayerControl(PlayerControl);
+            m_Form.Setup();
 
             PlayerControl.DragEnter += OnDragEnter;
             PlayerControl.DragDrop += OnDragDrop;

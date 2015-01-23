@@ -18,7 +18,6 @@ namespace Mpdn.PlayerExtensions.GitHub
         private const string INACTIVE_INDICATOR_STR = "[ ]";
 
         private bool m_FirstShow = true;
-        private IPlayerControl m_PlayerControl;
         private int m_CurrentIndex = -1;
         private Form m_OwnerForm;
 
@@ -32,11 +31,10 @@ namespace Mpdn.PlayerExtensions.GitHub
             Opacity = MIN_OPACITY;
         }
 
-        public void SetPlayerControl(IPlayerControl playerControl)
+        public void Setup()
         {
-            m_PlayerControl = playerControl;
-            Icon = m_PlayerControl.ApplicationIcon;
-            m_PlayerControl.PlaybackCompleted += PlaybackCompleted;
+            Icon = PlayerControl.ApplicationIcon;
+            PlayerControl.PlaybackCompleted += PlaybackCompleted;
         }
 
         public void Show(Form owner)
@@ -83,7 +81,7 @@ namespace Mpdn.PlayerExtensions.GitHub
         public void OpenPlaylist()
         {
             openPlaylistDialog.FileName = savePlaylistDialog.FileName;
-            if (openPlaylistDialog.ShowDialog(m_PlayerControl.Form) != DialogResult.OK)
+            if (openPlaylistDialog.ShowDialog(PlayerControl.Form) != DialogResult.OK)
                 return;
 
             OpenPlaylist(openPlaylistDialog.FileName);
@@ -98,7 +96,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
 
             savePlaylistDialog.FileName = openPlaylistDialog.FileName;
-            if (savePlaylistDialog.ShowDialog(m_PlayerControl.Form) != DialogResult.OK)
+            if (savePlaylistDialog.ShowDialog(PlayerControl.Form) != DialogResult.OK)
                 return;
 
             SavePlaylist(savePlaylistDialog.FileName);
@@ -174,8 +172,8 @@ namespace Mpdn.PlayerExtensions.GitHub
             if (!startPlaying || listBox.Items.Count == 0)
                 return;
 
-            if (m_PlayerControl.PlayerState != PlayerState.Closed &&
-                m_PlayerControl.PlayerState != PlayerState.Stopped)
+            if (PlayerControl.PlayerState != PlayerState.Closed &&
+                PlayerControl.PlayerState != PlayerState.Stopped)
                 return;
 
             m_CurrentIndex = -1;
@@ -187,10 +185,10 @@ namespace Mpdn.PlayerExtensions.GitHub
 
         private void PlaybackCompleted(object sender, EventArgs e)
         {
-            if (m_PlayerControl.PlayerState == PlayerState.Closed)
+            if (PlayerControl.PlayerState == PlayerState.Closed)
                 return;
 
-            if (m_PlayerControl.MediaPosition == m_PlayerControl.MediaDuration)
+            if (PlayerControl.MediaPosition == PlayerControl.MediaDuration)
             {
                 PlayNext();
             }
@@ -215,12 +213,12 @@ namespace Mpdn.PlayerExtensions.GitHub
             try
             {
                 var item = ((PlaylistItem)listBox.Items[m_CurrentIndex]);
-                m_PlayerControl.OpenMedia(item.FilePath);
+                PlayerControl.OpenMedia(item.FilePath);
                 item.Active = true;
             }
             catch (Exception ex)
             {
-                m_PlayerControl.HandleException(ex);
+                PlayerControl.HandleException(ex);
                 PlayNext();
             }
             listBox.Invalidate();
@@ -245,9 +243,9 @@ namespace Mpdn.PlayerExtensions.GitHub
             if (!Visible)
                 return;
 
-            if (m_OwnerForm != m_PlayerControl.Form)
+            if (m_OwnerForm != PlayerControl.Form)
             {
-                Show(m_PlayerControl.Form);
+                Show(PlayerControl.Form);
             }
         }
 

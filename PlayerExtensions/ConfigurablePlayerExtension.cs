@@ -8,13 +8,6 @@ namespace Mpdn.PlayerExtensions
         where TSettings : class, new()
     {
         protected TSettings Settings { get; private set; }
-        protected IPlayerControl PlayerControl { get; private set; }
-
-        public virtual void Setup(TSettings settings, IPlayerControl playerControl)
-        {
-            PlayerControl = playerControl;
-            Setup(settings);
-        }
 
         public virtual void Setup(TSettings settings)
         {
@@ -87,7 +80,7 @@ namespace Mpdn.PlayerExtensions
         {
             using (var dialog = new TDialog())
             {
-                dialog.Setup(ScriptConfig.Config, PlayerControl);
+                dialog.Setup(ScriptConfig.Config);
                 if (dialog.ShowDialog(owner) != DialogResult.OK)
                     return false;
 
