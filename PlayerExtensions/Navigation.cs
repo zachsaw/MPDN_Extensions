@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions.GitHub
 {
@@ -42,8 +41,8 @@ namespace Mpdn.PlayerExtensions.GitHub
                     GetVerb("Backward (1 frame)", "Ctrl+Left", JumpFrame(-1)),
                     GetVerb("Forward (30 seconds)", "Ctrl+Shift+Right", Jump(30)),
                     GetVerb("Backward (30 seconds)", "Ctrl+Shift+Left", Jump(-30)),
-                    GetVerb("Play next chapter", "PageDown", PlayChapter(true)),
-                    GetVerb("Play previous chapter", "PageUp", PlayChapter(false)),
+                    GetVerb("Play next chapter", "Shift+Right", PlayChapter(true)),
+                    GetVerb("Play previous chapter", "Shift+Left", PlayChapter(false)),
                     GetVerb("Play next file in folder", "Ctrl+PageDown", PlayFileInFolder(true)),
                     GetVerb("Play previous file in folder", "Ctrl+PageUp", PlayFileInFolder(false))
                 };
@@ -70,15 +69,10 @@ namespace Mpdn.PlayerExtensions.GitHub
             var nextChapter = next
                 ? chapters.SkipWhile(chapter => chapter.Position < pos+1).FirstOrDefault()
                 : chapters.TakeWhile(chapter => chapter.Position < Math.Max(pos-1000000, 0)).LastOrDefault();
-
             if (nextChapter != null)
             {
                 PlayerControl.SeekMedia(nextChapter.Position);
                 PlayerControl.ShowOsdText(nextChapter.Name);
-            }
-            else
-            {
-                PlayFile(next);
             }
         }
 
@@ -91,12 +85,6 @@ namespace Mpdn.PlayerExtensions.GitHub
         {
             if (PlayerControl.PlayerState == PlayerState.Closed)
                 return;
-
-            if (PlaylistForm.PlaylistCount >= 1)
-            {
-                SendKeys.Send(next ? "^%n" : "^%b");
-                return;
-            }
 
             var mediaPath = PlayerControl.MediaFilePath;
             var mediaDir = GetDirectoryName(mediaPath);
