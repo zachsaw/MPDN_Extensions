@@ -16,7 +16,6 @@ namespace Mpdn.PlayerExtensions
     {
         #region Variables
         private Socket _serverSocket;
-        private IPlayerControl _mPlayerControl;
         private readonly Dictionary<Guid, StreamWriter> _writers = new Dictionary<Guid, StreamWriter>();
         private readonly Dictionary<Guid, Socket> _clients = new Dictionary<Guid, Socket>();
         private readonly RemoteControlAuthHandler _authHandler = new RemoteControlAuthHandler();
@@ -66,14 +65,13 @@ namespace Mpdn.PlayerExtensions
             _serverSocket.Close();
         }
 
-        public override void Initialize(IPlayerControl playerControl)
+        public override void Initialize()
         {
-            base.Initialize(playerControl);
-            _mPlayerControl = playerControl;
-            _mPlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
-            _mPlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
-            _mPlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
-            _mPlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
+            base.Initialize();
+            PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
+            PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
+            PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
+            PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
             _clientManager = new RemoteClients(this);
             _locationTimer = new Timer(100);
             _locationTimer.Elapsed += _locationTimer_Elapsed;
@@ -82,7 +80,7 @@ namespace Mpdn.PlayerExtensions
 
         void _locationTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            PushToAllListeners("Postion|" + _mPlayerControl.MediaPosition);
+            PushToAllListeners("Postion|" + PlayerControl.MediaPosition);
         }
 
         void m_PlayerControl_ExitingFullScreenMode(object sender, EventArgs e)
@@ -112,14 +110,14 @@ namespace Mpdn.PlayerExtensions
                         break;
             }
 
-            PushToAllListeners(e.NewState + "|" + _mPlayerControl.MediaFilePath);
+            PushToAllListeners(e.NewState + "|" + PlayerControl.MediaFilePath);
         }
 
         private string GetAllChapters()
         {
-            if (_mPlayerControl.PlayerState == PlayerState.Playing || _mPlayerControl.PlayerState == PlayerState.Paused)
+            if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
             {
-                var chapters = _mPlayerControl.Chapters;
+                var chapters = PlayerControl.Chapters;
                 int counter = 1;
                 StringBuilder chapterSb = new StringBuilder();
                 foreach (var chapter in chapters)
@@ -143,7 +141,7 @@ namespace Mpdn.PlayerExtensions
             {
                 try
                 {
-                    writer.Value.WriteLine("Finished" + "|" + _mPlayerControl.MediaFilePath);
+                    writer.Value.WriteLine("Finished" + "|" + PlayerControl.MediaFilePath);
                     writer.Value.Flush();
                 }
                 catch
@@ -283,28 +281,28 @@ namespace Mpdn.PlayerExtensions
                     RemoveWriter(command[1]);
                     break;
                 case "Open":
-                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => OpenMedia(command[1])));
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => OpenMedia(command[1])));
                     break;
                 case "Pause":
-                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => PauseMedia(command[1])));
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => PauseMedia(command[1])));
                     break;
                 case "Play":
-                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => PlayMedia(command[1])));
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => PlayMedia(command[1])));
                     break;
                 case "Stop":
-                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => StopMedia(command[1])));
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => StopMedia(command[1])));
                     break;
                 case "Seek":
-                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => SeekMedia(command[1])));
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => SeekMedia(command[1])));
                     break;
                 case "GetDuration":
-                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => GetFullDuration(command[1])));
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => GetFullDuration(command[1])));
                     break;
                 case "GetCurrentState":
-                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => GetCurrentState(command[1])));
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => GetCurrentState(command[1])));
                     break;
                 case "FullScreen":
-                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => FullScreen(command[1])));
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => FullScreen(command[1])));
                     break;
                 case "WriteToScreen":
                     DisplayTextMessage(command[1]);
@@ -312,13 +310,13 @@ namespace Mpdn.PlayerExtensions
                 case "Mute":
                     bool mute = false;
                     Boolean.TryParse(command[1], out mute);
-                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => Mute(mute)));
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => Mute(mute)));
                     break;
                 case "Volume":
                     int vol = 0;
                     int.TryParse(command[1], out vol);
 
-                    _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetVolume(vol)));
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetVolume(vol)));
                     break;
             }
         }
@@ -333,26 +331,26 @@ namespace Mpdn.PlayerExtensions
 
         private void OpenMedia(object file)
         {
-            _mPlayerControl.OpenMedia(file.ToString());
+            PlayerControl.OpenMedia(file.ToString());
         }
 
         private void PauseMedia(object showOsd)
         {
             bool dispOsd = false;
             Boolean.TryParse(showOsd.ToString(), out dispOsd);
-            _mPlayerControl.PauseMedia(dispOsd);
+            PlayerControl.PauseMedia(dispOsd);
         }
 
         private void PlayMedia(object showOsd)
         {
             bool dispOsd = false;
             Boolean.TryParse(showOsd.ToString(), out dispOsd);
-            _mPlayerControl.PlayMedia(dispOsd);
+            PlayerControl.PlayMedia(dispOsd);
         }
 
         private void StopMedia(object blank)
         {
-            _mPlayerControl.StopMedia();
+            PlayerControl.StopMedia();
         }
 
         private void SeekMedia(object seekLocation)
@@ -361,21 +359,21 @@ namespace Mpdn.PlayerExtensions
             double.TryParse(seekLocation.ToString(), out location);
             if(location != -1)
             {
-                _mPlayerControl.SeekMedia((long)location);
+                PlayerControl.SeekMedia((long)location);
             }
         }
 
         private void GetFullDuration(object guid)
         {
-            WriteToSpesificClient("FullLength|" + _mPlayerControl.MediaDuration, guid.ToString());
+            WriteToSpesificClient("FullLength|" + PlayerControl.MediaDuration, guid.ToString());
         }
 
         private void GetCurrentState(object guid)
         {
-            WriteToSpesificClient(_mPlayerControl.PlayerState + "|" + _mPlayerControl.MediaFilePath, guid.ToString());
-            WriteToSpesificClient("Fullscreen|" + _mPlayerControl.InFullScreenMode, guid.ToString());
-            WriteToSpesificClient("Mute|" + _mPlayerControl.Mute, guid.ToString());
-            WriteToSpesificClient("Volume|" + _mPlayerControl.Volume.ToString(), guid.ToString());
+            WriteToSpesificClient(PlayerControl.PlayerState + "|" + PlayerControl.MediaFilePath, guid.ToString());
+            WriteToSpesificClient("Fullscreen|" + PlayerControl.InFullScreenMode, guid.ToString());
+            WriteToSpesificClient("Mute|" + PlayerControl.Mute, guid.ToString());
+            WriteToSpesificClient("Volume|" + PlayerControl.Volume.ToString(), guid.ToString());
             WriteToSpesificClient(GetAllChapters(), guid.ToString());
         }
 
@@ -385,11 +383,11 @@ namespace Mpdn.PlayerExtensions
             Boolean.TryParse(fullScreen.ToString(), out goFullscreen);
             if(goFullscreen)
             {
-                _mPlayerControl.GoFullScreen();
+                PlayerControl.GoFullScreen();
             }
             else
             {
-                _mPlayerControl.GoWindowed();
+                PlayerControl.GoWindowed();
             }
         }
 
@@ -409,12 +407,12 @@ namespace Mpdn.PlayerExtensions
 
         private void DisplayTextMessage(object msg)
         {
-            _mPlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => _mPlayerControl.ShowOsdText(msg.ToString())));
+            PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => PlayerControl.ShowOsdText(msg.ToString())));
         }
 
         private void Mute(bool silence)
         {
-            _mPlayerControl.Mute = silence;
+            PlayerControl.Mute = silence;
             PushToAllListeners("Mute|" + silence);
         }
 
@@ -427,7 +425,7 @@ namespace Mpdn.PlayerExtensions
 
         private void SetVolume(int level)
         {
-            _mPlayerControl.Volume = level;
+            PlayerControl.Volume = level;
         }
     }
 
