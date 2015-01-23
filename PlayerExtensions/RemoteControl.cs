@@ -72,10 +72,17 @@ namespace Mpdn.PlayerExtensions
             PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
             PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
             PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
+            PlayerControl.VolumeChanged += PlayerControl_VolumeChanged;
             _clientManager = new RemoteClients(this);
             _locationTimer = new Timer(100);
             _locationTimer.Elapsed += _locationTimer_Elapsed;
             Task.Factory.StartNew(Server);
+        }
+
+        void PlayerControl_VolumeChanged(object sender, EventArgs e)
+        {
+            PushToAllListeners("Volume|" + PlayerControl.Volume.ToString());
+            PushToAllListeners("Mute|" + PlayerControl.Mute.ToString());
         }
 
         void _locationTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -315,7 +322,6 @@ namespace Mpdn.PlayerExtensions
                 case "Volume":
                     int vol = 0;
                     int.TryParse(command[1], out vol);
-
                     PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetVolume(vol)));
                     break;
             }
