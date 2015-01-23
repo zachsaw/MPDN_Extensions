@@ -20,7 +20,7 @@ namespace Mpdn.PlayerExtensions
 
         protected IPlayerControl PlayerControl { get; private set; }
 
-        protected abstract PlayerExtensionDescriptor ScriptDescriptor { get; }
+        protected virtual PlayerExtensionDescriptor ScriptDescriptor { get { return new PlayerExtensionDescriptor(); } }
 
         public abstract IList<Verb> Verbs { get; }
 
@@ -41,7 +41,7 @@ namespace Mpdn.PlayerExtensions
             }
         }
 
-        public void Initialize(IPlayerControl playerControl)
+        public virtual void Initialize(IPlayerControl playerControl)
         {
             PlayerControl = playerControl;
             PlayerControl.KeyDown += PlayerKeyDown;

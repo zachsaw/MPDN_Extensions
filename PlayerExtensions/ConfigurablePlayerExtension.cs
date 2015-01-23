@@ -12,8 +12,13 @@ namespace Mpdn.PlayerExtensions
 
         public virtual void Setup(TSettings settings, IPlayerControl playerControl)
         {
-            Settings = settings;
             PlayerControl = playerControl;
+            Setup(settings);
+        }
+
+        public virtual void Setup(TSettings settings)
+        {
+            Settings = settings;
 
             LoadSettings();
         }
