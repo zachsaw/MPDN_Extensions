@@ -6,8 +6,6 @@ namespace Mpdn.PlayerExtensions.Example
 {
     public class KeyRemap : IPlayerExtension
     {
-        private IPlayerControl m_PlayerControl;
-
         public ExtensionDescriptor Descriptor
         {
             get
@@ -22,21 +20,20 @@ namespace Mpdn.PlayerExtensions.Example
             }
         }
 
-        public void Initialize(IPlayerControl playerControl)
+        public void Initialize()
         {
-            m_PlayerControl = playerControl;
-            m_PlayerControl.KeyDown += PlayerKeyDown;
-            m_PlayerControl.MouseClick += PlayerMouseClick;
-            m_PlayerControl.MouseDoubleClick += PlayerMouseDoubleClick;
-            m_PlayerControl.MouseWheel += PlayerMouseWheel;
+            PlayerControl.KeyDown += PlayerKeyDown;
+            PlayerControl.MouseClick += PlayerMouseClick;
+            PlayerControl.MouseDoubleClick += PlayerMouseDoubleClick;
+            PlayerControl.MouseWheel += PlayerMouseWheel;
         }
 
         public void Destroy()
         {
-            m_PlayerControl.KeyDown -= PlayerKeyDown;
-            m_PlayerControl.MouseClick -= PlayerMouseClick;
-            m_PlayerControl.MouseDoubleClick -= PlayerMouseDoubleClick;
-            m_PlayerControl.MouseWheel -= PlayerMouseWheel;
+            PlayerControl.KeyDown -= PlayerKeyDown;
+            PlayerControl.MouseClick -= PlayerMouseClick;
+            PlayerControl.MouseDoubleClick -= PlayerMouseDoubleClick;
+            PlayerControl.MouseWheel -= PlayerMouseWheel;
         }
 
         public IList<Verb> Verbs
@@ -65,13 +62,13 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void PlayerMouseWheel(object sender, PlayerControlEventArgs<MouseEventArgs> e)
         {
-            if (m_PlayerControl.PlayerState == PlayerState.Closed)
+            if (PlayerControl.PlayerState == PlayerState.Closed)
                 return;
 
-            var pos = m_PlayerControl.MediaPosition;
+            var pos = PlayerControl.MediaPosition;
             pos += e.InputArgs.Delta*1000000/40;
             pos = Math.Max(pos, 0);
-            m_PlayerControl.SeekMedia(pos);
+            PlayerControl.SeekMedia(pos);
             e.Handled = true;
         }
 
@@ -90,13 +87,13 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void ToggleMode()
         {
-            if (m_PlayerControl.InFullScreenMode)
+            if (PlayerControl.InFullScreenMode)
             {
-                m_PlayerControl.GoWindowed();
+                PlayerControl.GoWindowed();
             }
             else
             {
-                m_PlayerControl.GoFullScreen();
+                PlayerControl.GoFullScreen();
             }
         }
     }

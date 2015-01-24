@@ -6,8 +6,6 @@ namespace Mpdn.PlayerExtensions.Example
 {
     public class HelloWorld : IPlayerExtension
     {
-        private IPlayerControl m_PlayerControl;
-
         public ExtensionDescriptor Descriptor
         {
             get
@@ -22,15 +20,14 @@ namespace Mpdn.PlayerExtensions.Example
             }
         }
 
-        public void Initialize(IPlayerControl playerControl)
+        public void Initialize()
         {
-            m_PlayerControl = playerControl;
-            m_PlayerControl.KeyDown += PlayerKeyDown;
+            PlayerControl.KeyDown += PlayerKeyDown;
         }
 
         public void Destroy()
         {
-            m_PlayerControl.KeyDown -= PlayerKeyDown;
+            PlayerControl.KeyDown -= PlayerKeyDown;
         }
 
         public IList<Verb> Verbs
@@ -52,12 +49,12 @@ namespace Mpdn.PlayerExtensions.Example
 
         private void HelloWorldClick()
         {
-            MessageBox.Show(m_PlayerControl.VideoPanel, "Hello World!");
+            MessageBox.Show(PlayerControl.VideoPanel, "Hello World!");
         }
 
         private void HelloWorld2Click()
         {
-            MessageBox.Show(m_PlayerControl.VideoPanel, "Hello World Too!");
+            MessageBox.Show(PlayerControl.VideoPanel, "Hello World Too!");
         }
 
         private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
