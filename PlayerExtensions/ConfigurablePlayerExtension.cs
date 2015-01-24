@@ -39,21 +39,11 @@ namespace Mpdn.PlayerExtensions
         }
     }
 
-    public class PlayerExtensionDescriptor
-    {
-        public string Copyright = "";
-        public string Description;
-        public Guid Guid = Guid.Empty;
-        public string Name;
-    }
-
     public abstract class ConfigurablePlayerExtension<TSettings, TDialog> : PlayerExtension
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
         protected Config ScriptConfig { get; private set; }
-
-        protected abstract PlayerExtensionDescriptor ScriptDescriptor { get; }
 
         protected abstract string ConfigFileName { get; }
 
@@ -79,9 +69,9 @@ namespace Mpdn.PlayerExtensions
             }
         }
 
-        public override void Initialize(IPlayerControl playerControl)
+        public override void Initialize()
         {
-            base.Initialize(playerControl);
+            base.Initialize();
 
             ScriptConfig = new Config(ConfigFileName);
         }

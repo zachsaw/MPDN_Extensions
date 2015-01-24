@@ -16,11 +16,11 @@ namespace Mpdn.PlayerExtensions.GitHub
             ".mid", ".midi", ".rmi"
         };
 
-        public override ExtensionDescriptor Descriptor
+        protected override PlayerExtensionDescriptor ScriptDescriptor
         {
             get
             {
-                return new ExtensionDescriptor
+                return new PlayerExtensionDescriptor
                 {
                     Guid = new Guid("79FFF20D-785B-497C-9716-066787F2A3AC"),
                     Name = "Navigation",
