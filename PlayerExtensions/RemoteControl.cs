@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -30,6 +31,8 @@ namespace Mpdn.PlayerExtensions
         }
         #endregion
 
+        #region Overwritten Methods
+
         protected override PlayerExtensionDescriptor ScriptDescriptor
         {
             get 
@@ -52,6 +55,9 @@ namespace Mpdn.PlayerExtensions
 
         public override void Destroy()
         {
+            Unsubscribe();
+            _locationTimer.Stop();
+            _locationTimer = null;
             foreach (var writer in _writers)
             {
                 try
@@ -68,15 +74,31 @@ namespace Mpdn.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
+            Subscribe();
+            _clientManager = new RemoteClients(this);
+            _locationTimer = new Timer(100);
+            _locationTimer.Elapsed += _locationTimer_Elapsed;
+            Task.Factory.StartNew(Server);
+        }
+
+        #endregion
+
+        private void Subscribe()
+        {
             PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
             PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
             PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
             PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
             PlayerControl.VolumeChanged += PlayerControl_VolumeChanged;
-            _clientManager = new RemoteClients(this);
-            _locationTimer = new Timer(100);
-            _locationTimer.Elapsed += _locationTimer_Elapsed;
-            Task.Factory.StartNew(Server);
+        }
+
+        private void Unsubscribe()
+        {
+            PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
+            PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
+            PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
+            PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
+            PlayerControl.VolumeChanged += PlayerControl_VolumeChanged;
         }
 
         void PlayerControl_VolumeChanged(object sender, EventArgs e)
@@ -87,7 +109,12 @@ namespace Mpdn.PlayerExtensions
 
         void _locationTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            PushToAllListeners("Postion|" + PlayerControl.MediaPosition);
+            try
+            {
+                PushToAllListeners("Postion|" + PlayerControl.MediaPosition);
+            }
+            catch(Exception)
+            { }
         }
 
         void m_PlayerControl_ExitingFullScreenMode(object sender, EventArgs e)
@@ -108,6 +135,7 @@ namespace Mpdn.PlayerExtensions
                     case PlayerState.Playing:
                         _locationTimer.Start();
                         PushToAllListeners(GetAllChapters());
+                        PushToAllListeners(GetAllSubtitleTracks());
                         break;
                     case PlayerState.Stopped:
                         _locationTimer.Stop();
@@ -118,6 +146,35 @@ namespace Mpdn.PlayerExtensions
             }
 
             PushToAllListeners(e.NewState + "|" + PlayerControl.MediaFilePath);
+        }
+
+        private string GetAllSubtitleTracks()
+        {
+            if(PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
+            {
+                MediaTrack activeSub = null;
+                if (PlayerControl.ActiveSubtitleTrack != null)
+                    activeSub = PlayerControl.ActiveSubtitleTrack;
+                var subtitles = PlayerControl.SubtitleTracks;
+                int counter = 1;
+                StringBuilder subSb = new StringBuilder();
+                foreach(var sub in subtitles)
+                {
+                    if (counter > 1)
+                        subSb.Append("]]");
+                    subSb.Append(counter + ">>" + sub.Description + ">>" + sub.Type);
+                    if (activeSub != null && sub.Description == activeSub.Description)
+                        subSb.Append(">>True");
+                    else
+                        subSb.Append(">>False");
+                    counter++;
+                }
+                return "Subtitles|" + subSb;
+            }
+            else
+            {
+                return String.Empty;
+            }
         }
 
         private string GetAllChapters()
@@ -324,6 +381,9 @@ namespace Mpdn.PlayerExtensions
                     int.TryParse(command[1], out vol);
                     PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetVolume(vol)));
                     break;
+                case "ActiveSubTrack":
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => SetSubtitle(command[1])));
+                    break;
             }
         }
 
@@ -381,6 +441,7 @@ namespace Mpdn.PlayerExtensions
             WriteToSpesificClient("Mute|" + PlayerControl.Mute, guid.ToString());
             WriteToSpesificClient("Volume|" + PlayerControl.Volume.ToString(), guid.ToString());
             WriteToSpesificClient(GetAllChapters(), guid.ToString());
+            PushToAllListeners(GetAllSubtitleTracks());
         }
 
         private void FullScreen(object fullScreen)
@@ -403,8 +464,14 @@ namespace Mpdn.PlayerExtensions
             {
                 try
                 {
-                    writer.Value.WriteLine(msg);
-                    writer.Value.Flush();
+                    try
+                    {
+
+                        writer.Value.WriteLine(msg);
+                        writer.Value.Flush();
+                    }
+                    catch(Exception)
+                    { }
                 }
                 catch
                 { }
@@ -432,6 +499,13 @@ namespace Mpdn.PlayerExtensions
         private void SetVolume(int level)
         {
             PlayerControl.Volume = level;
+        }
+        
+        private void SetSubtitle(string subDescription)
+        {
+            var selTrack = PlayerControl.SubtitleTracks.FirstOrDefault(t => t.Description == subDescription);
+           if(selTrack != null)
+            PlayerControl.SelectSubtitleTrack(selTrack);
         }
     }
 
