@@ -90,6 +90,8 @@ namespace Mpdn.PlayerExtensions
             PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
             PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
             PlayerControl.VolumeChanged += PlayerControl_VolumeChanged;
+            PlayerControl.SubtitleTrackChanged += PlayerControl_SubtitleTrackChanged;
+            PlayerControl.AudioTrackChanged += PlayerControl_AudioTrackChanged;
         }
 
         private void Unsubscribe()
@@ -99,6 +101,17 @@ namespace Mpdn.PlayerExtensions
             PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
             PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
             PlayerControl.VolumeChanged += PlayerControl_VolumeChanged;
+            PlayerControl.SubtitleTrackChanged -= PlayerControl_SubtitleTrackChanged;
+        }
+
+        void PlayerControl_AudioTrackChanged(object sender, EventArgs e)
+        {
+            PushToAllListeners("AudioChanged|" + PlayerControl.ActiveAudioTrack.Description);
+        }
+
+        void PlayerControl_SubtitleTrackChanged(object sender, EventArgs e)
+        {
+            PushToAllListeners("SubChanged|" + PlayerControl.ActiveSubtitleTrack.Description);
         }
 
         void PlayerControl_VolumeChanged(object sender, EventArgs e)
@@ -136,6 +149,7 @@ namespace Mpdn.PlayerExtensions
                         _locationTimer.Start();
                         PushToAllListeners(GetAllChapters());
                         PushToAllListeners(GetAllSubtitleTracks());
+                        PushToAllListeners(GetAllAudioTracks());
                         break;
                     case PlayerState.Stopped:
                         _locationTimer.Stop();
@@ -146,6 +160,35 @@ namespace Mpdn.PlayerExtensions
             }
 
             PushToAllListeners(e.NewState + "|" + PlayerControl.MediaFilePath);
+        }
+
+        private string GetAllAudioTracks()
+        {
+            if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
+            {
+                MediaTrack activeTrack = null;
+                if (PlayerControl.ActiveAudioTrack != null)
+                    activeTrack = PlayerControl.ActiveAudioTrack;
+                var audioTracks = PlayerControl.AudioTracks;
+                int counter = 1;
+                StringBuilder audioStringBuilder = new StringBuilder();
+                foreach (var track in audioTracks)
+                {
+                    if (counter > 1)
+                        audioStringBuilder.Append("]]");
+                    audioStringBuilder.Append(counter + ">>" + track.Description + ">>" + track.Type);
+                    if (activeTrack != null && track.Description == activeTrack.Description)
+                        audioStringBuilder.Append(">>True");
+                    else
+                        audioStringBuilder.Append(">>False");
+                    counter++;
+                }
+                return "AudioTracks|" + audioStringBuilder;
+            }
+            else
+            {
+                return String.Empty;
+            }
         }
 
         private string GetAllSubtitleTracks()
@@ -261,7 +304,7 @@ namespace Mpdn.PlayerExtensions
             var clientGUID = reader.ReadLine();
             if (!_authHandler.IsGuidAuthed(clientGUID))
             {
-                ClientAuth(clientGUID.ToString(), clientGuid);
+                ClientAuth(clientGUID, clientGuid);
             }
             else
             {
@@ -436,12 +479,15 @@ namespace Mpdn.PlayerExtensions
 
         private void GetCurrentState(object guid)
         {
+            WriteToSpesificClient(GetAllChapters(), guid.ToString());
             WriteToSpesificClient(PlayerControl.PlayerState + "|" + PlayerControl.MediaFilePath, guid.ToString());
             WriteToSpesificClient("Fullscreen|" + PlayerControl.InFullScreenMode, guid.ToString());
             WriteToSpesificClient("Mute|" + PlayerControl.Mute, guid.ToString());
-            WriteToSpesificClient("Volume|" + PlayerControl.Volume.ToString(), guid.ToString());
-            WriteToSpesificClient(GetAllChapters(), guid.ToString());
-            PushToAllListeners(GetAllSubtitleTracks());
+            WriteToSpesificClient("Volume|" + PlayerControl.Volume, guid.ToString());
+            WriteToSpesificClient("FullLength|" + PlayerControl.MediaDuration, guid.ToString());
+            WriteToSpesificClient("Postion|" + PlayerControl.MediaPosition, guid.ToString());
+            WriteToSpesificClient(GetAllSubtitleTracks(), guid.ToString());
+            WriteToSpesificClient(GetAllAudioTracks(), guid.ToString());
         }
 
         private void FullScreen(object fullScreen)
