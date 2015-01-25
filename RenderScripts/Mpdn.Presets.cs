@@ -10,7 +10,7 @@ namespace Mpdn.RenderScript
 {
     namespace Mpdn.Presets
     {
-        public abstract class PresetRenderScript : IRenderScriptUi
+        public abstract class PresetRenderScriptBase : IRenderScriptUi
         {
             protected abstract RenderScriptPreset Preset { get; }
 
@@ -39,12 +39,47 @@ namespace Mpdn.RenderScript
                 {
                     var descriptor = Script.Descriptor;
                     descriptor.Guid = Preset.Guid;
+                    descriptor.Name = Preset.Name;
                     return descriptor;
                 }
             }
         }
 
-        public class ActivePresetRenderScript : PresetRenderScript
+        public class PresetRenderScript : PresetRenderScriptBase
+        {
+            private RenderScriptPreset m_SavedPreset;
+            public RenderScriptPreset SavedPreset  
+            {
+                get { return m_SavedPreset; }
+                set
+                {
+                    m_SavedPreset = value;
+                    m_SavedPreset = PresetExtension.LoadPreset(m_SavedPreset.Guid) ?? m_SavedPreset;
+                }
+            }
+
+            public PresetRenderScript(RenderScriptPreset preset)
+            {
+                SavedPreset = preset;
+            }
+
+            protected override RenderScriptPreset Preset { get { return SavedPreset; } }
+        }
+
+        public class PresetRenderChain : PresetRenderScript, IRenderChainUi
+        {
+            public PresetRenderChain(RenderScriptPreset preset) : base(preset) 
+            {
+                if (!(Script is IRenderChainUi)) throw new ArgumentException("Not a preset for a RenderChain");
+            }
+
+            public RenderChain GetChain()
+            {
+                return (Script as IRenderChainUi).GetChain();
+            }
+        }
+
+        public class ActivePresetRenderScript : PresetRenderScriptBase
         {
             private Guid m_Guid = new Guid("B1F3B882-3E8F-4A8C-B225-30C9ABD67DB1");
 
@@ -67,7 +102,7 @@ namespace Mpdn.RenderScript
                     var descriptor = base.Descriptor;
                     descriptor.Name = "Preset";
                     descriptor.Guid = m_Guid;
-                    descriptor.Description = "Active Preset";
+                    descriptor.Description = "Active Preset: " + Preset.Name;
                     return descriptor;
                 }
             }
