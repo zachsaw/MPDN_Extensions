@@ -5,13 +5,14 @@ sampler sV : register(s2);
 float4 p0 :  register(c0);
 float2 p1 :  register(c1);
 float4 size1 : register(c2);
-float2 BC :  register(c3);
+float4 args0 : register(c3);
 
 #define width  (p0[0])
 #define height (p0[1])
 
-#define ChromaSize  size1.xy
-#define ChromaOffset float2(0,0.5)
+#define ChromaSize  (size1.xy)
+#define BC (args0.xy)
+#define ChromaOffset (args0.zw)
 
 #define px (size1[2])
 #define py (size1[3])
