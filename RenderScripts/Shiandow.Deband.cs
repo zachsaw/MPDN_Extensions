@@ -27,7 +27,7 @@ namespace Mpdn.RenderScript
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
                 var upscaler = new Scaler.Custom(new GaussianBlur(0.75), ScalerTaps.Four, false);
-                var downscaler = new Scaler.Bilinear();
+                var downscaler = new Scaler.HwBilinear(); // Good enough (?)
 
                 int bits = 8;
                 switch (Renderer.InputFormat)
@@ -48,10 +48,13 @@ namespace Mpdn.RenderScript
                 var factor = 2.0;
                 var downscaled = new Stack<IFilter>();
                 downscaled.Push(current);
+
+                // Generate downscaled images
                 for (int i = 0; i < 8; i++)
                 {
                     size = new Size((int)Math.Floor(size.Width / factor), (int)Math.Floor(size.Height / factor));
                     if (size.Width == 0 || size.Height == 0) break;
+
                     current = new ResizeFilter(current, size, upscaler, downscaler);
                     downscaled.Push(current);
                 }
@@ -65,7 +68,8 @@ namespace Mpdn.RenderScript
                             (1 << bits) - 1, 
                             advancedMode ? threshold : DEFAULT_THRESHOLD,
                             advancedMode ? margin : DEFAULT_MARGIN
-                        }, downscaled.Pop(), deband);
+                        }, 
+                        downscaled.Pop(), deband);
                 }
 
                 return deband.ConvertToRgb();
@@ -75,7 +79,7 @@ namespace Mpdn.RenderScript
             {
                 private double m_Sigma;
 
-                public GaussianBlur(double sigma) 
+                public GaussianBlur(double sigma)
                 {
                     m_Sigma = sigma;
                 }
