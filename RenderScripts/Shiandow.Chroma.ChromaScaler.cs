@@ -8,30 +8,6 @@ namespace Mpdn.RenderScript
 {
     namespace Shiandow.Chroma
     {
-
-        #region Filter Definitions
-
-        public class ChromaFilter : ShaderFilter
-        {
-            private readonly float m_B;
-            private readonly float m_C;
-
-            public ChromaFilter(IShader shader, float b, float c, params IFilter[] inputFilters)
-                : base(shader, s => Renderer.VideoSize, inputFilters)
-            {
-                m_B = b;
-                m_C = c;
-            }
-
-            protected override void LoadInputs(IEnumerable<ITexture> inputs)
-            {
-                base.LoadInputs(inputs);
-                Shader.SetConstant("BC", new Vector4(m_B, m_C, 0, 0), false);
-            }
-        }
-
-        #endregion
-
         #region Presets
 
         public enum Presets
@@ -106,7 +82,9 @@ namespace Mpdn.RenderScript
                 var uInput = new USourceFilter();
                 var vInput = new VSourceFilter();
 
-                var chroma = new ChromaFilter(chromaShader, B, C, yInput, uInput, vInput);
+                float[] offset = { 0.0f, 0.5f };
+
+                var chroma = new ShaderFilter(chromaShader, new[] {B, C, offset[0], offset[1]}, yInput, uInput, vInput);
                 var rgb = chroma.ConvertToRgb();
 
                 return rgb;

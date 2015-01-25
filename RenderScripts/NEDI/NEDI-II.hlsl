@@ -2,6 +2,7 @@
 sampler s0 : register(s0);
 float4 	p0 : register(c0);
 float2 	p1 : register(c1);
+float4  args0 : register(c2);
 
 #define width  (p0[0])
 #define height (p0[1])
@@ -18,7 +19,7 @@ float2 	p1 : register(c1);
 #define I (float2x2(1,0,0,1))
 
 //Luma channel
-float Lum(float4 x) { return dot(float3(.2126, .7152, .0722),x.rgb); }
+float Lum(float4 x) { return dot(args0.xyz, x.rgb); }
 
 //Conjugate residual 
 float2 solve(float2x2 A,float2 b) {

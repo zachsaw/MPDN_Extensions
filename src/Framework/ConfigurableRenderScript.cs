@@ -53,6 +53,11 @@ namespace Mpdn.RenderScript
             set { ScriptConfig = new Config(value); } 
         }
 
+        public ConfigurableRenderChainUi()
+        {
+            Chain = null;
+        }
+
         protected abstract string ConfigFileName { get; }
 
         [YAXDontSerialize]

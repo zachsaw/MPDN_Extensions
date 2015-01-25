@@ -317,7 +317,7 @@ namespace Mpdn.RenderScript
             if (inputFilter is YuvFilter)
             {
                 PassthroughFilter = inputFilter.InputFilters[0];
-            }        
+            }
         }
 
         public override Size OutputSize
