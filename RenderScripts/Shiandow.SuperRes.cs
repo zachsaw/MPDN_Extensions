@@ -30,16 +30,16 @@ namespace Mpdn.RenderScript
                 TargetSize = () => Renderer.TargetSize;
                 m_ShiftedScaler = new Scaler.Custom(new ShiftedScaler(0.5f), ScalerTaps.Six, false);
 
-                Passes = 2;
+                Passes = 3;
 
-                Strength = 0.8f;
+                Strength = 0.75f;
                 Sharpness = 0.5f;
-                AntiAliasing = 1.0f;
-                AntiRinging = 0.8f;
+                AntiAliasing = 0.25f;
+                AntiRinging = 0.75f;
 
                 UseNEDI = false;
                 FirstPassOnly = false;
-                upscaler = new Scaler.Bicubic(2.0f/3.0f, false);
+                upscaler = new Scaler.Jinc(ScalerTaps.Four, false);
                 downscaler = new Scaler.Bilinear();
             }
 
@@ -48,34 +48,23 @@ namespace Mpdn.RenderScript
                 var inputSize = sourceFilter.OutputSize;
                 var targetSize = TargetSize();
 
-                IFilter initial;
-                if (UseNEDI)
-                {
-                    initial = new Shiandow.Nedi.Nedi { AlwaysDoubleImage = false, Centered = false }.CreateFilter(sourceFilter);
-                    initial = new ResizeFilter(initial, targetSize, m_ShiftedScaler, m_ShiftedScaler);
-                }
-                else
-                {
-                    initial = new ResizeFilter(sourceFilter, targetSize);
-                }
-
                 // Skip if downscaling
                 if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
                     return sourceFilter;
                 else
-                    return CreateFilter(sourceFilter, initial);
+                    return CreateFilter(sourceFilter, sourceFilter);
             }
 
             public IFilter CreateFilter(IFilter original, IFilter initial)
             {
-                IFilter lab, linear;
+                IFilter lab, linear, result = initial;
 
                 var inputSize = original.OutputSize;
+                var currentSize = original.OutputSize;
                 var targetSize = TargetSize();
 
                 var Diff = CompileShader("Diff.hlsl");
                 var SuperRes = CompileShader("SuperRes.hlsl");
-                var ARShader = CompileShader("AntiRinging.hlsl");
 
                 var GammaToLab = CompileShader("GammaToLab.hlsl");
                 var LabToGamma = CompileShader("LabToGamma.hlsl");
@@ -84,30 +73,72 @@ namespace Mpdn.RenderScript
                 var LabToLinear = CompileShader("LabToLinear.hlsl");
                 var LinearToLab = CompileShader("LinearToLab.hlsl");
 
+                var NEDI = new Shiandow.Nedi.Nedi
+                {
+                    AlwaysDoubleImage = false,
+                    Centered = false,
+                    LumaConstants = new[] { 1.0f, 0.0f, 0.0f }
+                };
+
+                var Consts = new[] { Strength, Sharpness, AntiAliasing, AntiRinging };
+
                 // Initial scaling
-                linear   = new ShaderFilter(GammaToLinear, initial);
+                lab = new ShaderFilter(GammaToLab, initial);
                 original = new ShaderFilter(GammaToLab, original);
 
-                float AA = AntiAliasing;
                 for (int i = 1; i <= Passes; i++)
                 {
                     IFilter res, diff;
                     bool useBilinear = (upscaler is Scaler.Bilinear) || (FirstPassOnly && !(i == 1));
 
+                    // Calculate size
+                    if (i == Passes) currentSize = targetSize;
+                    else currentSize = CalculateSize(currentSize, targetSize, i);
+                                        
+                    // Resize and Convert
+                    if (i == 1 && UseNEDI)
+                    {
+                        var nedi = lab + NEDI;
+                        lab = new ResizeFilter(nedi, currentSize, m_ShiftedScaler, m_ShiftedScaler);
+
+                        if (currentSize == nedi.OutputSize)
+                            throw new InvalidOperationException("TODO: implement a way to shift NEDI without resizing");
+                    }
+                    else lab = new ResizeFilter(lab, currentSize);
+                    linear = new ShaderFilter(LabToLinear, lab);
+
                     // Calculate difference
                     res = new ResizeFilter(linear, inputSize, upscaler, downscaler); // Downscale result
                     diff = new ShaderFilter(Diff, res, original);                    // Compare with original
                     if (!useBilinear)
-                        diff = new ResizeFilter(diff, targetSize, upscaler, downscaler); // Scale to output size
-
+                        diff = new ResizeFilter(diff, currentSize, upscaler, downscaler); // Scale to output size
+                    
                     // Update result
-                    lab = new ShaderFilter(LinearToLab, linear);
-                    linear = new ShaderFilter(SuperRes, useBilinear, new[] { Strength, Sharpness, AA, AntiRinging }, lab, diff, original);
-
-                    AA *= 0.5f;
+                    lab = new ShaderFilter(SuperRes, useBilinear, Consts, lab, diff, original);
+                    result = new ShaderFilter(LabToGamma, lab);
                 }
 
-                return new ShaderFilter(LinearToGamma, linear);
+                return result;
+            }
+
+            private Size CalculateSize(Size sizeA, Size sizeB, int k)
+            {
+                double w, h;
+                var MaxScale = 1.9; // If this is set to >=2.0 then NEDI might stop working...
+                var MinScale = Math.Sqrt(MaxScale);
+                
+                int minW = sizeA.Width; int minH = sizeA.Height;
+                int maxW = sizeB.Width; int maxH = sizeB.Height;
+
+                int maxSteps = (int)Math.Floor  (Math.Log((double)(maxH * maxW) / (double)(minH * minW)) / (2 * Math.Log(MinScale)));
+                int minSteps = (int)Math.Ceiling(Math.Log((double)(maxH * maxW) / (double)(minH * minW)) / (2 * Math.Log(MaxScale)));
+                int steps = Math.Max(Math.Max(1,minSteps), Math.Min(maxSteps, Passes - (k - 1)));
+                
+                w = minW * Math.Pow((double)maxW / (double)minW, (double)Math.Min(k, steps) / (double)steps);
+                h = minW * Math.Pow((double)maxH / (double)minH, (double)Math.Min(k, steps) / (double)steps);
+
+                return new Size(Math.Max(minW, Math.Min(maxW, (int)Math.Round(w))),
+                                Math.Max(minH, Math.Min(maxH, (int)Math.Round(h))));
             }
 
             private IScaler m_ShiftedScaler;
