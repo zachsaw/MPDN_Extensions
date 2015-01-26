@@ -16,13 +16,7 @@ namespace Mpdn.RenderScript
             {
                 InitializeComponent();
 
-                var renderScripts =
-                    from t in Assembly.GetExecutingAssembly().GetTypes()
-                    let constructor = t.GetConstructor(Type.EmptyTypes)
-                    where t.IsClass
-                          && typeof (IRenderChainUi).IsAssignableFrom(t)
-                          && constructor != null
-                    select (IRenderChainUi) constructor.Invoke(new object[0]);
+                var renderScripts = PlayerControl.RenderScripts.Where(script => script is IRenderChainUi);
 
                 foreach (var script in renderScripts)
                 {
