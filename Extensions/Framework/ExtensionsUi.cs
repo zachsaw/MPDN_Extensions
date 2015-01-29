@@ -31,6 +31,8 @@ namespace Mpdn
             }
         }
 
+        public class NoSettings { }
+
         public class ScriptConfigDialog<TSettings> : Form
             where TSettings : class, new()
         {

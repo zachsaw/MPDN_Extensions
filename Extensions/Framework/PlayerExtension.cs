@@ -7,7 +7,7 @@ using Mpdn.Config;
 
 namespace Mpdn.PlayerExtensions
 {
-    public abstract class PlayerExtension : PlayerExtension<object> { }
+    public abstract class PlayerExtension : PlayerExtension<NoSettings> { }
 
     public abstract class PlayerExtension<TSettings> : PlayerExtension<TSettings, ScriptConfigDialog<TSettings>>
         where TSettings : class, new()
