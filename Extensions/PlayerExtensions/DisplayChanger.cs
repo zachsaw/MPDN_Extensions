@@ -9,18 +9,18 @@ using Mpdn.PlayerExtensions.GitHub.DisplayChangerNativeMethods;
 
 namespace Mpdn.PlayerExtensions.GitHub
 {
-    public class DisplayChanger : ConfigurablePlayerExtension<DisplayChangerSettings, DisplayChangerConfigDialog>
+    public class DisplayChanger : PlayerExtension<DisplayChangerSettings, DisplayChangerConfigDialog>
     {
         private Screen m_RestoreScreen;
         private int m_RestoreFrequency;
 
         private readonly List<int> m_AllRefreshRates = new List<int>();
 
-        protected override PlayerExtensionDescriptor ScriptDescriptor
+        public override ExtensionUiDescriptor Descriptor
         {
             get
             {
-                return new PlayerExtensionDescriptor
+                return new ExtensionUiDescriptor
                 {
                     Guid = new Guid("9C1BBA5B-B956-43E1-9A91-58B72571EF82"),
                     Name = "Display Changer",

@@ -14,19 +14,19 @@ namespace Mpdn.PlayerExtensions
     public partial class RemoteClients : Form
     {
         #region Variables
-        public AcmPlug MainRemote;
+        public ACMPlug mainRemote;
         #endregion
 
         #region Delegates
-        private delegate void UpdateDgRowDelegate(string[] row);
+        private delegate void UpdateDGRowDelegate(string[] row);
         private delegate void ClearGridDelegate();
         #endregion
 
         #region Constructor
-        public RemoteClients(AcmPlug control)
+        public RemoteClients(ACMPlug control)
         {
             InitializeComponent();
-            MainRemote = control;
+            mainRemote = control;
             this.Load += RemoteClients_Load;
         }
         #endregion
@@ -47,13 +47,13 @@ namespace Mpdn.PlayerExtensions
         private void PopulateGrid()
         {
             dgMainGrid.Invoke(new ClearGridDelegate(ClearGrid));
-            foreach(var item in MainRemote.GetClients)
+            foreach(var item in mainRemote.getClients)
             {
                 try
                 {
                     IPEndPoint remoteIpEndPoint = item.Value.RemoteEndPoint as IPEndPoint;
                     string[] tmpRow = { item.Key.ToString(), remoteIpEndPoint.Address + ":" + remoteIpEndPoint.Port };
-                    dgMainGrid.Invoke(new UpdateDgRowDelegate(AddRow), new object[]{tmpRow});
+                    dgMainGrid.Invoke(new UpdateDGRowDelegate(addRow), new object[]{tmpRow});
                 }
                 catch(Exception ex)
                 {
@@ -68,7 +68,7 @@ namespace Mpdn.PlayerExtensions
             dgMainGrid.Rows.Clear();
         }
 
-        private void AddRow(string[] row)
+        private void addRow(string[] row)
         {
             dgMainGrid.Rows.Add(row);
             dgMainGrid.Refresh();
@@ -92,8 +92,8 @@ namespace Mpdn.PlayerExtensions
         {
             if(dgMainGrid.SelectedRows.Count == 1)
             {
-                var clientGuid = dgMainGrid.SelectedRows[0].Cells[0].Value.ToString();
-                MainRemote.DisconnectClient(clientGuid);
+                var clientGUID = dgMainGrid.SelectedRows[0].Cells[0].Value.ToString();
+                mainRemote.DisconnectClient(clientGUID);
             }
         }
     }

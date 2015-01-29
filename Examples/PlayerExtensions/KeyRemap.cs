@@ -6,11 +6,11 @@ namespace Mpdn.PlayerExtensions.Example
 {
     public class KeyRemap : IPlayerExtension
     {
-        public ExtensionDescriptor Descriptor
+        public ExtensionUiDescriptor Descriptor
         {
             get
             {
-                return new ExtensionDescriptor
+                return new ExtensionUiDescriptor
                 {
                     Guid = new Guid("2FC1DF6F-5A0E-4B95-A364-9DD0D756AA67"),
                     Name = "Key / Mouse Remapper",
@@ -39,6 +39,11 @@ namespace Mpdn.PlayerExtensions.Example
         public IList<Verb> Verbs
         {
             get { return new Verb[0]; }
+        }
+
+        public bool HasConfigDialog()
+        {
+            return false;
         }
 
         public bool ShowConfigDialog(IWin32Window owner)

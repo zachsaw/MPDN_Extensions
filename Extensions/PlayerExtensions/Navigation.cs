@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions.GitHub
 {
@@ -16,11 +17,11 @@ namespace Mpdn.PlayerExtensions.GitHub
             ".mid", ".midi", ".rmi"
         };
 
-        protected override PlayerExtensionDescriptor ScriptDescriptor
+        public override ExtensionUiDescriptor Descriptor
         {
             get
             {
-                return new PlayerExtensionDescriptor
+                return new ExtensionUiDescriptor
                 {
                     Guid = new Guid("79FFF20D-785B-497C-9716-066787F2A3AC"),
                     Name = "Navigation",
@@ -69,6 +70,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             var nextChapter = next
                 ? chapters.SkipWhile(chapter => chapter.Position < pos+1).FirstOrDefault()
                 : chapters.TakeWhile(chapter => chapter.Position < Math.Max(pos-1000000, 0)).LastOrDefault();
+
             if (nextChapter != null)
             {
                 PlayerControl.SeekMedia(nextChapter.Position);

@@ -119,7 +119,7 @@ namespace Mpdn.RenderScript
                 buttonUp.Enabled = listViewChain.SelectedItems.Count > 0 && listViewChain.SelectedItems[0].Index > 0;
                 buttonDown.Enabled = listViewChain.SelectedItems.Count > 0 &&
                                      listViewChain.SelectedItems[0].Index < listViewChain.Items.Count - 1;
-                buttonConfigure.Enabled = buttonMinus.Enabled && (listViewChain.SelectedItems[0].Tag as IRenderScriptUi).Descriptor.HasConfigDialog;
+                buttonConfigure.Enabled = buttonMinus.Enabled && (listViewChain.SelectedItems[0].Tag as IRenderScriptUi).HasConfigDialog();
 
                 menuAdd.Enabled = buttonAdd.Enabled;
                 menuRemove.Enabled = buttonMinus.Enabled;
@@ -140,7 +140,7 @@ namespace Mpdn.RenderScript
                     item.Text = SELECTED_INDICATOR_STR;
 
                     var s = (IRenderChainUi) item.Tag;
-                    buttonConfigure.Enabled = s != null && s.Descriptor.HasConfigDialog;
+                    buttonConfigure.Enabled = s != null && s.HasConfigDialog();
                 }
 
                 UpdateButtons();
@@ -153,7 +153,7 @@ namespace Mpdn.RenderScript
 
                 var item = listViewChain.SelectedItems[0];
                 var script = (IRenderChainUi) item.Tag;
-                if (script.Descriptor.HasConfigDialog && script.ShowConfigDialog(Owner))
+                if (script.HasConfigDialog() && script.ShowConfigDialog(Owner))
                     UpdateItemText(item, script);
             }
 

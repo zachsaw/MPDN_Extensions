@@ -7,11 +7,11 @@ namespace Mpdn.PlayerExtensions.GitHub
 {
     public class KeyBindings : PlayerExtension
     {
-        protected override PlayerExtensionDescriptor ScriptDescriptor
+        public override ExtensionUiDescriptor Descriptor
         {
             get
             {
-                return new PlayerExtensionDescriptor
+                return new ExtensionUiDescriptor
                 {
                     Guid = new Guid("E3E54699-0B2B-4B1B-8F6B-4739273670CD"),
                     Name = "Key Bindings",
@@ -35,11 +35,6 @@ namespace Mpdn.PlayerExtensions.GitHub
         public override IList<Verb> Verbs
         {
             get { return new Verb[0]; }
-        }
-
-        public override bool ShowConfigDialog(IWin32Window owner)
-        {
-            return false;
         }
 
         private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)

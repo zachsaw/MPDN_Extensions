@@ -101,9 +101,9 @@ namespace Mpdn.RenderScript
                         var nedi = lab + NEDI;
                         lab = new ResizeFilter(nedi, currentSize, m_ShiftedScaler, m_ShiftedScaler);
 
-                        if (currentSize == nedi.OutputSize)
+                        //if (currentSize == nedi.OutputSize)
                             // TODO: implement a proper way to shift NEDI without resizing
-                            lab = new ResizeFilter(lab, currentSize);
+                          //  lab = new ResizeFilter(lab, currentSize);
                     }
                     else lab = new ResizeFilter(lab, currentSize);
                     linear = new ShaderFilter(LabToLinear, lab);

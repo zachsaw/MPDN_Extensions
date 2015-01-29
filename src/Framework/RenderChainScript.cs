@@ -155,19 +155,23 @@ namespace Mpdn.RenderScript
         }
 
         [YAXDontSerialize]
-        public virtual ScriptDescriptor Descriptor
+        public virtual ExtensionUiDescriptor Descriptor
         {
             get
             {
-                return new ScriptDescriptor
+                return new ExtensionUiDescriptor
                 {
-                    HasConfigDialog = false,
                     Guid = ScriptDescriptor.Guid,
                     Name = ScriptDescriptor.Name,
                     Description = ScriptDescriptor.Description,
                     Copyright = ScriptDescriptor.Copyright
                 };
             }
+        }
+
+        public virtual bool HasConfigDialog()
+        {
+            return false;
         }
 
         public virtual bool ShowConfigDialog(IWin32Window owner)

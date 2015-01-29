@@ -17,16 +17,15 @@ namespace Mpdn.RenderScript
 
         private class NullRenderScriptUi : IRenderScriptUi
         {
-            public ScriptDescriptor Descriptor
+            public ExtensionUiDescriptor Descriptor
             {
                 get
                 {
-                    return new ScriptDescriptor
+                    return new ExtensionUiDescriptor
                     {
                         Guid = Guid.Empty,
                         Name = "None",
-                        Description = "Do not use render script",
-                        HasConfigDialog = false
+                        Description = "Do not use render script"
                     };
                 }
             }
@@ -42,6 +41,11 @@ namespace Mpdn.RenderScript
 
             public void Destroy()
             {
+            }
+
+            public bool HasConfigDialog()
+            {
+                return false;
             }
 
             public bool ShowConfigDialog(IWin32Window owner)

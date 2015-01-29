@@ -6,11 +6,11 @@ namespace Mpdn.PlayerExtensions.Example
 {
     public class HelloWorld : IPlayerExtension
     {
-        public ExtensionDescriptor Descriptor
+        public ExtensionUiDescriptor Descriptor
         {
             get
             {
-                return new ExtensionDescriptor
+                return new ExtensionUiDescriptor
                 {
                     Guid = new Guid("9714174F-B64D-43D8-BB16-52C5FEE2417B"),
                     Name = "Hello World",
@@ -40,6 +40,11 @@ namespace Mpdn.PlayerExtensions.Example
                     new Verb(Category.Help, "My subcategory", "Another Hello World", "Ctrl+Shift+Y", "Say hello world too", HelloWorld2Click)
                 };
             }
+        }
+        
+        public bool HasConfigDialog()
+        {
+            return false;
         }
 
         public bool ShowConfigDialog(IWin32Window owner)

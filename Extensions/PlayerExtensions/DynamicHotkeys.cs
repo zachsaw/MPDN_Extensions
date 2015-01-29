@@ -28,11 +28,11 @@ namespace Mpdn.PlayerExtensions
             m_Verbs = m_Verbs.Where(v => v.Caption != caption).ToList();
         }
 
-        protected override PlayerExtensionDescriptor ScriptDescriptor
+        public override ExtensionUiDescriptor Descriptor
         {
             get
             {
-                return new PlayerExtensionDescriptor
+                return new ExtensionUiDescriptor
                 {
                     Guid = new Guid("29CBA419-591F-4CEB-9BC1-41D592F5F203"),
                     Name = "DynamicHotkeys",

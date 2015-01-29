@@ -47,7 +47,7 @@ namespace Mpdn.RenderScript
             get
             {
                 var asmPath = typeof (IRenderScript).Assembly.Location;
-                return Path.Combine(Common.GetDirectoryName(asmPath), "RenderScripts", ShaderPath);
+                return Path.Combine(Common.GetDirectoryName(asmPath), "Extensions", "RenderScripts", ShaderPath);
             }
         }
 

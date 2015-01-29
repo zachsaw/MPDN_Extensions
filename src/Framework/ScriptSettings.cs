@@ -6,6 +6,7 @@
         {
             public class RenderScripts
             {
+                // No implementation - we are only using this class as our folder name to pass into ScriptSettingsBase
             }
         }
 

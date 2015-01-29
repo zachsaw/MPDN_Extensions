@@ -18,17 +18,22 @@ namespace Mpdn.PlayerExtensions.GitHub
         private long m_Duration;
         private Size m_ScreenSize;
 
-        public ExtensionDescriptor Descriptor
+        public ExtensionUiDescriptor Descriptor
         {
             get
             {
-                return new ExtensionDescriptor
+                return new ExtensionUiDescriptor
                 {
                     Guid = new Guid("D24FA2D6-B3BE-40C1-B3A5-25D1639EB994"),
                     Name = "Text Painter",
                     Description = "Paints current media time code on top of seek bar in full screen mode"
                 };
             }
+        }
+
+        public bool HasConfigDialog()
+        {
+            return false;
         }
 
         public void Initialize()

@@ -33,7 +33,12 @@ namespace Mpdn.RenderScript
                 return Script.ShowConfigDialog(owner);
             }
 
-            public virtual ScriptDescriptor Descriptor
+            public virtual bool HasConfigDialog()
+            {
+                return Script.HasConfigDialog();
+            }
+
+            public virtual ExtensionUiDescriptor Descriptor
             {
                 get 
                 {
@@ -95,7 +100,7 @@ namespace Mpdn.RenderScript
                 PresetExtension.ScriptGuid = m_Guid;
             }
 
-            public override ScriptDescriptor Descriptor
+            public override ExtensionUiDescriptor Descriptor
             {
                 get
                 {

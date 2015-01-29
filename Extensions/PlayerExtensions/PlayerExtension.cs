@@ -3,49 +3,77 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Mpdn.PlayerExtensions.Config;
 
 namespace Mpdn.PlayerExtensions
 {
-    public class PlayerExtensionDescriptor
+    public class ScriptConfigDialog<TSettings> : Form
+    where TSettings : class, new()
     {
-        public string Copyright = "";
-        public string Description;
-        public Guid Guid = Guid.Empty;
-        public string Name;
+        protected TSettings Settings { get; private set; }
+
+        public virtual void Setup(TSettings settings)
+        {
+            Settings = settings;
+
+            LoadSettings();
+        }
+
+        protected virtual void LoadSettings()
+        {
+            // This needs to be overriden
+            throw new NotImplementedException();
+        }
+
+        protected virtual void SaveSettings()
+        {
+            // This needs to be overriden
+            throw new NotImplementedException();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            base.OnFormClosed(e);
+
+            if (DialogResult != DialogResult.OK)
+                return;
+
+            SaveSettings();
+        }
     }
 
-    public abstract class PlayerExtension : IPlayerExtension
+    public abstract class PlayerExtension : PlayerExtension<object> { }
+
+    public abstract class PlayerExtension<TSettings> : PlayerExtension<TSettings, ScriptConfigDialog<TSettings>>
+        where TSettings : class, new()
+    { }
+
+    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<TSettings, TDialog>, IPlayerExtension
+        where TSettings : class, new()
+        where TDialog : ScriptConfigDialog<TSettings>, new()
     {
-        private readonly IDictionary<Keys, Action> m_Actions = new Dictionary<Keys, Action>();
-
-        protected virtual PlayerExtensionDescriptor ScriptDescriptor { get { return new PlayerExtensionDescriptor(); } }
-
         public abstract IList<Verb> Verbs { get; }
 
         #region Implementation
 
-        public virtual ExtensionDescriptor Descriptor
+        public override void Initialize()
         {
-            get
-            {
-                return new ExtensionDescriptor
-                {
-                    HasConfigDialog = false,
-                    Copyright = ScriptDescriptor.Copyright,
-                    Description = ScriptDescriptor.Description,
-                    Guid = ScriptDescriptor.Guid,
-                    Name = ScriptDescriptor.Name
-                };
-            }
-        }
+            base.Initialize();
 
-        public virtual void Initialize()
-        {
             PlayerControl.KeyDown += PlayerKeyDown;
             LoadVerbs();
         }
 
-        public void LoadVerbs()
+        public override void Destroy()
+        {
+            PlayerControl.KeyDown -= PlayerKeyDown;
+
+            base.Destroy();
+        }
+
+        private readonly IDictionary<Keys, Action> m_Actions = new Dictionary<Keys, Action>();
+
+        protected void LoadVerbs()
         {
             foreach (var verb in Verbs)
             {
@@ -53,16 +81,6 @@ namespace Mpdn.PlayerExtensions
                 m_Actions.Remove(shortcut); //Prevent duplicates FIFO.
                 m_Actions.Add(shortcut, verb.Action);
             }
-        }
-
-        public virtual void Destroy()
-        {
-            PlayerControl.KeyDown -= PlayerKeyDown;
-        }
-
-        public virtual bool ShowConfigDialog(IWin32Window owner)
-        {
-            throw new NotImplementedException();
         }
 
         private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
@@ -112,8 +130,81 @@ namespace Mpdn.PlayerExtensions
                     return "D8";
                 case "9":
                     return "D9";
-                default: 
+                default:
                     return keyWord;
+            }
+        }
+
+        #endregion
+    }
+
+    public abstract class ExtensionUi<TSettings, TDialog> : IExtensionUi
+        where TSettings : class, new()
+        where TDialog : ScriptConfigDialog<TSettings>, new()
+    {
+        protected virtual string ConfigFileName { get { return this.GetType().Name; } }
+
+        public abstract ExtensionUiDescriptor Descriptor { get; }
+
+        #region Implementation
+
+        protected Config ScriptConfig { get; private set; }
+
+        protected TSettings Settings
+        {
+            get { return ScriptConfig == null ? new TSettings() : ScriptConfig.Config; }
+        }
+
+        public bool HasConfigDialog()
+        {
+            return !(typeof(TDialog).IsAssignableFrom(typeof(ScriptConfigDialog<TSettings>)));
+        }
+
+        public virtual void Initialize()
+        {
+            ScriptConfig = new Config(ConfigFileName);
+        }
+
+        public virtual void Destroy()
+        {
+            ScriptConfig.Save();
+        }
+
+        public virtual bool ShowConfigDialog(IWin32Window owner)
+        {
+            using (var dialog = new TDialog())
+            {
+                dialog.Setup(ScriptConfig.Config);
+                if (dialog.ShowDialog(owner) != DialogResult.OK)
+                    return false;
+
+                ScriptConfig.Save();
+                return true;
+            }
+        }
+
+        #endregion
+
+        #region ScriptSettings Class
+
+        public class Config : ScriptSettings<TSettings>
+        {
+            private readonly string m_ConfigName;
+
+            public Config(string configName)
+            {
+                m_ConfigName = configName;
+                Load();
+            }
+
+            public Config(TSettings settings)
+                : base(settings)
+            {
+            }
+
+            protected override string ScriptConfigFileName
+            {
+                get { return string.Format("{0}.config", m_ConfigName); }
             }
         }
 

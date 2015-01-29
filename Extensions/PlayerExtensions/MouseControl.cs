@@ -5,13 +5,13 @@ using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions.GitHub
 {
-    public class MouseControl : ConfigurablePlayerExtension<MouseControlSettings, MouseControlConfigDialog>
+    public class MouseControl : PlayerExtension<MouseControlSettings, MouseControlConfigDialog>
     {
-        protected override PlayerExtensionDescriptor ScriptDescriptor
+        public override ExtensionUiDescriptor Descriptor
         {
             get
             {
-                return new PlayerExtensionDescriptor
+                return new ExtensionUiDescriptor
                 {
                     Guid = new Guid("DCF7797B-9D36-41F3-B28C-0A92793B94F5"),
                     Name = "Mouse Control",
