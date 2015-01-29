@@ -17,6 +17,7 @@ namespace Mpdn.RenderScript
             public float AntiRinging { get; set; }
 
             public bool UseNEDI { get; set; }
+            public bool NoIntermediates { get; set; }
 
             public bool FirstPassOnly;
 
@@ -38,6 +39,8 @@ namespace Mpdn.RenderScript
                 AntiRinging = 0.75f;
 
                 UseNEDI = false;
+                NoIntermediates = false;
+
                 FirstPassOnly = false;
                 upscaler = new Scaler.Jinc(ScalerTaps.Four, false);
                 downscaler = new Scaler.Bilinear();
@@ -92,27 +95,23 @@ namespace Mpdn.RenderScript
                     bool useBilinear = (upscaler is Scaler.Bilinear) || (FirstPassOnly && !(i == 1));
 
                     // Calculate size
-                    if (i == Passes) currentSize = targetSize;
+                    if (i == Passes || NoIntermediates) currentSize = targetSize;
                     else currentSize = CalculateSize(currentSize, targetSize, i);
                                         
-                    // Resize and Convert
+                    // Resize
                     if (i == 1 && UseNEDI)
-                    {
-                        var nedi = lab + NEDI;
-                        lab = new ResizeFilter(nedi, currentSize, m_ShiftedScaler, m_ShiftedScaler);
+                        lab = new ResizeFilter(lab + NEDI, currentSize, m_ShiftedScaler, m_ShiftedScaler, m_ShiftedScaler);
+                    else 
+                        lab = new ResizeFilter(lab, currentSize);
 
-                        //if (currentSize == nedi.OutputSize)
-                            // TODO: implement a proper way to shift NEDI without resizing
-                          //  lab = new ResizeFilter(lab, currentSize);
-                    }
-                    else lab = new ResizeFilter(lab, currentSize);
+                    // Downscale and Subtract
                     linear = new ShaderFilter(LabToLinear, lab);
-
-                    // Calculate difference
                     res = new ResizeFilter(linear, inputSize, upscaler, downscaler); // Downscale result
                     diff = new ShaderFilter(Diff, res, original);                    // Compare with original
+
+                    // Scale difference back
                     if (!useBilinear)
-                        diff = new ResizeFilter(diff, currentSize, upscaler, downscaler); // Scale to output size
+                        diff = new ResizeFilter(diff, currentSize, upscaler, downscaler);
                     
                     // Update result
                     lab = new ShaderFilter(SuperRes, useBilinear, Consts, lab, diff, original);
