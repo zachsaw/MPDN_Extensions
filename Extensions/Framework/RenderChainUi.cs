@@ -42,7 +42,6 @@ namespace Mpdn.RenderScript
         public override void Initialize()
         {
             base.Initialize();
-            Chain = new TChain();
         }
 
         public RenderChain GetChain()

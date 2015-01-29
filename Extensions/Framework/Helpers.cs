@@ -25,8 +25,10 @@ namespace Mpdn
                 obj = default(T);
             }
         }
+    }
 
-        /*
+    public static class PathHelper
+    {
         public static string GetDirectoryName(string path)
         {
             if (path == null)
@@ -35,7 +37,7 @@ namespace Mpdn
             }
 
             return Path.GetDirectoryName(path) ?? Path.GetPathRoot(path);
-        }*/
+        }
     }
 
     public static class EnumHelpers
