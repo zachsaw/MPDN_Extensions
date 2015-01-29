@@ -109,18 +109,18 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class SuperChromaResUi : ConfigurableRenderChainUi<SuperChromaRes, SuperChromaResConfigDialog>
+        public class SuperChromaResUi : RenderChainUi<SuperChromaRes, SuperChromaResConfigDialog>
         {
             protected override string ConfigFileName
             {
                 get { return "SuperChromaRes"; }
             }
 
-            protected override RenderScriptDescriptor ScriptDescriptor
+            public override ExtensionUiDescriptor Descriptor
             {
                 get
                 {
-                    return new RenderScriptDescriptor
+                    return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("AC6F46E2-C04E-4A20-AF68-EFA8A6CA7FCD"),
                         Name = "SuperChromaRes",

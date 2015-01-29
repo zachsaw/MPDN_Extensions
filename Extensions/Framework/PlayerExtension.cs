@@ -3,52 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using Mpdn.PlayerExtensions.Config;
+using Mpdn.Config;
 
 namespace Mpdn.PlayerExtensions
 {
-    public class ScriptConfigDialog<TSettings> : Form
-    where TSettings : class, new()
-    {
-        protected TSettings Settings { get; private set; }
-
-        public virtual void Setup(TSettings settings)
-        {
-            Settings = settings;
-
-            LoadSettings();
-        }
-
-        protected virtual void LoadSettings()
-        {
-            // This needs to be overriden
-            throw new NotImplementedException();
-        }
-
-        protected virtual void SaveSettings()
-        {
-            // This needs to be overriden
-            throw new NotImplementedException();
-        }
-
-        protected override void OnFormClosed(FormClosedEventArgs e)
-        {
-            base.OnFormClosed(e);
-
-            if (DialogResult != DialogResult.OK)
-                return;
-
-            SaveSettings();
-        }
-    }
-
     public abstract class PlayerExtension : PlayerExtension<object> { }
 
     public abstract class PlayerExtension<TSettings> : PlayerExtension<TSettings, ScriptConfigDialog<TSettings>>
         where TSettings : class, new()
     { }
 
-    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<TSettings, TDialog>, IPlayerExtension
+    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<Config.Internal.PlayerExtensions, TSettings, TDialog>, IPlayerExtension
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
@@ -132,79 +97,6 @@ namespace Mpdn.PlayerExtensions
                     return "D9";
                 default:
                     return keyWord;
-            }
-        }
-
-        #endregion
-    }
-
-    public abstract class ExtensionUi<TSettings, TDialog> : IExtensionUi
-        where TSettings : class, new()
-        where TDialog : ScriptConfigDialog<TSettings>, new()
-    {
-        protected virtual string ConfigFileName { get { return this.GetType().Name; } }
-
-        public abstract ExtensionUiDescriptor Descriptor { get; }
-
-        #region Implementation
-
-        protected Config ScriptConfig { get; private set; }
-
-        protected TSettings Settings
-        {
-            get { return ScriptConfig == null ? new TSettings() : ScriptConfig.Config; }
-        }
-
-        public bool HasConfigDialog()
-        {
-            return !(typeof(TDialog).IsAssignableFrom(typeof(ScriptConfigDialog<TSettings>)));
-        }
-
-        public virtual void Initialize()
-        {
-            ScriptConfig = new Config(ConfigFileName);
-        }
-
-        public virtual void Destroy()
-        {
-            ScriptConfig.Save();
-        }
-
-        public virtual bool ShowConfigDialog(IWin32Window owner)
-        {
-            using (var dialog = new TDialog())
-            {
-                dialog.Setup(ScriptConfig.Config);
-                if (dialog.ShowDialog(owner) != DialogResult.OK)
-                    return false;
-
-                ScriptConfig.Save();
-                return true;
-            }
-        }
-
-        #endregion
-
-        #region ScriptSettings Class
-
-        public class Config : ScriptSettings<TSettings>
-        {
-            private readonly string m_ConfigName;
-
-            public Config(string configName)
-            {
-                m_ConfigName = configName;
-                Load();
-            }
-
-            public Config(TSettings settings)
-                : base(settings)
-            {
-            }
-
-            protected override string ScriptConfigFileName
-            {
-                get { return string.Format("{0}.config", m_ConfigName); }
             }
         }
 

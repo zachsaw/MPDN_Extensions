@@ -65,18 +65,18 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class NediScaler : ConfigurableRenderChainUi<Nedi, NediConfigDialog>
+        public class NediScaler : RenderChainUi<Nedi, NediConfigDialog>
         {
             protected override string ConfigFileName
             {
                 get { return "Shiandow.Nedi"; }
             }
 
-            protected override RenderScriptDescriptor ScriptDescriptor
+            public override ExtensionUiDescriptor Descriptor
             {
                 get
                 {
-                    return new RenderScriptDescriptor
+                    return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("B8E439B7-7DC2-4FC1-94E2-608A39756FB0"),
                         Name = "NEDI",

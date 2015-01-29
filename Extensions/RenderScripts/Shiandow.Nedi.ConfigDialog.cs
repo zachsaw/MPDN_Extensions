@@ -1,4 +1,6 @@
-﻿namespace Mpdn.RenderScript
+﻿using Mpdn.Config;
+
+namespace Mpdn.RenderScript
 {
     namespace Shiandow.Nedi
     {

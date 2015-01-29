@@ -4,58 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Mpdn.RenderScript
+namespace Mpdn
 {
-    public static class RenderScript
-    {
-        public static IRenderScriptUi Empty = new NullRenderScriptUi();
-
-        public static bool IsEmpty(this IRenderScriptUi script)
-        {
-            return script is NullRenderScriptUi;
-        }
-
-        private class NullRenderScriptUi : IRenderScriptUi
-        {
-            public ExtensionUiDescriptor Descriptor
-            {
-                get
-                {
-                    return new ExtensionUiDescriptor
-                    {
-                        Guid = Guid.Empty,
-                        Name = "None",
-                        Description = "Do not use render script"
-                    };
-                }
-            }
-
-            public IRenderScript CreateRenderScript()
-            {
-                return null;
-            }
-
-            public void Initialize()
-            {
-            }
-
-            public void Destroy()
-            {
-            }
-
-            public bool HasConfigDialog()
-            {
-                return false;
-            }
-
-            public bool ShowConfigDialog(IWin32Window owner)
-            {
-                return false;
-            }
-        }
-    }
-
-    public static class Common
+    public static class DisposeHelper
     {
         public static void Dispose(object obj)
         {
@@ -75,6 +26,7 @@ namespace Mpdn.RenderScript
             }
         }
 
+        /*
         public static string GetDirectoryName(string path)
         {
             if (path == null)
@@ -83,7 +35,7 @@ namespace Mpdn.RenderScript
             }
 
             return Path.GetDirectoryName(path) ?? Path.GetPathRoot(path);
-        }
+        }*/
     }
 
     public static class EnumHelpers

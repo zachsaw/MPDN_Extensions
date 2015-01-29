@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Mpdn.RenderScript.Config;
+using Mpdn.Config;
 using Mpdn.PlayerExtensions.GitHub;
 using YAXLib;
 

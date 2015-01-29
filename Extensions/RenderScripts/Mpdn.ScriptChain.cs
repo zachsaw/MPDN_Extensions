@@ -21,18 +21,18 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class ScriptChainScript : ConfigurableRenderChainUi<ScriptChain, ScriptChainDialog>
+        public class ScriptChainScript : RenderChainUi<ScriptChain, ScriptChainDialog>
         {
             protected override string ConfigFileName
             {
                 get { return "Mpdn.ScriptChain"; }
             }
 
-            protected override RenderScriptDescriptor ScriptDescriptor
+            public override ExtensionUiDescriptor Descriptor
             {
                 get
                 {
-                    return new RenderScriptDescriptor
+                    return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("3A462015-2D92-43AC-B559-396DACF896C3"),
                         Name = "Script Chain",
