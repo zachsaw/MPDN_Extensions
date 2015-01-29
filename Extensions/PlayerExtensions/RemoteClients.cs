@@ -14,11 +14,11 @@ namespace Mpdn.PlayerExtensions
     public partial class RemoteClients : Form
     {
         #region Variables
-        public ACMPlug mainRemote;
+        public AcmPlug mainRemote;
         #endregion
 
         #region Constructor
-        public RemoteClients(ACMPlug control)
+        public RemoteClients(AcmPlug control)
         {
             InitializeComponent();
             mainRemote = control;
@@ -42,7 +42,7 @@ namespace Mpdn.PlayerExtensions
         private void PopulateGrid()
         {
             ClearGrid();
-            foreach(var item in mainRemote.getClients)
+            foreach(var item in mainRemote.GetClients)
             {
                 try
                 {

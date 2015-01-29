@@ -81,9 +81,10 @@
             // 
             // colAddr
             // 
-            this.colAddr.FillWeight = 150F;
+            this.colAddr.FillWeight = 160F;
             this.colAddr.HeaderText = "Client Address";
             this.colAddr.Name = "colAddr";
+            this.colAddr.Width = 132;
             // 
             // RemoteClients
             // 
