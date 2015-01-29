@@ -317,7 +317,7 @@ namespace Mpdn.RenderScript
             if (inputFilter is YuvFilter)
             {
                 PassthroughFilter = inputFilter.InputFilters[0];
-            }        
+            }
         }
 
         public override Size OutputSize
@@ -356,18 +356,20 @@ namespace Mpdn.RenderScript
     {
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
+        private readonly IScaler m_Convolver;
         private Size m_OutputSize;
 
-        public ResizeFilter(IFilter inputFilter, Size outputSize)
-            : this(inputFilter, outputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler)
+        public ResizeFilter(IFilter inputFilter, Size outputSize, IScaler convolver = null)
+            : this(inputFilter, outputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
         }
 
-        public ResizeFilter(IFilter inputFilter, Size outputSize, IScaler upscaler, IScaler downscaler)
+        public ResizeFilter(IFilter inputFilter, Size outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
             : base(inputFilter)
         {
             m_Upscaler = upscaler;
             m_Downscaler = downscaler;
+            m_Convolver = convolver;
             m_OutputSize = outputSize;
         }
 
@@ -378,7 +380,7 @@ namespace Mpdn.RenderScript
 
         public override IFilter Initialize(int time = 1)
         {
-            if (InputFilters[0].OutputSize == m_OutputSize)
+            if (InputFilters[0].OutputSize == m_OutputSize && m_Convolver == null)
             {
                 PassthroughFilter = InputFilters[0];
             }
@@ -393,7 +395,7 @@ namespace Mpdn.RenderScript
 
         protected override void Render(IEnumerable<ITexture> inputs)
         {
-            Renderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler);
+            Renderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler, m_Convolver);
         }
     }
 
