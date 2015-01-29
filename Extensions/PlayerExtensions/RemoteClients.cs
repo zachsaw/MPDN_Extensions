@@ -17,11 +17,6 @@ namespace Mpdn.PlayerExtensions
         public ACMPlug mainRemote;
         #endregion
 
-        #region Delegates
-        private delegate void UpdateDGRowDelegate(string[] row);
-        private delegate void ClearGridDelegate();
-        #endregion
-
         #region Constructor
         public RemoteClients(ACMPlug control)
         {
@@ -41,26 +36,25 @@ namespace Mpdn.PlayerExtensions
         #region Private Methods
         void RemoteClients_Load(object sender, EventArgs e)
         {
-            PopulateGrid();
+            dgMainGrid.Invoke((MethodInvoker) PopulateGrid);
         }
 
         private void PopulateGrid()
         {
-            dgMainGrid.Invoke(new ClearGridDelegate(ClearGrid));
+            ClearGrid();
             foreach(var item in mainRemote.getClients)
             {
                 try
                 {
                     IPEndPoint remoteIpEndPoint = item.Value.RemoteEndPoint as IPEndPoint;
                     string[] tmpRow = { item.Key.ToString(), remoteIpEndPoint.Address + ":" + remoteIpEndPoint.Port };
-                    dgMainGrid.Invoke(new UpdateDGRowDelegate(addRow), new object[]{tmpRow});
+                    AddRow(tmpRow);
                 }
                 catch(Exception ex)
                 {
                     MessageBox.Show("Error " + ex.ToString());
                 }
             } 
-
         }
 
         private void ClearGrid()
@@ -68,7 +62,7 @@ namespace Mpdn.PlayerExtensions
             dgMainGrid.Rows.Clear();
         }
 
-        private void addRow(string[] row)
+        private void AddRow(string[] row)
         {
             dgMainGrid.Rows.Add(row);
             dgMainGrid.Refresh();

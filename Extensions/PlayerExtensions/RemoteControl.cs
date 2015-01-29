@@ -20,7 +20,6 @@ namespace Mpdn.PlayerExtensions
         private Dictionary<Guid, StreamWriter> writers = new Dictionary<Guid, StreamWriter>();
         private Dictionary<Guid, Socket> clients = new Dictionary<Guid, Socket>();
         private RemoteControl_AuthHandler authHandler = new RemoteControl_AuthHandler();
-        private System.Timers.Timer hideTimer;
         private RemoteClients clientManager;
         #endregion
 
@@ -53,6 +52,11 @@ namespace Mpdn.PlayerExtensions
 
         public override void Destroy()
         {
+            base.Destroy();
+            PlayerControl.PlaybackCompleted -= m_PlayerControl_PlaybackCompleted;
+            PlayerControl.PlayerStateChanged -= m_PlayerControl_PlayerStateChanged;
+            PlayerControl.EnteringFullScreenMode -= m_PlayerControl_EnteringFullScreenMode;
+            PlayerControl.ExitingFullScreenMode -= m_PlayerControl_ExitingFullScreenMode;
             foreach (var writer in writers)
             {
                 try
@@ -130,7 +134,7 @@ namespace Mpdn.PlayerExtensions
 
         private void Test1Click()
         {
-            clientManager.ShowDialog();
+            clientManager.ShowDialog(PlayerControl.VideoPanel);
         }
 
         private void Server()
@@ -371,17 +375,7 @@ namespace Mpdn.PlayerExtensions
 
         private void DisplayTextMessage(object msg)
         {
-            PlayerControl.ShowOsdText(msg.ToString());
-            //This is a temporary workaround as ShowOsdText doesn't seem to auto hide OSD text
-            hideTimer = new System.Timers.Timer(1000);
-            hideTimer.Elapsed += hideTimer_Elapsed;
-            hideTimer.AutoReset = false;
-            hideTimer.Start();
-        }
-
-        void hideTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            PlayerControl.HideOsdText();
+            PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() => PlayerControl.ShowOsdText(msg.ToString())));
         }
 
         public void DisconnectClient(string GUID)
