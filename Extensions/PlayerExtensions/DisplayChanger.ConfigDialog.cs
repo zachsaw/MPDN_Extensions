@@ -1,4 +1,6 @@
-﻿namespace Mpdn.PlayerExtensions
+﻿using Mpdn.Config;
+
+namespace Mpdn.PlayerExtensions
 {
     namespace GitHub
     {

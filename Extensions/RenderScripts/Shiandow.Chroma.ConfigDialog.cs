@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Mpdn.Config;
 
 namespace Mpdn.RenderScript
 {

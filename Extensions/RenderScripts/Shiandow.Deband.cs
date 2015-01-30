@@ -117,18 +117,18 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class DebandUi : ConfigurableRenderChainUi<Deband, DebandConfigDialog>
+        public class DebandUi : RenderChainUi<Deband, DebandConfigDialog>
         {
             protected override string ConfigFileName
             {
                 get { return "Shiandow.Deband"; }
             }
 
-            protected override RenderScriptDescriptor ScriptDescriptor
+            public override ExtensionUiDescriptor Descriptor
             {
                 get
                 {
-                    return new RenderScriptDescriptor
+                    return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("EE3B46F7-00BB-4299-9B3F-058BCC3F591C"),
                         Name = "Deband",

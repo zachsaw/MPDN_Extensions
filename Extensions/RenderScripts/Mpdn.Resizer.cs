@@ -174,18 +174,18 @@ namespace Mpdn.RenderScript
             #endregion
         }
 
-        public class ResizerScript : ConfigurableRenderChainUi<Resizer, ResizerConfigDialog>
+        public class ResizerScript : RenderChainUi<Resizer, ResizerConfigDialog>
         {
             protected override string ConfigFileName
             {
                 get { return "Mpdn.Resizer"; }
             }
 
-            protected override RenderScriptDescriptor ScriptDescriptor
+            public override ExtensionUiDescriptor Descriptor
             {
                 get
                 {
-                    return new RenderScriptDescriptor
+                    return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("C5621540-C3F6-4B54-98FE-EA9ECECD0D41"),
                         Name = "Resizer",

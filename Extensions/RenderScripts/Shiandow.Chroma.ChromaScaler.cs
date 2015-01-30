@@ -92,18 +92,18 @@ namespace Mpdn.RenderScript
         }
 
 
-        public class ChromaScaler : ConfigurableRenderChainUi<BicubicChroma, ChromaScalerConfigDialog>
+        public class ChromaScaler : RenderChainUi<BicubicChroma, ChromaScalerConfigDialog>
         {
             protected override string ConfigFileName
             {
                 get { return "Shiandow.Chroma"; }
             }
 
-            protected override RenderScriptDescriptor ScriptDescriptor
+            public override ExtensionUiDescriptor Descriptor
             {
                 get
                 {
-                    return new RenderScriptDescriptor
+                    return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("BDCC94DD-93B3-4414-BA1F-345E10E1C371"),
                         Name = "ChromaScaler",

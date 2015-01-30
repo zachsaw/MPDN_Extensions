@@ -68,7 +68,7 @@ namespace Mpdn.RenderScript
         {
             foreach (var texture in m_OldTextures)
             {
-                Common.Dispose(texture);
+                DisposeHelper.Dispose(texture);
             }
 
             foreach (var texture in m_TempTextures)

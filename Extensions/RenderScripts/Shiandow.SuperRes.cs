@@ -193,18 +193,18 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class SuperResUi : ConfigurableRenderChainUi<SuperRes, SuperResConfigDialog>
+        public class SuperResUi : RenderChainUi<SuperRes, SuperResConfigDialog>
         {
             protected override string ConfigFileName
             {
                 get { return "Shiandow.SuperRes"; }
             }
 
-            protected override RenderScriptDescriptor ScriptDescriptor
+            public override ExtensionUiDescriptor Descriptor
             {
                 get
                 {
-                    return new RenderScriptDescriptor
+                    return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("3E7C670C-EFFB-41EB-AC19-207E650DEBD0"),
                         Name = "SuperRes",

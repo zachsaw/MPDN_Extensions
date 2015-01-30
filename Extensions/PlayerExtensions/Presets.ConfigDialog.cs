@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Mpdn.RenderScript;
+using Mpdn.Config;
 
 namespace Mpdn.PlayerExtensions.GitHub
 {

@@ -63,11 +63,11 @@ namespace Mpdn.RenderScript
 
         public class MyRenderScript : RenderChainUi<MyRenderChain>
         {
-            protected override RenderScriptDescriptor ScriptDescriptor
+            public override ExtensionUiDescriptor Descriptor
             {
                 get
                 {
-                    return new RenderScriptDescriptor
+                    return new ExtensionUiDescriptor
                     {
                         Name = "Custom Render Script Chain",
                         Description = "A customized render script chain (Advanced)",

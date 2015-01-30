@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Mpdn.PlayerExtensions.Config;
 using Mpdn.RenderScript;
 using YAXLib;
 

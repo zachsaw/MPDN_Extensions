@@ -132,18 +132,18 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class ImageProcessorScript : ConfigurableRenderChainUi<ImageProcessor, ImageProcessorConfigDialog>
+        public class ImageProcessorScript : RenderChainUi<ImageProcessor, ImageProcessorConfigDialog>
         {
             protected override string ConfigFileName
             {
                 get { return "Mpdn.ImageProcessor"; }
             }
 
-            protected override RenderScriptDescriptor ScriptDescriptor
+            public override ExtensionUiDescriptor Descriptor
             {
                 get
                 {
-                    return new RenderScriptDescriptor
+                    return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("50CA262F-65B6-4A0F-A8B5-5E25B6A18217"),
                         Name = "Image Processor",
