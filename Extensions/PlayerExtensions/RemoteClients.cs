@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
 
@@ -22,7 +15,7 @@ namespace Mpdn.PlayerExtensions
         {
             InitializeComponent();
             mainRemote = control;
-            this.Load += RemoteClients_Load;
+            Load += RemoteClients_Load;
         }
         #endregion
 
@@ -46,13 +39,15 @@ namespace Mpdn.PlayerExtensions
             {
                 try
                 {
-                    IPEndPoint remoteIpEndPoint = item.Value.RemoteEndPoint as IPEndPoint;
+                    var remoteIpEndPoint = item.Value.RemoteEndPoint as IPEndPoint;
+                    if (remoteIpEndPoint == null) 
+                        continue;
                     string[] tmpRow = { item.Key.ToString(), remoteIpEndPoint.Address + ":" + remoteIpEndPoint.Port };
                     AddRow(tmpRow);
                 }
                 catch(Exception ex)
                 {
-                    MessageBox.Show("Error " + ex.ToString());
+                    MessageBox.Show(PlayerControl.VideoPanel, "Error " + ex);
                 }
             } 
         }
@@ -70,16 +65,13 @@ namespace Mpdn.PlayerExtensions
 
         private void btnClose_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
         #endregion
 
         private void dgMainGrid_SelectionChanged(object sender, EventArgs e)
         {
-            if (dgMainGrid.SelectedRows.Count != 0)
-                btnDisconnect.Enabled = true;
-            else
-                btnDisconnect.Enabled = false;
+            btnDisconnect.Enabled = dgMainGrid.SelectedRows.Count != 0;
         }
 
         private void btnDisconnect_Click(object sender, EventArgs e)

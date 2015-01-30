@@ -27,7 +27,6 @@ namespace Mpdn.PlayerExtensions.GitHub
         {
             InitializeComponent();
 
-            openFileDialog.Filter = "Media files (all types) (*.avi; *.mp4; *.mkv; ...) |*.mkv;*.mp4;*.m4v;*.mp4v;*.3g2;*.3gp2;*.3gp;*.3gpp;*.mov;*.m2ts;*.ts;*.asf;*.wma;*.wmv;*.wm;*.asx,*.wax,*.wvx,*.wmx;*.wpl;*.dvr-ms;*.avi;*.mpg;*.mpeg;*.m1v;*.mp2;*.mp3;*.mpa;*.mpe;*.m3u;*.wav;*.mid;*.midi;*.rmi|All files (*.*)|*.*";
             Opacity = MIN_OPACITY;
         }
 
