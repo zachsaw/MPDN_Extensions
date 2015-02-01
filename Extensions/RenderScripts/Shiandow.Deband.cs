@@ -26,8 +26,11 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                var upscaler = new Scaler.Custom(new GaussianBlur(0.75), ScalerTaps.Four, false);
-                var downscaler = new Scaler.HwBilinear(); // Good enough (?)
+                var gaussian = new Scaler.Custom(new GaussianBlur(0.75), ScalerTaps.Four, false);
+                var bilinear = new Scaler.HwBilinear(); // Good enough (?)
+
+                var DebandEx = CompileShader("DebandEx.hlsl");
+                var Deband = CompileShader("Deband.hlsl");
 
                 int bits = 8;
                 switch (Renderer.InputFormat)
@@ -41,28 +44,34 @@ namespace Mpdn.RenderScript
                 }
                 if (bits > maxbitdepth) return sourceFilter;
 
-                var inputsize = sourceFilter.OutputSize;
-                var size = inputsize;
-                var current = sourceFilter.ConvertToYuv();
+                var input = sourceFilter.ConvertToYuv();
+                var inputsize = input.OutputSize;
 
-                var factor = 2.0;
+                var current = input;
                 var downscaled = new Stack<IFilter>();
                 downscaled.Push(current);
 
                 // Generate downscaled images
+                var size = inputsize;
                 for (int i = 0; i < 8; i++)
                 {
+                    var factor = 2.0;
                     size = new Size((int)Math.Floor(size.Width / factor), (int)Math.Floor(size.Height / factor));
-                    if (size.Width == 0 || size.Height == 0) break;
+                    if (size.Width == 0 || size.Height == 0)
+                        break;
 
-                    current = new ResizeFilter(current, size, upscaler, downscaler);
+                    current = new ResizeFilter(current, size, bilinear, bilinear);
                     downscaled.Push(current);
                 }
 
                 var deband = downscaled.Pop();
                 while (downscaled.Count > 0)
                 {
-                    deband = new ShaderFilter(CompileShader("Deband.hlsl"), true,
+                    bool simple = true;
+
+                    deband = new ShaderFilter(
+                        simple ? Deband : DebandEx,
+                        simple,
                         new[]
                         {
                             (1 << bits) - 1, 
