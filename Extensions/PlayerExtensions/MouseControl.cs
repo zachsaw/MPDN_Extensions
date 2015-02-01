@@ -97,7 +97,7 @@ namespace Mpdn.PlayerExtensions.GitHub
                 return;
             }
 
-            if (PlaylistForm.PlaylistCount <= 1)
+            if (Playlist.PlaylistForm.PlaylistCount <= 1)
             {
                 switch (e.InputArgs.Button)
                 {
