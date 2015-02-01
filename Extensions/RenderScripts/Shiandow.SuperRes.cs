@@ -124,7 +124,7 @@ namespace Mpdn.RenderScript
             private Size CalculateSize(Size sizeA, Size sizeB, int k)
             {
                 double w, h;
-                var MaxScale = 1.9; // If this is set to >=2.0 then NEDI might stop working...
+                var MaxScale = 2.0;
                 var MinScale = Math.Sqrt(MaxScale);
                 
                 int minW = sizeA.Width; int minH = sizeA.Height;

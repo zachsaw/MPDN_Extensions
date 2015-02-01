@@ -78,11 +78,18 @@ namespace Mpdn
 
             #region Implementation
 
-            protected Config ScriptConfig { get; set; }
+            private Config ScriptConfig { get; set; }
 
             protected TSettings Settings
             {
-                get { return ScriptConfig == null ? new TSettings() : ScriptConfig.Config; }
+                get 
+                {
+                    if (ScriptConfig == null) 
+                        ScriptConfig = new Config(new TSettings());
+
+                    return ScriptConfig.Config; 
+                }
+                set { ScriptConfig = new Config(value); }
             }
 
             public bool HasConfigDialog()

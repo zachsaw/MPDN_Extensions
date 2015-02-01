@@ -9,6 +9,37 @@ namespace Mpdn.RenderScript
         RenderChain GetChain();
     }
 
+    public static class RenderChainUi
+    {
+        public static IRenderChainUi Identity = new IdentityRenderChainUi();
+
+        public static bool IsIdentity(this IRenderChainUi chainUi)
+        {
+            return chainUi is IdentityRenderChainUi;
+        }
+
+        private class IdentityRenderChain : StaticChain
+        {
+            public IdentityRenderChain() : base(x => x) { }
+        }
+
+        private class IdentityRenderChainUi : RenderChainUi<IdentityRenderChain>
+        {
+            public override ExtensionUiDescriptor Descriptor
+            {
+                get
+                {
+                    return new ExtensionUiDescriptor
+                    {
+                        Guid = Guid.Empty,
+                        Name = "None",
+                        Description = "Do nothing"
+                    };
+                }
+            }
+        }
+    }
+
     public abstract class RenderChainUi<TChain> : RenderChainUi<TChain, ScriptConfigDialog<TChain>>
         where TChain : RenderChain, new()
     { }
@@ -20,8 +51,13 @@ namespace Mpdn.RenderScript
         [YAXSerializeAs("Settings")]
         public TChain Chain
         {
-            get { return ScriptConfig.Config; }
-            set { ScriptConfig = new Config(value); }
+            get { return Settings; }
+            set { Settings = value; }
+        }
+
+        public RenderChainUi()
+        {
+            Settings = new TChain();
         }
 
         public IRenderScript CreateRenderScript()
@@ -32,17 +68,6 @@ namespace Mpdn.RenderScript
         #region Implementation
 
         private RenderChainScript m_RenderScript;
-
-        [YAXDontSerialize]
-        public virtual ScriptInterfaceDescriptor InterfaceDescriptor
-        {
-            get { return CreateRenderScript().Descriptor; }
-        }
-
-        public override void Initialize()
-        {
-            base.Initialize();
-        }
 
         public RenderChain GetChain()
         {
@@ -56,5 +81,20 @@ namespace Mpdn.RenderScript
         }
 
         #endregion Implementation
+    }
+
+    public static class RenderChainExtensions
+    {
+        public static IRenderChainUi CreateNew(this IRenderChainUi scriptUi)
+        {
+            var constructor = scriptUi.GetType().GetConstructor(Type.EmptyTypes);
+            if (constructor == null)
+            {
+                throw new EntryPointNotFoundException("RenderChainUi must implement parameter-less constructor");
+            }
+
+            var renderScript = (IRenderChainUi)constructor.Invoke(new object[0]);
+            return renderScript;
+        }
     }
 }

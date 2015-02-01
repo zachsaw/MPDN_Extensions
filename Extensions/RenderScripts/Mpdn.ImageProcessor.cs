@@ -154,7 +154,7 @@ namespace Mpdn.RenderScript
 
             private string GetDescription()
             {
-                return ScriptConfig == null || Chain.ShaderFileNames.Length == 0
+                return Chain.ShaderFileNames.Length == 0
                     ? "Pixel shader pre-/post-processing filter"
                     : GetUsageString() + string.Join(" ➔ ", Chain.ShaderFileNames);
             }

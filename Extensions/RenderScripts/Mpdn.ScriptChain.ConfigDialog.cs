@@ -17,7 +17,9 @@ namespace Mpdn.RenderScript
             {
                 InitializeComponent();
 
-                var renderScripts = PlayerControl.RenderScripts.Where(script => script is IRenderChainUi);
+                var renderScripts = PlayerControl.RenderScripts
+                    .Where(script => script is IRenderChainUi)
+                    .Select(x => (x as IRenderChainUi).CreateNew());
 
                 foreach (var script in renderScripts)
                 {
@@ -195,24 +197,14 @@ namespace Mpdn.RenderScript
                 UpdateButtons();
             }
 
-            private static IRenderChainUi CreateNew(IRenderChainUi scriptUi)
-            {
-                var constructor = scriptUi.GetType().GetConstructor(Type.EmptyTypes);
-                if (constructor == null)
-                {
-                    throw new EntryPointNotFoundException("RenderChainUi must implement parameter-less constructor");
-                }
-                return (IRenderChainUi) constructor.Invoke(new object[0]);
-            }
-
             private void AddScript(ListViewItem selectedItem)
             {
                 var item = (ListViewItem) selectedItem.Clone();
                 item.Text = string.Empty;
 
                 var scriptRenderer = (IRenderChainUi) item.Tag;
-                var renderScript = CreateNew(scriptRenderer);
-                renderScript.Initialize();
+                var renderScript = scriptRenderer.CreateNew();
+
                 item.Tag = renderScript;
                 UpdateItemText(item, renderScript);
                 listViewChain.Items.Add(item);

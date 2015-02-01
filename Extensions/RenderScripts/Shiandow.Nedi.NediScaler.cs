@@ -88,9 +88,7 @@ namespace Mpdn.RenderScript
 
             private string GetDescription()
             {
-                var options = ScriptConfig == null
-                    ? string.Empty
-                    : string.Format("{0}", ScriptConfig.Config.AlwaysDoubleImage ? " (forced)" : string.Empty);
+                var options = string.Format("{0}", Settings.AlwaysDoubleImage ? " (forced)" : string.Empty);
                 return string.Format("NEDI image doubler{0}", options);
             }
         }

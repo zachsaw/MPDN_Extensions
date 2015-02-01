@@ -196,7 +196,7 @@ namespace Mpdn.RenderScript
 
             private string GetDescription()
             {
-                var desc = ScriptConfig == null
+                var desc = Chain.ResizerOption == ResizerOption.TargetSize100Percent
                     ? "Resizes the image"
                     : string.Format("Resize to: {0}", Chain.ResizerOption.ToDescription());
                 return desc;

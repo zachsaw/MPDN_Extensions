@@ -145,7 +145,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 					 max(Original(0, 1), Original(1, 1)));
 
 	//Apply anti-ringing
-	float2 AR = c0.yz - min(Max, max(Min, c0.yz));
+	float2 AR = c0.yz - clamp(c0.yz, Min, Max);
 	c0.yz -= AR*smoothstep(0, (Max - Min) / anti_ringing - (Max - Min) + pow(2, -16), abs(AR));
 
 	return c0;
