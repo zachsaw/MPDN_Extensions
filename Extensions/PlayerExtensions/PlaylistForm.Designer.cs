@@ -311,7 +311,7 @@
             this.KeyPreview = true;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(240, 260);
+            this.MinimumSize = new System.Drawing.Size(278, 260);
             this.Name = "PlaylistForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Playlist";
