@@ -29,7 +29,6 @@ namespace Mpdn.RenderScript
                 var gaussian = new Scaler.Custom(new GaussianBlur(0.75), ScalerTaps.Four, false);
                 var bilinear = new Scaler.HwBilinear(); // Good enough (?)
 
-                var DebandEx = CompileShader("DebandEx.hlsl");
                 var Deband = CompileShader("Deband.hlsl");
 
                 int bits = 8;
@@ -67,11 +66,9 @@ namespace Mpdn.RenderScript
                 var deband = downscaled.Pop();
                 while (downscaled.Count > 0)
                 {
-                    bool simple = true;
-
                     deband = new ShaderFilter(
-                        simple ? Deband : DebandEx,
-                        simple,
+                        Deband,
+                        true,
                         new[]
                         {
                             (1 << bits) - 1, 
