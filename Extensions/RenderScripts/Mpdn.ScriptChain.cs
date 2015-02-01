@@ -43,7 +43,7 @@ namespace Mpdn.RenderScript
 
             private string GetDescription()
             {
-                return ScriptConfig == null || Chain.ScriptList.Count == 0
+                return Chain.ScriptList.Count == 0
                     ? "Chain of render scripts"
                     : string.Join(" ➔ ", Chain.ScriptList.Select(x => x.Descriptor.Name));
             }

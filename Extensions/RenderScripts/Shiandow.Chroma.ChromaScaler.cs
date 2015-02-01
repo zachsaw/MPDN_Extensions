@@ -112,17 +112,6 @@ namespace Mpdn.RenderScript
                     };
                 }
             }
-
-            public override ScriptInterfaceDescriptor InterfaceDescriptor
-            {
-                get
-                {
-                    return new ScriptInterfaceDescriptor
-                    {
-                        Prescale = false
-                    };
-                }
-            }
         }
     }
 }
