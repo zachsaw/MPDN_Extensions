@@ -280,7 +280,7 @@ namespace Mpdn.PlayerExtensions
             StreamWriter writer = new StreamWriter(nStream);
             _writers.Add(clientGuid, writer);
             var clientGUID = reader.ReadLine();
-            if (!_authHandler.IsGUIDAuthed(clientGUID))
+            if (!_authHandler.IsGUIDAuthed(clientGUID) && Settings.ValidateClients)
             {
                 ClientAuth(clientGUID.ToString(), clientGuid);
             }
@@ -553,11 +553,13 @@ namespace Mpdn.PlayerExtensions
     {
         #region Variables
         public int ConnectionPort { get; set; }
+        public bool ValidateClients { get; set; }
         #endregion
 
         public RemoteControlSettings()
         {
             ConnectionPort = 6545;
+            ValidateClients = true;
         }
     }
 }

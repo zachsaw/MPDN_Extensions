@@ -24,6 +24,7 @@ namespace Mpdn.PlayerExtensions
         protected override void LoadSettings()
         {
             txbPort.Text = Settings.ConnectionPort.ToString();
+            cbRequireValidation.Checked = Settings.ValidateClients;
         }
 
         protected override void SaveSettings()
@@ -32,6 +33,7 @@ namespace Mpdn.PlayerExtensions
             var portString = txbPort.Text;
             int.TryParse(portString, out portNum);
             Settings.ConnectionPort = portNum;
+            Settings.ValidateClients = cbRequireValidation.Checked;
         }
         #endregion
 
