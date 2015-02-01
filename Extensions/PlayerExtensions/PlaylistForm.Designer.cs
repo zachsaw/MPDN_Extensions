@@ -29,16 +29,17 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PlaylistForm));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.buttonAdd = new ButtonStripItem();
-            this.buttonDel = new ButtonStripItem();
+            this.buttonAdd = new Mpdn.PlayerExtensions.GitHub.ButtonStripItem();
+            this.buttonDel = new Mpdn.PlayerExtensions.GitHub.ButtonStripItem();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.buttonLeft = new ButtonStripItem();
-            this.buttonRight = new ButtonStripItem();
+            this.buttonLeft = new Mpdn.PlayerExtensions.GitHub.ButtonStripItem();
+            this.buttonRight = new Mpdn.PlayerExtensions.GitHub.ButtonStripItem();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.buttonOpen = new ButtonStripItem();
-            this.buttonSave = new ButtonStripItem();
-            this.listBox = new DragDropListBox();
+            this.buttonOpen = new Mpdn.PlayerExtensions.GitHub.ButtonStripItem();
+            this.buttonSave = new Mpdn.PlayerExtensions.GitHub.ButtonStripItem();
+            this.listBox = new Mpdn.PlayerExtensions.GitHub.DragDropListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
@@ -162,7 +163,7 @@
             this.listBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.listBox.Size = new System.Drawing.Size(224, 194);
             this.listBox.TabIndex = 0;
-            this.listBox.Dropped += new System.EventHandler<DroppedEventArgs>(this.ListBoxDropped);
+            this.listBox.Dropped += new System.EventHandler<Mpdn.PlayerExtensions.GitHub.DroppedEventArgs>(this.ListBoxDropped);
             this.listBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.ListBoxDrawItem);
             this.listBox.SizeChanged += new System.EventHandler(this.ListBoxSizeChanged);
             this.listBox.DragDrop += new System.Windows.Forms.DragEventHandler(this.ListBoxDragDrop);
@@ -267,6 +268,7 @@
             // 
             // openFileDialog
             // 
+            this.openFileDialog.Filter = resources.GetString("openFileDialog.Filter");
             this.openFileDialog.Multiselect = true;
             this.openFileDialog.RestoreDirectory = true;
             this.openFileDialog.SupportMultiDottedExtensions = true;
