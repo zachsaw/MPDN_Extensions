@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.PlayerExtensions.Playlist
 {
     public class Playlist : PlayerExtension
     {
-        private const string SUBCATEGORY = "Playlist";
+        private const string Subcategory = "Playlist";
 
-        private readonly PlaylistForm m_Form = new PlaylistForm();
+        private readonly PlaylistForm form = new PlaylistForm();
 
         public override ExtensionUiDescriptor Descriptor
         {
@@ -19,7 +18,8 @@ namespace Mpdn.PlayerExtensions.GitHub
                 {
                     Guid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B"),
                     Name = "Playlist",
-                    Description = "Playlist Support"
+                    Description = "Adds playlist support with advanced capabilities",
+                    Copyright = "Enhanced by Garteal"
                 };
             }
         }
@@ -27,19 +27,15 @@ namespace Mpdn.PlayerExtensions.GitHub
         public override void Initialize()
         {
             base.Initialize();
+            form.Setup();
 
-            m_Form.Setup();
-
-            PlayerControl.DragEnter += OnDragEnter;
-            PlayerControl.DragDrop += OnDragDrop;
             PlayerControl.CommandLineFileOpen += OnCommandLineFileOpen;
         }
 
         public override void Destroy()
         {
             base.Destroy();
-
-            m_Form.Dispose();
+            form.Dispose();
         }
 
         public override IList<Verb> Verbs
@@ -50,57 +46,28 @@ namespace Mpdn.PlayerExtensions.GitHub
                 {
                     new Verb(Category.File, string.Empty, "Open Playlist", "Ctrl+Alt+O", string.Empty, OpenPlaylist),
                     new Verb(Category.View, string.Empty, "Playlist", "Ctrl+Alt+P", string.Empty, ViewPlaylist),
-                    new Verb(Category.Play, SUBCATEGORY, "Next", "Ctrl+Alt+N", string.Empty, () => m_Form.PlayNext()),
-                    new Verb(Category.Play, SUBCATEGORY, "Previous", "Ctrl+Alt+B", string.Empty, () => m_Form.PlayPrevious())
+                    new Verb(Category.Play, Subcategory, "Next", "Ctrl+Alt+N", string.Empty, () => form.PlayNext()),
+                    new Verb(Category.Play, Subcategory, "Previous", "Ctrl+Alt+B", string.Empty, () => form.PlayPrevious())
                 };
             }
         }
 
         private void OpenPlaylist()
         {
-            m_Form.Show(PlayerControl.Form);
-            m_Form.OpenPlaylist();
+            form.Show(PlayerControl.Form);
+            form.OpenPlaylist();
         }
 
         private void ViewPlaylist()
         {
-            m_Form.Show(PlayerControl.Form);
-        }
-
-        private void OnDragEnter(object sender, PlayerControlEventArgs<DragEventArgs> e)
-        {
-            e.Handled = true;
-            e.InputArgs.Effect = DragDropEffects.Copy;
-        }
-
-        private void OnDragDrop(object sender, PlayerControlEventArgs<DragEventArgs> e)
-        {
-            var files = (string[]) e.InputArgs.Data.GetData(DataFormats.FileDrop);
-            if (files.Length > 1)
-            {
-                e.Handled = true;
-                // Add multiple files to playlist
-                m_Form.AddFiles(files);
-            }
-            else
-            {
-                var filename = files[0];
-                if (IsPlaylistFile(filename))
-                {
-                    // Playlist file
-                    m_Form.OpenPlaylist(filename);
-                    e.Handled = true;
-                }
-            }
+            form.Show(PlayerControl.Form);
         }
 
         private void OnCommandLineFileOpen(object sender, CommandLineFileOpenEventArgs e)
         {
-            if (!IsPlaylistFile(e.Filename)) 
-                return;
-
+            if (!IsPlaylistFile(e.Filename)) return;
             e.Handled = true;
-            m_Form.OpenPlaylist(e.Filename);
+            form.OpenPlaylist(e.Filename);
         }
 
         private static bool IsPlaylistFile(string filename)
