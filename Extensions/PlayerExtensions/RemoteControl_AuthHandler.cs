@@ -10,8 +10,10 @@ namespace Mpdn.PlayerExtensions
     public class RemoteControl_AuthHandler
     {
         #region Variables
-        private string folder = "RemoteDetails";
-        private string filePath = "accessGUID.conf";
+
+        private string folder;
+        private string _subPath = @"MediaPlayerDotNet\RemoteControl";
+        private string filePath = @"accessGUID.conf";
         private Guid nullGUID = Guid.Parse("{00000000-0000-0000-0000-000000000000}");
         private string fullPath;
         private List<Guid> authedClients = new List<Guid>();
@@ -19,6 +21,8 @@ namespace Mpdn.PlayerExtensions
 
         public RemoteControl_AuthHandler()
         {
+            var envPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            folder = Path.Combine(envPath, _subPath);
             fullPath = Path.Combine(folder, filePath);
             ReadAuthedClients();
         }

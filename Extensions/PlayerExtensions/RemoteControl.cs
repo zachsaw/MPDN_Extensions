@@ -280,7 +280,7 @@ namespace Mpdn.PlayerExtensions
             StreamWriter writer = new StreamWriter(nStream);
             _writers.Add(clientGuid, writer);
             var clientGUID = reader.ReadLine();
-            if (!_authHandler.IsGUIDAuthed(clientGUID))
+            if (!_authHandler.IsGUIDAuthed(clientGUID) && Settings.ValidateClients)
             {
                 ClientAuth(clientGUID.ToString(), clientGuid);
             }
@@ -405,6 +405,9 @@ namespace Mpdn.PlayerExtensions
                 case "ActiveSubTrack":
                     PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetSubtitle(command[1])));
                     break;
+                case "ActiveAudioTrack":
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetAudioTrack(command[1])));
+                    break;
                 //case "AddFilesToPlaylist":
                 //    AddFilesToPlaylist(command[1]);
                 //    break;
@@ -469,6 +472,13 @@ namespace Mpdn.PlayerExtensions
             var selTrack = PlayerControl.SubtitleTracks.FirstOrDefault(t => t.Description == subDescription);
             if (selTrack != null)
                 PlayerControl.SelectSubtitleTrack(selTrack);
+        }
+
+        private void SetAudioTrack(string audioDescription)
+        {
+            var selTrack = PlayerControl.AudioTracks.FirstOrDefault(t => t.Description == audioDescription);
+            if(selTrack != null)
+                PlayerControl.SelectAudioTrack(selTrack);
         }
 
         private void Mute(bool silence)
@@ -553,11 +563,13 @@ namespace Mpdn.PlayerExtensions
     {
         #region Variables
         public int ConnectionPort { get; set; }
+        public bool ValidateClients { get; set; }
         #endregion
 
         public RemoteControlSettings()
         {
             ConnectionPort = 6545;
+            ValidateClients = true;
         }
     }
 }
