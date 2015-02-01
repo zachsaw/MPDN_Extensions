@@ -57,16 +57,21 @@ namespace Mpdn.PlayerExtensions
             }
         }
 
-        private static Keys DecodeKeyString(String keyString)
+        protected static bool TryDecodeKeyString(String keyString, out Keys keys)
         {
             var keyWords = Regex.Split(keyString, @"\W+");
             keyString = String.Join(", ", keyWords.Select(DecodeKeyWord).ToArray());
 
-            Keys keys;
-            if (Enum.TryParse(keyString, true, out keys))
-                return keys;
+            return (Enum.TryParse(keyString, true, out keys));
+        }
 
-            throw new ArgumentException("Can't convert string to keys.");
+        private static Keys DecodeKeyString(String keyString)
+        {
+            Keys keys;
+            if (TryDecodeKeyString(keyString, out keys))
+                return keys;
+            else
+                throw new ArgumentException("Can't convert string to keys.");
         }
 
         private static String DecodeKeyWord(String keyWord)

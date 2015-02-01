@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
 using System.Linq;
 
 namespace Mpdn.PlayerExtensions
@@ -9,24 +10,27 @@ namespace Mpdn.PlayerExtensions
         protected static IList<Verb> m_Verbs = new List<Verb>();
         protected static Action Reload;
 
-        public override IList<Verb> Verbs { get { return m_Verbs; } }
+        public static void RegisterHotkey(Guid guid, string hotkey, Action action)
+        {
+            Keys keys;
+            if (TryDecodeKeyString(hotkey, out keys))
+            {
+                m_Verbs.Add(new Verb(Category.Window, "Dynamic Hotkeys", guid.ToString(), hotkey, "", action));
+                Reload();
+            }
+        }
 
-        public override void Initialize()
+        public static void RemoveHotkey(Guid guid)
+        {
+            m_Verbs = m_Verbs.Where(v => v.Caption != guid.ToString()).ToList();
+        }
+
+        public DynamicHotkeys()
         {
             Reload = LoadVerbs;
-            base.Initialize();
         }
 
-        public static void RegisterHotkey(string caption, string shortcut, Action action, string hint = "")
-        {
-            m_Verbs.Add(new Verb(Category.Window, "Dynamic Hotkeys", caption, shortcut, hint, action));
-            Reload();
-        }
-
-        public static void RemoveHotkey(string caption)
-        {
-            m_Verbs = m_Verbs.Where(v => v.Caption != caption).ToList();
-        }
+        public override IList<Verb> Verbs { get { return m_Verbs; } }
 
         public override ExtensionUiDescriptor Descriptor
         {
