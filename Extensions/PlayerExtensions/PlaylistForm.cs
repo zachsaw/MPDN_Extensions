@@ -21,6 +21,7 @@ namespace Mpdn.PlayerExtensions.Playlist
         private const string InactiveIndicator = "[ ]";
 
         private bool firstShow = true;
+        private bool wasShowing;
 
         private List<PlaylistItem> playList;
         private PlaylistItem currentPlayItem;
@@ -48,12 +49,17 @@ namespace Mpdn.PlayerExtensions.Playlist
                 PlayerControl.PlaybackCompleted -= PlaybackCompleted;
                 PlayerControl.FrameDecoded -= FrameDecoded;
                 PlayerControl.FramePresented -= FramePresented;
+                PlayerControl.EnteringFullScreenMode -= EnteringFullScreenMode;
+                PlayerControl.ExitedFullScreenMode -= ExitedFullScreenMode;
             }
             base.Dispose(disposing);
         }
 
         public void Show(Control owner)
         {
+            if (PlayerControl.InFullScreenMode)
+                return;
+
             Hide();
             SetLocation(owner);
             timer.Enabled = true;
@@ -75,6 +81,8 @@ namespace Mpdn.PlayerExtensions.Playlist
             PlayerControl.PlaybackCompleted += PlaybackCompleted;
             PlayerControl.FrameDecoded += FrameDecoded;
             PlayerControl.FramePresented += FramePresented;
+            PlayerControl.EnteringFullScreenMode += EnteringFullScreenMode;
+            PlayerControl.ExitedFullScreenMode += ExitedFullScreenMode;
 
             playList = new List<PlaylistItem>();
         }
@@ -83,7 +91,7 @@ namespace Mpdn.PlayerExtensions.Playlist
         {
             if (!firstShow) return;
             var screen = Screen.FromControl(owner);
-            var screenBounds = screen.Bounds;
+            var screenBounds = screen.WorkingArea;
             var p = owner.PointToScreen(new Point(owner.Right, owner.Bottom));
             var left = p.X - Width / (int)(5 * ScaleFactor.Width);
             var top = p.Y - Height / (int)(5 * ScaleFactor.Height);
@@ -219,6 +227,20 @@ namespace Mpdn.PlayerExtensions.Playlist
             if (PlayerControl.MediaPosition == PlayerControl.MediaDuration)
             {
                 PlayNext();
+            }
+        }
+
+        private void EnteringFullScreenMode(object sender, EventArgs e)
+        {
+            wasShowing = Visible;
+            Hide();
+        }
+
+        private void ExitedFullScreenMode(object sender, EventArgs e)
+        {
+            if (wasShowing)
+            {
+                Show(PlayerControl.VideoPanel);
             }
         }
 

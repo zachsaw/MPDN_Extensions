@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
@@ -10,6 +11,10 @@ namespace Mpdn.PlayerExtensions.Playlist
         private const string Subcategory = "Playlist";
 
         private readonly PlaylistForm form = new PlaylistForm();
+        private Form mpdnForm;
+        private Point mpdnStartLocation;
+        private Point formStartLocation;
+        private bool moving;
 
         public override ExtensionUiDescriptor Descriptor
         {
@@ -33,6 +38,9 @@ namespace Mpdn.PlayerExtensions.Playlist
             PlayerControl.DragEnter += OnDragEnter;
             PlayerControl.DragDrop += OnDragDrop;
             PlayerControl.CommandLineFileOpen += OnCommandLineFileOpen;
+            mpdnForm = PlayerControl.Form;
+            mpdnForm.Move += OnMpdnFormMove;
+            form.Move += OnFormMove;
         }
 
         public override void Destroy()
@@ -40,9 +48,28 @@ namespace Mpdn.PlayerExtensions.Playlist
             PlayerControl.DragEnter -= OnDragEnter;
             PlayerControl.DragDrop -= OnDragDrop;
             PlayerControl.CommandLineFileOpen -= OnCommandLineFileOpen;
+            mpdnForm.Move -= OnMpdnFormMove;
+            form.Move -= OnFormMove;
 
             base.Destroy();
             form.Dispose();
+        }
+
+        private void OnFormMove(object sender, EventArgs e)
+        {
+            if (moving)
+                return;
+
+            mpdnStartLocation = PlayerControl.Form.Location;
+            formStartLocation = form.Location;
+        }
+
+        private void OnMpdnFormMove(object sender, EventArgs e)
+        {
+            moving = true;
+            form.Left = formStartLocation.X + PlayerControl.Form.Location.X - mpdnStartLocation.X;
+            form.Top = formStartLocation.Y + PlayerControl.Form.Location.Y - mpdnStartLocation.Y;
+            moving = false;
         }
 
         public override IList<Verb> Verbs
