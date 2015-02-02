@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions.Playlist
 {
@@ -29,11 +30,17 @@ namespace Mpdn.PlayerExtensions.Playlist
             base.Initialize();
             form.Setup();
 
+            PlayerControl.DragEnter += OnDragEnter;
+            PlayerControl.DragDrop += OnDragDrop;
             PlayerControl.CommandLineFileOpen += OnCommandLineFileOpen;
         }
 
         public override void Destroy()
         {
+            PlayerControl.DragEnter -= OnDragEnter;
+            PlayerControl.DragDrop -= OnDragDrop;
+            PlayerControl.CommandLineFileOpen -= OnCommandLineFileOpen;
+
             base.Destroy();
             form.Dispose();
         }
@@ -52,6 +59,12 @@ namespace Mpdn.PlayerExtensions.Playlist
             }
         }
 
+        public static bool IsPlaylistFile(string filename)
+        {
+            var extension = Path.GetExtension(filename);
+            return extension != null && extension.ToLower() == ".mpl";
+        }
+
         private void OpenPlaylist()
         {
             form.Show(PlayerControl.VideoPanel);
@@ -63,17 +76,40 @@ namespace Mpdn.PlayerExtensions.Playlist
             form.Show(PlayerControl.VideoPanel);
         }
 
+        private void OnDragEnter(object sender, PlayerControlEventArgs<DragEventArgs> e)
+        {
+            e.Handled = true;
+            e.InputArgs.Effect = DragDropEffects.Copy;
+        }
+
+        private void OnDragDrop(object sender, PlayerControlEventArgs<DragEventArgs> e)
+        {
+            var files = (string[])e.InputArgs.Data.GetData(DataFormats.FileDrop);
+            if (files.Length > 1)
+            {
+                e.Handled = true;
+                // Add multiple files to playlist
+                form.Show(PlayerControl.VideoPanel);
+                form.AddFiles(files);
+            }
+            else
+            {
+                var filename = files[0];
+                if (IsPlaylistFile(filename))
+                {
+                    // Playlist file
+                    form.OpenPlaylist(filename);
+                    form.Show(PlayerControl.VideoPanel);
+                    e.Handled = true;
+                }
+            }
+        }
+
         private void OnCommandLineFileOpen(object sender, CommandLineFileOpenEventArgs e)
         {
             if (!IsPlaylistFile(e.Filename)) return;
             e.Handled = true;
             form.OpenPlaylist(e.Filename);
-        }
-
-        private static bool IsPlaylistFile(string filename)
-        {
-            var extension = Path.GetExtension(filename);
-            return extension != null && extension.ToLower() == ".mpl";
         }
     }
 }

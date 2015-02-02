@@ -16,7 +16,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(PlaylistForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PlaylistForm));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -30,6 +30,7 @@
             this.buttonRight = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSortAscending = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSortDescending = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
+            this.PlayButton = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.buttonNew = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonOpen = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
@@ -57,6 +58,7 @@
             this.buttonRight,
             this.buttonSortAscending,
             this.buttonSortDescending,
+            this.PlayButton,
             this.toolStripStatusLabel1,
             this.buttonNew,
             this.buttonOpen,
@@ -73,7 +75,7 @@
             // buttonAdd
             // 
             this.buttonAdd.AutoSize = false;
-            this.buttonAdd.BackgroundImage = (System.Drawing.Bitmap)resources.GetObject("add-icon");
+            this.buttonAdd.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonAdd.BackgroundImage")));
             this.buttonAdd.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonAdd.Name = "buttonAdd";
             this.buttonAdd.Size = new System.Drawing.Size(25, 25);
@@ -83,7 +85,7 @@
             // buttonDel
             // 
             this.buttonDel.AutoSize = false;
-            this.buttonDel.BackgroundImage = (System.Drawing.Bitmap)resources.GetObject("delete-icon");
+            this.buttonDel.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonDel.BackgroundImage")));
             this.buttonDel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonDel.Name = "buttonDel";
             this.buttonDel.Size = new System.Drawing.Size(25, 25);
@@ -99,7 +101,7 @@
             // buttonLeft
             // 
             this.buttonLeft.AutoSize = false;
-            this.buttonLeft.BackgroundImage = (System.Drawing.Bitmap)resources.GetObject("arrow-left-icon");
+            this.buttonLeft.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonLeft.BackgroundImage")));
             this.buttonLeft.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonLeft.Name = "buttonLeft";
             this.buttonLeft.Size = new System.Drawing.Size(25, 25);
@@ -109,7 +111,7 @@
             // buttonRight
             // 
             this.buttonRight.AutoSize = false;
-            this.buttonRight.BackgroundImage = (System.Drawing.Bitmap)resources.GetObject("arrow-right-icon");
+            this.buttonRight.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRight.BackgroundImage")));
             this.buttonRight.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonRight.Name = "buttonRight";
             this.buttonRight.Size = new System.Drawing.Size(25, 25);
@@ -118,7 +120,7 @@
             // 
             // buttonSortAscending
             // 
-            this.buttonSortAscending.BackgroundImage = (System.Drawing.Bitmap)resources.GetObject("sort-ascending-icon");
+            this.buttonSortAscending.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortAscending.BackgroundImage")));
             this.buttonSortAscending.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSortAscending.Margin = new System.Windows.Forms.Padding(10, 2, 0, 0);
             this.buttonSortAscending.Name = "buttonSortAscending";
@@ -128,24 +130,32 @@
             // 
             // buttonSortDescending
             // 
-            this.buttonSortDescending.BackgroundImage = (System.Drawing.Bitmap)resources.GetObject("sort-descending-icon");
+            this.buttonSortDescending.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortDescending.BackgroundImage")));
             this.buttonSortDescending.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSortDescending.Name = "buttonSortDescending";
             this.buttonSortDescending.Size = new System.Drawing.Size(25, 25);
             this.buttonSortDescending.ToolTipText = "Sort playlist (descending)";
             this.buttonSortDescending.Click += new System.EventHandler(this.ButtonSortDescendingClick);
             // 
+            // PlayButton
+            // 
+            this.PlayButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("PlayButton.BackgroundImage")));
+            this.PlayButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.PlayButton.Name = "PlayButton";
+            this.PlayButton.Size = new System.Drawing.Size(25, 25);
+            this.PlayButton.Visible = false;
+            // 
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(502, 22);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(535, 22);
             this.toolStripStatusLabel1.Spring = true;
             this.toolStripStatusLabel1.Text = " ";
             // 
             // buttonNew
             // 
             this.buttonNew.AutoSize = false;
-            this.buttonNew.BackgroundImage = (System.Drawing.Bitmap)resources.GetObject("new-icon");
+            this.buttonNew.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonNew.BackgroundImage")));
             this.buttonNew.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonNew.Name = "buttonNew";
             this.buttonNew.Size = new System.Drawing.Size(25, 25);
@@ -155,9 +165,8 @@
             // buttonOpen
             // 
             this.buttonOpen.AutoSize = false;
-            this.buttonOpen.BackgroundImage = (System.Drawing.Bitmap)resources.GetObject("open-icon");
+            this.buttonOpen.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonOpen.BackgroundImage")));
             this.buttonOpen.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonOpen.Margin = new System.Windows.Forms.Padding(0, 2, 0, 0);
             this.buttonOpen.Name = "buttonOpen";
             this.buttonOpen.Size = new System.Drawing.Size(25, 25);
             this.buttonOpen.ToolTipText = "Open playlist";
@@ -166,7 +175,7 @@
             // buttonSave
             // 
             this.buttonSave.AutoSize = false;
-            this.buttonSave.BackgroundImage = (System.Drawing.Bitmap)resources.GetObject("save-icon");
+            this.buttonSave.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSave.BackgroundImage")));
             this.buttonSave.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSave.Name = "buttonSave";
             this.buttonSave.Size = new System.Drawing.Size(25, 25);
@@ -189,7 +198,7 @@
             // openPlaylistDialog
             // 
             this.openPlaylistDialog.DefaultExt = "mpl";
-            this.openPlaylistDialog.Filter = resources.GetString("playlistDialog.Filter");
+            this.openPlaylistDialog.Filter = "MPDN Playlist (*.mpl) |*.mpl|All files (*.*)|*.*";
             this.openPlaylistDialog.RestoreDirectory = true;
             this.openPlaylistDialog.SupportMultiDottedExtensions = true;
             this.openPlaylistDialog.Title = "Open playlist...";
@@ -197,12 +206,13 @@
             // savePlaylistDialog
             // 
             this.savePlaylistDialog.DefaultExt = "mpl";
-            this.savePlaylistDialog.Filter = resources.GetString("playlistDialog.Filter");
+            this.savePlaylistDialog.Filter = "MPDN Playlist (*.mpl) |*.mpl|All files (*.*)|*.*";
             this.savePlaylistDialog.SupportMultiDottedExtensions = true;
             this.savePlaylistDialog.Title = "Save playlist...";
             // 
             // dgv_PlayList
             // 
+            this.dgv_PlayList.AllowDrop = true;
             this.dgv_PlayList.AllowUserToAddRows = false;
             this.dgv_PlayList.AllowUserToDeleteRows = false;
             this.dgv_PlayList.AllowUserToResizeRows = false;
@@ -240,6 +250,8 @@
             this.dgv_PlayList.ShowRowErrors = false;
             this.dgv_PlayList.Size = new System.Drawing.Size(795, 202);
             this.dgv_PlayList.TabIndex = 1;
+            this.dgv_PlayList.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgv_PlayList_DragDrop);
+            this.dgv_PlayList.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgv_PlayList_DragEnter);
             // 
             // Playing
             // 
@@ -247,12 +259,12 @@
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.NullValue = "null";
             this.Playing.DefaultCellStyle = dataGridViewCellStyle2;
-            this.Playing.FillWeight = 16F;
+            this.Playing.FillWeight = 24F;
             this.Playing.HeaderText = "";
-            this.Playing.MinimumWidth = 16;
+            this.Playing.MinimumWidth = 24;
             this.Playing.Name = "Playing";
             this.Playing.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.Playing.Width = 16;
+            this.Playing.Width = 24;
             // 
             // Title
             // 
@@ -329,11 +341,12 @@
         private System.Windows.Forms.OpenFileDialog openPlaylistDialog;
         private System.Windows.Forms.SaveFileDialog savePlaylistDialog;
         private System.Windows.Forms.DataGridView dgv_PlayList;
+        private ButtonStripItem buttonSortAscending;
+        private ButtonStripItem buttonSortDescending;
+        private ButtonStripItem PlayButton;
         private System.Windows.Forms.DataGridViewImageColumn Playing;
         private System.Windows.Forms.DataGridViewTextBoxColumn Title;
         private System.Windows.Forms.DataGridViewTextBoxColumn SkipChapters;
         private System.Windows.Forms.DataGridViewTextBoxColumn EndChapter;
-        private ButtonStripItem buttonSortAscending;
-        private ButtonStripItem buttonSortDescending;
     }
 }
