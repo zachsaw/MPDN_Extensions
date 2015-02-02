@@ -309,7 +309,7 @@ namespace Mpdn.PlayerExtensions
                         HandleData(data);
                     }
                 }
-                catch()
+                catch
                 {
                     break;
                 }
