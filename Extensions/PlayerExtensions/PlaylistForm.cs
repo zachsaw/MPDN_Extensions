@@ -64,8 +64,12 @@ namespace Mpdn.PlayerExtensions.Playlist
         private void SetLocation(Control owner)
         {
             if (!firstShow) return;
-            Left = owner.Right - Width / (int)(5 * ScaleFactor.Width);
-            Top = owner.Bottom - Height / (int)(5 * ScaleFactor.Height);
+            var screen = Screen.FromControl(this);
+            var screenBounds = screen.Bounds;
+            var left = owner.Right - Width / (int)(5 * ScaleFactor.Width);
+            var top = owner.Bottom - Height / (int)(5 * ScaleFactor.Height);
+            Left = left + Width > screenBounds.Width ? screenBounds.Width - Width : left;
+            Top = top + Height > screenBounds.Height ? screenBounds.Height - Height : top;
             firstShow = false;
         }
 
