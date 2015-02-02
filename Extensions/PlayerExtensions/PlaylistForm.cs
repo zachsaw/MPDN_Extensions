@@ -34,13 +34,13 @@ namespace Mpdn.PlayerExtensions.Playlist
             Opacity = MinOpacity;
         }
 
-        public void Show(Form owner)
+        public void Show(Control owner)
         {
             Hide();
             SetLocation(owner);
             timer.Enabled = true;
             dgv_PlayList.Focus();
-            base.Show();
+            base.Show(owner);
         }
         
         public void Setup()
@@ -61,7 +61,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             playList = new List<PlaylistItem>();
         }
 
-        private void SetLocation(Form owner)
+        private void SetLocation(Control owner)
         {
             if (!firstShow) return;
             Left = owner.Right - Width / (int)(5 * ScaleFactor.Width);

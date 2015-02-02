@@ -54,13 +54,13 @@ namespace Mpdn.PlayerExtensions.Playlist
 
         private void OpenPlaylist()
         {
-            form.Show(PlayerControl.Form);
+            form.Show(PlayerControl.VideoPanel);
             form.OpenPlaylist();
         }
 
         private void ViewPlaylist()
         {
-            form.Show(PlayerControl.Form);
+            form.Show(PlayerControl.VideoPanel);
         }
 
         private void OnCommandLineFileOpen(object sender, CommandLineFileOpenEventArgs e)
