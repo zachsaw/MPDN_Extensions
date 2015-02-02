@@ -34,6 +34,24 @@ namespace Mpdn.PlayerExtensions.Playlist
             Opacity = MinOpacity;
         }
 
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+
+                PlayerControl.PlayerStateChanged -= PlayerStateChanged;
+                PlayerControl.PlaybackCompleted -= PlaybackCompleted;
+                PlayerControl.FrameDecoded -= FrameDecoded;
+                PlayerControl.FramePresented -= FramePresented;
+            }
+            base.Dispose(disposing);
+        }
+
         public void Show(Control owner)
         {
             Hide();
@@ -42,7 +60,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             dgv_PlayList.Focus();
             base.Show(owner);
         }
-        
+
         public void Setup()
         {
             Icon = PlayerControl.ApplicationIcon;
@@ -64,12 +82,13 @@ namespace Mpdn.PlayerExtensions.Playlist
         private void SetLocation(Control owner)
         {
             if (!firstShow) return;
-            var screen = Screen.FromControl(this);
+            var screen = Screen.FromControl(owner);
             var screenBounds = screen.Bounds;
-            var left = owner.Right - Width / (int)(5 * ScaleFactor.Width);
-            var top = owner.Bottom - Height / (int)(5 * ScaleFactor.Height);
-            Left = left + Width > screenBounds.Width ? screenBounds.Width - Width : left;
-            Top = top + Height > screenBounds.Height ? screenBounds.Height - Height : top;
+            var p = owner.PointToScreen(new Point(owner.Right, owner.Bottom));
+            var left = p.X - Width / (int)(5 * ScaleFactor.Width);
+            var top = p.Y - Height / (int)(5 * ScaleFactor.Height);
+            Left = left + Width > screenBounds.Right ? screenBounds.Right - Width : left;
+            Top = top + Height > screenBounds.Bottom ? screenBounds.Bottom - Height : top;
             firstShow = false;
         }
 
@@ -119,7 +138,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             if (e.ColumnIndex == 0)
             {
                 var rect = new Rectangle(e.CellBounds.X + 15, e.CellBounds.Y + 4, e.CellBounds.Width, e.CellBounds.Height - 9);
-                var playIcon = (Bitmap) Resource.GetObject("play-icon");
+                var playIcon = (Bitmap)Resource.GetObject("play-icon");
                 var offset = new Point(e.CellBounds.X, e.CellBounds.Y + 2);
                 e.Graphics.FillRectangle(brush, rect);
                 e.Graphics.DrawImage(playIcon, offset);
@@ -263,8 +282,8 @@ namespace Mpdn.PlayerExtensions.Playlist
                                     skipChapterCell.RowIndex, false);
                                 toolTip.Show("Only numbers < " + PlayerControl.Chapters.Count + " are allowed",
                                     dgv_PlayList,
-                                    cellDisplayRect.X + skipChapterCell.Size.Width/2,
-                                    cellDisplayRect.Y + skipChapterCell.Size.Height/2,
+                                    cellDisplayRect.X + skipChapterCell.Size.Width / 2,
+                                    cellDisplayRect.Y + skipChapterCell.Size.Height / 2,
                                     2000);
                                 sortedNumbers.RemoveAll(num => num >= PlayerControl.Chapters.Count);
                             }
@@ -291,8 +310,8 @@ namespace Mpdn.PlayerExtensions.Playlist
                                     endChapterCell.RowIndex, false);
                                 toolTip.Show("Only numbers <= " + PlayerControl.Chapters.Count + " are allowed",
                                     dgv_PlayList,
-                                    cellDisplayRect.X + endChapterCell.Size.Width/2,
-                                    cellDisplayRect.Y + endChapterCell.Size.Height/2,
+                                    cellDisplayRect.X + endChapterCell.Size.Width / 2,
+                                    cellDisplayRect.Y + endChapterCell.Size.Height / 2,
                                     2000);
 
                                 value = PlayerControl.Chapters.Count.ToString();
@@ -530,7 +549,7 @@ namespace Mpdn.PlayerExtensions.Playlist
         {
             currentPlayIndex++;
             OpenMedia();
-            
+
             if (currentPlayIndex < playList.Count) return;
             currentPlayIndex = playList.Count - 1;
         }
@@ -539,7 +558,7 @@ namespace Mpdn.PlayerExtensions.Playlist
         {
             currentPlayIndex--;
             OpenMedia();
-            
+
             if (currentPlayIndex >= 0) return;
             currentPlayIndex = 0;
         }
