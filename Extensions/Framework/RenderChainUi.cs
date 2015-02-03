@@ -55,19 +55,17 @@ namespace Mpdn.RenderScript
             set { Settings = value; }
         }
 
-        public RenderChainUi()
+        protected RenderChainUi()
         {
             Settings = new TChain();
         }
 
         public IRenderScript CreateRenderScript()
         {
-            return m_RenderScript ?? (m_RenderScript = new RenderChainScript(Chain));
+            return new RenderChainScript(Chain);
         }
 
         #region Implementation
-
-        private RenderChainScript m_RenderScript;
 
         public RenderChain GetChain()
         {
@@ -76,7 +74,7 @@ namespace Mpdn.RenderScript
 
         public override void Destroy()
         {
-            DisposeHelper.Dispose(m_RenderScript);
+            DisposeHelper.Dispose(Settings);
             base.Destroy();
         }
 

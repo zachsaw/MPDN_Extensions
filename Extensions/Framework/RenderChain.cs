@@ -5,7 +5,7 @@ using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
-    public abstract class RenderChain
+    public abstract class RenderChain : IDisposable
     {
         public abstract IFilter CreateFilter(IResizeableFilter sourceFilter);
 
@@ -111,6 +111,24 @@ namespace Mpdn.RenderScript
         protected bool IsUpscalingFrom(IFilter chain)
         {
             return IsUpscalingFrom(chain.OutputSize);
+        }
+
+        #endregion
+
+        #region Resource Disposal Methods
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
+        public virtual void RenderScriptDisposed()
+        {
         }
 
         #endregion

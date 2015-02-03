@@ -235,30 +235,6 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public sealed class NullFilter : BaseSourceFilter, IResizeableFilter
-    {
-        private Size m_OutputSize;
-
-        public void SetSize(Size targetSize)
-        {
-            m_OutputSize = targetSize;
-        }
-
-        #region IFilter Implementation
-
-        public override ITexture OutputTexture
-        {
-            get { return Renderer.OutputRenderTarget; }
-        }
-
-        public override Size OutputSize
-        {
-            get { return (m_OutputSize.IsEmpty ? Renderer.VideoSize : m_OutputSize); }
-        }
-
-        #endregion
-    }
-
     public sealed class SourceFilter : BaseSourceFilter, IResizeableFilter
     {
         private Size m_OutputSize;
@@ -327,6 +303,45 @@ namespace Mpdn.RenderScript
         public override Size OutputSize
         {
             get { return Renderer.ChromaSize; }
+        }
+
+        public override void Reset(ITextureCache cache)
+        {
+        }
+    }
+
+    public sealed class NullFilter : BaseSourceFilter
+    {
+        public override ITexture OutputTexture
+        {
+            get { return Renderer.OutputRenderTarget; }
+        }
+
+        public override Size OutputSize
+        {
+            get { return Renderer.TargetSize; }
+        }
+    }
+
+    public sealed class TextureSourceFilter : BaseSourceFilter
+    {
+        private readonly ITexture m_Texture;
+        private readonly Size m_Size;
+
+        public TextureSourceFilter(ITexture texture)
+        {
+            m_Texture = texture;
+            m_Size = new Size(texture.Width, texture.Height);
+        }
+
+        public override ITexture OutputTexture
+        {
+            get { return m_Texture; }
+        }
+
+        public override Size OutputSize
+        {
+            get { return m_Size; }
         }
 
         public override void Reset(ITextureCache cache)
