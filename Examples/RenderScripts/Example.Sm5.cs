@@ -1,5 +1,6 @@
 ﻿using System;
 using Mpdn.RenderScript;
+using Mpdn.RenderScript.Mpdn.Resizer;
 
 namespace Mpdn.RenderScripts
 {
@@ -17,6 +18,10 @@ namespace Mpdn.RenderScripts
                 if (!Renderer.IsDx11Avail)
                     return new NullFilter(); // display blank screen on purpose
 
+                // get MPDN to scale image to target size first
+                sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
+
+                // apply our blue tint
                 var blueTint = CompileShader11("BlueTintSm5.hlsl", "ps_5_0");
                 return new Shader11Filter(blueTint, false, new[] {0.25f, 0.5f, 0.75f}, sourceFilter);
             }

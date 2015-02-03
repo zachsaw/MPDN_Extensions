@@ -6,7 +6,7 @@ namespace Mpdn.RenderScripts
 {
     namespace Example
     {
-        public class DirectCompute : RenderChain
+        public class Basic : RenderChain
         {
             protected override string ShaderPath
             {
@@ -15,22 +15,16 @@ namespace Mpdn.RenderScripts
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                if (!Renderer.IsDx11Avail)
-                    return new NullFilter(); // display blank screen on purpose
-
                 // get MPDN to scale image to target size first
                 sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
 
                 // apply our blue tint
-                var blueTint = CompileShader11("BlueTintDirectCompute.hlsl", "cs_5_0");
-                var width = sourceFilter.OutputSize.Width;
-                var height = sourceFilter.OutputSize.Height;
-                return new DirectComputeFilter(blueTint, (int) Math.Ceiling(width/32.0), (int) Math.Ceiling(height/32.0),
-                    1, new[] {0.25f, 0.5f, 0.75f}, sourceFilter);
+                var blueTint = CompileShader("BlueTintSm3.hlsl");
+                return new ShaderFilter(blueTint, false, new[] {0.25f, 0.5f, 0.75f}, sourceFilter);
             }
         }
 
-        public class DirectComputeExample : RenderChainUi<DirectCompute>
+        public class BasicExample : RenderChainUi<Basic>
         {
             public override ExtensionUiDescriptor Descriptor
             {
@@ -38,9 +32,9 @@ namespace Mpdn.RenderScripts
                 {
                     return new ExtensionUiDescriptor
                     {
-                        Name = "DirectCompute Blue Tint Example",
-                        Description = "(Example) Applies a blue tint over the image using DirectCompute",
-                        Guid = new Guid("2BAD9125-6474-42D4-9C65-9A03DE3280AF"),
+                        Name = "SM3.0 Blue Tint Example",
+                        Description = "(Example) Applies a blue tint over the image using Shader Model 3.0",
+                        Guid = new Guid("3682DAD5-067C-4537-B540-BE86A7C3527A"),
                         Copyright = "" // Optional field
                     };
                 }

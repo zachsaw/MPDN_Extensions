@@ -36,7 +36,7 @@ struct PS_IN
 
 // Implementation
 
-float4 main( PS_IN In) : SV_TARGET
+float4 main( PS_IN In ) : SV_TARGET
 {
     float2 pos = In.Texture;
     return float4(saturate(inputTexture.Sample(ss, pos).rgb + float3(r, g, b)), 1);
