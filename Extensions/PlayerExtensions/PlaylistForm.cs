@@ -27,6 +27,9 @@ namespace Mpdn.PlayerExtensions.Playlist
         private int currentPlayIndex = -1;
         private long previousChapterPosition;
 
+        private Rectangle dragRowRect;
+        private int dragRowIndex;
+
         public PlaylistForm()
         {
             InitializeComponent();
@@ -80,6 +83,10 @@ namespace Mpdn.PlayerExtensions.Playlist
             dgv_PlayList.CellDoubleClick += dgv_PlayList_CellDoubleClick;
             dgv_PlayList.CellEndEdit += dgv_PlayList_CellEndEdit;
             dgv_PlayList.EditingControlShowing += dgv_PlayList_EditingControlShowing;
+            dgv_PlayList.MouseMove += dgv_PlayList_MouseMove;
+            dgv_PlayList.MouseDown += dgv_PlayList_MouseDown;
+            dgv_PlayList.DragOver += dgv_PlayList_DragOver;
+            dgv_PlayList.DragDrop += dgv_PlayList_DragDrop;
 
             PlayerControl.PlayerStateChanged += PlayerStateChanged;
             PlayerControl.PlaybackCompleted += PlaybackCompleted;
@@ -416,6 +423,66 @@ namespace Mpdn.PlayerExtensions.Playlist
                               2000);
 
                 e.Handled = true;
+            }
+        }
+
+        void dgv_PlayList_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left) return;
+            if (dragRowRect != Rectangle.Empty && !dragRowRect.Contains(e.X, e.Y))
+            {
+                dgv_PlayList.DoDragDrop(dgv_PlayList.Rows[dragRowIndex], DragDropEffects.Move);
+            }
+        }
+
+        void dgv_PlayList_MouseDown(object sender, MouseEventArgs e)
+        {
+            dragRowIndex = dgv_PlayList.HitTest(e.X, e.Y).RowIndex;
+
+            if (dragRowIndex != -1)
+            {
+                var dragSize = SystemInformation.DragSize;
+                dragRowRect = new Rectangle(new Point(e.X - (dragSize.Width / 2), e.Y - (dragSize.Height / 2)), dragSize);
+            }
+            else
+            {
+                dragRowRect = Rectangle.Empty;
+            }
+        }
+
+        void dgv_PlayList_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        void dgv_PlayList_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files.Length == 1)
+                {
+                    var filename = files[0];
+                    if (Playlist.IsPlaylistFile(filename))
+                    {
+                        OpenPlaylist(filename);
+                        return;
+                    }
+                }
+
+                AddFiles(files);
+                dgv_PlayList.CurrentCell = dgv_PlayList.Rows[dgv_PlayList.Rows.Count - 1].Cells[1];
+            }
+            else if (e.Data.GetDataPresent(typeof(DataGridViewRow)))
+            {
+                var clientPoint = dgv_PlayList.PointToClient(new Point(e.X, e.Y));
+                int destinationRow = dgv_PlayList.HitTest(clientPoint.X, clientPoint.Y).RowIndex;
+
+                var playItem = playList.ElementAt(dragRowIndex);
+                playList.RemoveAt(dragRowIndex);
+                playList.Insert(destinationRow, playItem);
+                PopulatePlaylist();
+                dgv_PlayList.CurrentCell = dgv_PlayList.Rows[destinationRow].Cells[1];
             }
         }
 
@@ -835,30 +902,6 @@ namespace Mpdn.PlayerExtensions.Playlist
             if (e.KeyData == Keys.Escape)
             {
                 Hide();
-            }
-        }
-
-        private void dgv_PlayList_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Copy;
-        }
-
-        private void dgv_PlayList_DragDrop(object sender, DragEventArgs e)
-        {
-            var files = (string[]) e.Data.GetData(DataFormats.FileDrop);
-            if (files.Length > 1)
-            {
-                // Add multiple files to playlist
-                AddFiles(files);
-            }
-            else
-            {
-                var filename = files[0];
-                if (Playlist.IsPlaylistFile(filename))
-                {
-                    // Playlist file
-                    OpenPlaylist(filename);
-                }
             }
         }
     }

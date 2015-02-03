@@ -250,8 +250,6 @@
             this.dgv_PlayList.ShowRowErrors = false;
             this.dgv_PlayList.Size = new System.Drawing.Size(795, 202);
             this.dgv_PlayList.TabIndex = 1;
-            this.dgv_PlayList.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgv_PlayList_DragDrop);
-            this.dgv_PlayList.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgv_PlayList_DragEnter);
             // 
             // Playing
             // 
