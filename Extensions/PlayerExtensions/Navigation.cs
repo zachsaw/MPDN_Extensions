@@ -38,7 +38,7 @@ namespace Mpdn.PlayerExtensions.GitHub
                 {
                     GetVerb("Forward (5 seconds)", "Right", Jump(5)),
                     GetVerb("Backward (5 seconds)", "Left", Jump(-5)),
-                    GetVerb("Forward (1 frame)", "Ctrl+Right", JumpFrame(1)),
+                    GetVerb("Forward (1 frame)", "Ctrl+Right", StepFrame()),
                     GetVerb("Backward (1 frame)", "Ctrl+Left", JumpFrame(-1)),
                     GetVerb("Forward (30 seconds)", "Ctrl+Shift+Right", Jump(30)),
                     GetVerb("Backward (30 seconds)", "Ctrl+Shift+Left", Jump(-30)),
@@ -115,6 +115,17 @@ namespace Mpdn.PlayerExtensions.GitHub
             var files = Directory.EnumerateFiles(mediaDir)
                 .OrderBy(filename => filename).Where(file => m_FileExtensions.Contains(Path.GetExtension(file)));
             return files;
+        }
+
+        private Action StepFrame()
+        {
+            return delegate
+            {
+                if (PlayerControl.PlayerState == PlayerState.Closed)
+                    return;
+
+                PlayerControl.StepMedia();
+            };
         }
 
         private Action JumpFrame(int frames)
