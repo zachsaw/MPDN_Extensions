@@ -135,6 +135,7 @@ namespace Mpdn.PlayerExtensions.GitHub
                 if (PlayerControl.PlayerState == PlayerState.Closed)
                     return;
 
+                PlayerControl.PauseMedia(false);
                 var pos = PlayerControl.MediaPosition;
                 var nextPos = pos + (long) Math.Round(frames*PlayerControl.VideoInfo.AvgTimePerFrame);
                 nextPos = Math.Max(0, Math.Min(PlayerControl.MediaDuration, nextPos));
