@@ -62,6 +62,7 @@ namespace Mpdn.PlayerExtensions.Playlist
 
         public override void Destroy()
         {
+            PlayerControl.PlayerStateChanged -= OnPlayerStateChange;
             PlayerControl.FormClosed -= OnFormClosed;
             PlayerControl.DragEnter -= OnDragEnter;
             PlayerControl.DragDrop -= OnDragDrop;
