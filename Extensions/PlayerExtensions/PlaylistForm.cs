@@ -997,8 +997,16 @@ namespace Mpdn.PlayerExtensions.Playlist
     public class ButtonStripItem : ToolStripControlHostProxy
     {
         public ButtonStripItem()
-            : base(new Button())
+            : base(CreateButtonInstance())
         {
+        }
+
+        private static Button CreateButtonInstance()
+        {
+            var b = new Button {BackColor = Color.Transparent, FlatStyle = FlatStyle.Flat};
+            b.FlatAppearance.BorderSize = 0;
+            b.FlatAppearance.BorderColor = Color.FromArgb(0, 255, 255, 255);
+            return b;
         }
     }
 

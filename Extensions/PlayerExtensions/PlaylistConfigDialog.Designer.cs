@@ -54,9 +54,9 @@
             this.cb_addFileToPlaylistOnOpen.AutoSize = true;
             this.cb_addFileToPlaylistOnOpen.Location = new System.Drawing.Point(6, 65);
             this.cb_addFileToPlaylistOnOpen.Name = "cb_addFileToPlaylistOnOpen";
-            this.cb_addFileToPlaylistOnOpen.Size = new System.Drawing.Size(149, 17);
+            this.cb_addFileToPlaylistOnOpen.Size = new System.Drawing.Size(153, 17);
             this.cb_addFileToPlaylistOnOpen.TabIndex = 2;
-            this.cb_addFileToPlaylistOnOpen.Text = "Add to playlist on file open";
+            this.cb_addFileToPlaylistOnOpen.Text = "On file open, add to playlist";
             this.cb_addFileToPlaylistOnOpen.UseVisualStyleBackColor = true;
             // 
             // cb_rememberLastPlayedFile
@@ -105,11 +105,12 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(228, 138);
-            this.ControlBox = false;
             this.Controls.Add(this.btn_cancel);
             this.Controls.Add(this.btn_save);
             this.Controls.Add(this.groupBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "PlaylistConfigDialog";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;

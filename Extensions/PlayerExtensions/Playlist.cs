@@ -77,6 +77,7 @@ namespace Mpdn.PlayerExtensions.Playlist
         private void OnPlayerStateChange(object sender, EventArgs e)
         {
             if (!Settings.AddFileToPlaylistOnOpen) return;
+            if (PlayerControl.MediaFilePath == "") return;
             var foundFile = form.Playlist.Find(i => i.FilePath == PlayerControl.MediaFilePath);
             if (foundFile != null) return;
             form.AddActiveFile(PlayerControl.MediaFilePath);
