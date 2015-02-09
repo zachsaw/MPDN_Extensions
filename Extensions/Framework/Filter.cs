@@ -20,6 +20,9 @@ namespace Mpdn.RenderScript
         IFilter[] InputFilters { get; }
         ITexture OutputTexture { get; }
         Size OutputSize { get; }
+        ITexture3D OutputTexture3D { get; }
+        Int3 OutputSize3D { get; }
+        bool IsOutputTexture3D { get; }
         int FilterIndex { get; }
         int LastDependentIndex { get; }
         void Render(ITextureCache cache);
@@ -101,7 +104,7 @@ namespace Mpdn.RenderScript
             InputFilters = inputFilters;
         }
 
-        protected abstract void Render(IEnumerable<ITexture> inputs);
+        protected abstract void Render(IList<IBaseTexture> inputs);
 
         protected virtual IFilter PassthroughFilter { get; set; }
 
@@ -114,6 +117,21 @@ namespace Mpdn.RenderScript
         public ITexture OutputTexture { get; private set; }
 
         public abstract Size OutputSize { get; }
+
+        public ITexture3D OutputTexture3D
+        {
+            get { throw new InvalidOperationException("Output texture is not 3D"); }
+        }
+
+        public Int3 OutputSize3D
+        {
+            get { throw new InvalidOperationException("Output texture is not 3D"); }
+        }
+
+        public bool IsOutputTexture3D
+        {
+            get { return false; }
+        }
 
         public int FilterIndex { get; private set; }
         public int LastDependentIndex { get; private set; }
@@ -162,7 +180,10 @@ namespace Mpdn.RenderScript
                 filter.Render(cache);
             }
 
-            var inputTextures = InputFilters.Select(f => f.OutputTexture);
+            var inputTextures =
+                InputFilters.Select(
+                    f => !f.IsOutputTexture3D ? (IBaseTexture) f.OutputTexture : (IBaseTexture) f.OutputTexture3D)
+                    .ToList();
 
             OutputTexture = cache.GetTexture(OutputSize);
 
@@ -205,6 +226,86 @@ namespace Mpdn.RenderScript
         public abstract ITexture OutputTexture { get; }
 
         public abstract Size OutputSize { get; }
+
+        public ITexture3D OutputTexture3D
+        {
+            get { throw new InvalidOperationException("Output texture is not 3D"); }
+        }
+
+        public Int3 OutputSize3D
+        {
+            get { throw new InvalidOperationException("Output texture is not 3D"); }
+        }
+
+        public bool IsOutputTexture3D
+        {
+            get { return false; }
+        }
+
+        public virtual int FilterIndex
+        {
+            get { return 0; }
+        }
+
+        public virtual int LastDependentIndex { get; private set; }
+
+        public IFilter Initialize(int time = 1)
+        {
+            LastDependentIndex = time;
+            return this;
+        }
+
+        public void NewFrame()
+        {
+        }
+
+        public void Render(ITextureCache cache)
+        {
+        }
+
+        public virtual void Reset(ITextureCache cache)
+        {
+            cache.PutTempTexture(OutputTexture);
+        }
+
+        #endregion
+    }
+
+    public abstract class Base3DSourceFilter : IFilter
+    {
+        protected Base3DSourceFilter(params IFilter[] inputFilters)
+        {
+            InputFilters = inputFilters;
+        }
+
+        #region IFilter Implementation
+
+        public IFilter[] InputFilters { get; protected set; }
+
+        public ITexture OutputTexture
+        {
+            get
+            {
+                throw new InvalidOperationException("Output texture is not 2D");
+            }
+        }
+
+        public Size OutputSize
+        {
+            get
+            {
+                throw new InvalidOperationException("Output texture is not 2D");
+            }
+        }
+
+        public abstract ITexture3D OutputTexture3D { get; }
+
+        public abstract Int3 OutputSize3D { get; }
+
+        public bool IsOutputTexture3D
+        {
+            get { return true; }
+        }
 
         public virtual int FilterIndex
         {
@@ -349,6 +450,32 @@ namespace Mpdn.RenderScript
         }
     }
 
+    public sealed class Texture3DSourceFilter : Base3DSourceFilter
+    {
+        private readonly ITexture3D m_Texture;
+        private readonly Int3 m_Size;
+
+        public Texture3DSourceFilter(ITexture3D texture)
+        {
+            m_Texture = texture;
+            m_Size = new Int3(texture.Width, texture.Height, texture.Depth);
+        }
+
+        public override ITexture3D OutputTexture3D
+        {
+            get { return m_Texture; }
+        }
+
+        public override Int3 OutputSize3D
+        {
+            get { return m_Size; }
+        }
+
+        public override void Reset(ITextureCache cache)
+        {
+        }
+    }
+
     public sealed class RgbFilter : Filter
     {
         public RgbFilter(IFilter inputFilter) : base(inputFilter) 
@@ -364,9 +491,13 @@ namespace Mpdn.RenderScript
             get { return InputFilters[0].OutputSize; }
         }
 
-        protected override void Render(IEnumerable<ITexture> inputs)
+        protected override void Render(IList<IBaseTexture> inputs)
         {
-            Renderer.ConvertToRgb(OutputTexture, inputs.Single(), Renderer.Colorimetric, Renderer.OutputLimitedRange);
+            var texture = inputs.OfType<ITexture>().SingleOrDefault();
+            if (texture == null)
+                return;
+
+            Renderer.ConvertToRgb(OutputTexture, texture, Renderer.Colorimetric, Renderer.OutputLimitedRange);
         }
     }
 
@@ -385,9 +516,13 @@ namespace Mpdn.RenderScript
             get { return InputFilters[0].OutputSize; }
         }
 
-        protected override void Render(IEnumerable<ITexture> inputs)
+        protected override void Render(IList<IBaseTexture> inputs)
         {
-            Renderer.ConvertToYuv(OutputTexture, inputs.Single(), Renderer.Colorimetric, Renderer.OutputLimitedRange);
+            var texture = inputs.OfType<ITexture>().SingleOrDefault();
+            if (texture == null)
+                return;
+
+            Renderer.ConvertToYuv(OutputTexture, texture, Renderer.Colorimetric, Renderer.OutputLimitedRange);
         }
     }
 
@@ -432,9 +567,13 @@ namespace Mpdn.RenderScript
             get { return m_OutputSize; }
         }
 
-        protected override void Render(IEnumerable<ITexture> inputs)
+        protected override void Render(IList<IBaseTexture> inputs)
         {
-            Renderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler, m_Convolver);
+            var texture = inputs.OfType<ITexture>().SingleOrDefault();
+            if (texture == null)
+                return;
+
+            Renderer.Scale(OutputTexture, texture, m_Upscaler, m_Downscaler, m_Convolver);
         }
     }
 
@@ -503,7 +642,7 @@ namespace Mpdn.RenderScript
                 get { return m_InputFilter.OutputSize; }
             }
 
-            protected override void Render(IEnumerable<ITexture> inputs)
+            protected override void Render(IList<IBaseTexture> inputs)
             {
                 throw new NotImplementedException();
             }
@@ -544,10 +683,10 @@ namespace Mpdn.RenderScript
             get { return Transform(InputFilters[SizeIndex].OutputSize); }
         }
 
-        protected abstract void LoadInputs(IEnumerable<ITexture> inputs);
+        protected abstract void LoadInputs(IList<IBaseTexture> inputs);
         protected abstract void Render(T shader);
 
-        protected override void Render(IEnumerable<ITexture> inputs)
+        protected override void Render(IList<IBaseTexture> inputs)
         {
             LoadInputs(inputs);
             Render(Shader);
@@ -564,14 +703,25 @@ namespace Mpdn.RenderScript
 
         protected int Counter { get; private set; }
 
-        protected override void LoadInputs(IEnumerable<ITexture> inputs)
+        protected override void LoadInputs(IList<IBaseTexture> inputs)
         {
             var i = 0;
             foreach (var input in inputs)
             {
-                Shader.SetTextureConstant(i, input, LinearSampling, false);
-                Shader.SetConstant(String.Format("size{0}", i),
-                    new Vector4(input.Width, input.Height, 1.0f/input.Width, 1.0f/input.Height), false);
+                if (input as ITexture != null)
+                {
+                    var tex = (ITexture) input;
+                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetConstant(String.Format("size{0}", i),
+                        new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
+                }
+                else
+                {
+                    var tex = (ITexture3D) input;
+                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetConstant(String.Format("size3d{0}", i),
+                        new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
+                }
                 i++;
             }
 
@@ -678,14 +828,25 @@ namespace Mpdn.RenderScript
 
         protected int Counter { get; private set; }
 
-        protected override void LoadInputs(IEnumerable<ITexture> inputs)
+        protected override void LoadInputs(IList<IBaseTexture> inputs)
         {
             var i = 0;
             foreach (var input in inputs)
             {
-                Shader.SetTextureConstant(i, input, LinearSampling, false);
-                Shader.SetConstantBuffer(String.Format("size{0}", i),
-                    new Vector4(input.Width, input.Height, 1.0f / input.Width, 1.0f / input.Height), false);
+                if (input as ITexture != null)
+                {
+                    var tex = (ITexture) input;
+                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetConstantBuffer(String.Format("size{0}", i),
+                        new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
+                }
+                else
+                {
+                    var tex = (ITexture3D) input;
+                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetConstantBuffer(String.Format("size3d{0}", i),
+                        new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
+                }
                 i++;
             }
 
