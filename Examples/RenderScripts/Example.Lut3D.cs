@@ -39,10 +39,11 @@ namespace Mpdn.RenderScripts
                 if (m_Texture3D != null)
                     return;
 
-                // As example of how to create and update 3D textures only - not used
-                const int width = 256;
-                const int height = 256;
-                const int depth = 256;
+                const int cubeSize = 256;
+
+                const int width = cubeSize;
+                const int height = cubeSize;
+                const int depth = cubeSize;
                 m_Texture3D = Renderer.CreateTexture3D(width, height, depth);
                 Renderer.UpdateTexture3D(m_Texture3D, Create3DLut(width, height, depth));
             }
