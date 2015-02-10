@@ -82,17 +82,17 @@ namespace Mpdn.RenderScript
 
         #region Size Calculations
 
-        protected bool IsDownscalingFrom(Size size)
+        protected bool IsDownscalingFrom(TextureSize size)
         {
             return !IsNotScalingFrom(size) && !IsUpscalingFrom(size);
         }
 
-        protected bool IsNotScalingFrom(Size size)
+        protected bool IsNotScalingFrom(TextureSize size)
         {
             return size == Renderer.TargetSize;
         }
 
-        protected bool IsUpscalingFrom(Size size)
+        protected bool IsUpscalingFrom(TextureSize size)
         {
             var targetSize = Renderer.TargetSize;
             return targetSize.Width > size.Width || targetSize.Height > size.Height;
