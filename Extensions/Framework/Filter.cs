@@ -16,17 +16,17 @@ namespace Mpdn.RenderScript
         void PutTempTexture(ITexture texture);
     }
 
-    public interface IFilter<out Texture>
-        where Texture : class, IBaseTexture
+    public interface IFilter<out TTexture>
+        where TTexture : class, IBaseTexture
     {
         IBaseFilter[] InputFilters { get; }
-        Texture OutputTexture { get; }
+        TTexture OutputTexture { get; }
         TextureSize OutputSize { get; }
         int FilterIndex { get; }
         int LastDependentIndex { get; }
         void Render(ITextureCache cache);
         void Reset(ITextureCache cache);
-        IFilter<Texture> Initialize(int time = 1);
+        IFilter<TTexture> Initialize(int time = 1);
     }
 
     public interface IFilter : IFilter<ITexture> { }
@@ -38,14 +38,14 @@ namespace Mpdn.RenderScript
 
     public struct TextureSize
     {
-        public int Width;
-        public int Height;
-        public int Depth;
+        public readonly int Width;
+        public readonly int Height;
+        public readonly int Depth;
 
         public bool Is3D { get { return Depth != 1; } }
-        public bool IsEmpty 
+        public bool IsEmpty
         {
-            get { return (Width == 0) || (Height == 0) || (Depth == 0); } 
+            get { return (Width == 0) || (Height == 0) || (Depth == 0); }
         }
 
         public TextureSize(int width, int height, int depth = 1)
@@ -57,12 +57,36 @@ namespace Mpdn.RenderScript
 
         public static bool operator ==(TextureSize a, TextureSize b)
         {
-            return (a.Width == b.Width) && (a.Height == b.Height) && (a.Depth == b.Depth);
+            return a.Equals(b);
         }
 
         public static bool operator !=(TextureSize a, TextureSize b)
         {
-            return !(a==b);
+            return !a.Equals(b);
+        }
+
+        public bool Equals(TextureSize other)
+        {
+            return Width == other.Width && Height == other.Height && Depth == other.Depth;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+
+            return obj is TextureSize && Equals((TextureSize)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Width;
+                hashCode = (hashCode * 397) ^ Height;
+                hashCode = (hashCode * 397) ^ Depth;
+                return hashCode;
+            }
         }
 
         public static implicit operator TextureSize(Size size)
@@ -78,7 +102,7 @@ namespace Mpdn.RenderScript
 
     public static class TextureHelper
     {
-        public static TextureSize GetSize(this IBaseTexture texture) 
+        public static TextureSize GetSize(this IBaseTexture texture)
         {
             if (texture is ITexture)
             {
@@ -102,7 +126,7 @@ namespace Mpdn.RenderScript
 
         public ITexture GetTexture(TextureSize textureSize)
         {
-            foreach (var list in new[] {m_SavedTextures, m_OldTextures})
+            foreach (var list in new[] { m_SavedTextures, m_OldTextures })
             {
                 var index = list.FindIndex(x => (x.GetSize() == textureSize));
                 if (index < 0) continue;
@@ -246,9 +270,9 @@ namespace Mpdn.RenderScript
         {
             Updated = false;
 
-            if (OutputTexture as ITexture != null)
+            if (OutputTexture != null)
             {
-                cache.PutTexture(OutputTexture as ITexture);
+                cache.PutTexture(OutputTexture);
             }
 
             OutputTexture = null;
@@ -257,15 +281,15 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public abstract class BaseSourceFilter<Texture> : IFilter<Texture>
-        where Texture : class, IBaseTexture
+    public abstract class BaseSourceFilter<TTexture> : IFilter<TTexture>
+        where TTexture : class, IBaseTexture
     {
         protected BaseSourceFilter(params IBaseFilter[] inputFilters)
         {
             InputFilters = inputFilters;
         }
 
-        public abstract Texture OutputTexture { get; }
+        public abstract TTexture OutputTexture { get; }
 
         public abstract TextureSize OutputSize { get; }
 
@@ -280,7 +304,7 @@ namespace Mpdn.RenderScript
 
         public virtual int LastDependentIndex { get; private set; }
 
-        public IFilter<Texture> Initialize(int time = 1)
+        public IFilter<TTexture> Initialize(int time = 1)
         {
             LastDependentIndex = time;
             return this;
@@ -296,7 +320,7 @@ namespace Mpdn.RenderScript
 
         public virtual void Reset(ITextureCache cache)
         {
-            if (typeof(Texture) == typeof(ITexture))
+            if (typeof(TTexture) == typeof(ITexture))
                 cache.PutTempTexture(OutputTexture as ITexture);
         }
 
@@ -448,7 +472,7 @@ namespace Mpdn.RenderScript
     public sealed class RgbFilter : Filter
     {
         public RgbFilter(IFilter inputFilter)
-            : base(inputFilter) 
+            : base(inputFilter)
         {
             if (inputFilter is YuvFilter)
             {
@@ -502,7 +526,7 @@ namespace Mpdn.RenderScript
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
         private readonly IScaler m_Convolver;
-        private IFilter<ITexture> m_InputFilter;
+        private readonly IFilter<ITexture> m_InputFilter;
         private TextureSize m_OutputSize;
 
         public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler convolver = null)
@@ -624,7 +648,7 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public abstract class GenericShaderFilter<T> : Filter where T: class
+    public abstract class GenericShaderFilter<T> : Filter where T : class
     {
         protected GenericShaderFilter(T shader, TransformFunc transform, int sizeIndex, bool linearSampling, float[] arguments,
             params IBaseFilter[] inputFilters)
@@ -683,14 +707,14 @@ namespace Mpdn.RenderScript
             {
                 if (input as ITexture != null)
                 {
-                    var tex = (ITexture) input;
+                    var tex = (ITexture)input;
                     Shader.SetTextureConstant(i, tex, LinearSampling, false);
                     Shader.SetConstant(String.Format("size{0}", i),
-                        new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
+                        new Vector4(tex.Width, tex.Height, 1.0f / tex.Width, 1.0f / tex.Height), false);
                 }
                 else
                 {
-                    var tex = (ITexture3D) input;
+                    var tex = (ITexture3D)input;
                     Shader.SetTextureConstant(i, tex, LinearSampling, false);
                     Shader.SetConstant(String.Format("size3d{0}", i),
                         new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
@@ -698,17 +722,17 @@ namespace Mpdn.RenderScript
                 i++;
             }
 
-            for (i = 0; 4*i < Args.Length; i++)
+            for (i = 0; 4 * i < Args.Length; i++)
             {
                 Shader.SetConstant(String.Format("args{0}", i),
-                    new Vector4(Args[4*i], Args[4*i + 1], Args[4*i + 2], Args[4*i + 3]), false);
+                    new Vector4(Args[4 * i], Args[4 * i + 1], Args[4 * i + 2], Args[4 * i + 3]), false);
             }
 
             // Legacy constants 
             var output = OutputTexture;
             Shader.SetConstant(0, new Vector4(output.Width, output.Height, Counter++, Stopwatch.GetTimestamp()),
                 false);
-            Shader.SetConstant(1, new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
+            Shader.SetConstant(1, new Vector4(1.0f / output.Width, 1.0f / output.Height, 0, 0), false);
         }
 
         protected override void Render(IShader shader)
@@ -808,14 +832,14 @@ namespace Mpdn.RenderScript
             {
                 if (input as ITexture != null)
                 {
-                    var tex = (ITexture) input;
+                    var tex = (ITexture)input;
                     Shader.SetTextureConstant(i, tex, LinearSampling, false);
                     Shader.SetConstantBuffer(String.Format("size{0}", i),
-                        new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
+                        new Vector4(tex.Width, tex.Height, 1.0f / tex.Width, 1.0f / tex.Height), false);
                 }
                 else
                 {
-                    var tex = (ITexture3D) input;
+                    var tex = (ITexture3D)input;
                     Shader.SetTextureConstant(i, tex, LinearSampling, false);
                     Shader.SetConstantBuffer(String.Format("size3d{0}", i),
                         new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
