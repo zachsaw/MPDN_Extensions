@@ -63,9 +63,9 @@ namespace Mpdn.RenderScript
 
             private static readonly double s_Log2 = Math.Log10(2);
 
-            private Size GetOutputSize()
+            private TextureSize GetOutputSize()
             {
-                Size size;
+                TextureSize size;
 
                 var targetSize = Renderer.TargetSize;
                 var videoSize = Renderer.VideoSize;
@@ -75,31 +75,31 @@ namespace Mpdn.RenderScript
                         size = videoSize;
                         break;
                     case ResizerOption.VideoSizeX2:
-                        size = new Size(videoSize.Width << 1, videoSize.Height << 1);
+                        size = new TextureSize(videoSize.Width << 1, videoSize.Height << 1);
                         break;
                     case ResizerOption.VideoSizeX4:
-                        size = new Size(videoSize.Width << 2, videoSize.Height << 2);
+                        size = new TextureSize(videoSize.Width << 2, videoSize.Height << 2);
                         break;
                     case ResizerOption.VideoSizeX8:
-                        size = new Size(videoSize.Width << 3, videoSize.Height << 3);
+                        size = new TextureSize(videoSize.Width << 3, videoSize.Height << 3);
                         break;
                     case ResizerOption.VideoSizeX16:
-                        size = new Size(videoSize.Width << 4, videoSize.Height << 4);
+                        size = new TextureSize(videoSize.Width << 4, videoSize.Height << 4);
                         break;
                     case ResizerOption.GreaterOfTargetAndVideoSize:
                         size = GetMaxSize(targetSize, videoSize);
                         break;
                     case ResizerOption.GreaterOfTargetAndVideoSizeX2:
-                        size = GetMaxSize(targetSize, new Size(videoSize.Width << 1, videoSize.Height << 1));
+                        size = GetMaxSize(targetSize, new TextureSize(videoSize.Width << 1, videoSize.Height << 1));
                         break;
                     case ResizerOption.GreaterOfTargetAndVideoSizeX4:
-                        size = GetMaxSize(targetSize, new Size(videoSize.Width << 2, videoSize.Height << 2));
+                        size = GetMaxSize(targetSize, new TextureSize(videoSize.Width << 2, videoSize.Height << 2));
                         break;
                     case ResizerOption.GreaterOfTargetAndVideoSizeX8:
-                        size = GetMaxSize(targetSize, new Size(videoSize.Width << 3, videoSize.Height << 3));
+                        size = GetMaxSize(targetSize, new TextureSize(videoSize.Width << 3, videoSize.Height << 3));
                         break;
                     case ResizerOption.GreaterOfTargetAndVideoSizeX16:
-                        size = GetMaxSize(targetSize, new Size(videoSize.Width << 4, videoSize.Height << 4));
+                        size = GetMaxSize(targetSize, new TextureSize(videoSize.Width << 4, videoSize.Height << 4));
                         break;
                     case ResizerOption.PastTargetUsingVideoSize:
                         return GetVideoBasedSizeOver(targetSize.Width + 1, targetSize.Height + 1);
@@ -110,28 +110,28 @@ namespace Mpdn.RenderScript
                     case ResizerOption.UnderTargetUsingVideoSizeExceptSimilar:
                         return GetVideoBasedSizeUnder(targetSize.Width, targetSize.Height);
                     case ResizerOption.TargetSize025Percent:
-                        size = new Size(targetSize.Width*1/4, targetSize.Height*1/4);
+                        size = new TextureSize(targetSize.Width*1/4, targetSize.Height*1/4);
                         break;
                     case ResizerOption.TargetSize050Percent:
-                        size = new Size(targetSize.Width*2/4, targetSize.Height*2/4);
+                        size = new TextureSize(targetSize.Width*2/4, targetSize.Height*2/4);
                         break;
                     case ResizerOption.TargetSize075Percent:
-                        size = new Size(targetSize.Width*3/4, targetSize.Height*3/4);
+                        size = new TextureSize(targetSize.Width*3/4, targetSize.Height*3/4);
                         break;
                     case ResizerOption.TargetSize100Percent:
-                        size = new Size(targetSize.Width*4/4, targetSize.Height*4/4);
+                        size = new TextureSize(targetSize.Width*4/4, targetSize.Height*4/4);
                         break;
                     case ResizerOption.TargetSize125Percent:
-                        size = new Size(targetSize.Width*5/4, targetSize.Height*5/4);
+                        size = new TextureSize(targetSize.Width*5/4, targetSize.Height*5/4);
                         break;
                     case ResizerOption.TargetSize150Percent:
-                        size = new Size(targetSize.Width*6/4, targetSize.Height*6/4);
+                        size = new TextureSize(targetSize.Width*6/4, targetSize.Height*6/4);
                         break;
                     case ResizerOption.TargetSize175Percent:
-                        size = new Size(targetSize.Width*7/4, targetSize.Height*7/4);
+                        size = new TextureSize(targetSize.Width*7/4, targetSize.Height*7/4);
                         break;
                     case ResizerOption.TargetSize200Percent:
-                        size = new Size(targetSize.Width*8/4, targetSize.Height*8/4);
+                        size = new TextureSize(targetSize.Width*8/4, targetSize.Height*8/4);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -140,30 +140,30 @@ namespace Mpdn.RenderScript
                 return size;
             }
 
-            private static Size GetMaxSize(Size size1, Size size2)
+            private static TextureSize GetMaxSize(TextureSize size1, TextureSize size2)
             {
                 // Use height to determine which is max
                 return size1.Height > size2.Height ? size1 : size2;
             }
 
-            private Size GetVideoBasedSizeOver(int targetWidth, int targetHeight)
+            private TextureSize GetVideoBasedSizeOver(int targetWidth, int targetHeight)
             {
                 var videoWidth = Renderer.VideoSize.Width;
                 var videoHeight = Renderer.VideoSize.Height;
                 var widthX = Math.Max(1, GetMultiplier(targetWidth, videoWidth));
                 var heightX = Math.Max(1, GetMultiplier(targetHeight, videoHeight));
                 var multiplier = Math.Max(widthX, heightX);
-                return new Size(videoWidth*multiplier, videoHeight*multiplier);
+                return new TextureSize(videoWidth*multiplier, videoHeight*multiplier);
             }
 
-            private Size GetVideoBasedSizeUnder(int targetWidth, int targetHeight)
+            private TextureSize GetVideoBasedSizeUnder(int targetWidth, int targetHeight)
             {
                 var videoWidth = Renderer.VideoSize.Width;
                 var videoHeight = Renderer.VideoSize.Height;
                 var widthX = Math.Max(1, GetMultiplier(targetWidth, videoWidth) - 1);
                 var heightX = Math.Max(1, GetMultiplier(targetHeight, videoHeight) - 1);
                 var multiplier = Math.Max(widthX, heightX);
-                return new Size(videoWidth*multiplier, videoHeight*multiplier);
+                return new TextureSize(videoWidth*multiplier, videoHeight*multiplier);
             }
 
             private static int GetMultiplier(int dest, int src)

@@ -42,15 +42,15 @@ namespace Mpdn.RenderScript
                 var nediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl");
                 var nediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl");
 
-                Func<Size, Size> transformWidth;
-                Func<Size, Size> transformHeight;
+                Func<TextureSize, TextureSize> transformWidth;
+                Func<TextureSize, TextureSize> transformHeight;
                 if (Centered)
                 {
-                    transformWidth = s => new Size(2 * s.Width - 1, s.Height);
-                    transformHeight = s => new Size(s.Width, 2 * s.Height - 1);
+                    transformWidth = s => new TextureSize(2 * s.Width - 1, s.Height);
+                    transformHeight = s => new TextureSize(s.Width, 2 * s.Height - 1);
                 } else {
-                    transformWidth = s => new Size(2 * s.Width, s.Height);
-                    transformHeight = s => new Size(s.Width, 2 * s.Height);
+                    transformWidth = s => new TextureSize(2 * s.Width, s.Height);
+                    transformHeight = s => new TextureSize(s.Width, 2 * s.Height);
                 }
 
                 if (!UseNedi(sourceFilter))

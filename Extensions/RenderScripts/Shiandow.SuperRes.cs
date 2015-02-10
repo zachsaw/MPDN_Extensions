@@ -23,7 +23,7 @@ namespace Mpdn.RenderScript
 
             #endregion
 
-            public Func<Size> TargetSize; // Not saved
+            public Func<TextureSize> TargetSize; // Not saved
             private IScaler downscaler, upscaler;
 
             public SuperRes()
@@ -121,7 +121,7 @@ namespace Mpdn.RenderScript
                 return result;
             }
 
-            private Size CalculateSize(Size sizeA, Size sizeB, int k)
+            private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k)
             {
                 double w, h;
                 var MaxScale = 2.0;
@@ -137,7 +137,7 @@ namespace Mpdn.RenderScript
                 w = minW * Math.Pow((double)maxW / (double)minW, (double)Math.Min(k, steps) / (double)steps);
                 h = minW * Math.Pow((double)maxH / (double)minH, (double)Math.Min(k, steps) / (double)steps);
 
-                return new Size(Math.Max(minW, Math.Min(maxW, (int)Math.Round(w))),
+                return new TextureSize(Math.Max(minW, Math.Min(maxW, (int)Math.Round(w))),
                                 Math.Max(minH, Math.Min(maxH, (int)Math.Round(h))));
             }
 

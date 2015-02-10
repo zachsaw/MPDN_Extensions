@@ -73,8 +73,8 @@ namespace Mpdn.RenderScript
                 var downscalingInput = false;
 
                 var usage = ImageProcessorUsage;
-                var inputSize = Renderer.VideoSize;
-                var outputSize = Renderer.TargetSize;
+                TextureSize inputSize = Renderer.VideoSize;
+                TextureSize outputSize = Renderer.TargetSize;
                 if (outputSize == inputSize)
                 {
                     // Not scaling video
