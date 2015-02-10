@@ -11,10 +11,9 @@ namespace Mpdn.RenderScript
 {
     public interface ITextureCache
     {
-        Texture GetTexture<Texture>(TextureSize textureSize)
-            where Texture : class, IBaseTexture;
-        void PutTexture(IBaseTexture texture);
-        void PutTempTexture(IBaseTexture texture);
+        ITexture GetTexture(TextureSize textureSize);
+        void PutTexture(ITexture texture);
+        void PutTempTexture(ITexture texture);
     }
 
     public interface IFilter<out Texture>
@@ -79,24 +78,6 @@ namespace Mpdn.RenderScript
 
     public static class TextureHelper
     {
-        public static T CreateTexture<T>(TextureSize size)
-            where T : class, IBaseTexture
-        {
-            if (typeof(T) == typeof(ITexture))
-            {
-                if (size.Is3D)
-                {
-                    throw new ArgumentOutOfRangeException("size.Depth");
-                }
-                return Renderer.CreateTexture(size.Width, size.Height) as T;
-            }
-            if (typeof(T) == typeof(ITexture3D))
-            {
-                return Renderer.CreateTexture3D(size.Width, size.Height, size.Depth) as T;
-            }
-            throw new ArgumentException("Invalid texture type");
-        }
-
         public static TextureSize GetSize(this IBaseTexture texture) 
         {
             if (texture is ITexture)
@@ -115,33 +96,32 @@ namespace Mpdn.RenderScript
 
     public class TextureCache : ITextureCache, IDisposable
     {
-        private List<IBaseTexture> m_OldTextures = new List<IBaseTexture>();
-        private List<IBaseTexture> m_SavedTextures = new List<IBaseTexture>();
-        private List<IBaseTexture> m_TempTextures = new List<IBaseTexture>();
+        private List<ITexture> m_OldTextures = new List<ITexture>();
+        private List<ITexture> m_SavedTextures = new List<ITexture>();
+        private List<ITexture> m_TempTextures = new List<ITexture>();
 
-        public T GetTexture<T>(TextureSize textureSize)
-            where T : class, IBaseTexture
+        public ITexture GetTexture(TextureSize textureSize)
         {
             foreach (var list in new[] {m_SavedTextures, m_OldTextures})
             {
-                var index = list.FindIndex(x => ((x is T) && (x.GetSize() == textureSize)));
+                var index = list.FindIndex(x => (x.GetSize() == textureSize));
                 if (index < 0) continue;
 
                 var texture = list[index];
                 list.RemoveAt(index);
-                return texture as T;
+                return texture;
             }
 
-            return TextureHelper.CreateTexture<T>(textureSize);
+            return Renderer.CreateRenderTarget(textureSize.Width, textureSize.Height);
         }
 
-        public void PutTempTexture(IBaseTexture texture)
+        public void PutTempTexture(ITexture texture)
         {
             m_TempTextures.Add(texture);
             m_SavedTextures.Add(texture);
         }
 
-        public void PutTexture(IBaseTexture texture)
+        public void PutTexture(ITexture texture)
         {
             m_SavedTextures.Add(texture);
         }
@@ -159,8 +139,8 @@ namespace Mpdn.RenderScript
             }
 
             m_OldTextures = m_SavedTextures;
-            m_TempTextures = new List<IBaseTexture>();
-            m_SavedTextures = new List<IBaseTexture>();
+            m_TempTextures = new List<ITexture>();
+            m_SavedTextures = new List<ITexture>();
         }
 
         public void Dispose()
@@ -170,8 +150,7 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public abstract class Filter<Texture> : IFilter<Texture>
-        where Texture : class, IBaseTexture
+    public abstract class Filter : IFilter
     {
         protected Filter(params IBaseFilter[] inputFilters)
         {
@@ -186,7 +165,7 @@ namespace Mpdn.RenderScript
 
         protected abstract void Render(IList<IBaseTexture> inputs);
 
-        protected virtual IFilter<Texture> PassthroughFilter { get; set; }
+        protected virtual IFilter<ITexture> PassthroughFilter { get; set; }
 
         #region IFilter Implementation
 
@@ -194,14 +173,14 @@ namespace Mpdn.RenderScript
         protected bool Initialized { get; set; }
 
         public IBaseFilter[] InputFilters { get; private set; }
-        public Texture OutputTexture { get; private set; }
+        public ITexture OutputTexture { get; private set; }
 
         public abstract TextureSize OutputSize { get; }
 
         public int FilterIndex { get; private set; }
         public int LastDependentIndex { get; private set; }
 
-        public virtual IFilter<Texture> Initialize(int time = 1)
+        public virtual IFilter<ITexture> Initialize(int time = 1)
         {
             if (PassthroughFilter != null)
             {
@@ -250,7 +229,7 @@ namespace Mpdn.RenderScript
                     .Select(f => f.OutputTexture)
                     .ToList();
 
-            OutputTexture = cache.GetTexture<Texture>(OutputSize);
+            OutputTexture = cache.GetTexture(OutputSize);
 
             Render(inputTextures);
 
@@ -278,13 +257,6 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public abstract class Filter : Filter<ITexture>, IFilter 
-    {
-        protected Filter(params IBaseFilter[] inputFilters) : base(inputFilters) 
-        { 
-        }
-    }
-
     public abstract class BaseSourceFilter<Texture> : IFilter<Texture>
         where Texture : class, IBaseTexture
     {
@@ -293,12 +265,13 @@ namespace Mpdn.RenderScript
             InputFilters = inputFilters;
         }
 
-        #region IFilter Implementation
-
-        public IBaseFilter[] InputFilters { get; protected set; }
         public abstract Texture OutputTexture { get; }
 
         public abstract TextureSize OutputSize { get; }
+
+        #region IFilter Implementation
+
+        public IBaseFilter[] InputFilters { get; protected set; }
 
         public virtual int FilterIndex
         {
@@ -323,7 +296,8 @@ namespace Mpdn.RenderScript
 
         public virtual void Reset(ITextureCache cache)
         {
-            cache.PutTempTexture(OutputTexture);
+            if (typeof(Texture) == typeof(ITexture))
+                cache.PutTempTexture(OutputTexture as ITexture);
         }
 
         #endregion
@@ -523,7 +497,7 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class ResizeFilter : Filter<ITexture>, IResizeableFilter
+    public class ResizeFilter : Filter, IResizeableFilter
     {
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
