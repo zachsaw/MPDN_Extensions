@@ -19,7 +19,8 @@ namespace Mpdn.RenderScript
 
                 var renderScripts = PlayerControl.RenderScripts
                     .Where(script => script is IRenderChainUi)
-                    .Select(x => (x as IRenderChainUi).CreateNew());
+                    .Select(x => (x as IRenderChainUi).CreateNew())
+                    .OrderBy(x => x.Descriptor.Name);
 
                 foreach (var script in renderScripts)
                 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 
 namespace Mpdn.RenderScript
 {
@@ -6,7 +7,7 @@ namespace Mpdn.RenderScript
     {
         private TextureCache m_Cache;
         private SourceFilter m_SourceFilter;
-        private IFilter m_Filter;
+        private IFilter<ITexture> m_Filter;
 
         protected RenderChain Chain;
 
@@ -37,7 +38,7 @@ namespace Mpdn.RenderScript
                 {
                     WantYuv = true,
                     Prescale = (m_SourceFilter.LastDependentIndex > 0),
-                    PrescaleSize = m_SourceFilter.OutputSize
+                    PrescaleSize = (Size)m_SourceFilter.OutputSize
                 };
             }
         }

@@ -1,35 +1,121 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
+using System.Drawing;
 using SharpDX;
-using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
+using TransformFunc = System.Func<Mpdn.RenderScript.TextureSize, Mpdn.RenderScript.TextureSize>;
+using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.RenderScript
 {
     public interface ITextureCache
     {
-        ITexture GetTexture(Size textureSize);
+        ITexture GetTexture(TextureSize textureSize);
         void PutTexture(ITexture texture);
         void PutTempTexture(ITexture texture);
     }
 
-    public interface IFilter
+    public interface IFilter<out TTexture>
+        where TTexture : class, IBaseTexture
     {
-        IFilter[] InputFilters { get; }
-        ITexture OutputTexture { get; }
-        Size OutputSize { get; }
+        IBaseFilter[] InputFilters { get; }
+        TTexture OutputTexture { get; }
+        TextureSize OutputSize { get; }
         int FilterIndex { get; }
         int LastDependentIndex { get; }
         void Render(ITextureCache cache);
         void Reset(ITextureCache cache);
-        IFilter Initialize(int time = 1);
+        IFilter<TTexture> Initialize(int time = 1);
     }
+
+    public interface IFilter : IFilter<ITexture> { }
 
     public interface IResizeableFilter : IFilter
     {
-        void SetSize(Size outputSize);
+        void SetSize(TextureSize outputSize);
+    }
+
+    public struct TextureSize
+    {
+        public readonly int Width;
+        public readonly int Height;
+        public readonly int Depth;
+
+        public bool Is3D { get { return Depth != 1; } }
+        public bool IsEmpty
+        {
+            get { return (Width == 0) || (Height == 0) || (Depth == 0); }
+        }
+
+        public TextureSize(int width, int height, int depth = 1)
+        {
+            Width = width;
+            Height = height;
+            Depth = depth;
+        }
+
+        public static bool operator ==(TextureSize a, TextureSize b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(TextureSize a, TextureSize b)
+        {
+            return !a.Equals(b);
+        }
+
+        public bool Equals(TextureSize other)
+        {
+            return Width == other.Width && Height == other.Height && Depth == other.Depth;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+
+            return obj is TextureSize && Equals((TextureSize)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Width;
+                hashCode = (hashCode * 397) ^ Height;
+                hashCode = (hashCode * 397) ^ Depth;
+                return hashCode;
+            }
+        }
+
+        public static implicit operator TextureSize(Size size)
+        {
+            return new TextureSize(size.Width, size.Height);
+        }
+
+        public static explicit operator Size(TextureSize size)
+        {
+            return new Size(size.Width, size.Height);
+        }
+    }
+
+    public static class TextureHelper
+    {
+        public static TextureSize GetSize(this IBaseTexture texture)
+        {
+            if (texture is ITexture)
+            {
+                var t = texture as ITexture;
+                return new TextureSize(t.Width, t.Height);
+            }
+            if (texture is ITexture3D)
+            {
+                var t = texture as ITexture3D;
+                return new TextureSize(t.Width, t.Height, t.Depth);
+            }
+            throw new ArgumentException("Invalid texture type");
+        }
     }
 
     public class TextureCache : ITextureCache, IDisposable
@@ -38,11 +124,11 @@ namespace Mpdn.RenderScript
         private List<ITexture> m_SavedTextures = new List<ITexture>();
         private List<ITexture> m_TempTextures = new List<ITexture>();
 
-        public ITexture GetTexture(Size textureSize)
+        public ITexture GetTexture(TextureSize textureSize)
         {
-            foreach (var list in new[] {m_SavedTextures, m_OldTextures})
+            foreach (var list in new[] { m_SavedTextures, m_OldTextures })
             {
-                var index = list.FindIndex(x => (x.Width == textureSize.Width) && (x.Height == textureSize.Height));
+                var index = list.FindIndex(x => (x.GetSize() == textureSize));
                 if (index < 0) continue;
 
                 var texture = list[index];
@@ -50,7 +136,7 @@ namespace Mpdn.RenderScript
                 return texture;
             }
 
-            return Renderer.CreateRenderTarget(textureSize);
+            return Renderer.CreateRenderTarget(textureSize.Width, textureSize.Height);
         }
 
         public void PutTempTexture(ITexture texture)
@@ -90,7 +176,7 @@ namespace Mpdn.RenderScript
 
     public abstract class Filter : IFilter
     {
-        protected Filter(params IFilter[] inputFilters)
+        protected Filter(params IBaseFilter[] inputFilters)
         {
             if (inputFilters == null || inputFilters.Any(f => f == null))
             {
@@ -101,24 +187,24 @@ namespace Mpdn.RenderScript
             InputFilters = inputFilters;
         }
 
-        protected abstract void Render(IEnumerable<ITexture> inputs);
+        protected abstract void Render(IList<IBaseTexture> inputs);
 
-        protected virtual IFilter PassthroughFilter { get; set; }
+        protected virtual IFilter<ITexture> PassthroughFilter { get; set; }
 
         #region IFilter Implementation
 
         protected bool Updated { get; set; }
         protected bool Initialized { get; set; }
 
-        public IFilter[] InputFilters { get; private set; }
+        public IBaseFilter[] InputFilters { get; private set; }
         public ITexture OutputTexture { get; private set; }
 
-        public abstract Size OutputSize { get; }
+        public abstract TextureSize OutputSize { get; }
 
         public int FilterIndex { get; private set; }
         public int LastDependentIndex { get; private set; }
 
-        public virtual IFilter Initialize(int time = 1)
+        public virtual IFilter<ITexture> Initialize(int time = 1)
         {
             if (PassthroughFilter != null)
             {
@@ -162,7 +248,10 @@ namespace Mpdn.RenderScript
                 filter.Render(cache);
             }
 
-            var inputTextures = InputFilters.Select(f => f.OutputTexture);
+            var inputTextures =
+                InputFilters
+                    .Select(f => f.OutputTexture)
+                    .ToList();
 
             OutputTexture = cache.GetTexture(OutputSize);
 
@@ -192,19 +281,21 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public abstract class BaseSourceFilter : IFilter
+    public abstract class BaseSourceFilter<TTexture> : IFilter<TTexture>
+        where TTexture : class, IBaseTexture
     {
-        protected BaseSourceFilter(params IFilter[] inputFilters)
+        protected BaseSourceFilter(params IBaseFilter[] inputFilters)
         {
             InputFilters = inputFilters;
         }
 
+        public abstract TTexture OutputTexture { get; }
+
+        public abstract TextureSize OutputSize { get; }
+
         #region IFilter Implementation
 
-        public IFilter[] InputFilters { get; protected set; }
-        public abstract ITexture OutputTexture { get; }
-
-        public abstract Size OutputSize { get; }
+        public IBaseFilter[] InputFilters { get; protected set; }
 
         public virtual int FilterIndex
         {
@@ -213,7 +304,7 @@ namespace Mpdn.RenderScript
 
         public virtual int LastDependentIndex { get; private set; }
 
-        public IFilter Initialize(int time = 1)
+        public IFilter<TTexture> Initialize(int time = 1)
         {
             LastDependentIndex = time;
             return this;
@@ -229,17 +320,20 @@ namespace Mpdn.RenderScript
 
         public virtual void Reset(ITextureCache cache)
         {
-            cache.PutTempTexture(OutputTexture);
+            if (typeof(TTexture) == typeof(ITexture))
+                cache.PutTempTexture(OutputTexture as ITexture);
         }
 
         #endregion
     }
 
+    public abstract class BaseSourceFilter : BaseSourceFilter<ITexture>, IFilter { }
+
     public sealed class SourceFilter : BaseSourceFilter, IResizeableFilter
     {
-        private Size m_OutputSize;
+        private TextureSize m_OutputSize;
 
-        public void SetSize(Size targetSize)
+        public void SetSize(TextureSize targetSize)
         {
             m_OutputSize = targetSize;
         }
@@ -251,7 +345,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.InputRenderTarget; }
         }
 
-        public override Size OutputSize
+        public override TextureSize OutputSize
         {
             get { return (m_OutputSize.IsEmpty ? Renderer.VideoSize : m_OutputSize); }
         }
@@ -266,7 +360,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.TextureY; }
         }
 
-        public override Size OutputSize
+        public override TextureSize OutputSize
         {
             get { return Renderer.LumaSize; }
         }
@@ -283,7 +377,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.TextureU; }
         }
 
-        public override Size OutputSize
+        public override TextureSize OutputSize
         {
             get { return Renderer.ChromaSize; }
         }
@@ -300,7 +394,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.TextureV; }
         }
 
-        public override Size OutputSize
+        public override TextureSize OutputSize
         {
             get { return Renderer.ChromaSize; }
         }
@@ -317,7 +411,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.OutputRenderTarget; }
         }
 
-        public override Size OutputSize
+        public override TextureSize OutputSize
         {
             get { return Renderer.TargetSize; }
         }
@@ -326,12 +420,12 @@ namespace Mpdn.RenderScript
     public sealed class TextureSourceFilter : BaseSourceFilter
     {
         private readonly ITexture m_Texture;
-        private readonly Size m_Size;
+        private readonly TextureSize m_Size;
 
         public TextureSourceFilter(ITexture texture)
         {
             m_Texture = texture;
-            m_Size = new Size(texture.Width, texture.Height);
+            m_Size = new TextureSize(texture.Width, texture.Height);
         }
 
         public override ITexture OutputTexture
@@ -339,7 +433,33 @@ namespace Mpdn.RenderScript
             get { return m_Texture; }
         }
 
-        public override Size OutputSize
+        public override TextureSize OutputSize
+        {
+            get { return m_Size; }
+        }
+
+        public override void Reset(ITextureCache cache)
+        {
+        }
+    }
+
+    public sealed class Texture3DSourceFilter : BaseSourceFilter<ITexture3D>
+    {
+        private readonly ITexture3D m_Texture;
+        private readonly TextureSize m_Size;
+
+        public Texture3DSourceFilter(ITexture3D texture)
+        {
+            m_Texture = texture;
+            m_Size = new TextureSize(texture.Width, texture.Height, texture.Depth);
+        }
+
+        public override ITexture3D OutputTexture
+        {
+            get { return m_Texture; }
+        }
+
+        public override TextureSize OutputSize
         {
             get { return m_Size; }
         }
@@ -351,43 +471,53 @@ namespace Mpdn.RenderScript
 
     public sealed class RgbFilter : Filter
     {
-        public RgbFilter(IFilter inputFilter) : base(inputFilter) 
+        public RgbFilter(IFilter inputFilter)
+            : base(inputFilter)
         {
             if (inputFilter is YuvFilter)
             {
-                PassthroughFilter = inputFilter.InputFilters[0];
+                PassthroughFilter = inputFilter.InputFilters[0] as IFilter;
             }
         }
 
-        public override Size OutputSize
+        public override TextureSize OutputSize
         {
             get { return InputFilters[0].OutputSize; }
         }
 
-        protected override void Render(IEnumerable<ITexture> inputs)
+        protected override void Render(IList<IBaseTexture> inputs)
         {
-            Renderer.ConvertToRgb(OutputTexture, inputs.Single(), Renderer.Colorimetric, Renderer.OutputLimitedRange);
+            var texture = inputs.OfType<ITexture>().SingleOrDefault();
+            if (texture == null)
+                return;
+
+            Renderer.ConvertToRgb(OutputTexture, texture, Renderer.Colorimetric, Renderer.OutputLimitedRange);
         }
     }
 
     public sealed class YuvFilter : Filter
     {
-        public YuvFilter(IFilter inputFilter) : base(inputFilter)
+        public YuvFilter(IFilter inputFilter)
+            : base(inputFilter)
         {
             if (inputFilter is RgbFilter)
             {
-                PassthroughFilter = inputFilter.InputFilters[0];
+                PassthroughFilter = inputFilter.InputFilters[0] as IFilter;
             }
         }
 
-        public override Size OutputSize
+        public override TextureSize OutputSize
         {
             get { return InputFilters[0].OutputSize; }
         }
 
-        protected override void Render(IEnumerable<ITexture> inputs)
+        protected override void Render(IList<IBaseTexture> inputs)
         {
-            Renderer.ConvertToYuv(OutputTexture, inputs.Single(), Renderer.Colorimetric, Renderer.OutputLimitedRange);
+            var texture = inputs.OfType<ITexture>().SingleOrDefault();
+            if (texture == null)
+                return;
+
+            Renderer.ConvertToYuv(OutputTexture, texture, Renderer.Colorimetric, Renderer.OutputLimitedRange);
         }
     }
 
@@ -396,14 +526,16 @@ namespace Mpdn.RenderScript
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
         private readonly IScaler m_Convolver;
-        private Size m_OutputSize;
+        private readonly IFilter<ITexture> m_InputFilter;
+        private TextureSize m_OutputSize;
 
-        public ResizeFilter(IFilter inputFilter, Size outputSize, IScaler convolver = null)
+        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler convolver = null)
             : this(inputFilter, outputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
+            m_InputFilter = inputFilter;
         }
 
-        public ResizeFilter(IFilter inputFilter, Size outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
             : base(inputFilter)
         {
             m_Upscaler = upscaler;
@@ -412,29 +544,33 @@ namespace Mpdn.RenderScript
             m_OutputSize = outputSize;
         }
 
-        public void SetSize(Size targetSize)
+        public void SetSize(TextureSize targetSize)
         {
             m_OutputSize = targetSize;
         }
 
-        public override IFilter Initialize(int time = 1)
+        public override IFilter<ITexture> Initialize(int time = 1)
         {
             if (InputFilters[0].OutputSize == m_OutputSize && m_Convolver == null)
             {
-                PassthroughFilter = InputFilters[0];
+                PassthroughFilter = m_InputFilter;
             }
 
             return base.Initialize(time);
         }
 
-        public override Size OutputSize
+        public override TextureSize OutputSize
         {
             get { return m_OutputSize; }
         }
 
-        protected override void Render(IEnumerable<ITexture> inputs)
+        protected override void Render(IList<IBaseTexture> inputs)
         {
-            Renderer.Scale(OutputTexture, inputs.Single(), m_Upscaler, m_Downscaler, m_Convolver);
+            var texture = inputs.OfType<ITexture>().SingleOrDefault();
+            if (texture == null)
+                return;
+
+            Renderer.Scale(OutputTexture, texture, m_Upscaler, m_Downscaler, m_Convolver);
         }
     }
 
@@ -477,14 +613,14 @@ namespace Mpdn.RenderScript
             private readonly IResizeableFilter m_InputFilter;
 
             public TransformedResizeableFilter(Func<IFilter, IFilter> transformation, IResizeableFilter inputFilter)
-                : base(new IFilter[0])
+                : base(new IBaseFilter[0])
             {
                 m_InputFilter = inputFilter;
                 PassthroughFilter = transformation(m_InputFilter);
                 CheckSize();
             }
 
-            public void SetSize(Size outputSize)
+            public void SetSize(TextureSize outputSize)
             {
                 m_InputFilter.SetSize(outputSize);
                 CheckSize();
@@ -498,12 +634,12 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            public override Size OutputSize
+            public override TextureSize OutputSize
             {
                 get { return m_InputFilter.OutputSize; }
             }
 
-            protected override void Render(IEnumerable<ITexture> inputs)
+            protected override void Render(IList<IBaseTexture> inputs)
             {
                 throw new NotImplementedException();
             }
@@ -512,10 +648,10 @@ namespace Mpdn.RenderScript
         #endregion
     }
 
-    public abstract class GenericShaderFilter<T> : Filter where T: class
+    public abstract class GenericShaderFilter<T> : Filter where T : class
     {
         protected GenericShaderFilter(T shader, TransformFunc transform, int sizeIndex, bool linearSampling, float[] arguments,
-            params IFilter[] inputFilters)
+            params IBaseFilter[] inputFilters)
             : base(inputFilters)
         {
             if (sizeIndex < 0 || sizeIndex >= inputFilters.Length || inputFilters[sizeIndex] == null)
@@ -539,15 +675,15 @@ namespace Mpdn.RenderScript
         protected int SizeIndex { get; private set; }
         protected float[] Args { get; private set; }
 
-        public override Size OutputSize
+        public override TextureSize OutputSize
         {
             get { return Transform(InputFilters[SizeIndex].OutputSize); }
         }
 
-        protected abstract void LoadInputs(IEnumerable<ITexture> inputs);
+        protected abstract void LoadInputs(IList<IBaseTexture> inputs);
         protected abstract void Render(T shader);
 
-        protected override void Render(IEnumerable<ITexture> inputs)
+        protected override void Render(IList<IBaseTexture> inputs)
         {
             LoadInputs(inputs);
             Render(Shader);
@@ -557,35 +693,46 @@ namespace Mpdn.RenderScript
     public class ShaderFilter : GenericShaderFilter<IShader>
     {
         public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, bool linearSampling, float[] arguments,
-            params IFilter[] inputFilters)
+            params IBaseFilter[] inputFilters)
             : base(shader, transform, sizeIndex, linearSampling, arguments, inputFilters)
         {
         }
 
         protected int Counter { get; private set; }
 
-        protected override void LoadInputs(IEnumerable<ITexture> inputs)
+        protected override void LoadInputs(IList<IBaseTexture> inputs)
         {
             var i = 0;
             foreach (var input in inputs)
             {
-                Shader.SetTextureConstant(i, input, LinearSampling, false);
-                Shader.SetConstant(String.Format("size{0}", i),
-                    new Vector4(input.Width, input.Height, 1.0f/input.Width, 1.0f/input.Height), false);
+                if (input as ITexture != null)
+                {
+                    var tex = (ITexture)input;
+                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetConstant(String.Format("size{0}", i),
+                        new Vector4(tex.Width, tex.Height, 1.0f / tex.Width, 1.0f / tex.Height), false);
+                }
+                else
+                {
+                    var tex = (ITexture3D)input;
+                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetConstant(String.Format("size3d{0}", i),
+                        new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
+                }
                 i++;
             }
 
-            for (i = 0; 4*i < Args.Length; i++)
+            for (i = 0; 4 * i < Args.Length; i++)
             {
                 Shader.SetConstant(String.Format("args{0}", i),
-                    new Vector4(Args[4*i], Args[4*i + 1], Args[4*i + 2], Args[4*i + 3]), false);
+                    new Vector4(Args[4 * i], Args[4 * i + 1], Args[4 * i + 2], Args[4 * i + 3]), false);
             }
 
             // Legacy constants 
             var output = OutputTexture;
             Shader.SetConstant(0, new Vector4(output.Width, output.Height, Counter++, Stopwatch.GetTimestamp()),
                 false);
-            Shader.SetConstant(1, new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
+            Shader.SetConstant(1, new Vector4(1.0f / output.Width, 1.0f / output.Height, 0, 0), false);
         }
 
         protected override void Render(IShader shader)
@@ -595,72 +742,72 @@ namespace Mpdn.RenderScript
 
         #region Auxilary Constructors
 
-        public ShaderFilter(IShader shader, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, params IBaseFilter[] inputFilters)
             : this(shader, false, inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, bool linearSampling, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, bool linearSampling, params IBaseFilter[] inputFilters)
             : this(shader, 0, linearSampling, inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, int sizeIndex, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, int sizeIndex, params IBaseFilter[] inputFilters)
             : this(shader, sizeIndex, false, inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, int sizeIndex, bool linearSampling, params IBaseFilter[] inputFilters)
             : this(shader, s => s, sizeIndex, linearSampling, new float[0], inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, TransformFunc transform, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, TransformFunc transform, params IBaseFilter[] inputFilters)
             : this(shader, transform, 0, false, new float[0], inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, TransformFunc transform, bool linearSampling, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, TransformFunc transform, bool linearSampling, params IBaseFilter[] inputFilters)
             : this(shader, transform, 0, linearSampling, new float[0], inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, params IBaseFilter[] inputFilters)
             : this(shader, transform, sizeIndex, false, new float[0], inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, float[] arguments, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, false, arguments, inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, bool linearSampling, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, 0, linearSampling, arguments, inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, int sizeIndex, float[] arguments, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, int sizeIndex, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, sizeIndex, false, arguments, inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, int sizeIndex, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, int sizeIndex, bool linearSampling, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, s => s, sizeIndex, linearSampling, arguments, inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, TransformFunc transform, float[] arguments, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, TransformFunc transform, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, transform, 0, false, arguments, inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, TransformFunc transform, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, TransformFunc transform, bool linearSampling, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, transform, 0, linearSampling, arguments, inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, float[] arguments, params IFilter[] inputFilters)
+        public ShaderFilter(IShader shader, TransformFunc transform, int sizeIndex, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, transform, sizeIndex, false, arguments, inputFilters)
         {
         }
@@ -671,21 +818,32 @@ namespace Mpdn.RenderScript
     public class Shader11Filter : GenericShaderFilter<IShader11>
     {
         public Shader11Filter(IShader11 shader, TransformFunc transform, int sizeIndex, bool linearSampling,
-            float[] arguments, params IFilter[] inputFilters)
+            float[] arguments, params IBaseFilter[] inputFilters)
             : base(shader, transform, sizeIndex, linearSampling, arguments, inputFilters)
         {
         }
 
         protected int Counter { get; private set; }
 
-        protected override void LoadInputs(IEnumerable<ITexture> inputs)
+        protected override void LoadInputs(IList<IBaseTexture> inputs)
         {
             var i = 0;
             foreach (var input in inputs)
             {
-                Shader.SetTextureConstant(i, input, LinearSampling, false);
-                Shader.SetConstantBuffer(String.Format("size{0}", i),
-                    new Vector4(input.Width, input.Height, 1.0f / input.Width, 1.0f / input.Height), false);
+                if (input as ITexture != null)
+                {
+                    var tex = (ITexture)input;
+                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetConstantBuffer(String.Format("size{0}", i),
+                        new Vector4(tex.Width, tex.Height, 1.0f / tex.Width, 1.0f / tex.Height), false);
+                }
+                else
+                {
+                    var tex = (ITexture3D)input;
+                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetConstantBuffer(String.Format("size3d{0}", i),
+                        new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
+                }
                 i++;
             }
 
@@ -708,72 +866,72 @@ namespace Mpdn.RenderScript
 
         #region Auxilary Constructors
 
-        public Shader11Filter(IShader11 shader, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, params IBaseFilter[] inputFilters)
             : this(shader, false, inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, bool linearSampling, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, bool linearSampling, params IBaseFilter[] inputFilters)
             : this(shader, 0, linearSampling, inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, int sizeIndex, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, int sizeIndex, params IBaseFilter[] inputFilters)
             : this(shader, sizeIndex, false, inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, int sizeIndex, bool linearSampling, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, int sizeIndex, bool linearSampling, params IBaseFilter[] inputFilters)
             : this(shader, s => s, sizeIndex, linearSampling, new float[0], inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, TransformFunc transform, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, TransformFunc transform, params IBaseFilter[] inputFilters)
             : this(shader, transform, 0, false, new float[0], inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, TransformFunc transform, bool linearSampling, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, TransformFunc transform, bool linearSampling, params IBaseFilter[] inputFilters)
             : this(shader, transform, 0, linearSampling, new float[0], inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, TransformFunc transform, int sizeIndex, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, TransformFunc transform, int sizeIndex, params IBaseFilter[] inputFilters)
             : this(shader, transform, sizeIndex, false, new float[0], inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, float[] arguments, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, false, arguments, inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, bool linearSampling, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, 0, linearSampling, arguments, inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, int sizeIndex, float[] arguments, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, int sizeIndex, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, sizeIndex, false, arguments, inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, int sizeIndex, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, int sizeIndex, bool linearSampling, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, s => s, sizeIndex, linearSampling, arguments, inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, TransformFunc transform, float[] arguments, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, TransformFunc transform, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, transform, 0, false, arguments, inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, TransformFunc transform, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, TransformFunc transform, bool linearSampling, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, transform, 0, linearSampling, arguments, inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, TransformFunc transform, int sizeIndex, float[] arguments, params IFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, TransformFunc transform, int sizeIndex, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, transform, sizeIndex, false, arguments, inputFilters)
         {
         }
@@ -785,7 +943,7 @@ namespace Mpdn.RenderScript
     {
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
             TransformFunc transform, int sizeIndex, bool linearSampling, float[] arguments,
-            params IFilter[] inputFilters)
+            params IBaseFilter[] inputFilters)
             : base(shader, transform, sizeIndex, linearSampling, arguments, inputFilters)
         {
             ThreadGroupX = threadGroupX;
@@ -805,25 +963,25 @@ namespace Mpdn.RenderScript
         #region Auxilary Constructors
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            params IFilter[] inputFilters)
+            params IBaseFilter[] inputFilters)
             : this(shader, threadGroupX, threadGroupY, threadGroupZ, false, inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            bool linearSampling, params IFilter[] inputFilters)
+            bool linearSampling, params IBaseFilter[] inputFilters)
             : this(shader, threadGroupX, threadGroupY, threadGroupZ, 0, linearSampling, inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, int sizeIndex,
-            params IFilter[] inputFilters)
+            params IBaseFilter[] inputFilters)
             : this(shader, threadGroupX, threadGroupY, threadGroupZ, sizeIndex, false, inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, int sizeIndex,
-            bool linearSampling, params IFilter[] inputFilters)
+            bool linearSampling, params IBaseFilter[] inputFilters)
             : this(
                 shader, threadGroupX, threadGroupY, threadGroupZ, s => s, sizeIndex, linearSampling, new float[0],
                 inputFilters)
@@ -831,13 +989,13 @@ namespace Mpdn.RenderScript
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            TransformFunc transform, params IFilter[] inputFilters)
+            TransformFunc transform, params IBaseFilter[] inputFilters)
             : this(shader, threadGroupX, threadGroupY, threadGroupZ, transform, 0, false, new float[0], inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            TransformFunc transform, bool linearSampling, params IFilter[] inputFilters)
+            TransformFunc transform, bool linearSampling, params IBaseFilter[] inputFilters)
             : this(
                 shader, threadGroupX, threadGroupY, threadGroupZ, transform, 0, linearSampling, new float[0],
                 inputFilters)
@@ -845,7 +1003,7 @@ namespace Mpdn.RenderScript
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            TransformFunc transform, int sizeIndex, params IFilter[] inputFilters)
+            TransformFunc transform, int sizeIndex, params IBaseFilter[] inputFilters)
             : this(
                 shader, threadGroupX, threadGroupY, threadGroupZ, transform, sizeIndex, false, new float[0],
                 inputFilters)
@@ -853,25 +1011,25 @@ namespace Mpdn.RenderScript
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            float[] arguments, params IFilter[] inputFilters)
+            float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, threadGroupX, threadGroupY, threadGroupZ, false, arguments, inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            bool linearSampling, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, threadGroupX, threadGroupY, threadGroupZ, 0, linearSampling, arguments, inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, int sizeIndex,
-            float[] arguments, params IFilter[] inputFilters)
+            float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, threadGroupX, threadGroupY, threadGroupZ, sizeIndex, false, arguments, inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, int sizeIndex,
-            bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            bool linearSampling, float[] arguments, params IBaseFilter[] inputFilters)
             : this(
                 shader, threadGroupX, threadGroupY, threadGroupZ, s => s, sizeIndex, linearSampling, arguments,
                 inputFilters)
@@ -879,20 +1037,20 @@ namespace Mpdn.RenderScript
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            TransformFunc transform, float[] arguments, params IFilter[] inputFilters)
+            TransformFunc transform, float[] arguments, params IBaseFilter[] inputFilters)
             : this(shader, threadGroupX, threadGroupY, threadGroupZ, transform, 0, false, arguments, inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            TransformFunc transform, bool linearSampling, float[] arguments, params IFilter[] inputFilters)
+            TransformFunc transform, bool linearSampling, float[] arguments, params IBaseFilter[] inputFilters)
             : this(
                 shader, threadGroupX, threadGroupY, threadGroupZ, transform, 0, linearSampling, arguments, inputFilters)
         {
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            TransformFunc transform, int sizeIndex, float[] arguments, params IFilter[] inputFilters)
+            TransformFunc transform, int sizeIndex, float[] arguments, params IBaseFilter[] inputFilters)
             : this(
                 shader, threadGroupX, threadGroupY, threadGroupZ, transform, sizeIndex, false, arguments, inputFilters)
         {
