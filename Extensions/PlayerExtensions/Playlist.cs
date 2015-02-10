@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using SharpDX.Direct3D9;
 
 namespace Mpdn.PlayerExtensions.Playlist
 {
