@@ -12,6 +12,8 @@ namespace Mpdn.PlayerExtensions.Playlist
 {
     public partial class PlaylistForm : FormEx
     {
+        private Playlist playListUi;
+
         public static int PlaylistCount { get; set; }
 
         private const double MaxOpacity = 1.0;
@@ -31,9 +33,9 @@ namespace Mpdn.PlayerExtensions.Playlist
         private Rectangle dragRowRect;
         private int dragRowIndex;
 
-        //dirty, fix later
         public Rectangle WindowBounds { get; set; }
         public bool RememberWindowBounds { get; set; }
+        public bool Autoplay { get; set; }
 
         public PlaylistForm()
         {
@@ -76,11 +78,12 @@ namespace Mpdn.PlayerExtensions.Playlist
             base.Show(owner);
         }
 
-        public void Setup()
+        public void Setup(Playlist playListUi)
         {
             if (Playlist != null)
                 return;
 
+            this.playListUi = playListUi;
             Icon = PlayerControl.ApplicationIcon;
 
             dgv_PlayList.CellFormatting += dgv_PlayList_CellFormatting;
@@ -284,8 +287,6 @@ namespace Mpdn.PlayerExtensions.Playlist
 
         public void AddFiles(string[] fileNames)
         {
-            var startPlaying = Playlist.Count == 0 && PlayerControl.PlayerState == PlayerState.Closed;
-
             var files = fileNames.Except(Playlist.Select(item => item.FilePath)).ToArray();
 
             foreach (var item in files.Select(s => new PlaylistItem(s, false) { EndChapter = -1 }))
@@ -295,9 +296,9 @@ namespace Mpdn.PlayerExtensions.Playlist
 
             PopulatePlaylist();
 
-            if (!startPlaying) return;
+            if (!Autoplay) return;
 
-            currentPlayIndex = 0;
+            currentPlayIndex = Playlist.Count > 0 ? Playlist.Count - 1 : 0;
             OpenMedia();
         }
 
@@ -786,7 +787,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             dgv_PlayList.Invalidate();
         }
 
-        private void SortPlayList(bool ascending)
+        private void SortPlayList(bool ascending = true)
         {
             if (ascending)
             {
@@ -925,12 +926,17 @@ namespace Mpdn.PlayerExtensions.Playlist
 
         private void ButtonSortAscendingClick(object sender, EventArgs e)
         {
-            SortPlayList(true);
+            SortPlayList();
         }
 
         private void ButtonSortDescendingClick(object sender, EventArgs e)
         {
             SortPlayList(false);
+        }
+
+        private void ButtonSettingsClick(object sender, EventArgs e)
+        {
+            playListUi.ShowConfigDialog(this);
         }
 
         private void FormKeyDown(object sender, KeyEventArgs e)

@@ -34,7 +34,7 @@ namespace Mpdn.PlayerExtensions.Playlist
         public override void Initialize()
         {
             base.Initialize();
-            form.Setup();
+            form.Setup(this);
 
             PlayerControl.PlayerStateChanged += OnPlayerStateChange;
             PlayerControl.FormClosed += OnFormClosed;
@@ -51,10 +51,19 @@ namespace Mpdn.PlayerExtensions.Playlist
                 form.WindowBounds = Settings.WindowBounds;
             }
 
+            if (Settings.ShowPlaylistOnStartup)
+            {
+                form.Show(PlayerControl.VideoPanel);
+            }
+
+            if (Settings.Autoplay)
+            {
+                form.Autoplay = Settings.Autoplay;
+            }
+
             if (Settings.RememberLastPlayedFile)
             {
                 string[] files = { Settings.LastPlayedFile };
-                form.Show(PlayerControl.VideoPanel);
                 form.AddFiles(files);
             }
         }
@@ -199,6 +208,8 @@ namespace Mpdn.PlayerExtensions.Playlist
 
     public class PlaylistSettings
     {
+        public bool ShowPlaylistOnStartup { get; set; }
+        public bool Autoplay { get; set; }
         public bool AddFileToPlaylistOnOpen { get; set; }
         public bool RememberWindowBounds { get; set; }
         public bool RememberLastPlayedFile { get; set; }
@@ -207,6 +218,8 @@ namespace Mpdn.PlayerExtensions.Playlist
 
         public PlaylistSettings()
         {
+            ShowPlaylistOnStartup = false;
+            Autoplay = false;
             AddFileToPlaylistOnOpen = false;
             RememberWindowBounds = false;
             RememberLastPlayedFile = false;
