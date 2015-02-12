@@ -273,6 +273,21 @@
         LPHoGv4AoMZiYNaQHXAAAAAASUVORK5CYII=
 </value>
   </data>
+  <data name="buttonSettings.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxMAAAsTAQCanBgAAAHnSURBVDhPdVNbK0RRGJ1n/2BK
+        RjmhM974Dx6UPPkFpDx6pJGaPMg192YM8aDGnScNHjDk1kREmVEjDaKYcR1zOZ+9vnNxzmDVqnP2/tba
+        32VvWy5Kxq7KnbMvHsGIYFojvj0lE9FyLew3HK6lPBHkE1QE6R9iz1foDuRpMhWOlgWIg3pg2fwr1a6/
+        WcRYM/0HLSZiAScbAdWBdwIaVmMkzyTIc/FFe7efJE8/mE18LC4eOUfNlrQrFl9JEQaXj2/UthmjrPhZ
+        OL2nos4glU7e6HEK90R8oGGc4v5DhpajKWo/TlIqA4sftK2FydkTpMqxIyr1hjkzaGGADrMrUsVpOmKJ
+        JBNIiQ1FUTdrJkMkDZyQ7I9HYIAx6WmRO6QKYi9Jkru3mboJSqqfP6Oiji2m1HeYthg07nxQJJHl4L8M
+        XIGwIdbIBlxC7YbaeaSp1w8TUEdWlDG8e2024BKMJlbNRrlRaJgZqB9rmMRu9Mls4LVJgyfGGNHZ4tEL
+        DsRprUKEupEVjE1CUHG0rlTwXRBi4yLBZO8uSUNaqmgaUOk7yjUYZzGQ3zRlucpO/xNJvQdGMMZmEoI7
+        9roe63vQTIzHJPufMaZcoSI4bq/rsorN0HrCz1meiael/lBaiCKC3oLmObVmAzbbN70If9hKqx90AAAA
+        AElFTkSuQmCC
+</value>
+  </data>
   <metadata name="timer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>133, 17</value>
   </metadata>
@@ -287,5 +302,8 @@
   </metadata>
   <metadata name="savePlaylistDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>499, 17</value>
+  </metadata>
+  <metadata name="contextMenuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>647, 17</value>
   </metadata>
 </root>

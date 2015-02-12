@@ -37,6 +37,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.buttonNew = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonOpen = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSave = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonSettings = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.openPlaylistDialog = new System.Windows.Forms.OpenFileDialog();
@@ -76,12 +77,13 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.toolStripStatusLabel1,
             this.buttonNew,
             this.buttonOpen,
-            this.buttonSave});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 203);
+            this.buttonSave,
+            this.buttonSettings});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 202);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
             this.statusStrip1.ShowItemToolTips = true;
-            this.statusStrip1.Size = new System.Drawing.Size(795, 26);
+            this.statusStrip1.Size = new System.Drawing.Size(795, 27);
             this.statusStrip1.TabIndex = 0;
             this.statusStrip1.TabStop = true;
             this.statusStrip1.Text = "statusStrip1";
@@ -93,7 +95,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.buttonAdd.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonAdd.BackgroundImage")));
             this.buttonAdd.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonAdd.Name = "buttonAdd";
-            this.buttonAdd.Size = new System.Drawing.Size(24, 24);
+            this.buttonAdd.Size = new System.Drawing.Size(24, 25);
             this.buttonAdd.ToolTipText = "Add files";
             this.buttonAdd.Click += new System.EventHandler(this.ButtonAddClick);
             // 
@@ -104,14 +106,14 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.buttonDel.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonDel.BackgroundImage")));
             this.buttonDel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonDel.Name = "buttonDel";
-            this.buttonDel.Size = new System.Drawing.Size(24, 24);
+            this.buttonDel.Size = new System.Drawing.Size(24, 25);
             this.buttonDel.ToolTipText = "Remove files";
             this.buttonDel.Click += new System.EventHandler(this.ButtonDelClick);
             // 
             // toolStripStatusLabel2
             // 
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(10, 21);
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(10, 22);
             this.toolStripStatusLabel2.Text = " ";
             // 
             // buttonLeft
@@ -121,7 +123,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.buttonLeft.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonLeft.BackgroundImage")));
             this.buttonLeft.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonLeft.Name = "buttonLeft";
-            this.buttonLeft.Size = new System.Drawing.Size(24, 24);
+            this.buttonLeft.Size = new System.Drawing.Size(24, 25);
             this.buttonLeft.ToolTipText = "Previous";
             this.buttonLeft.Click += new System.EventHandler(this.ButtonLeftClick);
             // 
@@ -132,7 +134,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.buttonRight.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRight.BackgroundImage")));
             this.buttonRight.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonRight.Name = "buttonRight";
-            this.buttonRight.Size = new System.Drawing.Size(24, 24);
+            this.buttonRight.Size = new System.Drawing.Size(24, 25);
             this.buttonRight.ToolTipText = "Next";
             this.buttonRight.Click += new System.EventHandler(this.ButtonRightClick);
             // 
@@ -143,7 +145,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.buttonSortAscending.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSortAscending.Margin = new System.Windows.Forms.Padding(10, 2, 0, 0);
             this.buttonSortAscending.Name = "buttonSortAscending";
-            this.buttonSortAscending.Size = new System.Drawing.Size(24, 24);
+            this.buttonSortAscending.Size = new System.Drawing.Size(24, 25);
             this.buttonSortAscending.ToolTipText = "Sort playlist (ascending)";
             this.buttonSortAscending.Click += new System.EventHandler(this.ButtonSortAscendingClick);
             // 
@@ -153,7 +155,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.buttonSortDescending.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortDescending.BackgroundImage")));
             this.buttonSortDescending.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSortDescending.Name = "buttonSortDescending";
-            this.buttonSortDescending.Size = new System.Drawing.Size(24, 24);
+            this.buttonSortDescending.Size = new System.Drawing.Size(24, 25);
             this.buttonSortDescending.ToolTipText = "Sort playlist (descending)";
             this.buttonSortDescending.Click += new System.EventHandler(this.ButtonSortDescendingClick);
             // 
@@ -163,13 +165,13 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.PlayButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("PlayButton.BackgroundImage")));
             this.PlayButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.PlayButton.Name = "PlayButton";
-            this.PlayButton.Size = new System.Drawing.Size(24, 24);
+            this.PlayButton.Size = new System.Drawing.Size(24, 25);
             this.PlayButton.Visible = false;
             // 
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(544, 21);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(520, 22);
             this.toolStripStatusLabel1.Spring = true;
             this.toolStripStatusLabel1.Text = " ";
             // 
@@ -180,7 +182,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.buttonNew.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonNew.BackgroundImage")));
             this.buttonNew.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonNew.Name = "buttonNew";
-            this.buttonNew.Size = new System.Drawing.Size(24, 24);
+            this.buttonNew.Size = new System.Drawing.Size(24, 25);
             this.buttonNew.ToolTipText = "New playlist";
             this.buttonNew.Click += new System.EventHandler(this.ButtonNewClick);
             // 
@@ -191,7 +193,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.buttonOpen.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonOpen.BackgroundImage")));
             this.buttonOpen.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonOpen.Name = "buttonOpen";
-            this.buttonOpen.Size = new System.Drawing.Size(24, 24);
+            this.buttonOpen.Size = new System.Drawing.Size(24, 25);
             this.buttonOpen.ToolTipText = "Open playlist";
             this.buttonOpen.Click += new System.EventHandler(this.ButtonOpenClick);
             // 
@@ -202,9 +204,19 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.buttonSave.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSave.BackgroundImage")));
             this.buttonSave.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSave.Name = "buttonSave";
-            this.buttonSave.Size = new System.Drawing.Size(24, 24);
+            this.buttonSave.Size = new System.Drawing.Size(24, 25);
             this.buttonSave.ToolTipText = "Save playlist";
             this.buttonSave.Click += new System.EventHandler(this.ButtonSaveClick);
+            // 
+            // buttonSettings
+            // 
+            this.buttonSettings.BackColor = System.Drawing.Color.Transparent;
+            this.buttonSettings.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSettings.BackgroundImage")));
+            this.buttonSettings.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.buttonSettings.Name = "buttonSettings";
+            this.buttonSettings.Size = new System.Drawing.Size(24, 25);
+            this.buttonSettings.ToolTipText = "Configure playlist";
+            this.buttonSettings.Click += new System.EventHandler(this.ButtonSettingsClick);
             // 
             // timer
             // 
@@ -273,7 +285,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             this.dgv_PlayList.ShowCellToolTips = false;
             this.dgv_PlayList.ShowEditingIcon = false;
             this.dgv_PlayList.ShowRowErrors = false;
-            this.dgv_PlayList.Size = new System.Drawing.Size(795, 203);
+            this.dgv_PlayList.Size = new System.Drawing.Size(795, 202);
             this.dgv_PlayList.TabIndex = 1;
             // 
             // Playing
@@ -457,5 +469,6 @@ namespace Mpdn.PlayerExtensions.Playlist
         private ToolStripSeparator toolStripMenuItem2;
         private ToolStripMenuItem nextItemToolStripMenuItem;
         private ToolStripMenuItem previousItemToolStripMenuItem;
+        private ButtonStripItem buttonSettings;
     }
 }

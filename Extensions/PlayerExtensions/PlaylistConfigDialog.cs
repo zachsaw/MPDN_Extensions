@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using Mpdn.Config;
+﻿using Mpdn.Config;
 
 namespace Mpdn.PlayerExtensions.Playlist
 {
@@ -19,6 +11,8 @@ namespace Mpdn.PlayerExtensions.Playlist
 
         protected override void LoadSettings()
         {
+            cb_showPlaylistOnStartup.Checked = Settings.ShowPlaylistOnStartup;
+            cb_autoplay.Checked = Settings.Autoplay;
             cb_rememberWindowBounds.Checked = Settings.RememberWindowBounds;
             cb_rememberLastPlayedFile.Checked = Settings.RememberLastPlayedFile;
             cb_addFileToPlaylistOnOpen.Checked = Settings.AddFileToPlaylistOnOpen;
@@ -26,6 +20,8 @@ namespace Mpdn.PlayerExtensions.Playlist
 
         protected override void SaveSettings()
         {
+            Settings.ShowPlaylistOnStartup = cb_showPlaylistOnStartup.Checked;
+            Settings.Autoplay = cb_autoplay.Checked;
             Settings.RememberWindowBounds = cb_rememberWindowBounds.Checked;
             Settings.RememberLastPlayedFile = cb_rememberLastPlayedFile.Checked;
             Settings.AddFileToPlaylistOnOpen = cb_addFileToPlaylistOnOpen.Checked;
