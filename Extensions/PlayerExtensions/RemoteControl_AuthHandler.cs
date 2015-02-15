@@ -93,7 +93,7 @@ namespace Mpdn.PlayerExtensions
                 Guid.TryParse(clientGUID, out tmpGuid);
                 authedClients.Add(tmpGuid);
             }
-            catch(Exception ex)
+            catch
             {
 
             }

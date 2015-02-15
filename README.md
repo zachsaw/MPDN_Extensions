@@ -9,13 +9,14 @@ MPDN project page - http://forum.doom9.org/showthread.php?t=171120
 <li>Shiandow</li>
 <li>DeadlyEmbrace</li>
 <li>Mercy07</li>
+<li>Garteal</li>
 </ul>
 
 
 How to use Extensions?
 ----------------------
 
-To use these extensions (compatible with ***MPDN v2.20.1*** and above), click the **Download ZIP** button on the right to download the whole repository.
+To use these extensions (compatible with ***MPDN v2.21.0*** and above), click the **Download ZIP** button on the right to download the whole repository.
 
 Then extract the files and folders in the Extensions folder to your MPDN's Extensions folder.
 
@@ -29,7 +30,8 @@ Follow these simple steps:
 <ol>
 <li>Create a class library</li>
 <li>Add all the DLLs in MPDN's root folder as assembly references to your project</li>
-<li>Add all the .cs files from the Extensions folder of this repository to your project</li>
+<li>Copy the resource files in the Sources folder to Extensions folder (e.g. PlaylistForm.resx should be placed in the same folder as PlaylistForm.cs)</li>
+<li>Add all the files from the Extensions folder of this repository to your project</li>
 <li>Set your class library's output folder to MPDN's Extensions folder</li>
 <li>Set the program to debug your class library to MediaPlayerDotNet.exe</li>
 <li>You're all set! This allows your IDE to run MPDN which in turn loads your class library (Extension plugin) when you start a debug session</li>

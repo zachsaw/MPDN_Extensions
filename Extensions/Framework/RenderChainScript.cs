@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Drawing;
 
 namespace Mpdn.RenderScript
 {
     public class RenderChainScript : IRenderScript, IDisposable
     {
-        private readonly TextureCache m_Cache;
+        private TextureCache m_Cache;
         private SourceFilter m_SourceFilter;
-        private IFilter m_Filter;
+        private IFilter<ITexture> m_Filter;
 
         protected RenderChain Chain;
 
@@ -18,7 +19,12 @@ namespace Mpdn.RenderScript
 
         public void Dispose()
         {
-            DisposeHelper.Dispose(m_Cache);
+            if (m_Cache == null)
+                return;
+
+            DisposeHelper.Dispose(ref m_Cache);
+            Chain.RenderScriptDisposed();
+            Chain = null;
         }
 
         public ScriptInterfaceDescriptor Descriptor
@@ -32,7 +38,7 @@ namespace Mpdn.RenderScript
                 {
                     WantYuv = true,
                     Prescale = (m_SourceFilter.LastDependentIndex > 0),
-                    PrescaleSize = m_SourceFilter.OutputSize
+                    PrescaleSize = (Size)m_SourceFilter.OutputSize
                 };
             }
         }

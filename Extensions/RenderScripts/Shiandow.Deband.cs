@@ -9,7 +9,7 @@ namespace Mpdn.RenderScript
         public class Deband : RenderChain
         {
             private const float DEFAULT_THRESHOLD = 0.5f;
-            private const float DEFAULT_MARGIN = 1.0f;
+            private const float DEFAULT_MARGIN = 0.25f;
 
             public int maxbitdepth { get; set; }
             public float threshold { get; set; }
