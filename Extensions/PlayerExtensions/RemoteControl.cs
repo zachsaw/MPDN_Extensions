@@ -84,10 +84,19 @@ namespace Mpdn.PlayerExtensions
             if (playlist != null)
             {
                 _playlistInstance = playlist as Playlist.Playlist;
-                if (_playlistInstance != null) _playlistInstance.GetPlaylistForm.VisibleChanged += GetPlaylistForm_VisibleChanged;
+                if (_playlistInstance != null)
+                {
+                    _playlistInstance.GetPlaylistForm.VisibleChanged += GetPlaylistForm_VisibleChanged;
+                    _playlistInstance.GetPlaylistForm.PlaylistChanged += GetPlaylistForm_PlaylistChanged;
+                }
             }
 
             Task.Factory.StartNew(Server);
+        }
+
+        void GetPlaylistForm_PlaylistChanged(object sender, EventArgs e)
+        {
+            GetPlaylist(Guid.Empty, true);
         }
 
         void GetPlaylistForm_VisibleChanged(object sender, EventArgs e)
@@ -445,6 +454,52 @@ namespace Mpdn.PlayerExtensions
                 case "HidePlaylist":
                     PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) HidePlaylist);
                     break;
+                case "GetPlaylist":
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => GetPlaylist(command[1])));
+                    break;
+                case "PlaySelectedFile":
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => PlaySelectedFile(command[1])));
+                    break;
+                case "RemoveFile":
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => RemoveFromPlaylist(command[1])));
+                    break;
+            }
+        }
+
+        private void RemoveFromPlaylist(string fileIndex)
+        {
+            int index;
+            int.TryParse(fileIndex, out index);
+            _playlistInstance.GetPlaylistForm.RemoveFile(index);
+        }
+
+        private void PlaySelectedFile(string fileIndex)
+        {
+            int myIndex;
+            int.TryParse(fileIndex, out myIndex);
+            _playlistInstance.GetPlaylistForm.SetPlaylistIndex(myIndex);
+        }
+
+        private void GetPlaylist(object guid, bool notify = false)
+        {
+            int counter = 0;
+            StringBuilder sb = new StringBuilder();
+            var fullPlaylist = _playlistInstance.GetPlaylistForm.Playlist;
+            foreach (var item in fullPlaylist)
+            {
+                counter++;
+                if (counter > 1)
+                    sb.Append(">>");
+                sb.Append(item.FilePath + "]]" + item.Active);
+
+            }
+            if (!notify)
+            {
+                WriteToSpesificClient("PlaylistContent|" + sb, guid.ToString());
+            }
+            else
+            {
+                PushToAllListeners("PlaylistContent|" + sb);
             }
         }
 
@@ -585,6 +640,7 @@ namespace Mpdn.PlayerExtensions
             WriteToSpesificClient("Fullscreen|" + PlayerControl.InFullScreenMode, guid.ToString());
             WriteToSpesificClient("Mute|" + PlayerControl.Mute, guid.ToString());
             WriteToSpesificClient("Volume|" + PlayerControl.Volume, guid.ToString());
+            GetPlaylist(guid);
             if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
             {
                 WriteToSpesificClient("FullLength|" + PlayerControl.MediaDuration, guid.ToString());
