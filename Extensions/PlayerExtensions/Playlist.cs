@@ -204,15 +204,6 @@ namespace Mpdn.PlayerExtensions.Playlist
             e.Handled = true;
             form.OpenPlaylist(e.Filename);
         }
-
-        #region RemoteMethods
-
-        public PlaylistForm GetPlaylistForm
-        {
-            get { return form; }
-        }
-
-        #endregion
     }
 
     public class PlaylistSettings

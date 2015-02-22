@@ -18,6 +18,7 @@ namespace Mpdn.PlayerExtensions.Playlist
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PlaylistForm));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -91,6 +92,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // 
             this.buttonAdd.AutoSize = false;
             this.buttonAdd.BackColor = System.Drawing.Color.Transparent;
+            this.buttonAdd.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonAdd.BackgroundImage")));
             this.buttonAdd.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonAdd.Name = "buttonAdd";
             this.buttonAdd.Size = new System.Drawing.Size(24, 25);
@@ -101,6 +103,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // 
             this.buttonDel.AutoSize = false;
             this.buttonDel.BackColor = System.Drawing.Color.Transparent;
+            this.buttonDel.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonDel.BackgroundImage")));
             this.buttonDel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonDel.Name = "buttonDel";
             this.buttonDel.Size = new System.Drawing.Size(24, 25);
@@ -117,6 +120,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // 
             this.buttonLeft.AutoSize = false;
             this.buttonLeft.BackColor = System.Drawing.Color.Transparent;
+            this.buttonLeft.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonLeft.BackgroundImage")));
             this.buttonLeft.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonLeft.Name = "buttonLeft";
             this.buttonLeft.Size = new System.Drawing.Size(24, 25);
@@ -127,6 +131,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // 
             this.buttonRight.AutoSize = false;
             this.buttonRight.BackColor = System.Drawing.Color.Transparent;
+            this.buttonRight.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRight.BackgroundImage")));
             this.buttonRight.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonRight.Name = "buttonRight";
             this.buttonRight.Size = new System.Drawing.Size(24, 25);
@@ -136,6 +141,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // buttonSortAscending
             // 
             this.buttonSortAscending.BackColor = System.Drawing.Color.Transparent;
+            this.buttonSortAscending.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortAscending.BackgroundImage")));
             this.buttonSortAscending.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSortAscending.Margin = new System.Windows.Forms.Padding(10, 2, 0, 0);
             this.buttonSortAscending.Name = "buttonSortAscending";
@@ -146,6 +152,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // buttonSortDescending
             // 
             this.buttonSortDescending.BackColor = System.Drawing.Color.Transparent;
+            this.buttonSortDescending.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortDescending.BackgroundImage")));
             this.buttonSortDescending.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSortDescending.Name = "buttonSortDescending";
             this.buttonSortDescending.Size = new System.Drawing.Size(24, 25);
@@ -155,6 +162,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // PlayButton
             // 
             this.PlayButton.BackColor = System.Drawing.Color.Transparent;
+            this.PlayButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("PlayButton.BackgroundImage")));
             this.PlayButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.PlayButton.Name = "PlayButton";
             this.PlayButton.Size = new System.Drawing.Size(24, 25);
@@ -171,6 +179,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // 
             this.buttonNew.AutoSize = false;
             this.buttonNew.BackColor = System.Drawing.Color.Transparent;
+            this.buttonNew.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonNew.BackgroundImage")));
             this.buttonNew.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonNew.Name = "buttonNew";
             this.buttonNew.Size = new System.Drawing.Size(24, 25);
@@ -181,6 +190,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // 
             this.buttonOpen.AutoSize = false;
             this.buttonOpen.BackColor = System.Drawing.Color.Transparent;
+            this.buttonOpen.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonOpen.BackgroundImage")));
             this.buttonOpen.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonOpen.Name = "buttonOpen";
             this.buttonOpen.Size = new System.Drawing.Size(24, 25);
@@ -191,6 +201,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // 
             this.buttonSave.AutoSize = false;
             this.buttonSave.BackColor = System.Drawing.Color.Transparent;
+            this.buttonSave.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSave.BackgroundImage")));
             this.buttonSave.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSave.Name = "buttonSave";
             this.buttonSave.Size = new System.Drawing.Size(24, 25);
@@ -200,6 +211,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // buttonSettings
             // 
             this.buttonSettings.BackColor = System.Drawing.Color.Transparent;
+            this.buttonSettings.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSettings.BackgroundImage")));
             this.buttonSettings.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSettings.Name = "buttonSettings";
             this.buttonSettings.Size = new System.Drawing.Size(24, 25);
@@ -213,6 +225,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             // 
             // openFileDialog
             // 
+            this.openFileDialog.Filter = resources.GetString("openFileDialog.Filter");
             this.openFileDialog.Multiselect = true;
             this.openFileDialog.RestoreDirectory = true;
             this.openFileDialog.SupportMultiDottedExtensions = true;

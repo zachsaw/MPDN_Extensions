@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -23,8 +22,6 @@ namespace Mpdn.PlayerExtensions
         private readonly RemoteControl_AuthHandler _authHandler = new RemoteControl_AuthHandler();
         private RemoteClients _clientManager;
         private Timer _locationTimer;
-        private Guid _playlistGuid = Guid.Parse("A1997E34-D67B-43BB-8FE6-55A71AE7184B");
-        private Playlist.Playlist _playlistInstance;
         #endregion
 
         #region Properties
@@ -80,30 +77,8 @@ namespace Mpdn.PlayerExtensions
             _locationTimer = new Timer(100);
             _locationTimer.Elapsed += _locationTimer_Elapsed;
             _clientManager = new RemoteClients(this);
-            var playlist = PlayerControl.PlayerExtensions.FirstOrDefault(t => t.Descriptor.Guid == _playlistGuid);
-            if (playlist != null)
-            {
-                _playlistInstance = playlist as Playlist.Playlist;
-                if (_playlistInstance != null)
-                {
-                    _playlistInstance.GetPlaylistForm.VisibleChanged += GetPlaylistForm_VisibleChanged;
-                    _playlistInstance.GetPlaylistForm.PlaylistChanged += GetPlaylistForm_PlaylistChanged;
-                }
-            }
-
             Task.Factory.StartNew(Server);
         }
-
-        void GetPlaylistForm_PlaylistChanged(object sender, EventArgs e)
-        {
-            GetPlaylist(Guid.Empty, true);
-        }
-
-        void GetPlaylistForm_VisibleChanged(object sender, EventArgs e)
-        {
-            PushToAllListeners("PlaylistShow|" + _playlistInstance.GetPlaylistForm.Visible);
-        }
-
 
         private void Subscribe()
         {
@@ -433,125 +408,17 @@ namespace Mpdn.PlayerExtensions
                 case "ActiveAudioTrack":
                     PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetAudioTrack(command[1])));
                     break;
-                case "AddFilesToPlaylist":
-                    AddFilesToPlaylist(command[1]);
-                    break;
-                case "ClearPlaylist":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(ClearPlaylist));
-                    break;
-                case "FocusPlayer":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(FocusMpdn));
-                    break;
-                case "PlayNext":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) PlaylistPlayNext);
-                    break;
-                case "PlayPrevious":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) PlaylistPlayPrevious);
-                    break;
-                case "ShowPlaylist":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) ShowPlaylist);
-                    break;
-                case "HidePlaylist":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) HidePlaylist);
-                    break;
-                case "GetPlaylist":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => GetPlaylist(command[1])));
-                    break;
-                case "PlaySelectedFile":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => PlaySelectedFile(command[1])));
-                    break;
-                case "RemoveFile":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => RemoveFromPlaylist(command[1])));
-                    break;
+                //case "AddFilesToPlaylist":
+                //    AddFilesToPlaylist(command[1]);
+                //    break;
+                //case "ClearPlaylist":
+                //    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(ClearPlaylist));
+                //    break;
+                //case "FocusPlayer":
+                //    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(FocusMpdn));
+                //    break;
             }
         }
-
-        private void RemoveFromPlaylist(string fileIndex)
-        {
-            int index;
-            int.TryParse(fileIndex, out index);
-            _playlistInstance.GetPlaylistForm.RemoveFile(index);
-        }
-
-        private void PlaySelectedFile(string fileIndex)
-        {
-            int myIndex;
-            int.TryParse(fileIndex, out myIndex);
-            _playlistInstance.GetPlaylistForm.SetPlaylistIndex(myIndex);
-        }
-
-        private void GetPlaylist(object guid, bool notify = false)
-        {
-            int counter = 0;
-            StringBuilder sb = new StringBuilder();
-            var fullPlaylist = _playlistInstance.GetPlaylistForm.Playlist;
-            foreach (var item in fullPlaylist)
-            {
-                counter++;
-                if (counter > 1)
-                    sb.Append(">>");
-                sb.Append(item.FilePath + "]]" + item.Active);
-
-            }
-            if (!notify)
-            {
-                WriteToSpesificClient("PlaylistContent|" + sb, guid.ToString());
-            }
-            else
-            {
-                PushToAllListeners("PlaylistContent|" + sb);
-            }
-        }
-
-        private void HidePlaylist()
-        {
-            _playlistInstance.GetPlaylistForm.Hide();
-        }
-
-        private void ShowPlaylist()
-        {
-            _playlistInstance.GetPlaylistForm.Show();
-        }
-
-        private void PlaylistPlayNext()
-        {
-            _playlistInstance.GetPlaylistForm.PlayNext();
-        }
-
-        private void PlaylistPlayPrevious()
-        {
-            _playlistInstance.GetPlaylistForm.PlayPrevious();
-        }
-
-        private void FocusMpdn()
-        {
-            PlayerControl.Form.Focus();
-        }
-
-        private void ClearPlaylist()
-        {
-            _playlistInstance.GetPlaylistForm.ClearPlaylist();
-        }
-
-        private void AddFilesToPlaylist(string files)
-        {
-            List<string> filesToAdd = new List<string>();
-            var filePaths = Regex.Split(files, ">>");
-            if (filePaths.Any())
-            {
-                foreach (var file in filePaths)
-                {
-                    if (File.Exists(file))
-                    {
-                        filesToAdd.Add(file);
-                    }
-                }
-            }
-            if (filesToAdd.Any())
-            {
-                PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => _playlistInstance.GetPlaylistForm.AddFiles(filesToAdd.ToArray())));
-             }
-         }
 
         private void RemoveWriter(string guid)
         {
@@ -577,15 +444,7 @@ namespace Mpdn.PlayerExtensions
         {
             bool dispOsd = false;
             Boolean.TryParse(showOsd.ToString(), out dispOsd);
-            if(!String.IsNullOrEmpty(PlayerControl.MediaFilePath))
-            {            
-                PlayerControl.PlayMedia(dispOsd);
-            }
-            else
-            {
-                _playlistInstance.GetPlaylistForm.PlayActive();
-            }
-
+            PlayerControl.PlayMedia(dispOsd);
         }
 
         private void StopMedia(object blank)
@@ -640,15 +499,10 @@ namespace Mpdn.PlayerExtensions
             WriteToSpesificClient("Fullscreen|" + PlayerControl.InFullScreenMode, guid.ToString());
             WriteToSpesificClient("Mute|" + PlayerControl.Mute, guid.ToString());
             WriteToSpesificClient("Volume|" + PlayerControl.Volume, guid.ToString());
-            GetPlaylist(guid);
             if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
             {
                 WriteToSpesificClient("FullLength|" + PlayerControl.MediaDuration, guid.ToString());
                 WriteToSpesificClient("Postion|" + PlayerControl.MediaPosition, guid.ToString());
-            }
-            if (_playlistInstance != null)
-            {
-                PushToAllListeners("PlaylistShow|" + _playlistInstance.GetPlaylistForm.Visible);
             }
             WriteToSpesificClient(GetAllSubtitleTracks(), guid.ToString());
             WriteToSpesificClient(GetAllAudioTracks(), guid.ToString());
