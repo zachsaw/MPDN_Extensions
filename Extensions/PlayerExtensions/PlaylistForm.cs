@@ -308,6 +308,13 @@ namespace Mpdn.PlayerExtensions.Playlist
             OpenMedia();
         }
 
+        public void InsertFile(int index, string fileName)
+        {
+            PlaylistItem item = new PlaylistItem(fileName, false);
+            Playlist.Insert(index, item);
+            PopulatePlaylist();
+        }
+
         public void RemoveFile(int index)
         {
             Playlist.RemoveAt(index);

@@ -436,6 +436,9 @@ namespace Mpdn.PlayerExtensions
                 case "AddFilesToPlaylist":
                     AddFilesToPlaylist(command[1]);
                     break;
+                case "InsertFileInPlaylist":
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => InsertIntoPlaylist(command[1], command[2])));
+                    break;
                 case "ClearPlaylist":
                     PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(ClearPlaylist));
                     break;
@@ -464,6 +467,13 @@ namespace Mpdn.PlayerExtensions
                     PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => RemoveFromPlaylist(command[1])));
                     break;
             }
+        }
+
+        private void InsertIntoPlaylist(string fileIndex, string filePath)
+        {
+            int index;
+            int.TryParse(fileIndex, out index);
+            _playlistInstance.GetPlaylistForm.InsertFile(index, filePath);
         }
 
         private void RemoveFromPlaylist(string fileIndex)
