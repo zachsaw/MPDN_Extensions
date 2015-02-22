@@ -37,6 +37,12 @@ namespace Mpdn.PlayerExtensions.Playlist
         public bool RememberWindowBounds { get; set; }
         public bool Autoplay { get; set; }
 
+        #region Events
+
+        public event EventHandler PlaylistChanged;
+
+        #endregion
+
         public PlaylistForm()
         {
             InitializeComponent();
@@ -140,7 +146,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             {
                 currentPlayIndex = (Playlist.FindIndex(i => i.Active) > -1) ? Playlist.FindIndex(i => i.Active) : 0;
             }
-
+            NotifyPlaylistChanged();
             PlaylistCount = Playlist.Count;
         }
 
@@ -302,6 +308,12 @@ namespace Mpdn.PlayerExtensions.Playlist
             OpenMedia();
         }
 
+        public void RemoveFile(int index)
+        {
+            Playlist.RemoveAt(index);
+            PopulatePlaylist();
+        }
+
         public void CloseMedia()
         {
             try
@@ -315,6 +327,12 @@ namespace Mpdn.PlayerExtensions.Playlist
             {
                 PlayerControl.HandleException(ex);
             }
+        }
+
+        public void SetPlaylistIndex(int index)
+        {
+            currentPlayIndex = index;
+            OpenMedia();
         }
 
         private void SetLocation(Control owner)
@@ -512,6 +530,7 @@ namespace Mpdn.PlayerExtensions.Playlist
 
                 var playItem = Playlist.ElementAt(dragRowIndex);
                 Playlist.RemoveAt(dragRowIndex);
+                NotifyPlaylistChanged();
                 Playlist.Insert(destinationRow, playItem);
                 PopulatePlaylist();
                 dgv_PlayList.CurrentCell = dgv_PlayList.Rows[destinationRow].Cells[1];
@@ -945,6 +964,12 @@ namespace Mpdn.PlayerExtensions.Playlist
             {
                 Hide();
             }
+        }
+
+        private void NotifyPlaylistChanged()
+        {
+            if (PlaylistChanged != null)
+                PlaylistChanged(this, null);
         }
     }
 
