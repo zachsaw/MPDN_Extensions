@@ -53,7 +53,8 @@ float3 Labfinv(float3 x){ return x < (6.0 / 29.0)					  ? (x - (4.0 / 29.0)) * (
 
 float3 DLabf(float3 x)   { return min((29.0 * 29.0) / (3.0 * 6.0 * 6.0), (1.0/3.0) / pow(x, (2.0 / 3.0))); }
 float3 DLabfinv(float3 x){ return max((3.0 * 6.0 * 6.0) / (29.0 * 29.0), 3.0*x*x); }
-float3 RGBtoLab(float3 rgb) {
+
+float3 RGBtoLab(float3 rgb) {	
 	float3 xyz = mul(RGBtoXYZ, rgb);
 	xyz = Labf(xyz);
 	return float3(1.16*xyz.y - 0.16, 5.0*(xyz.x - xyz.y), 2.0*(xyz.y - xyz.z));
@@ -61,7 +62,7 @@ float3 RGBtoLab(float3 rgb) {
 
 float3 LabtoRGB(float3 lab) {
 	float3 xyz = (lab.x + 0.16) / 1.16 + float3(lab.y / 5.0, 0, -lab.z / 2.0);
-	return saturate(mul(XYZtoRGB, Labfinv(xyz)));
+	return mul(XYZtoRGB, Labfinv(xyz));
 }
 
 float3x3 DRGBtoLab(float3 rgb) {

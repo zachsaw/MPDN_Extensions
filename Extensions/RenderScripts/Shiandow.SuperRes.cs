@@ -48,14 +48,7 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                var inputSize = sourceFilter.OutputSize;
-                var targetSize = TargetSize();
-
-                // Skip if downscaling
-                if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
-                    return sourceFilter;
-                else
-                    return CreateFilter(sourceFilter, sourceFilter);
+                return CreateFilter(sourceFilter, sourceFilter);
             }
 
             public IFilter CreateFilter(IFilter original, IFilter initial)
@@ -85,6 +78,10 @@ namespace Mpdn.RenderScript
 
                 var Consts = new[] { Strength, Sharpness, AntiAliasing, AntiRinging };
 
+                // Skip if downscaling
+                if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
+                    return initial;
+
                 // Initial scaling
                 lab = new ShaderFilter(GammaToLab, initial);
                 original = new ShaderFilter(GammaToLab, original);
@@ -102,7 +99,7 @@ namespace Mpdn.RenderScript
                     if (i == 1 && UseNEDI)
                         lab = new ResizeFilter(lab + NEDI, currentSize, m_ShiftedScaler, m_ShiftedScaler, m_ShiftedScaler);
                     else 
-                        lab = new ResizeFilter(lab, currentSize);
+                        lab = new ResizeFilter(lab, currentSize, upscaler, downscaler);
 
                     // Downscale and Subtract
                     linear = new ShaderFilter(LabToLinear, lab);

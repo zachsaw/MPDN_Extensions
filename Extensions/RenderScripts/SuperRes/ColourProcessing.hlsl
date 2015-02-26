@@ -2,17 +2,6 @@
 #define GammaCurve sRGB
 #define gamma 2.2
 
-// -- Misc --
-sampler s0 : register(s0);
-float4 p0 :  register(c0);
-float2 p1 :  register(c1);
-
-#define width  (p0[0])
-#define height (p0[1])
-
-#define px (p1[0])
-#define py (p1[1])
-
 // -- Option values --
 #define None  1
 #define sRGB  2
@@ -25,8 +14,8 @@ float2 p1 :  register(c1);
 #define A (0.272433)
 
 #if GammaCurve == sRGB
-float3 Gamma(float3 x)   { return x < (0.0392857 / 12.9232102) ? x * 12.9232102 : 1.055*pow(x, 1 / 2.4) - 0.055; }
-float3 GammaInv(float3 x){ return x <  0.0392857			   ? x / 12.9232102 : pow((x + 0.055) / 1.055, 2.4); }
+float3 Gamma(float3 x)   { return x < 0.00303993442528169  ? x * 12.9232102 : 1.055*pow(x, 1 / 2.4) - 0.055; }
+float3 GammaInv(float3 x){ return x < 0.039285711572131475 ? x / 12.9232102 : pow((x + 0.055) / 1.055, 2.4); }
 #elif GammaCurve == Power
 float3 Gamma(float3 x)   { return pow(saturate(x), 1 / gamma); }
 float3 GammaInv(float3 x){ return pow(saturate(x), gamma); }
@@ -77,13 +66,4 @@ float3x3 DLabtoRGB(float3 lab) {
 	xyz = DLabfinv(xyz);
 	float3x3 D = { { xyz.x, 0, 0 }, { 0, xyz.y, 0 }, { 0, 0, xyz.z } };
 	return mul(XYZtoRGB, D);
-}
-
-// -- Main code --
-float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
-
-	c0.rgb = LabtoRGB(c0.xyz);
-
-	return c0;
 }

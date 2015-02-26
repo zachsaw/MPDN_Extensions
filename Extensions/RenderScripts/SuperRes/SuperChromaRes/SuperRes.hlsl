@@ -83,13 +83,13 @@ float3 DLabfinv(float3 x){ return max((3.0 * 6.0 * 6.0) / (29.0 * 29.0), 3.0*x*x
 
 float3 RGBtoLab(float3 rgb) {
 	float3 xyz = mul(RGBtoXYZ, rgb);
-	xyz = Labf(xyz);
+	xyz = Labf(saturate(xyz));
 	return float3(1.16*xyz.y - 0.16, 5.0*(xyz.x - xyz.y), 2.0*(xyz.y - xyz.z));
 }
 
 float3 LabtoRGB(float3 lab) {
 	float3 xyz = (lab.x + 0.16) / 1.16 + float3(lab.y / 5.0, 0, -lab.z / 2.0);
-	return saturate(mul(XYZtoRGB, Labfinv(xyz)));
+	return mul(XYZtoRGB, Labfinv(xyz));
 }
 
 // -- Input processing --
