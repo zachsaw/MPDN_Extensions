@@ -124,6 +124,7 @@
             this.presetGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.presetGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.presetGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.presetGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.NameColumn,
@@ -163,10 +164,14 @@
             // 
             this.scriptBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.scriptBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.scriptBox.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.scriptBox.FormattingEnabled = true;
-            this.scriptBox.Location = new System.Drawing.Point(180, 431);
+            this.scriptBox.ItemHeight = 13;
+            this.scriptBox.Location = new System.Drawing.Point(180, 430);
             this.scriptBox.Name = "scriptBox";
             this.scriptBox.Size = new System.Drawing.Size(303, 21);
+            this.scriptBox.Sorted = true;
             this.scriptBox.TabIndex = 5;
             // 
             // addButton
