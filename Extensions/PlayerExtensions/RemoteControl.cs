@@ -655,7 +655,7 @@ namespace Mpdn.PlayerExtensions
             if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
             {
                 WriteToSpesificClient("FullLength|" + PlayerControl.MediaDuration, guid.ToString());
-                WriteToSpesificClient("Postion|" + PlayerControl.MediaPosition, guid.ToString());
+                WriteToSpesificClient("Position|" + PlayerControl.MediaPosition, guid.ToString());
             }
             if (_playlistInstance != null)
             {
