@@ -118,12 +118,13 @@ namespace Mpdn.PlayerExtensions
 
         private void Unsubscribe()
         {
-            PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
-            PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
-            PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
-            PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
-            PlayerControl.VolumeChanged += PlayerControl_VolumeChanged;
+            PlayerControl.PlaybackCompleted -= m_PlayerControl_PlaybackCompleted;
+            PlayerControl.PlayerStateChanged -= m_PlayerControl_PlayerStateChanged;
+            PlayerControl.EnteringFullScreenMode -= m_PlayerControl_EnteringFullScreenMode;
+            PlayerControl.ExitingFullScreenMode -= m_PlayerControl_ExitingFullScreenMode;
+            PlayerControl.VolumeChanged -= PlayerControl_VolumeChanged;
             PlayerControl.SubtitleTrackChanged -= PlayerControl_SubtitleTrackChanged;
+            PlayerControl.AudioTrackChanged -= PlayerControl_AudioTrackChanged;
         }
 
         void PlayerControl_AudioTrackChanged(object sender, EventArgs e)
