@@ -171,7 +171,6 @@
             this.scriptBox.Location = new System.Drawing.Point(180, 430);
             this.scriptBox.Name = "scriptBox";
             this.scriptBox.Size = new System.Drawing.Size(303, 21);
-            this.scriptBox.Sorted = true;
             this.scriptBox.TabIndex = 5;
             // 
             // addButton
