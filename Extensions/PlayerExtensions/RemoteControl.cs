@@ -415,6 +415,9 @@ namespace Mpdn.PlayerExtensions
                 case "FullScreen":
                     PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => FullScreen(command[1])));
                     break;
+                case "MoveWindow":
+                    PlayerControl.Form.BeginInvoke((MethodInvoker)(() => MoveWindow(command[1])));
+                    break;
                 case "WriteToScreen":
                     DisplayTextMessage(command[1]);
                     break;
@@ -676,6 +679,36 @@ namespace Mpdn.PlayerExtensions
             else
             {
                 PlayerControl.GoWindowed();
+            }
+        }
+
+        private void MoveWindow(string msg)
+        {
+            var args = msg.Split(new[] {">>"}, StringSplitOptions.None);
+
+            int left, top, width, height;
+            if (int.TryParse(args[0], out left) &&
+                int.TryParse(args[1], out top) &&
+                int.TryParse(args[2], out width) &&
+                int.TryParse(args[3], out height))
+            {
+                PlayerControl.Form.Left = left;
+                PlayerControl.Form.Top = top;
+                PlayerControl.Form.Width = width;
+                PlayerControl.Form.Height = height;
+
+                switch (args[4])
+                {
+                    case "Normal":
+                        PlayerControl.Form.WindowState = FormWindowState.Normal;
+                        break;
+                    case "Maximized":
+                        PlayerControl.Form.WindowState = FormWindowState.Maximized;
+                        break;
+                    case "Minimized":
+                        PlayerControl.Form.WindowState = FormWindowState.Minimized;
+                        break;
+                }
             }
         }
 
