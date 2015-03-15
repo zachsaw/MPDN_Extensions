@@ -28,7 +28,7 @@ namespace Mpdn.RenderScript
                     .Select(x => (x as IRenderChainUi).CreateNew())
                     .Concat(new[]{RenderChainUi.Identity});
 
-                scriptBox.DataSource = renderScripts.Select(x => new KeyValuePair<string, IRenderScriptUi>(x.Descriptor.Name, x)).ToList();
+                scriptBox.DataSource = renderScripts.Select(x => new KeyValuePair<string, IRenderScriptUi>(x.Descriptor.Name, x)).OrderBy(x => x.Key).ToList();
                 scriptBox.DisplayMember = "Key";
                 scriptBox.ValueMember = "Value";
             }

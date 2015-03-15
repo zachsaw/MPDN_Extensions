@@ -1,4 +1,3 @@
-// $MinimumShaderProfile: ps_3_0
 sampler s0 : register(s0);
 float4  p0 : register(c0);
 float2  p1 : register(c1);
@@ -45,8 +44,6 @@ float2 solve(float2x2 A,float2 b) {
 float2 solvex(float2x2 A,float2 b) { return float2(determinant(float2x2(b,A[1])),determinant(float2x2(A[0],b)))/determinant(A); }
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0,tex);
-
 	//Define window and directions
 	float2 dir[4] = {{-1,-1},{1,1},{-1,1},{1,-1}};
 	float4x2 wind[4] = {{{0,0},{1,1},{0,1},{1,0}},{{-1,0},{2,1},{0,2},{1,-1}},{{0,-1},{1,2},{-1,1},{2,0}},{{-1,-1},{2,2},{-1,2},{2,-1}}};
@@ -63,7 +60,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 
 	//Calculate (local) autocorrelation coefficients
 	for (int k = 0; k<4; k+= 1){
-		float4 y		= float4(  Get (wind[k][0]),Get (wind[k][1]),Get (wind[k][2]),Get (wind[k][3]));
+		float4 y	= float4(  Get (wind[k][0]),Get (wind[k][1]),Get (wind[k][2]),Get (wind[k][3]));
 		float4x2 C 	= float4x2(Get4(wind[k][0]),Get4(wind[k][1]),Get4(wind[k][2]),Get4(wind[k][3]));
 		R += w[k]*mul(transpose(C),C);
 		r += w[k]*mul(y,C);
