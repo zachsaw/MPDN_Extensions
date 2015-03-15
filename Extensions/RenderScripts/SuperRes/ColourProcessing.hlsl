@@ -67,3 +67,17 @@ float3x3 DLabtoRGB(float3 lab) {
 	float3x3 D = { { xyz.x, 0, 0 }, { 0, xyz.y, 0 }, { 0, 0, xyz.z } };
 	return mul(XYZtoRGB, D);
 }
+
+float3x3 DinvRGBtoLab(float3 lab) {
+	float3 xyz = (lab.x + 0.16) / 1.16 + float3(lab.y / 5.0, 0, -lab.z / 2.0);
+	xyz = 1 / DLabfinv(xyz);
+	float3x3 D = { { xyz.x, 0, 0 }, { 0, xyz.y, 0 }, { 0, 0, xyz.z } };
+	return mul(XYZtoRGB, D);
+}
+
+float3x3 DinvLabtoRGB(float3 rgb) {
+	float3 xyz = mul(RGBtoXYZ, rgb);
+	xyz = 1 / DLabf(xyz);
+	float3x3 D = { { xyz.x, 0, 0 }, { 0, xyz.y, 0 }, { 0, 0, xyz.z } };
+	return mul(D, RGBtoXYZ);
+}
