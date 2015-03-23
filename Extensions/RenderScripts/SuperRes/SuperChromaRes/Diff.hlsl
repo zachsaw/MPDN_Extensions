@@ -7,7 +7,7 @@ float2 p1 :  register(c1);
 float4 args0 : register(c2);
 
 // -- Colour space Processing --
-#include "../ColourProcessing.hlsl"
+#include "../../Common/ColourProcessing.hlsl"
 #define Kb args0[0] //redefinition
 #define Kr args0[1] //redefinition
 

@@ -62,12 +62,12 @@ namespace Mpdn.RenderScript
                 var Diff = CompileShader("Diff.hlsl");
                 var SuperRes = CompileShader("SuperRes.hlsl");
 
-                var GammaToLab = CompileShader("GammaToLab.hlsl");
-                var LabToGamma = CompileShader("LabToGamma.hlsl");
-                var LinearToGamma = CompileShader("LinearToGamma.hlsl");
-                var GammaToLinear = CompileShader("GammaToLinear.hlsl");
-                var LabToLinear = CompileShader("LabToLinear.hlsl");
-                var LinearToLab = CompileShader("LinearToLab.hlsl");
+                var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
+                var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
+                var LinearToGamma = CompileShader("../Common/LinearToGamma.hlsl");
+                var GammaToLinear = CompileShader("../Common/GammaToLinear.hlsl");
+                var LabToLinear = CompileShader("../Common/LabToLinear.hlsl");
+                var LinearToLab = CompileShader("../Common/LinearToLab.hlsl");
 
                 var NEDI = new Shiandow.Nedi.Nedi
                 {

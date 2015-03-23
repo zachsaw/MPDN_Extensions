@@ -10,7 +10,7 @@ float2 p1 :  register(c1);
 #define px (p1[0])
 #define py (p1[1])
 
-#include "./ColourProcessing.hlsl"
+#include "../Common/ColourProcessing.hlsl"
 
 // -- Main code --
 float4 main(float2 tex : TEXCOORD0) : COLOR {

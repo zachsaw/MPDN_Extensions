@@ -35,7 +35,7 @@ float4 args0  : register(c3);
 #define h 1.5
 
 // -- Colour space Processing --
-#include "./ColourProcessing.hlsl"
+#include "../Common/ColourProcessing.hlsl"
 
 // -- Input processing --
 //Current high res value
