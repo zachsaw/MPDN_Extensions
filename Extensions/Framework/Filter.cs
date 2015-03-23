@@ -471,13 +471,43 @@ namespace Mpdn.RenderScript
 
     public sealed class RgbFilter : Filter
     {
+        public readonly YuvColorimetric Colorimetric;
+        public readonly bool OutputLimitedRange;
+
         public RgbFilter(IFilter inputFilter)
+            : this(inputFilter, Renderer.Colorimetric, Renderer.OutputLimitedRange)
+        {
+        }
+
+        public RgbFilter(IFilter inputFilter, bool LimitedRange)
+            : this(inputFilter, Renderer.Colorimetric, LimitedRange)
+        {
+        }
+
+        public RgbFilter(IFilter inputFilter, YuvColorimetric Colorimetric)
+            : this(inputFilter, Colorimetric, Renderer.OutputLimitedRange)
+        {
+        }
+
+        public RgbFilter(IFilter inputFilter, YuvColorimetric Colorimetric, bool LimitedRange)
             : base(inputFilter)
         {
-            if (inputFilter is YuvFilter)
+            this.Colorimetric = Colorimetric;
+            OutputLimitedRange = LimitedRange;
+        }
+
+        public override IFilter<ITexture> Initialize(int time = 1)
+        {
+            /* BEWARE, using the following method might intialize the wrong filters */
+            /* however this doesn't happen with RgbFilter and YuvFilter */
+            var output = base.Initialize(time);
+            var input = InputFilters[0] as YuvFilter;
+            if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
             {
-                PassthroughFilter = inputFilter.InputFilters[0] as IFilter;
+                output = input.InputFilters[0] as IFilter;
             }
+
+            return output;
         }
 
         public override TextureSize OutputSize
@@ -491,19 +521,49 @@ namespace Mpdn.RenderScript
             if (texture == null)
                 return;
 
-            Renderer.ConvertToRgb(OutputTexture, texture, Renderer.Colorimetric, Renderer.OutputLimitedRange);
+            Renderer.ConvertToRgb(OutputTexture, texture, Colorimetric, OutputLimitedRange);
         }
     }
 
     public sealed class YuvFilter : Filter
     {
+        public readonly YuvColorimetric Colorimetric;
+        public readonly bool OutputLimitedRange;
+
         public YuvFilter(IFilter inputFilter)
+            : this(inputFilter, Renderer.Colorimetric, Renderer.OutputLimitedRange)
+        {
+        }
+
+        public YuvFilter(IFilter inputFilter, bool LimitedRange)
+            : this(inputFilter, Renderer.Colorimetric, LimitedRange)
+        {
+        }
+
+        public YuvFilter(IFilter inputFilter, YuvColorimetric Colorimetric)
+            : this(inputFilter, Colorimetric, Renderer.OutputLimitedRange)
+        {
+        }
+
+        public YuvFilter(IFilter inputFilter, YuvColorimetric Colorimetric, bool LimitedRange)
             : base(inputFilter)
         {
-            if (inputFilter is RgbFilter)
+            this.Colorimetric = Colorimetric;
+            OutputLimitedRange = LimitedRange;
+        }
+
+        public override IFilter<ITexture> Initialize(int time = 1)
+        {
+            /* BEWARE, using the following method might intialize the wrong filters */
+            /* however this doesn't happen with RgbFilter and YuvFilter */
+            var output = base.Initialize(time);
+            var input = InputFilters[0] as RgbFilter;
+            if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
             {
-                PassthroughFilter = inputFilter.InputFilters[0] as IFilter;
+                output = input.InputFilters[0] as IFilter;
             }
+
+            return output;
         }
 
         public override TextureSize OutputSize
@@ -517,7 +577,7 @@ namespace Mpdn.RenderScript
             if (texture == null)
                 return;
 
-            Renderer.ConvertToYuv(OutputTexture, texture, Renderer.Colorimetric, Renderer.OutputLimitedRange);
+            Renderer.ConvertToYuv(OutputTexture, texture, Colorimetric, OutputLimitedRange);
         }
     }
 
@@ -526,13 +586,11 @@ namespace Mpdn.RenderScript
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
         private readonly IScaler m_Convolver;
-        private readonly IFilter<ITexture> m_InputFilter;
         private TextureSize m_OutputSize;
 
         public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler convolver = null)
             : this(inputFilter, outputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
-            m_InputFilter = inputFilter;
         }
 
         public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
@@ -553,7 +611,7 @@ namespace Mpdn.RenderScript
         {
             if (InputFilters[0].OutputSize == m_OutputSize && m_Convolver == null)
             {
-                PassthroughFilter = m_InputFilter;
+                PassthroughFilter = InputFilters[0] as IFilter;
             }
 
             return base.Initialize(time);
