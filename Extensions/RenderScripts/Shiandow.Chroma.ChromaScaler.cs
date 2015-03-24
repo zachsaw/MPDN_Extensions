@@ -76,15 +76,15 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                var chromaShader = CompileShader("Chroma.hlsl");
-
                 var yInput = new YSourceFilter();
                 var uInput = new USourceFilter();
                 var vInput = new VSourceFilter();
 
                 float[] offset = { 0.0f, 0.5f };
 
-                var chroma = new ShaderFilter(chromaShader, new[] {B, C, offset[0], offset[1]}, yInput, uInput, vInput);
+                var chromaShader = CompileShader("Chroma.hlsl").Configure(arguments: new[] { B, C, offset[0], offset[1] });
+
+                var chroma = new ShaderFilter(chromaShader, yInput, uInput, vInput);
                 var rgb = chroma.ConvertToRgb();
 
                 return rgb;
