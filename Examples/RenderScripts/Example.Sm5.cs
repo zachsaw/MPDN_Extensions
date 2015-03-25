@@ -22,8 +22,9 @@ namespace Mpdn.RenderScripts
                 sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
 
                 // apply our blue tint
-                var blueTint = CompileShader11("BlueTintSm5.hlsl", "ps_5_0");
-                return new Shader11Filter(blueTint, false, new[] {0.25f, 0.5f, 0.75f}, sourceFilter);
+                var blueTint = CompileShader11("BlueTintSm5.hlsl", "ps_5_0")
+                    .Configure(linearSampling: false, arguments: new[] {0.25f, 0.5f, 0.75f});
+                return new Shader11Filter(blueTint, sourceFilter);
             }
         }
 

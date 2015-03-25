@@ -34,10 +34,8 @@ namespace Mpdn.RenderScripts
 
             private void DiscardTextures()
             {
-                DisposeHelper.Dispose(m_Texture1);
-                m_Texture1 = null;
-                DisposeHelper.Dispose(m_Texture2);
-                m_Texture2 = null;
+                DisposeHelper.Dispose(ref m_Texture1);
+                DisposeHelper.Dispose(ref m_Texture2);
             }
 
             private void CreateTextures()
@@ -75,9 +73,9 @@ namespace Mpdn.RenderScripts
                 return result;
             }
 
-            private static Half[] GenerateChequeredPattern(int pitch, int height)
+            private static Half[,] GenerateChequeredPattern(int pitch, int height)
             {
-                var tex = new Half[pitch * height]; // 16-bit per channel, 4 channels per pixel
+                var tex = new Half[height, pitch]; // 16-bit per channel, 4 channels per pixel
                 var color0 = new Half[] { 0, 0, 0, 0 };
                 var color1 = new Half[] { 0.1f, 0.1f, 0.1f, 0 };
                 for (int j = 0; j < height; j++)
@@ -86,10 +84,10 @@ namespace Mpdn.RenderScripts
                     {
                         // Fill texture with chequered pattern
                         var c = (i / 4 + j) % 2 == 0 ? color0 : color1;
-                        tex[j * pitch + (i + 0)] = c[0];
-                        tex[j * pitch + (i + 1)] = c[1];
-                        tex[j * pitch + (i + 2)] = c[2];
-                        tex[j * pitch + (i + 3)] = c[3];
+                        tex[j, (i + 0)] = c[0]; // r
+                        tex[j, (i + 1)] = c[1]; // g
+                        tex[j, (i + 2)] = c[2]; // b
+                        tex[j, (i + 3)] = c[3]; // a
                     }
                 }
                 return tex;

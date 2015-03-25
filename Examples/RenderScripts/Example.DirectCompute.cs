@@ -22,11 +22,12 @@ namespace Mpdn.RenderScripts
                 sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
 
                 // apply our blue tint
-                var blueTint = CompileShader11("BlueTintDirectCompute.hlsl", "cs_5_0");
+                var blueTint =
+                    CompileShader11("BlueTintDirectCompute.hlsl", "cs_5_0")
+                        .Configure(arguments: new[] {0.25f, 0.5f, 0.75f});
                 var width = sourceFilter.OutputSize.Width;
                 var height = sourceFilter.OutputSize.Height;
-                return new DirectComputeFilter(blueTint, width/32 + 1, height/32 + 1, 1, new[] {0.25f, 0.5f, 0.75f},
-                    sourceFilter);
+                return new DirectComputeFilter(blueTint, width/32 + 1, height/32 + 1, 1, sourceFilter);
             }
         }
 
