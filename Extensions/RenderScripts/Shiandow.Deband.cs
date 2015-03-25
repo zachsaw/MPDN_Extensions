@@ -63,7 +63,7 @@ namespace Mpdn.RenderScript
                 var LinearToGamma = CompileShader("../Common/LinearToGamma.hlsl");
                 var GammaToLinear = CompileShader("../Common/GammaToLinear.hlsl");
                 var Deband = CompileShader(legacyMode ? "DebandOld.hlsl" : "Deband.hlsl").Configure(true, Consts);
-                var Subtract = CompileShader("SubtractLimited.hlsl").Configure(true, format: TextureFormat.Float16); // TODO: Subtract.hlsl is missing - replaced with SubtractLimited.hlsl for now
+                var Subtract = CompileShader("Subtract.hlsl").Configure(true, format: TextureFormat.Float16);
                 var SubtractLimited = CompileShader("SubtractLimited.hlsl").Configure(true, Consts);
 
                 IFilter input = sourceFilter.ConvertToYuv();
