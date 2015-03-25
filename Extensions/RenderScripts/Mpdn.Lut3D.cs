@@ -66,8 +66,8 @@ namespace Mpdn.RenderScript
                     return sourceFilter;
 
                 Create3DTexture();
-                var shader = CompileShader("Lut3D.hlsl");
-                return new ShaderFilter(shader, true, sourceFilter, new Texture3DSourceFilter(m_Texture3D));
+                var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling : true);
+                return new ShaderFilter(shader, sourceFilter, new Texture3DSourceFilter(m_Texture3D));
             }
 
             public override void RenderScriptDisposed()

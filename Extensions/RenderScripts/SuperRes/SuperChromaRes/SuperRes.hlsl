@@ -37,7 +37,7 @@ float4 args1  : register(c4);
 #define h 1.5
 
 // -- Colour space Processing --
-#include "../ColourProcessing.hlsl"
+#include "../../Common/ColourProcessing.hlsl"
 #define Kb args1[1] //redefinition
 #define Kr args1[2] //redefinition
 
