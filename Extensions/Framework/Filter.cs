@@ -30,7 +30,9 @@ namespace Mpdn.RenderScript
         IFilter<TTexture> Initialize(int time = 1);
     }
 
-    public interface IFilter : IFilter<ITexture> { }
+    public interface IFilter : IFilter<ITexture>
+    {
+    }
 
     public interface IResizeableFilter : IFilter
     {
@@ -43,7 +45,11 @@ namespace Mpdn.RenderScript
         public readonly int Height;
         public readonly int Depth;
 
-        public bool Is3D { get { return Depth != 1; } }
+        public bool Is3D
+        {
+            get { return Depth != 1; }
+        }
+
         public bool IsEmpty
         {
             get { return (Width == 0) || (Height == 0) || (Depth == 0); }
@@ -76,7 +82,7 @@ namespace Mpdn.RenderScript
             if (ReferenceEquals(null, obj))
                 return false;
 
-            return obj is TextureSize && Equals((TextureSize)obj);
+            return obj is TextureSize && Equals((TextureSize) obj);
         }
 
         public override int GetHashCode()
@@ -84,8 +90,8 @@ namespace Mpdn.RenderScript
             unchecked
             {
                 var hashCode = Width;
-                hashCode = (hashCode * 397) ^ Height;
-                hashCode = (hashCode * 397) ^ Depth;
+                hashCode = (hashCode*397) ^ Height;
+                hashCode = (hashCode*397) ^ Depth;
                 return hashCode;
             }
         }
@@ -127,7 +133,7 @@ namespace Mpdn.RenderScript
 
         public ITexture GetTexture(TextureSize textureSize, TextureFormat textureFormat)
         {
-            foreach (var list in new[] { m_SavedTextures, m_OldTextures })
+            foreach (var list in new[] {m_SavedTextures, m_OldTextures})
             {
                 var index = list.FindIndex(x => (x.GetSize() == textureSize) && (x.Format == textureFormat));
                 if (index < 0) continue;
@@ -196,7 +202,7 @@ namespace Mpdn.RenderScript
 
         protected bool Updated { get; set; }
         protected bool Initialized { get; set; }
-        
+
         public IBaseFilter[] InputFilters { get; private set; }
         public ITexture OutputTexture { get; private set; }
 
@@ -314,7 +320,12 @@ namespace Mpdn.RenderScript
 
         public TextureFormat OutputFormat
         {
-            get { return OutputTexture != null ? OutputTexture.Format : (Renderer.MaxQuality ? TextureFormat.Float32 : TextureFormat.Unorm16); }
+            get
+            {
+                return OutputTexture != null
+                    ? OutputTexture.Format
+                    : (Renderer.MaxQuality ? TextureFormat.Float32 : TextureFormat.Unorm16);
+            }
         }
 
         public void NewFrame()
@@ -327,14 +338,16 @@ namespace Mpdn.RenderScript
 
         public virtual void Reset(ITextureCache cache)
         {
-            if (typeof(TTexture) == typeof(ITexture))
+            if (typeof (TTexture) == typeof (ITexture))
                 cache.PutTempTexture(OutputTexture as ITexture);
         }
 
         #endregion
     }
 
-    public abstract class BaseSourceFilter : BaseSourceFilter<ITexture>, IFilter { }
+    public abstract class BaseSourceFilter : BaseSourceFilter<ITexture>, IFilter
+    {
+    }
 
     public sealed class SourceFilter : BaseSourceFilter, IResizeableFilter
     {
@@ -486,21 +499,21 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public RgbFilter(IFilter inputFilter, bool LimitedRange)
-            : this(inputFilter, Renderer.Colorimetric, LimitedRange)
+        public RgbFilter(IFilter inputFilter, bool limitedRange)
+            : this(inputFilter, Renderer.Colorimetric, limitedRange)
         {
         }
 
-        public RgbFilter(IFilter inputFilter, YuvColorimetric Colorimetric)
-            : this(inputFilter, Colorimetric, Renderer.OutputLimitedRange)
+        public RgbFilter(IFilter inputFilter, YuvColorimetric colorimetric)
+            : this(inputFilter, colorimetric, Renderer.OutputLimitedRange)
         {
         }
 
-        public RgbFilter(IFilter inputFilter, YuvColorimetric Colorimetric, bool LimitedRange)
+        public RgbFilter(IFilter inputFilter, YuvColorimetric colorimetric, bool limitedRange)
             : base(inputFilter)
         {
-            this.Colorimetric = Colorimetric;
-            OutputLimitedRange = LimitedRange;
+            Colorimetric = colorimetric;
+            OutputLimitedRange = limitedRange;
         }
 
         public override IFilter<ITexture> Initialize(int time = 1)
@@ -509,11 +522,11 @@ namespace Mpdn.RenderScript
             /* however this doesn't happen with RgbFilter and YuvFilter (hopefully) */
             var output = base.Initialize(time);
             var input = InputFilters[0] as YuvFilter;
-            if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
-            {
-                output = input.InputFilters[0] as IFilter;
-                output.Initialize(LastDependentIndex);
-            }
+            if (input == null || input.Colorimetric != Colorimetric || input.OutputLimitedRange != OutputLimitedRange)
+                return output;
+
+            output = (IFilter) input.InputFilters[0];
+            output.Initialize(LastDependentIndex);
 
             return output;
         }
@@ -548,21 +561,21 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public YuvFilter(IFilter inputFilter, bool LimitedRange)
-            : this(inputFilter, Renderer.Colorimetric, LimitedRange)
+        public YuvFilter(IFilter inputFilter, bool limitedRange)
+            : this(inputFilter, Renderer.Colorimetric, limitedRange)
         {
         }
 
-        public YuvFilter(IFilter inputFilter, YuvColorimetric Colorimetric)
-            : this(inputFilter, Colorimetric, Renderer.OutputLimitedRange)
+        public YuvFilter(IFilter inputFilter, YuvColorimetric colorimetric)
+            : this(inputFilter, colorimetric, Renderer.OutputLimitedRange)
         {
         }
 
-        public YuvFilter(IFilter inputFilter, YuvColorimetric Colorimetric, bool LimitedRange)
+        public YuvFilter(IFilter inputFilter, YuvColorimetric colorimetric, bool limitedRange)
             : base(inputFilter)
         {
-            this.Colorimetric = Colorimetric;
-            OutputLimitedRange = LimitedRange;
+            Colorimetric = colorimetric;
+            OutputLimitedRange = limitedRange;
         }
 
         public override IFilter<ITexture> Initialize(int time = 1)
@@ -571,11 +584,11 @@ namespace Mpdn.RenderScript
             /* however this doesn't happen with RgbFilter and YuvFilter (hopefully) */
             var output = base.Initialize(time);
             var input = InputFilters[0] as RgbFilter;
-            if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
-            {
-                output = input.InputFilters[0] as IFilter;
-                output.Initialize(LastDependentIndex);
-            }
+            if (input == null || input.Colorimetric != Colorimetric || input.OutputLimitedRange != OutputLimitedRange)
+                return output;
+
+            output = (IFilter) input.InputFilters[0];
+            output.Initialize(LastDependentIndex);
 
             return output;
         }
@@ -612,7 +625,8 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler upscaler, IScaler downscaler,
+            IScaler convolver = null)
             : base(inputFilter)
         {
             m_Upscaler = upscaler;
@@ -749,12 +763,13 @@ namespace Mpdn.RenderScript
             Shader = shader;
         }
 
-        public static implicit operator ShaderFilterSettings<T>(T shader) 
+        public static implicit operator ShaderFilterSettings<T>(T shader)
         {
             return new ShaderFilterSettings<T>(shader);
         }
 
-        public ShaderFilterSettings<T> Configure(Nullable<bool> linearSampling = null, float[] arguments = null, TransformFunc transform = null, Nullable<int> sizeIndex = null, Nullable<TextureFormat> format = null)
+        public ShaderFilterSettings<T> Configure(bool? linearSampling = null, float[] arguments = null,
+            TransformFunc transform = null, int? sizeIndex = null, TextureFormat? format = null)
         {
             return new ShaderFilterSettings<T>(Shader)
             {
@@ -769,21 +784,27 @@ namespace Mpdn.RenderScript
 
     public static class ShaderFilterHelper
     {
-        public static ShaderFilterSettings<IShader> Configure(this IShader shader, Nullable<bool> linearSampling = null, float[] arguments = null, TransformFunc transform = null, Nullable<int> sizeIndex = null, Nullable<TextureFormat> format = null)
+        public static ShaderFilterSettings<IShader> Configure(this IShader shader, bool? linearSampling = null,
+            float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null,
+            TextureFormat? format = null)
         {
-            return new ShaderFilterSettings<IShader>(shader).Configure(linearSampling, arguments, transform, sizeIndex, format);
+            return new ShaderFilterSettings<IShader>(shader).Configure(linearSampling, arguments, transform, sizeIndex,
+                format);
         }
 
-        public static ShaderFilterSettings<IShader11> Configure(this IShader11 shader, Nullable<bool> linearSampling = null, float[] arguments = null, TransformFunc transform = null, Nullable<int> sizeIndex = null, Nullable<TextureFormat> format = null)
+        public static ShaderFilterSettings<IShader11> Configure(this IShader11 shader, bool? linearSampling = null,
+            float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null,
+            TextureFormat? format = null)
         {
-            return new ShaderFilterSettings<IShader11>(shader).Configure(linearSampling, arguments, transform, sizeIndex, format);
+            return new ShaderFilterSettings<IShader11>(shader).Configure(linearSampling, arguments, transform, sizeIndex,
+                format);
         }
     }
 
     public abstract class GenericShaderFilter<T> : Filter where T : class
     {
         protected GenericShaderFilter(T shader, params IBaseFilter[] inputFilters)
-            : this((ShaderFilterSettings<T>)shader, inputFilters)
+            : this((ShaderFilterSettings<T>) shader, inputFilters)
         {
         }
 
@@ -802,7 +823,7 @@ namespace Mpdn.RenderScript
             }
 
             var arguments = settings.Args ?? new float[0];
-            Args = new float[4 * ((arguments.Length + 3) / 4)];
+            Args = new float[4*((arguments.Length + 3)/4)];
             arguments.CopyTo(Args, 0);
         }
 
@@ -854,14 +875,14 @@ namespace Mpdn.RenderScript
             {
                 if (input as ITexture != null)
                 {
-                    var tex = (ITexture)input;
+                    var tex = (ITexture) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling, false);
                     Shader.SetConstant(String.Format("size{0}", i),
-                        new Vector4(tex.Width, tex.Height, 1.0f / tex.Width, 1.0f / tex.Height), false);
+                        new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
                 }
                 else
                 {
-                    var tex = (ITexture3D)input;
+                    var tex = (ITexture3D) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling, false);
                     Shader.SetConstant(String.Format("size3d{0}", i),
                         new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
@@ -869,17 +890,17 @@ namespace Mpdn.RenderScript
                 i++;
             }
 
-            for (i = 0; 4 * i < Args.Length; i++)
+            for (i = 0; 4*i < Args.Length; i++)
             {
                 Shader.SetConstant(String.Format("args{0}", i),
-                    new Vector4(Args[4 * i], Args[4 * i + 1], Args[4 * i + 2], Args[4 * i + 3]), false);
+                    new Vector4(Args[4*i], Args[4*i + 1], Args[4*i + 2], Args[4*i + 3]), false);
             }
 
             // Legacy constants 
             var output = OutputTexture;
             Shader.SetConstant(0, new Vector4(output.Width, output.Height, Counter++, Stopwatch.GetTimestamp()),
                 false);
-            Shader.SetConstant(1, new Vector4(1.0f / output.Width, 1.0f / output.Height, 0, 0), false);
+            Shader.SetConstant(1, new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
         }
 
         protected override void Render(IShader shader)
@@ -909,14 +930,14 @@ namespace Mpdn.RenderScript
             {
                 if (input as ITexture != null)
                 {
-                    var tex = (ITexture)input;
+                    var tex = (ITexture) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling, false);
                     Shader.SetConstantBuffer(String.Format("size{0}", i),
-                        new Vector4(tex.Width, tex.Height, 1.0f / tex.Width, 1.0f / tex.Height), false);
+                        new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
                 }
                 else
                 {
-                    var tex = (ITexture3D)input;
+                    var tex = (ITexture3D) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling, false);
                     Shader.SetConstantBuffer(String.Format("size3d{0}", i),
                         new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
@@ -924,10 +945,10 @@ namespace Mpdn.RenderScript
                 i++;
             }
 
-            for (i = 0; 4 * i < Args.Length; i++)
+            for (i = 0; 4*i < Args.Length; i++)
             {
                 Shader.SetConstantBuffer(String.Format("args{0}", i),
-                    new Vector4(Args[4 * i], Args[4 * i + 1], Args[4 * i + 2], Args[4 * i + 3]), false);
+                    new Vector4(Args[4*i], Args[4*i + 1], Args[4*i + 2], Args[4*i + 3]), false);
             }
 
             // Legacy constants 
@@ -941,10 +962,11 @@ namespace Mpdn.RenderScript
             Renderer.Render(OutputTexture, shader);
         }
     }
-    
+
     public class DirectComputeFilter : Shader11Filter
     {
-        public DirectComputeFilter(ShaderFilterSettings<IShader11> settings, int threadGroupX, int threadGroupY, int threadGroupZ, params IBaseFilter[] inputFilters)
+        public DirectComputeFilter(ShaderFilterSettings<IShader11> settings, int threadGroupX, int threadGroupY,
+            int threadGroupZ, params IBaseFilter[] inputFilters)
             : base(settings, inputFilters)
         {
             ThreadGroupX = threadGroupX;
@@ -952,7 +974,8 @@ namespace Mpdn.RenderScript
             ThreadGroupZ = threadGroupZ;
         }
 
-        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ, params IBaseFilter[] inputFilters)
+        public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
+            params IBaseFilter[] inputFilters)
             : base(shader, inputFilters)
         {
             ThreadGroupX = threadGroupX;
