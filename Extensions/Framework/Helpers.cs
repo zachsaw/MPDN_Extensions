@@ -66,4 +66,24 @@ namespace Mpdn
             return Enum.GetValues(typeof (T)).Cast<Enum>().Select(val => val.ToDescription()).ToArray();
         }
     }
+
+    public static class RenderQualityHelpers
+    {
+        public static TextureFormat GetTextureFormat(this RenderQuality quality)
+        {
+            switch (quality)
+            {
+                case RenderQuality.MaxPerformance:
+                    return TextureFormat.Unorm8;
+                case RenderQuality.Performance:
+                    return TextureFormat.Float16;
+                case RenderQuality.Quality:
+                    return TextureFormat.Unorm16;
+                case RenderQuality.MaxQuality:
+                    return TextureFormat.Float32;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+    }
 }

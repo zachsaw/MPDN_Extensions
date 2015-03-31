@@ -324,7 +324,7 @@ namespace Mpdn.RenderScript
             {
                 return OutputTexture != null
                     ? OutputTexture.Format
-                    : (Renderer.MaxQuality ? TextureFormat.Float32 : TextureFormat.Unorm16);
+                    : Renderer.RenderQuality.GetTextureFormat();
             }
         }
 
@@ -754,7 +754,7 @@ namespace Mpdn.RenderScript
         public T Shader;
         public bool LinearSampling = false;
         public TransformFunc Transform = (s => s);
-        public TextureFormat Format = Renderer.MaxQuality ? TextureFormat.Float32 : TextureFormat.Unorm16;
+        public TextureFormat Format = Renderer.RenderQuality.GetTextureFormat();
         public int SizeIndex = 0;
         public float[] Args = new float[0];
 
