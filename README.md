@@ -16,7 +16,7 @@ MPDN project page - http://forum.doom9.org/showthread.php?t=171120
 How to use Extensions?
 ----------------------
 
-To use these extensions (compatible with ***MPDN v2.21.0*** and above), click the **Download ZIP** button on the right to download the whole repository.
+To use these extensions (compatible with ***MPDN v2.25.0*** and above), click the **Download ZIP** button on the right to download the whole repository.
 
 Then extract the files and folders in the Extensions folder to your MPDN's Extensions folder.
 

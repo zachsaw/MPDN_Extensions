@@ -1,6 +1,6 @@
 using System;
-using System.Drawing;
 using System.IO;
+using Mpdn.OpenCl;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
@@ -71,6 +71,12 @@ namespace Mpdn.RenderScript
         {
             return ShaderCache<IShader11>.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName),
                 s => Renderer.CompileShader11(s, entryPoint, profile));
+        }
+
+        protected IKernel CompileClKernel(string sourceFileName, string entryPoint)
+        {
+            return ShaderCache<IKernel>.CompileShader(Path.Combine(ShaderDataFilePath, sourceFileName),
+                s => Renderer.CompileClKernel(s, entryPoint));
         }
 
         protected IShader11 LoadShader11(string shaderFileName)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Drawing;
+using Mpdn.OpenCl;
 using SharpDX;
 using TransformFunc = System.Func<Mpdn.RenderScript.TextureSize, Mpdn.RenderScript.TextureSize>;
 using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
@@ -206,8 +207,15 @@ namespace Mpdn.RenderScript
         public IBaseFilter[] InputFilters { get; private set; }
         public ITexture OutputTexture { get; private set; }
 
-        public abstract TextureSize OutputSize { get; }
-        public abstract TextureFormat OutputFormat { get; }
+        public virtual TextureSize OutputSize
+        {
+            get { return InputFilters[0].OutputSize; }
+        }
+
+        public virtual TextureFormat OutputFormat
+        {
+            get { return Renderer.RenderQuality.GetTextureFormat(); }
+        }
 
         public int FilterIndex { get; private set; }
         public int LastDependentIndex { get; private set; }
@@ -799,6 +807,14 @@ namespace Mpdn.RenderScript
             return new ShaderFilterSettings<IShader11>(shader).Configure(linearSampling, arguments, transform, sizeIndex,
                 format);
         }
+
+        public static ShaderFilterSettings<IKernel> Configure(this IKernel kernel, bool? linearSampling = null,
+            float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null,
+            TextureFormat? format = null)
+        {
+            return new ShaderFilterSettings<IKernel>(kernel).Configure(linearSampling, arguments, transform, sizeIndex,
+                format);
+        }
     }
 
     public abstract class GenericShaderFilter<T> : Filter where T : class
@@ -991,5 +1007,59 @@ namespace Mpdn.RenderScript
         public int ThreadGroupX { get; private set; }
         public int ThreadGroupY { get; private set; }
         public int ThreadGroupZ { get; private set; }
+    }
+
+    public class ClKernelFilter : GenericShaderFilter<IKernel>
+    {
+        public ClKernelFilter(ShaderFilterSettings<IKernel> settings, int[] workSizes, params IBaseFilter[] inputFilters)
+            : base(settings, inputFilters)
+        {
+            WorkSizes = workSizes;
+        }
+
+        public ClKernelFilter(IKernel shader, int[] workSizes, params IBaseFilter[] inputFilters)
+            : base(shader, inputFilters)
+        {
+            WorkSizes = workSizes;
+        }
+
+        protected virtual void LoadCustomInputs()
+        {
+            // override to load custom OpenCL inputs such as a weights buffer
+        }
+
+        protected override void LoadInputs(IList<IBaseTexture> inputs)
+        {
+            Shader.SetOutputTextureArg(0, OutputTexture); // Note: MPDN only supports one output texture per kernel
+
+            var i = 1;
+            foreach (var input in inputs)
+            {
+                if (input as ITexture != null)
+                {
+                    var tex = (ITexture) input;
+                    Shader.SetInputTextureArg(i, tex, false);
+                }
+                else
+                {
+                    throw new NotSupportedException("Only 2D textures are supported in OpenCL");
+                }
+                i++;
+            }
+
+            foreach (var v in Args)
+            {
+                Shader.SetArg(i++, v, false);
+            }
+
+            LoadCustomInputs();
+        }
+
+        protected override void Render(IKernel shader)
+        {
+            Renderer.RunClKernel(shader, WorkSizes);
+        }
+
+        public int[] WorkSizes { get; private set; }
     }
 }
