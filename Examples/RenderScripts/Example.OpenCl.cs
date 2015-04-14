@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Mpdn.Resizer;
+using SharpDX;
 
 namespace Mpdn.RenderScripts
 {
@@ -88,29 +89,14 @@ namespace Mpdn.RenderScripts
 */
 
 /*
-        // Pass color as struct (remember to change BlueTint.cl to match)
+        // Pass color as SharpDX.Vector4 (remember to change BlueTint.cl to match)
         public class OpenCl : RenderChain
         {
-            [StructLayout(LayoutKind.Sequential)]
-            private struct Color
-            {
-                public readonly float R;
-                public readonly float G;
-                public readonly float B;
-
-                public Color(float r, float g, float b)
-                {
-                    R = r;
-                    G = g;
-                    B = b;
-                }
-            }
-
             private class MyKernelFilter : ClKernelFilter
             {
-                private readonly Color m_Color;
+                private readonly Vector4 m_Color;
 
-                public MyKernelFilter(ShaderFilterSettings<IKernel> settings, Color color, int[] workSizes,
+                public MyKernelFilter(ShaderFilterSettings<IKernel> settings, Vector4 color, int[] workSizes,
                     params IFilter<IBaseTexture>[] inputFilters)
                     : base(settings, workSizes, inputFilters)
                 {
@@ -140,7 +126,7 @@ namespace Mpdn.RenderScripts
                 var blueTint = CompileClKernel("BlueTint.cl", "BlueTint").Configure();
 
                 var outputSize = sourceFilter.OutputSize;
-                return new MyKernelFilter(blueTint, new Color(0.25f, 0.5f, 0.75f),
+                return new MyKernelFilter(blueTint, new Vector4(0.25f, 0.5f, 0.75f, 0.0f),
                     new[] {outputSize.Width, outputSize.Height}, sourceFilter);
             }
         }
