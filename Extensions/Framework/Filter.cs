@@ -1011,16 +1011,32 @@ namespace Mpdn.RenderScript
 
     public class ClKernelFilter : GenericShaderFilter<IKernel>
     {
-        public ClKernelFilter(ShaderFilterSettings<IKernel> settings, int[] workSizes, params IBaseFilter[] inputFilters)
+        public ClKernelFilter(ShaderFilterSettings<IKernel> settings, int[] globalWorkSizes, params IBaseFilter[] inputFilters)
             : base(settings, inputFilters)
         {
-            WorkSizes = workSizes;
+            GlobalWorkSizes = globalWorkSizes;
+            LocalWorkSizes = null;
         }
 
-        public ClKernelFilter(IKernel shader, int[] workSizes, params IBaseFilter[] inputFilters)
+        public ClKernelFilter(IKernel shader, int[] globalWorkSizes, params IBaseFilter[] inputFilters)
             : base(shader, inputFilters)
         {
-            WorkSizes = workSizes;
+            GlobalWorkSizes = globalWorkSizes;
+            LocalWorkSizes = null;
+        }
+
+        public ClKernelFilter(ShaderFilterSettings<IKernel> settings, int[] globalWorkSizes, int[] localWorkSizes, params IBaseFilter[] inputFilters)
+            : base(settings, inputFilters)
+        {
+            GlobalWorkSizes = globalWorkSizes;
+            LocalWorkSizes = localWorkSizes;
+        }
+
+        public ClKernelFilter(IKernel shader, int[] globalWorkSizes, int[] localWorkSizes, params IBaseFilter[] inputFilters)
+            : base(shader, inputFilters)
+        {
+            GlobalWorkSizes = globalWorkSizes;
+            LocalWorkSizes = localWorkSizes;
         }
 
         protected virtual void LoadCustomInputs()
@@ -1057,9 +1073,10 @@ namespace Mpdn.RenderScript
 
         protected override void Render(IKernel shader)
         {
-            Renderer.RunClKernel(shader, WorkSizes);
+            Renderer.RunClKernel(shader, GlobalWorkSizes, LocalWorkSizes);
         }
 
-        public int[] WorkSizes { get; private set; }
+        public int[] GlobalWorkSizes { get; private set; }
+        public int[] LocalWorkSizes { get; private set; }
     }
 }
