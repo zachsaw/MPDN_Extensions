@@ -1,6 +1,7 @@
 // -- Color space options --
 #define GammaCurve sRGB
 #define gamma 2.2
+#define QuasiLab true
 
 // -- Option values --
 #define None  1
@@ -32,8 +33,9 @@ float3 GammaInv(float3 x){ return x; }
 #define Kr 0.299
 #define RGBtoYUV float3x3(float3(Kr, 1 - Kr - Kb, Kb), float3(-Kr, Kr + Kb - 1, 1 - Kb) / (2*(1 - Kb)), float3(1 - Kr, Kr + Kb - 1, -Kb) / (2*(1 - Kr)))
 #define YUVtoRGB float3x3(float3(1, 0, 2*(1 - Kr)), float3(Kb + Kr - 1, 2*(1 - Kb)*Kb, 2*Kr*(1 - Kr)) / (Kb + Kr - 1), float3(1, 2*(1 - Kb),0))
-#define RGBtoXYZ float3x3(float3(0.4124,0.3576,0.1805),float3(0.2126,0.7152,0.0722),float3(0.0193,0.1192,0.9502))
-#define XYZtoRGB (625.0*float3x3(float3(67097680, -31827592, -10327488), float3(-20061906, 38837883, 859902), float3(1153856, -4225640, 21892272))/12940760409.0)
+#define D65 float3(0.9505, 1.0, 1.0890)
+#define RGBtoXYZ float3x3(float3(0.4124,0.3576,0.1805)/D65.x,float3(0.2126,0.7152,0.0722)/D65.y,float3(0.0193,0.1192,0.9505)/D65.z)
+#define XYZtoRGB (125*float3x3(D65*float3(67119136, -31838320, -10327488), D65*float3(-20068284, 38850255, 859902), D65*float3(1153856, -4225640, 21892272))/2588973042.0)
 #define YUVtoXYZ mul(RGBtoXYZ,YUVtoRGB)
 #define XYZtoYUV mul(RGBtoYUV,XYZtoRGB)
 
@@ -46,14 +48,19 @@ float3 DLabfinv(float3 x){ return max((3.0 * 6.0 * 6.0) / (29.0 * 29.0), 3.0*x*x
 float3 RGBtoLab(float3 rgb) {	
 	float3 xyz = mul(RGBtoXYZ, rgb);
 	xyz = Labf(xyz);
-	float3 lab = float3(1.16*xyz.y - 0.16, 5.0*(xyz.x - xyz.y), 2.0*(xyz.y - xyz.z));
-	lab = 0.5*lab + float3(0,0.5,0.5);
-	return lab;
+	#if QuasiLab == true
+		return 1.16*xyz - 0.16;
+	#else
+		return float3(1.16*xyz.y - 0.16, 5.0*(xyz.x - xyz.y), 2.0*(xyz.y - xyz.z));
+	#endif
 }
 
 float3 LabtoRGB(float3 lab) {
-	lab = (lab - float3(0,0.5,0.5))*2;
-	float3 xyz = (lab.x + 0.16) / 1.16 + float3(lab.y / 5.0, 0, -lab.z / 2.0);
+	#if QuasiLab == true
+		float3 xyz = (lab + 0.16) / 1.16;
+	#else
+		float3 xyz = (lab.x + 0.16) / 1.16 + float3(lab.y / 5.0, 0, -lab.z / 2.0);
+	#endif
 	return mul(XYZtoRGB, Labfinv(xyz));
 }
 

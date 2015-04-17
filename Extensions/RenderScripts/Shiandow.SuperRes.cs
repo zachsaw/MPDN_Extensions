@@ -96,9 +96,14 @@ namespace Mpdn.RenderScript
                     else currentSize = CalculateSize(currentSize, targetSize, i);
                                         
                     // Resize
-                    if (i == 1 && UseNEDI)
-                        lab = new ResizeFilter(lab + NEDI, currentSize, m_ShiftedScaler, m_ShiftedScaler, m_ShiftedScaler);
-                    else 
+                    if (i == 1)
+                    {
+                        if (UseNEDI)
+                            lab = new ResizeFilter(lab + NEDI, currentSize, m_ShiftedScaler, m_ShiftedScaler, m_ShiftedScaler);
+                        else
+                            lab = new ResizeFilter(lab, currentSize);
+                    }
+                    else
                         lab = new ResizeFilter(lab, currentSize, upscaler, downscaler);
 
                     // Downscale and Subtract
