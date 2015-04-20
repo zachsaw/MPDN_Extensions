@@ -1,4 +1,20 @@
-﻿using System;
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -118,12 +134,13 @@ namespace Mpdn.PlayerExtensions
 
         private void Unsubscribe()
         {
-            PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
-            PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
-            PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
-            PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
-            PlayerControl.VolumeChanged += PlayerControl_VolumeChanged;
+            PlayerControl.PlaybackCompleted -= m_PlayerControl_PlaybackCompleted;
+            PlayerControl.PlayerStateChanged -= m_PlayerControl_PlayerStateChanged;
+            PlayerControl.EnteringFullScreenMode -= m_PlayerControl_EnteringFullScreenMode;
+            PlayerControl.ExitingFullScreenMode -= m_PlayerControl_ExitingFullScreenMode;
+            PlayerControl.VolumeChanged -= PlayerControl_VolumeChanged;
             PlayerControl.SubtitleTrackChanged -= PlayerControl_SubtitleTrackChanged;
+            PlayerControl.AudioTrackChanged -= PlayerControl_AudioTrackChanged;
         }
 
         void PlayerControl_AudioTrackChanged(object sender, EventArgs e)
@@ -314,7 +331,8 @@ namespace Mpdn.PlayerExtensions
                 DisplayTextMessage("Remote Connected");
                 WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
                 WriteToSpesificClient("ClientGUID|" + clientGuid.ToString(), clientGuid.ToString());
-                _authHandler.AddAuthedClient(clientGUID);
+                if (!_authHandler.IsGUIDAuthed(clientGUID))
+                    _authHandler.AddAuthedClient(clientGUID);
                 if (_clientManager.Visible)
                     _clientManager.ForceUpdate();
             }
@@ -413,6 +431,9 @@ namespace Mpdn.PlayerExtensions
                     break;
                 case "FullScreen":
                     PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => FullScreen(command[1])));
+                    break;
+                case "MoveWindow":
+                    PlayerControl.Form.BeginInvoke((MethodInvoker)(() => MoveWindow(command[1])));
                     break;
                 case "WriteToScreen":
                     DisplayTextMessage(command[1]);
@@ -654,7 +675,7 @@ namespace Mpdn.PlayerExtensions
             if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
             {
                 WriteToSpesificClient("FullLength|" + PlayerControl.MediaDuration, guid.ToString());
-                WriteToSpesificClient("Postion|" + PlayerControl.MediaPosition, guid.ToString());
+                WriteToSpesificClient("Position|" + PlayerControl.MediaPosition, guid.ToString());
             }
             if (_playlistInstance != null)
             {
@@ -675,6 +696,36 @@ namespace Mpdn.PlayerExtensions
             else
             {
                 PlayerControl.GoWindowed();
+            }
+        }
+
+        private void MoveWindow(string msg)
+        {
+            var args = msg.Split(new[] {">>"}, StringSplitOptions.None);
+
+            int left, top, width, height;
+            if (int.TryParse(args[0], out left) &&
+                int.TryParse(args[1], out top) &&
+                int.TryParse(args[2], out width) &&
+                int.TryParse(args[3], out height))
+            {
+                PlayerControl.Form.Left = left;
+                PlayerControl.Form.Top = top;
+                PlayerControl.Form.Width = width;
+                PlayerControl.Form.Height = height;
+
+                switch (args[4])
+                {
+                    case "Normal":
+                        PlayerControl.Form.WindowState = FormWindowState.Normal;
+                        break;
+                    case "Maximized":
+                        PlayerControl.Form.WindowState = FormWindowState.Maximized;
+                        break;
+                    case "Minimized":
+                        PlayerControl.Form.WindowState = FormWindowState.Minimized;
+                        break;
+                }
             }
         }
 

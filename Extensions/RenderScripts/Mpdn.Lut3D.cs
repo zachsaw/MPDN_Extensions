@@ -1,4 +1,20 @@
-﻿using System;
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using SharpDX;
@@ -66,8 +82,8 @@ namespace Mpdn.RenderScript
                     return sourceFilter;
 
                 Create3DTexture();
-                var shader = CompileShader("Lut3D.hlsl");
-                return new ShaderFilter(shader, true, sourceFilter, new Texture3DSourceFilter(m_Texture3D));
+                var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling : true);
+                return new ShaderFilter(shader, sourceFilter, new Texture3DSourceFilter(m_Texture3D));
             }
 
             public override void RenderScriptDisposed()
@@ -111,26 +127,27 @@ namespace Mpdn.RenderScript
                 int bSize = 1 << inputBitsB;
 
                 const int channelCount = 4;
-                var data = new Half[bSize, gSize, rSize*channelCount];
+                var data = new ushort[bSize, gSize, rSize*channelCount];
 
                 fixed (void* lutByte = lutBuffer)
                 {
                     var lut = (ushort*) lutByte;
                     for (int b = 0; b < bSize; b++)
-                        for (int g = 0; g < gSize; g++)
-                            for (int r = 0; r < rSize; r++)
-                            {
-                                var lutOffset = ((r << (inputBitsG + inputBitsB)) + (g << inputBitsB) + b)*3;
-                                var max = (float) ((1 << header.OutputBitDepth) - 1);
+                    for (int g = 0; g < gSize; g++)
+                    for (int r = 0; r < rSize; r++)
+                    {
+                        var lutOffset = ((r << (inputBitsG + inputBitsB)) + (g << inputBitsB) + b)*3;
+                        var max = (1 << header.OutputBitDepth) - 1;
+                        var n = ushort.MaxValue/max;
 
-                                data[b, g, r*channelCount + 0] = lut[lutOffset + 2]/max;
-                                data[b, g, r*channelCount + 1] = lut[lutOffset + 1]/max;
-                                data[b, g, r*channelCount + 2] = lut[lutOffset + 0]/max;
-                                data[b, g, r*channelCount + 3] = 1;
-                            }
+                        data[b, g, r*channelCount + 0] = (ushort) (lut[lutOffset + 2]*n);
+                        data[b, g, r*channelCount + 1] = (ushort) (lut[lutOffset + 1]*n);
+                        data[b, g, r*channelCount + 2] = (ushort) (lut[lutOffset + 0]*n);
+                        data[b, g, r*channelCount + 3] = ushort.MaxValue;
+                    }
                 }
 
-                m_Texture3D = Renderer.CreateTexture3D(bSize, gSize, rSize);
+                m_Texture3D = Renderer.CreateTexture3D(bSize, gSize, rSize, TextureFormat.Unorm16);
                 Renderer.UpdateTexture3D(m_Texture3D, data);
             }
 

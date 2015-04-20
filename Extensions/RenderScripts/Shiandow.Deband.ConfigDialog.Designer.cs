@@ -1,4 +1,20 @@
-﻿namespace Mpdn.RenderScript
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+namespace Mpdn.RenderScript
 {
     namespace Shiandow.Deband
     {
@@ -44,6 +60,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.AdvancedBox = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.LegacyBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.ThresholdSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MarginSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitdepthSetter)).BeginInit();
@@ -128,7 +145,7 @@
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(84, 151);
+            this.ButtonOK.Location = new System.Drawing.Point(85, 165);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 3;
@@ -140,7 +157,7 @@
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(165, 151);
+            this.ButtonCancel.Location = new System.Drawing.Point(166, 165);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 4;
@@ -224,7 +241,7 @@
             this.AdvancedBox.TabIndex = 16;
             this.AdvancedBox.Text = "Enable advanced settings";
             this.AdvancedBox.UseVisualStyleBackColor = true;
-            this.AdvancedBox.CheckedChanged += new System.EventHandler(this.AdvancedBox_CheckedChanged);
+            this.AdvancedBox.CheckedChanged += new System.EventHandler(this.ValueChanged);
             // 
             // panel1
             // 
@@ -241,13 +258,25 @@
             this.panel1.Size = new System.Drawing.Size(218, 70);
             this.panel1.TabIndex = 17;
             // 
+            // LegacyBox
+            // 
+            this.LegacyBox.AutoSize = true;
+            this.LegacyBox.Location = new System.Drawing.Point(23, 139);
+            this.LegacyBox.Name = "LegacyBox";
+            this.LegacyBox.Size = new System.Drawing.Size(100, 17);
+            this.LegacyBox.TabIndex = 18;
+            this.LegacyBox.Text = "Use old method";
+            this.LegacyBox.UseVisualStyleBackColor = true;
+            this.LegacyBox.CheckedChanged += new System.EventHandler(this.ValueChanged);
+            // 
             // DebandConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(252, 186);
+            this.ClientSize = new System.Drawing.Size(253, 200);
+            this.Controls.Add(this.LegacyBox);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.AdvancedBox);
             this.Controls.Add(this.label3);
@@ -289,6 +318,7 @@
             private System.Windows.Forms.Label label6;
             private System.Windows.Forms.CheckBox AdvancedBox;
             private System.Windows.Forms.Panel panel1;
+            private System.Windows.Forms.CheckBox LegacyBox;
 
         }
     }

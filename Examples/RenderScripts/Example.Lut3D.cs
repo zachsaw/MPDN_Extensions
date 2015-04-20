@@ -1,6 +1,21 @@
-﻿using System;
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+using System;
 using Mpdn.RenderScript;
-using SharpDX;
 
 namespace Mpdn.RenderScripts
 {
@@ -18,8 +33,8 @@ namespace Mpdn.RenderScripts
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
                 Create3DTexture();
-                var shader = CompileShader("Lut3D.hlsl");
-                return new ShaderFilter(shader, true, sourceFilter, new Texture3DSourceFilter(m_Texture3D));
+                var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling: true);
+                return new ShaderFilter(shader, sourceFilter, new Texture3DSourceFilter(m_Texture3D));
             }
 
             public override void RenderScriptDisposed()
@@ -44,27 +59,27 @@ namespace Mpdn.RenderScripts
                 const int width = cubeSize;
                 const int height = cubeSize;
                 const int depth = cubeSize;
-                m_Texture3D = Renderer.CreateTexture3D(width, height, depth);
+                m_Texture3D = Renderer.CreateTexture3D(width, height, depth, TextureFormat.Unorm16);
                 Renderer.UpdateTexture3D(m_Texture3D, Create3DLut(width, height, depth));
             }
 
-            private static Half[,,] Create3DLut(int width, int height, int depth)
+            private static ushort[,,] Create3DLut(int width, int height, int depth)
             {
                 // Create a color-swap 3D LUT (r ==> b, g ==> r, b ==> g)
                 // Note: This method is very slow (it's called once on init only though),
                 //       but in real-life scenario, you'd be loading it from a 3dlut file 
                 //       instead of generating it on the fly
-                var lut = new Half[depth, height, width*4];
+                var lut = new ushort[depth, height, width*4];
                 for (int b = 0; b < depth; b++)
                 {
                     for (int g = 0; g < height; g++)
                     {
                         for (int r = 0; r < width; r++)
                         {
-                            lut[b, g, r*4 + 0] = b/(float) (width-1); // R channel, swap it with B
-                            lut[b, g, r*4 + 1] = r/(float) (height-1); // G channel, swap it with R
-                            lut[b, g, r*4 + 2] = g/(float) (depth-1); // B channel, swap it with G
-                            lut[b, g, r*4 + 3] = 1; // Alpha
+                            lut[b, g, r*4 + 0] = (ushort) ((b/(float) (width -1)) * ushort.MaxValue); // R channel, swap it with B
+                            lut[b, g, r*4 + 1] = (ushort) ((r/(float) (height-1)) * ushort.MaxValue); // G channel, swap it with R
+                            lut[b, g, r*4 + 2] = (ushort) ((g/(float) (depth -1)) * ushort.MaxValue); // B channel, swap it with G
+                            lut[b, g, r*4 + 3] = ushort.MaxValue; // Alpha
                         }
                     }
                 }

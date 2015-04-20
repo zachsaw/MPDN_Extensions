@@ -1,6 +1,22 @@
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
 using System;
-using System.Drawing;
 using System.IO;
+using Mpdn.OpenCl;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
@@ -53,13 +69,14 @@ namespace Mpdn.RenderScript
 
         protected IShader CompileShader(string shaderFileName)
         {
-            return ShaderCache<IShader>.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName),
+            return ShaderCache<IShader>.Add(Path.Combine(ShaderDataFilePath, shaderFileName),
                 s => Renderer.CompileShader(s));
         }
 
         protected IShader LoadShader(string shaderFileName)
         {
-            return Renderer.LoadShader(shaderFileName);
+            return ShaderCache<IShader>.Add(Path.Combine(ShaderDataFilePath, shaderFileName),
+                Renderer.LoadShader);
         }
 
         protected IShader11 CompileShader11(string shaderFileName, string profile)
@@ -69,13 +86,20 @@ namespace Mpdn.RenderScript
 
         protected IShader11 CompileShader11(string shaderFileName, string entryPoint, string profile)
         {
-            return ShaderCache<IShader11>.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName),
+            return ShaderCache<IShader11>.Add(Path.Combine(ShaderDataFilePath, shaderFileName),
                 s => Renderer.CompileShader11(s, entryPoint, profile));
+        }
+
+        protected IKernel CompileClKernel(string sourceFileName, string entryPoint, string options = null)
+        {
+            return ShaderCache<IKernel>.Add(Path.Combine(ShaderDataFilePath, sourceFileName),
+                s => Renderer.CompileClKernel(s, entryPoint, options));
         }
 
         protected IShader11 LoadShader11(string shaderFileName)
         {
-            return Renderer.LoadShader11(shaderFileName);
+            return ShaderCache<IShader11>.Add(Path.Combine(ShaderDataFilePath, shaderFileName),
+                Renderer.LoadShader11);
         }
 
         #endregion

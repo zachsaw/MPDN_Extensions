@@ -1,4 +1,20 @@
-﻿using System;
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+using System;
 using System.Drawing;
 
 namespace Mpdn.RenderScript
@@ -48,14 +64,7 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                var inputSize = sourceFilter.OutputSize;
-                var targetSize = TargetSize();
-
-                // Skip if downscaling
-                if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
-                    return sourceFilter;
-                else
-                    return CreateFilter(sourceFilter, sourceFilter);
+                return CreateFilter(sourceFilter, sourceFilter);
             }
 
             public IFilter CreateFilter(IFilter original, IFilter initial)
@@ -66,16 +75,6 @@ namespace Mpdn.RenderScript
                 var currentSize = original.OutputSize;
                 var targetSize = TargetSize();
 
-                var Diff = CompileShader("Diff.hlsl");
-                var SuperRes = CompileShader("SuperRes.hlsl");
-
-                var GammaToLab = CompileShader("GammaToLab.hlsl");
-                var LabToGamma = CompileShader("LabToGamma.hlsl");
-                var LinearToGamma = CompileShader("LinearToGamma.hlsl");
-                var GammaToLinear = CompileShader("GammaToLinear.hlsl");
-                var LabToLinear = CompileShader("LabToLinear.hlsl");
-                var LinearToLab = CompileShader("LinearToLab.hlsl");
-
                 var NEDI = new Shiandow.Nedi.Nedi
                 {
                     AlwaysDoubleImage = false,
@@ -84,6 +83,20 @@ namespace Mpdn.RenderScript
                 };
 
                 var Consts = new[] { Strength, Sharpness, AntiAliasing, AntiRinging };
+
+                var Diff = CompileShader("Diff.hlsl").Configure(format: TextureFormat.Float16);
+                var SuperRes = CompileShader("SuperRes.hlsl").Configure(arguments: Consts);
+
+                var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
+                var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
+                var LinearToGamma = CompileShader("../Common/LinearToGamma.hlsl");
+                var GammaToLinear = CompileShader("../Common/GammaToLinear.hlsl");
+                var LabToLinear = CompileShader("../Common/LabToLinear.hlsl");
+                var LinearToLab = CompileShader("../Common/LinearToLab.hlsl");
+
+                // Skip if downscaling
+                if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
+                    return initial;
 
                 // Initial scaling
                 lab = new ShaderFilter(GammaToLab, initial);
@@ -102,7 +115,7 @@ namespace Mpdn.RenderScript
                     if (i == 1 && UseNEDI)
                         lab = new ResizeFilter(lab + NEDI, currentSize, m_ShiftedScaler, m_ShiftedScaler, m_ShiftedScaler);
                     else 
-                        lab = new ResizeFilter(lab, currentSize);
+                        lab = new ResizeFilter(lab, currentSize, upscaler, downscaler);
 
                     // Downscale and Subtract
                     linear = new ShaderFilter(LabToLinear, lab);
@@ -114,7 +127,7 @@ namespace Mpdn.RenderScript
                         diff = new ResizeFilter(diff, currentSize, upscaler, downscaler);
                     
                     // Update result
-                    lab = new ShaderFilter(SuperRes, useBilinear, Consts, lab, diff, original);
+                    lab = new ShaderFilter(SuperRes.Configure(useBilinear), lab, diff, original);
                     result = new ShaderFilter(LabToGamma, lab);
                 }
 

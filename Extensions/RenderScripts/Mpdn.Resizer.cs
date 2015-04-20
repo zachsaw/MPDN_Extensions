@@ -1,4 +1,20 @@
-﻿using System;
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+using System;
 using System.ComponentModel;
 using System.Drawing;
 
@@ -16,6 +32,7 @@ namespace Mpdn.RenderScript
             [Description("Video size x4")] VideoSizeX4,
             [Description("Video size x8")] VideoSizeX8,
             [Description("Video size x16")] VideoSizeX16,
+            [Description("The smaller of target size and video size")] SmallerOfTargetAndVideoSize,
             [Description("The greater of target size and video size")] GreaterOfTargetAndVideoSize,
             [Description("The greater of target size and video size x2")] GreaterOfTargetAndVideoSizeX2,
             [Description("The greater of target size and video size x4")] GreaterOfTargetAndVideoSizeX4,
@@ -86,6 +103,9 @@ namespace Mpdn.RenderScript
                     case ResizerOption.VideoSizeX16:
                         size = new TextureSize(videoSize.Width << 4, videoSize.Height << 4);
                         break;
+                    case ResizerOption.SmallerOfTargetAndVideoSize:
+                        size = GetMinSize(targetSize, videoSize);
+                        break;
                     case ResizerOption.GreaterOfTargetAndVideoSize:
                         size = GetMaxSize(targetSize, videoSize);
                         break;
@@ -145,6 +165,12 @@ namespace Mpdn.RenderScript
                 // Use height to determine which is max
                 return size1.Height > size2.Height ? size1 : size2;
             }
+
+            private static TextureSize GetMinSize(TextureSize size1, TextureSize size2)
+            {
+                // Use height to determine which is min
+                return size1.Height < size2.Height ? size1 : size2;
+            }            
 
             private TextureSize GetVideoBasedSizeOver(int targetWidth, int targetHeight)
             {

@@ -1,4 +1,20 @@
-﻿using System;
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+using System;
 using YAXLib;
 
 namespace Mpdn.RenderScript
@@ -50,22 +66,6 @@ namespace Mpdn.RenderScript
                 var chromaSize = Renderer.ChromaSize;
                 var targetSize = sourceFilter.OutputSize;
 
-                var Diff = CompileShader("SuperChromaRes/Diff.hlsl");
-                var CopyLuma = CompileShader("SuperChromaRes/CopyLuma.hlsl");
-                var CopyChroma = CompileShader("SuperChromaRes/CopyChroma.hlsl");
-                var SuperRes = CompileShader("SuperChromaRes/SuperRes.hlsl");
-
-                var GammaToLab = CompileShader("GammaToLab.hlsl");
-                var LabToGamma = CompileShader("LabToGamma.hlsl");
-                var LinearToGamma = CompileShader("LinearToGamma.hlsl");
-                var GammaToLinear = CompileShader("GammaToLinear.hlsl");
-                var LabToLinear = CompileShader("LabToLinear.hlsl");
-                var LinearToLab = CompileShader("LinearToLab.hlsl");
-
-                // Skip if downscaling
-                if (targetSize.Width <= chromaSize.Width && targetSize.Height <= chromaSize.Height)
-                    return sourceFilter;
-
                 // Original values
                 var yInput = new YSourceFilter();
                 var uInput = new USourceFilter();
@@ -83,8 +83,24 @@ namespace Mpdn.RenderScript
                     case YuvColorimetric.ItuBt2020: YuvConsts = new[] { 0.0593f, 0.2627f, 1.0f }; break;
                 }
 
+                // Skip if downscaling
+                if (targetSize.Width <= chromaSize.Width && targetSize.Height <= chromaSize.Height)
+                    return sourceFilter;
+
                 var Consts = new[] { Strength, Sharpness   , AntiAliasing, AntiRinging,  
                                      Softness, YuvConsts[0], YuvConsts[1]};
+
+                var CopyLuma = CompileShader("SuperChromaRes/CopyLuma.hlsl");
+                var CopyChroma = CompileShader("SuperChromaRes/CopyChroma.hlsl");
+                var Diff = CompileShader("SuperChromaRes/Diff.hlsl").Configure(arguments: YuvConsts, format: TextureFormat.Float16);
+                var SuperRes = CompileShader("SuperChromaRes/SuperRes.hlsl");
+
+                var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
+                var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
+                var LinearToGamma = CompileShader("../Common/LinearToGamma.hlsl");
+                var GammaToLinear = CompileShader("../Common/GammaToLinear.hlsl");
+                var LabToLinear = CompileShader("../Common/LabToLinear.hlsl");
+                var LinearToLab = CompileShader("../Common/LinearToLab.hlsl");
 
                 yuv = sourceFilter.ConvertToYuv();
 
@@ -97,12 +113,12 @@ namespace Mpdn.RenderScript
                     linear = new ShaderFilter(GammaToLinear, yuv.ConvertToRgb());
                     res = new ResizeFilter(linear, chromaSize, upscaler, downscaler);
                     res = new ShaderFilter(LinearToGamma, res).ConvertToYuv();
-                    diff = new ShaderFilter(Diff, YuvConsts, res, uInput, vInput);
+                    diff = new ShaderFilter(Diff, res, uInput, vInput);
                     if (!useBilinear)
                         diff = new ResizeFilter(diff, targetSize, upscaler, downscaler); // Scale to output size
 
                     // Update result
-                    yuv = new ShaderFilter(SuperRes, useBilinear, Consts, yuv, diff, uInput, vInput);
+                    yuv = new ShaderFilter(SuperRes.Configure(useBilinear, arguments: Consts), yuv, diff, uInput, vInput);
                 }
 
                 return yuv.ConvertToRgb();

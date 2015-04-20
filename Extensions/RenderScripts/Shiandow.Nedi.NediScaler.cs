@@ -1,3 +1,19 @@
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
 using System;
 using System.Drawing;
 
@@ -37,11 +53,6 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                var nedi1Shader = CompileShader("NEDI-I.hlsl");
-                var nedi2Shader = CompileShader("NEDI-II.hlsl");
-                var nediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl");
-                var nediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl");
-
                 Func<TextureSize, TextureSize> transformWidth;
                 Func<TextureSize, TextureSize> transformHeight;
                 if (Centered)
@@ -53,13 +64,18 @@ namespace Mpdn.RenderScript
                     transformHeight = s => new TextureSize(s.Width, 2 * s.Height);
                 }
 
+                var nedi1Shader = CompileShader("NEDI-I.hlsl").Configure(arguments: LumaConstants);
+                var nedi2Shader = CompileShader("NEDI-II.hlsl").Configure(arguments: LumaConstants);
+                var nediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl").Configure(transform: transformWidth);
+                var nediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl").Configure(transform: transformHeight);
+
                 if (!UseNedi(sourceFilter))
                     return sourceFilter;
 
-                var nedi1 = new ShaderFilter(nedi1Shader, LumaConstants, sourceFilter);
-                var nediH = new ShaderFilter(nediHInterleaveShader, transformWidth, sourceFilter, nedi1);
-                var nedi2 = new ShaderFilter(nedi2Shader, LumaConstants, nediH);
-                var nediV = new ShaderFilter(nediVInterleaveShader, transformHeight, nediH, nedi2);
+                var nedi1 = new ShaderFilter(nedi1Shader, sourceFilter);
+                var nediH = new ShaderFilter(nediHInterleaveShader, sourceFilter, nedi1);
+                var nedi2 = new ShaderFilter(nedi2Shader, nediH);
+                var nediV = new ShaderFilter(nediVInterleaveShader, nediH, nedi2);
 
                 return nediV;
             }

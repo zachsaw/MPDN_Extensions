@@ -1,4 +1,20 @@
-﻿namespace Mpdn.RenderScript
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+namespace Mpdn.RenderScript
 {
     namespace Mpdn.Presets
     {
@@ -124,6 +140,7 @@
             this.presetGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.presetGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.presetGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.presetGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.NameColumn,
@@ -163,8 +180,11 @@
             // 
             this.scriptBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.scriptBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.scriptBox.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.scriptBox.FormattingEnabled = true;
-            this.scriptBox.Location = new System.Drawing.Point(180, 431);
+            this.scriptBox.ItemHeight = 13;
+            this.scriptBox.Location = new System.Drawing.Point(180, 430);
             this.scriptBox.Name = "scriptBox";
             this.scriptBox.Size = new System.Drawing.Size(303, 21);
             this.scriptBox.TabIndex = 5;
