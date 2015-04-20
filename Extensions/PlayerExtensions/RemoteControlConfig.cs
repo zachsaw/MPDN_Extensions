@@ -41,6 +41,7 @@ namespace Mpdn.PlayerExtensions
         {
             txbPort.Text = Settings.ConnectionPort.ToString();
             cbRequireValidation.Checked = Settings.ValidateClients;
+            cbIsOnline.Checked = Settings.IsActive;
         }
 
         protected override void SaveSettings()
@@ -50,6 +51,7 @@ namespace Mpdn.PlayerExtensions
             int.TryParse(portString, out portNum);
             Settings.ConnectionPort = portNum;
             Settings.ValidateClients = cbRequireValidation.Checked;
+            Settings.IsActive = cbIsOnline.Checked;
         }
         #endregion
 
@@ -91,6 +93,8 @@ namespace Mpdn.PlayerExtensions
             validatePortNumber();
         }
         #endregion
+
+
     }
 
     public class RemoteControlConfigBase : ScriptConfigDialog<RemoteControlSettings>
