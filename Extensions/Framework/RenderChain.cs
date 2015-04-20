@@ -69,13 +69,14 @@ namespace Mpdn.RenderScript
 
         protected IShader CompileShader(string shaderFileName)
         {
-            return ShaderCache<IShader>.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName),
+            return ShaderCache<IShader>.Add(Path.Combine(ShaderDataFilePath, shaderFileName),
                 s => Renderer.CompileShader(s));
         }
 
         protected IShader LoadShader(string shaderFileName)
         {
-            return Renderer.LoadShader(shaderFileName);
+            return ShaderCache<IShader>.Add(Path.Combine(ShaderDataFilePath, shaderFileName),
+                Renderer.LoadShader);
         }
 
         protected IShader11 CompileShader11(string shaderFileName, string profile)
@@ -85,19 +86,20 @@ namespace Mpdn.RenderScript
 
         protected IShader11 CompileShader11(string shaderFileName, string entryPoint, string profile)
         {
-            return ShaderCache<IShader11>.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName),
+            return ShaderCache<IShader11>.Add(Path.Combine(ShaderDataFilePath, shaderFileName),
                 s => Renderer.CompileShader11(s, entryPoint, profile));
         }
 
         protected IKernel CompileClKernel(string sourceFileName, string entryPoint, string options = null)
         {
-            return ShaderCache<IKernel>.CompileShader(Path.Combine(ShaderDataFilePath, sourceFileName),
+            return ShaderCache<IKernel>.Add(Path.Combine(ShaderDataFilePath, sourceFileName),
                 s => Renderer.CompileClKernel(s, entryPoint, options));
         }
 
         protected IShader11 LoadShader11(string shaderFileName)
         {
-            return Renderer.LoadShader11(shaderFileName);
+            return ShaderCache<IShader11>.Add(Path.Combine(ShaderDataFilePath, shaderFileName),
+                Renderer.LoadShader11);
         }
 
         #endregion

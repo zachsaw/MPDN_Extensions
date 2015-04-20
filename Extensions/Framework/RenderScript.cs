@@ -76,7 +76,7 @@ namespace Mpdn.RenderScript
         private static readonly Dictionary<string, ShaderWithDateTime> s_CompiledShaders =
             new Dictionary<string, ShaderWithDateTime>();
 
-        public static T CompileShader(string shaderPath, Func<string, T> compileFunc)
+        public static T Add(string shaderPath, Func<string, T> compileFunc)
         {
             var lastMod = File.GetLastWriteTimeUtc(shaderPath);
 
