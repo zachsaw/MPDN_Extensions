@@ -15,7 +15,7 @@
 // License along with this library.
 // 
 using System;
-using Mpdn.RenderScript.Shiandow.NNedi3Filters;
+using Mpdn.RenderScript.Shiandow.NNedi3.Filters;
 using SharpDX;
 
 namespace Mpdn.RenderScript
@@ -54,10 +54,8 @@ namespace Mpdn.RenderScript
 
                 IFilter input = sourceFilter.ConvertToYuv();
 
-                // Note: This is not optimal as it scales all 3 channels when we only need 2
-                // TODO: RenderScript.Scale() to have a new argument (Channels.Luma, Channels.Chroma, Channels.All)
                 var chroma = new ResizeFilter(input, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
-                    new Vector2(-0.5f, -0.5f), Renderer.ChromaUpscaler);
+                    TextureChannels.ChromaOnly, new Vector2(-0.5f, -0.5f));
 
                 IFilter resultY;
 
@@ -71,7 +69,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class NNedi3ScalerTest : RenderChainUi<NNedi3>
+        public class NNedi3ScalerTest : RenderChainUi<NNedi3, NNedi3ConfigDialog>
         {
             protected override string ConfigFileName
             {
@@ -85,9 +83,9 @@ namespace Mpdn.RenderScript
                     return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("B210A4E6-E3F9-4FEE-9840-5D6EDB0BFE05"),
-                        Name = "NNedi3",
-                        Description = "Shader adaptation of the NNedi3 algorithm",
-                        Copyright = "<Various>",
+                        Name = "NNEDI3",
+                        Description = "NNEDI3 image doubler",
+                        Copyright = "Adapted by Shiandow for MPDN"
                     };
                 }
             }
