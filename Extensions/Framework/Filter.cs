@@ -642,21 +642,31 @@ namespace Mpdn.RenderScript
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
         private readonly IScaler m_Convolver;
+        private readonly Vector2 m_Offset;
         private TextureSize m_OutputSize;
 
         public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler convolver = null)
-            : this(inputFilter, outputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
+            : this(inputFilter, outputSize, Vector2.Zero, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
         }
 
-        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler upscaler, IScaler downscaler,
-            IScaler convolver = null)
+        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, Vector2 offset, IScaler convolver = null)
+            : this(inputFilter, outputSize, offset, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
+        {
+        }
+
+        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+            : this(inputFilter, outputSize, Vector2.Zero, upscaler, downscaler, convolver)
+        {
+        }
+        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, Vector2 offset, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
             : base(inputFilter)
         {
             m_Upscaler = upscaler;
             m_Downscaler = downscaler;
             m_Convolver = convolver;
             m_OutputSize = outputSize;
+            m_Offset = offset;
         }
 
         public void SetSize(TextureSize targetSize)
@@ -690,7 +700,7 @@ namespace Mpdn.RenderScript
             if (texture == null)
                 return;
 
-            Renderer.Scale(OutputTexture, texture, m_Upscaler, m_Downscaler, m_Convolver);
+            Renderer.Scale(OutputTexture, texture, m_Offset, m_Upscaler, m_Downscaler, m_Convolver);
         }
     }
 
