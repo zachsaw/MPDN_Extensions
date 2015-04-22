@@ -644,28 +644,51 @@ namespace Mpdn.RenderScript
         private readonly IScaler m_Convolver;
         private readonly Vector2 m_Offset;
         private TextureSize m_OutputSize;
+        private readonly TextureChannels m_Channels;
 
         public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler convolver = null)
-            : this(inputFilter, outputSize, Vector2.Zero, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
+            : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
         }
 
         public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, Vector2 offset, IScaler convolver = null)
-            : this(inputFilter, outputSize, offset, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
+            : this(inputFilter, outputSize, TextureChannels.All, offset, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
         }
 
         public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
-            : this(inputFilter, outputSize, Vector2.Zero, upscaler, downscaler, convolver)
+            : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver)
         {
         }
+
+        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, TextureChannels channels, IScaler convolver = null)
+            : this(inputFilter, outputSize, channels, Vector2.Zero, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
+        {
+        }
+
+        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler convolver = null)
+            : this(inputFilter, outputSize, channels, offset, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
+        {
+        }
+
+        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, TextureChannels channels, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+            : this(inputFilter, outputSize, channels, Vector2.Zero, upscaler, downscaler, convolver)
+        {
+        }
+
         public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, Vector2 offset, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+            : this(inputFilter, outputSize, TextureChannels.All, offset, upscaler, downscaler, convolver)
+        {
+        }
+
+        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
             : base(inputFilter)
         {
             m_Upscaler = upscaler;
             m_Downscaler = downscaler;
             m_Convolver = convolver;
             m_OutputSize = outputSize;
+            m_Channels = channels;
             m_Offset = offset;
         }
 
@@ -700,7 +723,7 @@ namespace Mpdn.RenderScript
             if (texture == null)
                 return;
 
-            Renderer.Scale(OutputTexture, texture, m_Offset, m_Upscaler, m_Downscaler, m_Convolver);
+            Renderer.Scale(OutputTexture, texture, m_Channels, m_Offset, m_Upscaler, m_Downscaler, m_Convolver);
         }
     }
 
