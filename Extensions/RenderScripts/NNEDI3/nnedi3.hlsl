@@ -107,11 +107,11 @@ float4 main( PS_IN In ) : SV_TARGET
 
     for (int n = 0; n<nns; n++) {
 		float2 sum = {0, 0}; 
-#if nns == 128
-		[loop] 
-#else
+//#if nns == 128
+//		[loop] 
+//#else
         [unroll] 
-#endif    
+//#endif    
         for (int i = 0; i<8; i++)
         [unroll]
         for (int j = 0; j<4; j++) {
