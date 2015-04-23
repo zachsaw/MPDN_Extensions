@@ -95,6 +95,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 	));
 	[branch] if (anti_aliasing != 0)
 	stab -= anti_aliasing*(I[0] * I[0] * Iyy - 2 * I[0] * I[1] * Ixy + I[1] * I[1] * Ixx);
+
 	stab += sharpness*0.5*(Ixx + Iyy);
 
 	//Calculate faithfulness force
