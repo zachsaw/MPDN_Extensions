@@ -29,6 +29,9 @@
 
 //#define EXTRA_CHECKS
 
+#define WT 8
+#define HT 4
+
 // Declarations
 
 Texture2D inputTexture : register(t0);
@@ -51,12 +54,12 @@ cbuffer size0 : register(b1)
 
 cbuffer weights1 : register(b2)
 {
-	float4 w1[nns][8];
+	float4 w1[nns][WT];
 }
 
 cbuffer weights2 : register(b3)
 {
-	float4 w2[nns][8];
+	float4 w2[nns][WT];
 }
 
 cbuffer weights3 : register(b4)
@@ -80,12 +83,13 @@ float4 main( PS_IN In ) : SV_TARGET
 {
 	float2 tex = In.Texture;
 
-    float4 t[8];
+    float4 t[WT];
     
 	float sum = 0;
 	float sumsq = 0;
-	[unroll] for (int i = 0; i<8; i++)
-	[unroll] for (int j = 0; j<4; j++) {
+	[unroll] for (int i = 0; i<WT; i++)
+	[unroll] for (int j = 0; j<HT; j++)
+    {
 		float tt = t[i][j] = Get(i-3, j-1);
 		sum += tt;
 		sumsq += tt*tt;
@@ -99,26 +103,29 @@ float4 main( PS_IN In ) : SV_TARGET
 
 	float vsum = 0;
 	float wsum = 0;
-#if nns == 16
+#ifdef UNROLLED
     [unroll]
 #else
-	[loop] 
+    [loop]
 #endif
-
-    for (int n = 0; n<nns; n++) {
-		float2 sum = {0, 0}; 
-//#if nns == 128
-//		[loop] 
-//#else
-        [unroll] 
-//#endif    
-        for (int i = 0; i<8; i++)
-        [unroll]
-        for (int j = 0; j<4; j++) {
-			float tt = t[i][j];
-			sum[0] += tt*w1[n][i][j];
-			sum[1] += tt*w2[n][i][j];
-		}
+    for (int n = 0; n<nns; n++)
+    {
+		float2 sum = 0;
+        [unroll] for (int i = 0; i<WT; i++)
+        {
+#ifdef VECTOR_DOT
+            float4 pix = t[i];
+            sum[0] += dot(pix, w1[n][i]);
+            sum[1] += dot(pix, w2[n][i]);
+#else
+            for (int j = 0; j<4; j++)
+            {
+                float pix = t[i][j];
+                sum[0] += pix*w1[n][i][j];
+                sum[1] += pix*w2[n][i][j];
+            }
+#endif
+        }
 		sum[0] = sum[0]*mstd[2] + w[n][0];
 		sum[1] = sum[1]*mstd[2] + w[n][1];
 #ifdef EXTRA_CHECKS
@@ -131,8 +138,8 @@ float4 main( PS_IN In ) : SV_TARGET
 	}
 
 #ifdef EXTRA_CHECKS
-	return mstd[0] + (wsum > 1e-10 ? (5*vsum/wsum)*mstd[1] : 0.0);
+	return float4(mstd[0] + (wsum > 1e-10 ? (5*vsum/wsum)*mstd[1] : 0.0), 1, 1, 1);
 #else
-    return mstd[0] + (5*vsum/wsum)*mstd[1];
+    return float4(mstd[0] + (5*vsum/wsum)*mstd[1], 1, 1, 1);
 #endif
 }

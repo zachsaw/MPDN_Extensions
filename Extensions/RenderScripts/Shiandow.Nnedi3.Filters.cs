@@ -31,6 +31,13 @@ namespace Mpdn.RenderScript
             Neurons256 = 4
         }
 
+        public enum NNedi3Path
+        {
+            ScalarMad,
+            VectorDot,
+            UnrolledVectorDot
+        }
+
         public static unsafe class NNedi3Helpers
         {
             public static void InitWeights(float[, ,] w, float* p)

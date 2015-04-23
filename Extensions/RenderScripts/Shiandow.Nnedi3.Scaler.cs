@@ -29,13 +29,16 @@ namespace Mpdn.RenderScript
             public NNedi3()
             {
                 Neurons = NNedi3Neurons.Neurons16;
+                CodePath = NNedi3Path.ScalarMad;
             }
 
             public NNedi3Neurons Neurons { get; set; }
+            public NNedi3Path CodePath { get; set; }
 
             #endregion
 
-            private static readonly int[] s_NeuronCount = { 16, 32, 64, 128, 256 };
+            private static readonly int[] s_NeuronCount = {16, 32, 64, 128, 256};
+            private static readonly string[] s_CodePath = {"A", "B", "C"};
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
@@ -44,9 +47,9 @@ namespace Mpdn.RenderScript
 
                 Func<TextureSize, TextureSize> Transformation = s => new TextureSize(2 * s.Height, s.Width);
 
-                var NNEDI3 = LoadShader11(string.Format("NNEDI3_{0}.cso", s_NeuronCount[(int) Neurons]));
+                var NNEDI3 = LoadShader11(string.Format("NNEDI3_{0}_{1}.cso", s_NeuronCount[(int) Neurons], s_CodePath[(int) CodePath]));
                 var Interleave = CompileShader("Interleave.hlsl").Configure(transform: Transformation);
-                var Combine = CompileShader("Combine.hlsl");
+                var Combine = CompileShader("Combine.hlsl").Configure(transform: Transformation);
 
                 var sourceSize = sourceFilter.OutputSize;
                 if (!IsUpscalingFrom(sourceSize))
@@ -55,16 +58,14 @@ namespace Mpdn.RenderScript
                 IFilter input = sourceFilter.ConvertToYuv();
 
                 var chroma = new ResizeFilter(input, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
-                    TextureChannels.ChromaOnly, new Vector2(-0.5f, -0.5f));
+                    TextureChannels.ChromaOnly, new Vector2(-0.5f, -0.5f), Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
 
                 IFilter resultY;
 
                 var pass1 = NNedi3Helpers.CreateFilter(NNEDI3, input, Neurons);
                 resultY = new ShaderFilter(Interleave, input, pass1);
                 var pass2 = NNedi3Helpers.CreateFilter(NNEDI3, resultY, Neurons);
-                resultY = new ShaderFilter(Interleave, resultY, pass2);
-
-                var result = new ShaderFilter(Combine, resultY, chroma);
+                var result = new ShaderFilter(Combine, resultY, pass2, chroma);
                 return result.ConvertToRgb();
             }
         }

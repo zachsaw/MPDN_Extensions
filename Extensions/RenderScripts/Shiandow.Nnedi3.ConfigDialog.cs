@@ -31,11 +31,13 @@ namespace Mpdn.RenderScript
             protected override void LoadSettings()
             {
                 comboBoxNeurons.SelectedIndex = (int) Settings.Neurons;
+                comboBoxPath.SelectedIndex = (int) Settings.CodePath;
             }
 
             protected override void SaveSettings()
             {
                 Settings.Neurons = (NNedi3Neurons) comboBoxNeurons.SelectedIndex;
+                Settings.CodePath = (NNedi3Path) comboBoxPath.SelectedIndex;
             }
         }
 

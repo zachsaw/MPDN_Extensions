@@ -1,19 +1,3 @@
-// This file is a part of MPDN Extensions.
-// https://github.com/zachsaw/MPDN_Extensions
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3.0 of the License, or (at your option) any later version.
-// 
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library.
-// 
 sampler s0 : register(s0);
 sampler s1 : register(s1);
 float4  p0 : register(c0);
@@ -31,15 +15,15 @@ float4 size1 : register(c3);
 #define dxdy1 (size1.zw)
 
 float4 main(float2 tex : TEXCOORD0) : COLOR{
-	int2 par = round(frac(tex*p0.xy / 2.0));
+	float par = frac(tex.x*p0.x / 2.0).x;
 
 	//Fix size mismatch.
-	int2 pos = floor(tex*p0.xy / float2(2.0, 1.0));
+	float2 pos = floor(tex*p0.xy / float2(2.0, 1.0));
+    float2 p = (pos.yx + 0.5)*dxdy0; // Assumes size is the same for s0 and s1
 
-	if (par.x == 0) {
-		return float4(tex2D(s0, (pos.yx + 0.5)*dxdy0).x, 1, 1, 1);
-	}
-	else {
-		return float4(tex2D(s1, (pos.yx + 0.5)*dxdy1).x, 1, 1, 1);
-	}
+    float r0 = tex2D(s0, p).x;
+    float r1 = tex2D(s1, p).x;
+    float y = (par < 0.5) ? r0 : r1;
+              
+    return float4(y, 1, 1, 1);
 }
