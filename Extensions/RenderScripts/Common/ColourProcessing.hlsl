@@ -55,6 +55,14 @@ float3 RGBtoLab(float3 rgb) {
 	#endif
 }
 
+float QuasiLabNorm(float3 x, float3 y) {
+	float3x3 M = {{1.16, 0, 0},
+				  {-5.0, 5.0, 0},
+				  {-2.0, 0.0, 2.0}};
+	float3x3 M2 = mul(transpose(M),M);
+	return dot(x, mul(M2,y));
+}
+
 float3 LabtoRGB(float3 lab) {
 	#if QuasiLab == true
 		float3 xyz = (lab + 0.16) / 1.16;

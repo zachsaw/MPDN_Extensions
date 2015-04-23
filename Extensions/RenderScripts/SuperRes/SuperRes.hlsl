@@ -55,12 +55,12 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 	float3 Iyy = (Get(0, 1) - 2 * Get(0, 0) + Get(0, -1)) / (h*h);
 	float3 Ixy = (Get(1, 1) - Get(1, -1) - Get(-1, 1) + Get(-1, -1)) / (4.0*h*h);
 	//	Ixy = (Get(1,1) - Get(1,0) - Get(0,1) + 2*Get(0,0) - Get(-1,0) - Get(0,-1) + Get(-1,-1))/(2.0*h*h);
-	float2x3 I = transpose(float3x2(
-		normalize(float2(Ix[0], Iy[0])),
-		normalize(float2(Ix[1], Iy[1])),
-		normalize(float2(Ix[2], Iy[2]))
-	));
-	float3 stab = -anti_aliasing*(I[0] * I[0] * Iyy - 2 * I[0] * I[1] * Ixy + I[1] * I[1] * Ixx);
+	// Mean curvature flow
+	float3 N = rsqrt(Ix*Ix + Iy*Iy);
+	Ix *= N; Iy *= N;
+	float3 stab = -anti_aliasing*(Ix*Ix*Iyy - 2*Ix*Iy*Ixy + Iy*Iy*Ixx);
+
+	// Inverse heat equation
 	stab += sharpness*0.5*(Ixx + Iyy);
 
 	//Calculate faithfulness force

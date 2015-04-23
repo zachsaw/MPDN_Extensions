@@ -66,10 +66,10 @@ namespace Mpdn.RenderScript
                     LumaConstants = new[] { 1.0f, 0.0f, 0.0f }
                 };
 
-                var Consts = new[] { Strength, Sharpness, AntiAliasing, AntiRinging };
+                
 
                 var Diff = CompileShader("Diff.hlsl").Configure(format: TextureFormat.Float16);
-                var SuperRes = CompileShader("SuperRes.hlsl").Configure(arguments: Consts);
+                var SuperRes = CompileShader("SuperRes.hlsl");
 
                 var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
                 var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
@@ -116,7 +116,8 @@ namespace Mpdn.RenderScript
                         diff = new ResizeFilter(diff, currentSize, upscaler, downscaler);
                     
                     // Update result
-                    lab = new ShaderFilter(SuperRes.Configure(useBilinear), lab, diff, original);
+                    var Consts = new[] { Strength, Sharpness, AntiAliasing, AntiRinging };
+                    lab = new ShaderFilter(SuperRes.Configure(useBilinear, arguments: Consts), lab, diff, original);
                     result = new ShaderFilter(LabToGamma, lab);
                 }
 
