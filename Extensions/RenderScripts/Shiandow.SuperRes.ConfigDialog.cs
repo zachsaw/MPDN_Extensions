@@ -35,7 +35,9 @@ namespace Mpdn.RenderScript
                 SharpnessSetter.Value = (Decimal)Settings.Sharpness;
                 AntiAliasingSetter.Value = (Decimal)Settings.AntiAliasing;
                 AntiRingingSetter.Value = (Decimal)Settings.AntiRinging;
-                UseNediBox.Checked = Settings.UseNEDI;
+                DoublerBox.SelectedIndex = (int)Settings.ImageDoubler;
+                FastBox.Checked = Settings.FastMethod;
+                UpdateGui();
             }
 
             protected override void SaveSettings()
@@ -45,12 +47,18 @@ namespace Mpdn.RenderScript
                 Settings.Sharpness = (float)SharpnessSetter.Value;
                 Settings.AntiAliasing = (float)AntiAliasingSetter.Value;
                 Settings.AntiRinging = (float)AntiRingingSetter.Value;
-                Settings.UseNEDI = UseNediBox.Checked;
+                Settings.ImageDoubler = (SuperRes.SuperResDoubler)DoublerBox.SelectedIndex;
+                Settings.FastMethod = FastBox.Checked;
             }
 
             private void ValueChanged(object sender, EventArgs e)
             {
+                UpdateGui();
+            }
 
+            private void UpdateGui()
+            {
+                AntiRingingSetter.Enabled = !FastBox.Checked;
             }
         }
 

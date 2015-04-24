@@ -96,7 +96,8 @@ namespace Mpdn.RenderScript
                 var uInput = new USourceFilter();
                 var vInput = new VSourceFilter();
 
-                float[] offset = { 0.0f, 0.5f };
+                Vector2 offset = Renderer.ChromaOffset420;
+                offset = 2 * offset - new Vector2(0.5f, 0.5f);
 
                 var chromaShader = CompileShader("Chroma.hlsl").Configure(arguments: new[] { B, C, offset[0], offset[1] });
 

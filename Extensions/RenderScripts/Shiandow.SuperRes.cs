@@ -25,14 +25,22 @@ namespace Mpdn.RenderScript
         {
             #region Settings
 
+            public enum SuperResDoubler
+            {
+                None,
+                NEDI,
+                NNEDI3
+            };
+
             public int Passes { get; set; }
 
             public float Strength { get; set; }
             public float Sharpness { get; set; }
             public float AntiAliasing { get; set; }
             public float AntiRinging { get; set; }
+            public bool FastMethod { get; set; }
 
-            public bool UseNEDI { get; set; }
+            public SuperResDoubler ImageDoubler { get; set; }
             public bool NoIntermediates { get; set; }
 
             public bool FirstPassOnly;
@@ -45,16 +53,15 @@ namespace Mpdn.RenderScript
             public SuperRes()
             {
                 TargetSize = () => Renderer.TargetSize;
-                m_ShiftedScaler = new Scaler.Custom(new ShiftedScaler(0.5f), ScalerTaps.Six, false);
 
                 Passes = 3;
 
                 Strength = 0.75f;
                 Sharpness = 0.5f;
-                AntiAliasing = 0.25f;
+                AntiAliasing = 0.5f;
                 AntiRinging = 0.75f;
 
-                UseNEDI = false;
+                ImageDoubler = SuperResDoubler.None;
                 NoIntermediates = false;
 
                 FirstPassOnly = false;
@@ -75,17 +82,27 @@ namespace Mpdn.RenderScript
                 var currentSize = original.OutputSize;
                 var targetSize = TargetSize();
 
-                var NEDI = new Shiandow.Nedi.Nedi
+                RenderChain Doubler = null;
+                switch (ImageDoubler)
                 {
-                    AlwaysDoubleImage = false,
-                    Centered = false,
-                    LumaConstants = new[] { 1.0f, 0.0f, 0.0f }
-                };
-
-                
+                    case SuperResDoubler.NEDI:
+                        Doubler = new Shiandow.Nedi.Nedi
+                        {
+                            AlwaysDoubleImage = false,
+                            ForceCentered = true,
+                            LumaConstants = new[] { 1.0f, 0.0f, 0.0f }
+                        };
+                        break;
+                    case SuperResDoubler.NNEDI3:
+                        Doubler = new Shiandow.NNedi3.NNedi3
+                        {
+                            ForceCentered = true
+                        };
+                        break;
+                }
 
                 var Diff = CompileShader("Diff.hlsl").Configure(format: TextureFormat.Float16);
-                var SuperRes = CompileShader("SuperRes.hlsl");
+                var SuperRes = CompileShader(FastMethod ? "SuperResFast.hlsl" : "SuperRes.hlsl");
 
                 var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
                 var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
@@ -112,12 +129,11 @@ namespace Mpdn.RenderScript
                     else currentSize = CalculateSize(currentSize, targetSize, i);
                                         
                     // Resize
-                    if (i == 1)
+                    if (i == 1 && Doubler != null)
                     {
-                        if (UseNEDI)
-                            lab = new ResizeFilter(lab + NEDI, currentSize, m_ShiftedScaler, m_ShiftedScaler, m_ShiftedScaler);
-                        else
-                            lab = new ResizeFilter(lab, currentSize);
+                        var nedi = lab + Doubler;
+                        nedi.SetSize(currentSize);
+                        lab = nedi;
                     }
                     else
                         lab = new ResizeFilter(lab, currentSize, upscaler, downscaler);
@@ -158,57 +174,6 @@ namespace Mpdn.RenderScript
 
                 return new TextureSize(Math.Max(minW, Math.Min(maxW, (int)Math.Round(w))),
                                 Math.Max(minH, Math.Min(maxH, (int)Math.Round(h))));
-            }
-
-            private IScaler m_ShiftedScaler;
-
-            private class ShiftedScaler : ICustomLinearScaler
-            {
-                private float m_Offset;
-
-                public ShiftedScaler(float offset)
-                {
-                    m_Offset = offset;
-                }
-
-                public Guid Guid
-                {
-                    get { return new Guid(); }
-                }
-
-                public string Name
-                {
-                    get { return ""; }
-                }
-
-                public bool AllowDeRing
-                {
-                    get { return false; }
-                }
-
-                public ScalerTaps MaxTapCount
-                {
-                    get { return ScalerTaps.Six; }
-                } 
-
-                public float GetWeight(float n, int width)
-                {
-                    return (float)Kernel(n + m_Offset, width);
-                }
-
-                private static double Kernel(double x, double radius)
-                {
-                    x = Math.Abs(x);
-                    var B = 1.0/3.0;
-                    var C = 1.0/3.0;
-
-                    if (x > 2.0)
-                        return 0;
-                    else if (x <= 1.0)
-                        return ((2 - 1.5 * B - C) * x + (-3 + 2 * B + C)) * x * x + (1 - B / 3.0);
-                    else
-                        return (((-B / 6.0 - C) * x + (B + 5 * C)) * x + (-2 * B - 8 * C)) * x + ((4.0 / 3.0) * B + 4 * C);
-                }
             }
         }
 
