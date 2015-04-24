@@ -30,13 +30,13 @@ namespace Mpdn.RenderScript
             protected override void LoadSettings()
             {
                 checkBoxAlwaysEnabled.Checked = Settings.AlwaysDoubleImage;
-                checkBoxCentered.Checked = Settings.Centered;
+                checkBoxCentered.Checked = Settings.ForceCentered;
             }
 
             protected override void SaveSettings()
             {
                 Settings.AlwaysDoubleImage = checkBoxAlwaysEnabled.Checked;
-                Settings.Centered = checkBoxCentered.Checked;
+                Settings.ForceCentered = checkBoxCentered.Checked;
             }
         }
 

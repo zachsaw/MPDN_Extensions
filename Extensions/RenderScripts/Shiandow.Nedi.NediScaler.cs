@@ -15,7 +15,7 @@
 // License along with this library.
 // 
 using System;
-using System.Drawing;
+using SharpDX;
 
 namespace Mpdn.RenderScript
 {
@@ -28,11 +28,11 @@ namespace Mpdn.RenderScript
             public Nedi()
             {
                 AlwaysDoubleImage = false;
-                Centered = true;
+                ForceCentered = false;
             }
 
             public bool AlwaysDoubleImage { get; set; }
-            public bool Centered { get; set; }
+            public bool ForceCentered { get; set; }
 
             #endregion
 
@@ -55,14 +55,8 @@ namespace Mpdn.RenderScript
             {
                 Func<TextureSize, TextureSize> transformWidth;
                 Func<TextureSize, TextureSize> transformHeight;
-                if (Centered)
-                {
-                    transformWidth = s => new TextureSize(2 * s.Width - 1, s.Height);
-                    transformHeight = s => new TextureSize(s.Width, 2 * s.Height - 1);
-                } else {
-                    transformWidth = s => new TextureSize(2 * s.Width, s.Height);
-                    transformHeight = s => new TextureSize(s.Width, 2 * s.Height);
-                }
+                transformWidth = s => new TextureSize(2 * s.Width, s.Height);
+                transformHeight = s => new TextureSize(s.Width, 2 * s.Height);
 
                 var nedi1Shader = CompileShader("NEDI-I.hlsl").Configure(arguments: LumaConstants);
                 var nedi2Shader = CompileShader("NEDI-II.hlsl").Configure(arguments: LumaConstants);
@@ -77,7 +71,8 @@ namespace Mpdn.RenderScript
                 var nedi2 = new ShaderFilter(nedi2Shader, nediH);
                 var nediV = new ShaderFilter(nediVInterleaveShader, nediH, nedi2);
 
-                return nediV;
+                return new ResizeFilter(nediV, Renderer.TargetSize, new Vector2(0.5f, 0.5f),
+                        Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
             }
         }
 
