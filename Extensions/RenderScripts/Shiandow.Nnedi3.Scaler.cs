@@ -38,7 +38,7 @@ namespace Mpdn.RenderScript
             #endregion
 
             private static readonly int[] s_NeuronCount = {16, 32, 64, 128, 256};
-            private static readonly string[] s_CodePath = {"A", "B", "C"};
+            private static readonly string[] s_CodePath = {"A", "B", "C", "D", "E"};
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {

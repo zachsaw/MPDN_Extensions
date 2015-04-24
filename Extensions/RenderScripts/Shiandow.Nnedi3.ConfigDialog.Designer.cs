@@ -117,7 +117,9 @@ namespace Mpdn.RenderScript
             this.comboBoxPath.Items.AddRange(new object[] {
             "Prefer Scalar",
             "Prefer Vector",
-            "Avoid Branches"});
+            "Avoid Branches",
+            "Prefer Scalar & Small Code",
+            "Prefer Vector & Small Code"});
             this.comboBoxPath.Location = new System.Drawing.Point(101, 52);
             this.comboBoxPath.Name = "comboBoxPath";
             this.comboBoxPath.Size = new System.Drawing.Size(152, 21);
