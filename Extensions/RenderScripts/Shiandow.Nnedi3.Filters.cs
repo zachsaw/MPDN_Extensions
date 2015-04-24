@@ -35,9 +35,7 @@ namespace Mpdn.RenderScript
         {
             ScalarMad,
             VectorDot,
-            UnrolledVectorDot,
-            LoopScalarMad,
-            LoopVectorDot
+            UnrolledVectorDot
         }
 
         public static unsafe class NNedi3Helpers
