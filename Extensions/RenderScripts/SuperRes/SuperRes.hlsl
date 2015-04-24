@@ -20,12 +20,6 @@
 #define anti_aliasing (args0[2])
 #define anti_ringing (args0[3])
 
-// -- Edge detection options -- 
-#define acuity 4.0
-#define edge_adaptiveness 2.0
-#define baseline 0.2
-#define radius 1.5
-
 // -- Misc --
 sampler s0 	  : register(s0);
 sampler sDiff : register(s1);
@@ -47,8 +41,7 @@ float4 args0  : register(c3);
 #define ppy (originalSize[3])
 
 #define sqr(x) dot(x,x)
-#define spread (exp(-1/(2.0*radius*radius)))
-#define h 1.5
+#define h 1.2
 
 // -- Colour space Processing --
 #include "../Common/ColourProcessing.hlsl"
@@ -70,18 +63,17 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 	float3 Ixx = (Get(1, 0) - 2 * Get(0, 0) + Get(-1, 0)) / (h*h);
 	float3 Iyy = (Get(0, 1) - 2 * Get(0, 0) + Get(0, -1)) / (h*h);
 	float3 Ixy = (Get(1, 1) - Get(1, -1) - Get(-1, 1) + Get(-1, -1)) / (4.0*h*h);
-	//	Ixy = (Get(1,1) - Get(1,0) - Get(0,1) + 2*Get(0,0) - Get(-1,0) - Get(0,-1) + Get(-1,-1))/(2.0*h*h);
-	float2x3 I = transpose(float3x2(
-		normalize(float2(Ix[0], Iy[0])),
-		normalize(float2(Ix[1], Iy[1])),
-		normalize(float2(Ix[2], Iy[2]))
-	));
-	float3 stab = -anti_aliasing*(I[0] * I[0] * Iyy - 2 * I[0] * I[1] * Ixy + I[1] * I[1] * Ixx);
+
+	// Mean curvature flow
+	float3 N = rsqrt(Ix*Ix + Iy*Iy);
+	Ix *= N; Iy *= N;
+	float3 stab = -anti_aliasing*(Ix*Ix*Iyy - 2*Ix*Iy*Ixy + Iy*Iy*Ixx);
+
+	// Inverse heat equation
 	stab += sharpness*0.5*(Ixx + Iyy);
 
 	//Calculate faithfulness force
 	float3 diff = Diff(0, 0);
-	//diff = mul(DinvLabtoRGB(c0.xyz), diff);
 
 	//Apply forces
 	c0.xyz -= strength*(diff + stab);
