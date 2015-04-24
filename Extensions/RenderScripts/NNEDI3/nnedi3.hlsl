@@ -88,12 +88,22 @@ float4 main( PS_IN In ) : SV_TARGET
 	float sum = 0;
 	float sumsq = 0;
 	[unroll] for (int i = 0; i<WT; i++)
+#ifdef VECTOR_DOT
+	{
+		[unroll] for (int j = 0; j<HT; j++)
+			t[i][j] = Get(i-3, j-1);
+		float4 pix = t[i];
+        sum += dot(pix, 1);
+		sumsq += dot(pix, pix);
+	}
+#else
 	[unroll] for (int j = 0; j<HT; j++)
     {
-		float tt = t[i][j] = Get(i-3, j-1);
-		sum += tt;
-		sumsq += tt*tt;
+		float pix = t[i][j] = Get(i-3, j-1);
+        sum += pix;
+		sumsq += pix*pix;
 	}
+#endif
 
 	float4 mstd = 0;
 	mstd[0] = sum / 32.0;
@@ -106,7 +116,7 @@ float4 main( PS_IN In ) : SV_TARGET
 #ifdef UNROLLED
     [unroll]
 #else
-    [loop]
+    [loop] [fastopt]
 #endif
     for (int n = 0; n<nns; n++)
     {
