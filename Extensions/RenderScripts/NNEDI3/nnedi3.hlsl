@@ -76,7 +76,7 @@ struct PS_IN
 };
 
 /* Handle Input */
-#define Get(x,y) (inputTexture.Sample(ss,tex+float2((x)/width,(y)/height))[0])
+#define Get(x,y) (inputTexture.Sample(ss,tex+float2(ppx*(x),ppy*(y)))[0])
 
 /* Main code */
 float4 main( PS_IN In ) : SV_TARGET
@@ -104,7 +104,7 @@ float4 main( PS_IN In ) : SV_TARGET
 		sumsq += pix*pix;
 	}
 #endif
-
+    
 	float4 mstd = 0;
 	mstd[0] = sum / 32.0;
 	mstd[1] = sumsq / 32.0 - mstd[0] * mstd[0];
@@ -121,14 +121,19 @@ float4 main( PS_IN In ) : SV_TARGET
     for (int n = 0; n<nns; n++)
     {
 		float2 sum = 0;
-        [unroll] for (int i = 0; i<WT; i++)
+#ifdef LOOP_INNER
+        [loop] [fastopt]
+#else
+        [unroll]
+#endif
+        for (int i = 0; i<WT; i++)
         {
 #ifdef VECTOR_DOT
             float4 pix = t[i];
             sum[0] += dot(pix, w1[n][i]);
             sum[1] += dot(pix, w2[n][i]);
 #else
-            for (int j = 0; j<4; j++)
+            [unroll] for (int j = 0; j<4; j++)
             {
                 float pix = t[i][j];
                 sum[0] += pix*w1[n][i][j];
