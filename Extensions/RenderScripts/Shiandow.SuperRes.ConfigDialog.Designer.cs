@@ -58,9 +58,10 @@ namespace Mpdn.RenderScript
             this.AntiRingingSetter = new System.Windows.Forms.NumericUpDown();
             this.label5 = new System.Windows.Forms.Label();
             this.PassesSetter = new System.Windows.Forms.NumericUpDown();
-            this.DoublerBox = new System.Windows.Forms.ComboBox();
+            this.PrescalerBox = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.FastBox = new System.Windows.Forms.CheckBox();
+            this.ConfigButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.StrengthSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SharpnessSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.AntiAliasingSetter)).BeginInit();
@@ -146,7 +147,7 @@ namespace Mpdn.RenderScript
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(126, 132);
+            this.ButtonOK.Location = new System.Drawing.Point(141, 132);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 3;
@@ -158,7 +159,7 @@ namespace Mpdn.RenderScript
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(207, 132);
+            this.ButtonCancel.Location = new System.Drawing.Point(222, 132);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 4;
@@ -258,26 +259,23 @@ namespace Mpdn.RenderScript
             0,
             0});
             // 
-            // DoublerBox
+            // PrescalerBox
             // 
-            this.DoublerBox.FormattingEnabled = true;
-            this.DoublerBox.Items.AddRange(new object[] {
-            "None",
-            "NEDI",
-            "NNEDI3"});
-            this.DoublerBox.Location = new System.Drawing.Point(81, 85);
-            this.DoublerBox.Name = "DoublerBox";
-            this.DoublerBox.Size = new System.Drawing.Size(184, 21);
-            this.DoublerBox.TabIndex = 12;
+            this.PrescalerBox.FormattingEnabled = true;
+            this.PrescalerBox.Location = new System.Drawing.Point(81, 85);
+            this.PrescalerBox.Name = "PrescalerBox";
+            this.PrescalerBox.Size = new System.Drawing.Size(135, 21);
+            this.PrescalerBox.TabIndex = 12;
+            this.PrescalerBox.SelectedIndexChanged += new System.EventHandler(this.ValueChanged);
             // 
             // label6
             // 
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(12, 88);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(44, 13);
+            this.label6.Size = new System.Drawing.Size(51, 13);
             this.label6.TabIndex = 13;
-            this.label6.Text = "Doubler";
+            this.label6.Text = "Prescaler";
             // 
             // FastBox
             // 
@@ -291,16 +289,27 @@ namespace Mpdn.RenderScript
             this.FastBox.CheckedChanged += new System.EventHandler(this.ValueChanged);
             this.FastBox.CheckStateChanged += new System.EventHandler(this.ValueChanged);
             // 
+            // ConfigButton
+            // 
+            this.ConfigButton.Location = new System.Drawing.Point(222, 83);
+            this.ConfigButton.Name = "ConfigButton";
+            this.ConfigButton.Size = new System.Drawing.Size(75, 23);
+            this.ConfigButton.TabIndex = 15;
+            this.ConfigButton.Text = "Configure";
+            this.ConfigButton.UseVisualStyleBackColor = true;
+            this.ConfigButton.Click += new System.EventHandler(this.ConfigButton_Click);
+            // 
             // SuperResConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(294, 167);
+            this.ClientSize = new System.Drawing.Size(309, 167);
+            this.Controls.Add(this.ConfigButton);
             this.Controls.Add(this.FastBox);
             this.Controls.Add(this.label6);
-            this.Controls.Add(this.DoublerBox);
+            this.Controls.Add(this.PrescalerBox);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.PassesSetter);
             this.Controls.Add(this.label4);
@@ -345,9 +354,10 @@ namespace Mpdn.RenderScript
             private System.Windows.Forms.NumericUpDown AntiRingingSetter;
             private System.Windows.Forms.Label label5;
             private System.Windows.Forms.NumericUpDown PassesSetter;
-            private System.Windows.Forms.ComboBox DoublerBox;
+            private System.Windows.Forms.ComboBox PrescalerBox;
             private System.Windows.Forms.Label label6;
             private System.Windows.Forms.CheckBox FastBox;
+            private System.Windows.Forms.Button ConfigButton;
 
         }
     }

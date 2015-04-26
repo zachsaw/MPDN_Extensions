@@ -15,6 +15,8 @@
 // License along with this library.
 // 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Mpdn.Config;
 
 namespace Mpdn.RenderScript
@@ -35,8 +37,12 @@ namespace Mpdn.RenderScript
                 SharpnessSetter.Value = (Decimal)Settings.Sharpness;
                 AntiAliasingSetter.Value = (Decimal)Settings.AntiAliasing;
                 AntiRingingSetter.Value = (Decimal)Settings.AntiRinging;
-                DoublerBox.SelectedIndex = (int)Settings.ImageDoubler;
                 FastBox.Checked = Settings.FastMethod;
+
+                PrescalerBox.DataSource = Settings.PreScalerPresets;
+                PrescalerBox.DisplayMember = "Name";
+                PrescalerBox.SelectedIndex = Settings.PreScalerIndex;
+
                 UpdateGui();
             }
 
@@ -47,8 +53,8 @@ namespace Mpdn.RenderScript
                 Settings.Sharpness = (float)SharpnessSetter.Value;
                 Settings.AntiAliasing = (float)AntiAliasingSetter.Value;
                 Settings.AntiRinging = (float)AntiRingingSetter.Value;
-                Settings.ImageDoubler = (SuperRes.SuperResDoubler)DoublerBox.SelectedIndex;
                 Settings.FastMethod = FastBox.Checked;
+                Settings.PreScalerIndex = (int)PrescalerBox.SelectedIndex;
             }
 
             private void ValueChanged(object sender, EventArgs e)
@@ -59,6 +65,13 @@ namespace Mpdn.RenderScript
             private void UpdateGui()
             {
                 AntiRingingSetter.Enabled = !FastBox.Checked;
+                ConfigButton.Enabled =
+                    (PrescalerBox.SelectedValue as IRenderChainUi != null) ? (PrescalerBox.SelectedValue as IRenderChainUi).HasConfigDialog() : false;
+            }
+
+            private void ConfigButton_Click(object sender, EventArgs e)
+            {
+                (PrescalerBox.SelectedValue as IRenderChainUi).ShowConfigDialog(Owner);
             }
         }
 
