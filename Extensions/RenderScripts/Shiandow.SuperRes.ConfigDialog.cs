@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Config;
+using Mpdn.RenderScript.Mpdn.Presets;
 
 namespace Mpdn.RenderScript
 {
@@ -66,12 +67,13 @@ namespace Mpdn.RenderScript
             {
                 AntiRingingSetter.Enabled = !FastBox.Checked;
                 ConfigButton.Enabled =
-                    (PrescalerBox.SelectedValue as IRenderChainUi != null) ? (PrescalerBox.SelectedValue as IRenderChainUi).HasConfigDialog() : false;
+                    (PrescalerBox.SelectedValue as RenderScriptPreset != null) ? 
+                    (PrescalerBox.SelectedValue as RenderScriptPreset).Script.HasConfigDialog() : false;
             }
 
             private void ConfigButton_Click(object sender, EventArgs e)
             {
-                (PrescalerBox.SelectedValue as IRenderChainUi).ShowConfigDialog(Owner);
+                (PrescalerBox.SelectedValue as RenderScriptPreset).Script.ShowConfigDialog(Owner);
             }
         }
 
