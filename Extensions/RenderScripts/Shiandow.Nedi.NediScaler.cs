@@ -71,7 +71,7 @@ namespace Mpdn.RenderScript
                 var nedi2 = new ShaderFilter(nedi2Shader, nediH);
                 var nediV = new ShaderFilter(nediVInterleaveShader, nediH, nedi2);
 
-                return new ResizeFilter(nediV, Renderer.TargetSize, new Vector2(0.5f, 0.5f),
+                return new ResizeFilter(nediV, nediV.OutputSize, new Vector2(0.5f, 0.5f),
                         Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
             }
         }
