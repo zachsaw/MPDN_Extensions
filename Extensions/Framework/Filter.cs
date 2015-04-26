@@ -44,7 +44,8 @@ namespace Mpdn.RenderScript
         int LastDependentIndex { get; }
         void Render(ITextureCache cache);
         void Reset(ITextureCache cache);
-        IFilter<TTexture> Initialize(int time = 1);
+        void Initialize(int time = 1);
+        IFilter<TTexture> Compile();
     }
 
     public interface IFilter : IFilter<ITexture>
@@ -236,22 +237,16 @@ namespace Mpdn.RenderScript
         public int FilterIndex { get; private set; }
         public int LastDependentIndex { get; private set; }
 
-        public virtual IFilter<ITexture> Initialize(int time = 1)
+        public void Initialize(int time = 1)
         {
-            if (PassthroughFilter != null)
-            {
-                PassthroughFilter = PassthroughFilter.Initialize(time);
-                return PassthroughFilter;
-            }
-
             LastDependentIndex = time;
 
             if (Initialized)
-                return this;
+                return;
 
             for (int i = 0; i < InputFilters.Length; i++)
             {
-                InputFilters[i] = InputFilters[i].Initialize(LastDependentIndex);
+                InputFilters[i].Initialize(LastDependentIndex);
                 LastDependentIndex = InputFilters[i].LastDependentIndex;
             }
 
@@ -265,6 +260,21 @@ namespace Mpdn.RenderScript
             LastDependentIndex++;
 
             Initialized = true;
+        }
+
+        public virtual IFilter<ITexture> Compile()
+        {
+            if (PassthroughFilter != null)
+            {
+                PassthroughFilter = PassthroughFilter.Compile();
+                return PassthroughFilter;
+            }
+
+            for (int i = 0; i < InputFilters.Length; i++)
+            {
+                InputFilters[i] = InputFilters[i].Compile();
+            }
+
             return this;
         }
 
@@ -336,9 +346,13 @@ namespace Mpdn.RenderScript
 
         public virtual int LastDependentIndex { get; private set; }
 
-        public IFilter<TTexture> Initialize(int time = 1)
+        public void Initialize(int time = 1)
         {
             LastDependentIndex = time;
+        }
+
+        public IFilter<TTexture> Compile()
+        {
             return this;
         }
 
@@ -540,17 +554,12 @@ namespace Mpdn.RenderScript
             OutputLimitedRange = limitedRange;
         }
 
-        public override IFilter<ITexture> Initialize(int time = 1)
+        public override IFilter<ITexture> Compile()
         {
-            /* BEWARE, using the following method might intialize the wrong filters */
-            /* however this doesn't happen with RgbFilter and YuvFilter (hopefully) */
-            var output = base.Initialize(time);
+            var output = base.Compile();
             var input = InputFilters[0] as YuvFilter;
-            if (input == null || input.Colorimetric != Colorimetric || input.OutputLimitedRange != OutputLimitedRange)
-                return output;
-
-            output = (IFilter) input.InputFilters[0];
-            output.Initialize(LastDependentIndex);
+            if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
+                output = (IFilter<ITexture>) input.InputFilters[0];
 
             return output;
         }
@@ -602,17 +611,12 @@ namespace Mpdn.RenderScript
             OutputLimitedRange = limitedRange;
         }
 
-        public override IFilter<ITexture> Initialize(int time = 1)
+        public override IFilter<ITexture> Compile()
         {
-            /* BEWARE, using the following method might intialize the wrong filters */
-            /* however this doesn't happen with RgbFilter and YuvFilter (hopefully) */
-            var output = base.Initialize(time);
+            var output = base.Compile();
             var input = InputFilters[0] as RgbFilter;
-            if (input == null || input.Colorimetric != Colorimetric || input.OutputLimitedRange != OutputLimitedRange)
-                return output;
-
-            output = (IFilter) input.InputFilters[0];
-            output.Initialize(LastDependentIndex);
+            if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
+                output = (IFilter<ITexture>)input.InputFilters[0];
 
             return output;
         }
@@ -697,14 +701,14 @@ namespace Mpdn.RenderScript
             m_OutputSize = targetSize;
         }
 
-        public override IFilter<ITexture> Initialize(int time = 1)
+        public override IFilter<ITexture> Compile()
         {
             if (InputFilters[0].OutputSize == m_OutputSize && m_Convolver == null)
             {
                 PassthroughFilter = InputFilters[0] as IFilter;
             }
 
-            return base.Initialize(time);
+            return base.Compile();
         }
 
         public override TextureSize OutputSize

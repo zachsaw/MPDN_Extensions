@@ -16,6 +16,7 @@
 // 
 using System;
 using System.Drawing;
+using Mpdn.RenderScript.Mpdn.Presets;
 
 namespace Mpdn.RenderScript
 {
@@ -40,12 +41,19 @@ namespace Mpdn.RenderScript
             public float AntiRinging { get; set; }
             public bool FastMethod { get; set; }
 
-            public SuperResDoubler ImageDoubler { get; set; }
+            public RenderScriptPreset[] PreScalerPresets { get; set; }
+            public int PreScalerIndex { get; set; }
+
             public bool NoIntermediates { get; set; }
 
             public bool FirstPassOnly;
 
             #endregion
+
+            public RenderScriptPreset PreScaler
+            {
+                get { return PreScalerPresets[PreScalerIndex]; }
+            }
 
             public Func<TextureSize> TargetSize; // Not saved
             private IScaler downscaler, upscaler;
@@ -61,8 +69,26 @@ namespace Mpdn.RenderScript
                 AntiAliasing = 0.5f;
                 AntiRinging = 0.75f;
 
-                ImageDoubler = SuperResDoubler.None;
                 NoIntermediates = false;
+
+                PreScalerPresets = new RenderScriptPreset[] {
+                    new RenderScriptPreset() { 
+                        Name = "None", 
+                        Script = RenderChainUi.Identity },
+                    new RenderScriptPreset() { 
+                        Name = "NEDI", 
+                        Script = new Nedi.NediScaler() 
+                        { Chain = new Nedi.Nedi() { ForceCentered = true} }},
+                    new RenderScriptPreset() { 
+                        Name = "NNEDI3", 
+                        Script = new NNedi3.NNedi3Scaler() 
+                        { Chain = new NNedi3.NNedi3() { ForceCentered = true} }},
+                    new RenderScriptPreset() { 
+                        Name = "Custom", 
+                        Script = new Mpdn.ScriptChain.ScriptChainScript() }
+                };
+
+                PreScalerIndex = 0;
 
                 FirstPassOnly = false;
                 upscaler = new Scaler.Jinc(ScalerTaps.Four, false);
@@ -71,35 +97,16 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                return CreateFilter(sourceFilter, sourceFilter);
+                return CreateFilter(sourceFilter, new ResizeFilter(sourceFilter, sourceFilter.OutputSize) + PreScaler);
             }
 
-            public IFilter CreateFilter(IFilter original, IFilter initial)
+            public IFilter CreateFilter(IFilter original, IResizeableFilter initial)
             {
                 IFilter lab, linear, result = initial;
 
                 var inputSize = original.OutputSize;
                 var currentSize = original.OutputSize;
                 var targetSize = TargetSize();
-
-                RenderChain Doubler = null;
-                switch (ImageDoubler)
-                {
-                    case SuperResDoubler.NEDI:
-                        Doubler = new Shiandow.Nedi.Nedi
-                        {
-                            AlwaysDoubleImage = false,
-                            ForceCentered = true,
-                            LumaConstants = new[] { 1.0f, 0.0f, 0.0f }
-                        };
-                        break;
-                    case SuperResDoubler.NNEDI3:
-                        Doubler = new Shiandow.NNedi3.NNedi3
-                        {
-                            ForceCentered = true
-                        };
-                        break;
-                }
 
                 var Diff = CompileShader("Diff.hlsl").Configure(format: TextureFormat.Float16);
                 var SuperRes = CompileShader(FastMethod ? "SuperResFast.hlsl" : "SuperRes.hlsl");
@@ -129,12 +136,8 @@ namespace Mpdn.RenderScript
                     else currentSize = CalculateSize(currentSize, targetSize, i);
                                         
                     // Resize
-                    if (i == 1 && Doubler != null)
-                    {
-                        var nedi = lab + Doubler;
-                        nedi.SetSize(currentSize);
-                        lab = nedi;
-                    }
+                    if (i == 1)
+                        initial.SetSize(currentSize);
                     else
                         lab = new ResizeFilter(lab, currentSize, upscaler, downscaler);
 
@@ -149,7 +152,10 @@ namespace Mpdn.RenderScript
                     
                     // Update result
                     var Consts = new[] { Strength, Sharpness, AntiAliasing, AntiRinging };
-                    lab = new ShaderFilter(SuperRes.Configure(useBilinear, arguments: Consts), lab, diff, original);
+                    if (FastMethod)
+                        lab = new ShaderFilter(SuperRes.Configure(useBilinear, arguments: Consts), lab, diff);
+                    else
+                        lab = new ShaderFilter(SuperRes.Configure(useBilinear, arguments: Consts), lab, diff, original);
                     result = new ShaderFilter(LabToGamma, lab);
                 }
 

@@ -69,12 +69,12 @@ namespace Mpdn.RenderScript
                 var pass2 = NNedi3Helpers.CreateFilter(NNEDI3, resultY, Neurons);
                 result = new ShaderFilter(Combine, resultY, pass2, chroma);
 
-                return new ResizeFilter(result.ConvertToRgb(), Renderer.TargetSize, new Vector2(0.5f, 0.5f),
+                return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),
                     Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
             }
         }
 
-        public class NNedi3ScalerTest : RenderChainUi<NNedi3, NNedi3ConfigDialog>
+        public class NNedi3Scaler : RenderChainUi<NNedi3, NNedi3ConfigDialog>
         {
             protected override string ConfigFileName
             {
