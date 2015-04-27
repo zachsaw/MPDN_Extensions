@@ -214,9 +214,14 @@ namespace Mpdn.RenderScript
             {
                 get
                 {
-                    return Options.Count > 0
-                      ? string.Join(", ", Options.Select(x => x.Name))
-                      : "Picks one out of several renderscripts";
+                    return 
+                        (Options.Count > 0)
+                        ? string.Join(", ", 
+                            Options.Select(x => 
+                            (x == SelectedOption) 
+                            ? "[" + x.Name + "]" 
+                            :       x.Name      ))
+                        : "Picks one out of several renderscripts";
                 }
             }
 
