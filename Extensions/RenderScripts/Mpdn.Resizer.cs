@@ -58,9 +58,6 @@ namespace Mpdn.RenderScript
         {
             #region Settings
 
-            public IScaler Downscaler; // Not saved
-            public IScaler Upscaler; // Not saved
-
             public Resizer()
             {
                 ResizerOption = ResizerOption.TargetSize100Percent;
@@ -72,8 +69,8 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                return new ResizeFilter(sourceFilter, GetOutputSize(),
-                    Upscaler ?? Renderer.LumaUpscaler, Downscaler ?? Renderer.LumaDownscaler);
+                sourceFilter.SetSize(GetOutputSize());
+                return sourceFilter;
             }
 
             #region Size Calculation

@@ -115,7 +115,7 @@ namespace Mpdn.RenderScript
 
                 // Skip if downscaling
                 if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
-                    return initial;
+                    return original;
 
                 // Initial scaling
                 lab = new ShaderFilter(GammaToLab, initial);
