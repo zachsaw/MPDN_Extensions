@@ -41,6 +41,8 @@ namespace Mpdn.RenderScript
                     if (0 <= value && value < listViewChain.Items.Count)
                     {
                         m_SelectedIndex = value;
+                        foreach (ListViewItem item in listViewChain.SelectedItems)
+                            item.Selected = false;
                         listViewChain.Items[value].Selected = true;
                     }
                     else
@@ -55,6 +57,7 @@ namespace Mpdn.RenderScript
                 var renderScripts = PlayerControl.RenderScripts
                     .Where(script => script is IRenderChainUi)
                     .Select(x => (x as IRenderChainUi).CreateNew())
+                    .Concat(new [] { RenderChainUi.Identity } )
                     .OrderBy(x => x.Category + SELECTED_INDICATOR_STR + x.Descriptor.Name);
 
                 var groups = new Dictionary<string, ListViewGroup>();
@@ -449,6 +452,52 @@ namespace Mpdn.RenderScript
             {
                 ResizeLists();
             }
+
+            private void NameBox_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    e.IsInputKey = true;
+                }
+            }
+
+            private void NameBox_KeyDown(object sender, KeyEventArgs e)
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    SelectedIndex++;
+                    if (SelectedIndex != -1)
+                    {
+                        e.Handled = true;
+                        e.SuppressKeyPress = true;
+                        NameBox.SelectAll();
+                    }
+                    else
+                        AcceptButton.PerformClick();
+                }
+                else if (e.KeyCode == Keys.Down)
+                {
+                    SelectedIndex++;
+                    if (SelectedIndex == -1 && listViewChain.Items.Count > 0)
+                        SelectedIndex = 0;
+
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    NameBox.SelectAll();
+                }
+                else if (e.KeyCode == Keys.Up)
+                {
+                    SelectedIndex--;
+                    if (SelectedIndex == -1)
+                        SelectedIndex = listViewChain.Items.Count - 1;
+
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    NameBox.SelectAll();
+                }
+            }
+
+
         }
 
         public class PresetDialogBase : ScriptConfigDialog<MultiPreset>

@@ -44,7 +44,7 @@ namespace Mpdn.RenderScript
         {
             public override string Category
             {
-                get { return "Hidden"; }
+                get { return "Meta"; }
             }
 
             public override ExtensionUiDescriptor Descriptor
