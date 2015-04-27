@@ -132,9 +132,34 @@ namespace Mpdn.RenderScript
 
         public class PresetChain : MultiPreset
         {
+            public PresetChain()
+                : base()
+            {
+                Name = "Script Chain";
+            }
+
+            public override bool HasConfigDialog()
+            {
+                return true;
+            }
+
+            public override bool ShowConfigDialog(IWin32Window owner)
+            {
+                using (var dialog = new PresetChainDialog())
+                {
+                    dialog.Setup(this);
+                    return (dialog.ShowDialog(owner) == DialogResult.OK);
+                }
+            }
+
             public override string Description
             {
-                get { return string.Join(" ➔ ", Options.Select(x => x.Name)); }
+                get
+                {
+                    return Options.Count > 0
+                        ? string.Join(" ➔ ", Options.Select(x => x.Name))
+                        : "Chains together multiple renderscripts";
+                }
             }
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
@@ -167,12 +192,32 @@ namespace Mpdn.RenderScript
             public PresetGroup()
                 : base()
             {
+                Name = "Script Group";
                 SelectedIndex = -1;
+            }
+
+            public override bool HasConfigDialog()
+            {
+                return true;
+            }
+
+            public override bool ShowConfigDialog(IWin32Window owner)
+            {
+                using (var dialog = new PresetGroupDialog())
+                {
+                    dialog.Setup(this);
+                    return (dialog.ShowDialog(owner) == DialogResult.OK);
+                }
             }
 
             public override string Description
             {
-                get { return string.Join(", ", Options.Select(x => x.Name)); }
+                get
+                {
+                    return Options.Count > 0
+                      ? string.Join(", ", Options.Select(x => x.Name))
+                      : "Picks one out of several renderscripts";
+                }
             }
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
@@ -215,9 +260,9 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class PresetGroupDialog : PresetDialog
+        public class PresetGroupAdvDialog : PresetDialog
         {
-            public PresetGroupDialog()
+            public PresetGroupAdvDialog()
                 : base()
             {
                 Text = "Script Group";
@@ -255,8 +300,8 @@ namespace Mpdn.RenderScript
                     return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("3A462015-2D92-43AC-B559-396DACF896C3"),
-                        Name = "Script Chain",
-                        Description = Settings.Description != "" ? Settings.Description : "Applies all of a list of renderscripts"
+                        Name = Settings.Name,
+                        Description = Settings.Description
                     };
                 }
             }
@@ -281,8 +326,8 @@ namespace Mpdn.RenderScript
                     return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("57D79B2B-4303-4102-A797-17EC4D003130"),
-                        Name = "Script Group",
-                        Description = Settings.Description != "" ? Settings.Description : "Applies one of a list of renderscripts"
+                        Name = Settings.Name,
+                        Description = Settings.Description
                     };
                 }
             }
