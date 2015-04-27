@@ -85,7 +85,7 @@ namespace Mpdn.RenderScript
             0});
             this.StrengthSetter.Name = "StrengthSetter";
             this.StrengthSetter.Size = new System.Drawing.Size(44, 20);
-            this.StrengthSetter.TabIndex = 0;
+            this.StrengthSetter.TabIndex = 1;
             this.StrengthSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.StrengthSetter.Value = new decimal(new int[] {
             8,
@@ -115,7 +115,7 @@ namespace Mpdn.RenderScript
             -2147483648});
             this.SharpnessSetter.Name = "SharpnessSetter";
             this.SharpnessSetter.Size = new System.Drawing.Size(44, 20);
-            this.SharpnessSetter.TabIndex = 1;
+            this.SharpnessSetter.TabIndex = 2;
             this.SharpnessSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.SharpnessSetter.Value = new decimal(new int[] {
             5,
@@ -150,7 +150,7 @@ namespace Mpdn.RenderScript
             this.ButtonOK.Location = new System.Drawing.Point(141, 132);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
-            this.ButtonOK.TabIndex = 3;
+            this.ButtonOK.TabIndex = 8;
             this.ButtonOK.Text = "OK";
             this.ButtonOK.UseVisualStyleBackColor = true;
             // 
@@ -162,7 +162,7 @@ namespace Mpdn.RenderScript
             this.ButtonCancel.Location = new System.Drawing.Point(222, 132);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
-            this.ButtonCancel.TabIndex = 4;
+            this.ButtonCancel.TabIndex = 9;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
             // 
@@ -191,7 +191,7 @@ namespace Mpdn.RenderScript
             0});
             this.AntiAliasingSetter.Name = "AntiAliasingSetter";
             this.AntiAliasingSetter.Size = new System.Drawing.Size(44, 20);
-            this.AntiAliasingSetter.TabIndex = 5;
+            this.AntiAliasingSetter.TabIndex = 3;
             this.AntiAliasingSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.AntiAliasingSetter.Value = new decimal(new int[] {
             10,
@@ -224,7 +224,7 @@ namespace Mpdn.RenderScript
             0});
             this.AntiRingingSetter.Name = "AntiRingingSetter";
             this.AntiRingingSetter.Size = new System.Drawing.Size(44, 20);
-            this.AntiRingingSetter.TabIndex = 7;
+            this.AntiRingingSetter.TabIndex = 4;
             this.AntiRingingSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.AntiRingingSetter.Value = new decimal(new int[] {
             8,
@@ -251,7 +251,7 @@ namespace Mpdn.RenderScript
             0});
             this.PassesSetter.Name = "PassesSetter";
             this.PassesSetter.Size = new System.Drawing.Size(44, 20);
-            this.PassesSetter.TabIndex = 10;
+            this.PassesSetter.TabIndex = 0;
             this.PassesSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.PassesSetter.Value = new decimal(new int[] {
             2,
@@ -261,11 +261,13 @@ namespace Mpdn.RenderScript
             // 
             // PrescalerBox
             // 
+            this.PrescalerBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.PrescalerBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.PrescalerBox.FormattingEnabled = true;
             this.PrescalerBox.Location = new System.Drawing.Point(81, 85);
             this.PrescalerBox.Name = "PrescalerBox";
             this.PrescalerBox.Size = new System.Drawing.Size(135, 21);
-            this.PrescalerBox.TabIndex = 12;
+            this.PrescalerBox.TabIndex = 5;
             this.PrescalerBox.SelectedIndexChanged += new System.EventHandler(this.ValueChanged);
             // 
             // label6
@@ -283,7 +285,7 @@ namespace Mpdn.RenderScript
             this.FastBox.Location = new System.Drawing.Point(15, 112);
             this.FastBox.Name = "FastBox";
             this.FastBox.Size = new System.Drawing.Size(103, 17);
-            this.FastBox.TabIndex = 14;
+            this.FastBox.TabIndex = 7;
             this.FastBox.Text = "Use fast method";
             this.FastBox.UseVisualStyleBackColor = true;
             this.FastBox.CheckedChanged += new System.EventHandler(this.ValueChanged);
@@ -294,7 +296,7 @@ namespace Mpdn.RenderScript
             this.ConfigButton.Location = new System.Drawing.Point(222, 83);
             this.ConfigButton.Name = "ConfigButton";
             this.ConfigButton.Size = new System.Drawing.Size(75, 23);
-            this.ConfigButton.TabIndex = 15;
+            this.ConfigButton.TabIndex = 6;
             this.ConfigButton.Text = "Configure";
             this.ConfigButton.UseVisualStyleBackColor = true;
             this.ConfigButton.Click += new System.EventHandler(this.ConfigButton_Click);
