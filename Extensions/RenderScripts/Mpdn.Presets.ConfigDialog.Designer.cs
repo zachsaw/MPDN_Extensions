@@ -400,7 +400,7 @@ namespace Mpdn.RenderScript
             // 
             this.NameLable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.NameLable.AutoSize = true;
-            this.NameLable.Location = new System.Drawing.Point(138, 471);
+            this.NameLable.Location = new System.Drawing.Point(138, 474);
             this.NameLable.Name = "NameLable";
             this.NameLable.Size = new System.Drawing.Size(35, 13);
             this.NameLable.TabIndex = 11;
@@ -409,11 +409,13 @@ namespace Mpdn.RenderScript
             // NameBox
             // 
             this.NameBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.NameBox.Location = new System.Drawing.Point(179, 468);
+            this.NameBox.Location = new System.Drawing.Point(179, 470);
             this.NameBox.Name = "NameBox";
-            this.NameBox.Size = new System.Drawing.Size(100, 20);
+            this.NameBox.Size = new System.Drawing.Size(152, 20);
             this.NameBox.TabIndex = 10;
             this.NameBox.TextChanged += new System.EventHandler(this.presetTextChanged);
+            this.NameBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NameBox_KeyDown);
+            this.NameBox.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.NameBox_PreviewKeyDown);
             // 
             // PresetDialog
             // 
