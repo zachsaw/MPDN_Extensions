@@ -209,17 +209,17 @@ namespace Mpdn.RenderScript
             }
 
             Initialized = false;
+            CompilationResult = null;
             InputFilters = inputFilters;
         }
 
         protected abstract void Render(IList<IBaseTexture> inputs);
 
-        protected virtual IFilter<ITexture> PassthroughFilter { get; set; }
-
         #region IFilter Implementation
 
         protected bool Updated { get; set; }
         protected bool Initialized { get; set; }
+        protected IFilter<ITexture> CompilationResult { get; set; }
 
         public IBaseFilter[] InputFilters { get; private set; }
         public ITexture OutputTexture { get; private set; }
@@ -262,19 +262,21 @@ namespace Mpdn.RenderScript
             Initialized = true;
         }
 
-        public virtual IFilter<ITexture> Compile()
+        public IFilter<ITexture> Compile()
         {
-            if (PassthroughFilter != null)
+            if (CompilationResult == null)
             {
-                PassthroughFilter = PassthroughFilter.Compile();
-                return PassthroughFilter;
-            }
+                for (int i = 0; i < InputFilters.Length; i++)
+                    InputFilters[i] = InputFilters[i].Compile();
 
-            for (int i = 0; i < InputFilters.Length; i++)
-            {
-                InputFilters[i] = InputFilters[i].Compile();
-            }
+                CompilationResult = Optimize();
+            };
+            
+            return CompilationResult;
+        }
 
+        protected virtual IFilter<ITexture> Optimize()
+        {
             return this;
         }
 
@@ -554,14 +556,13 @@ namespace Mpdn.RenderScript
             OutputLimitedRange = limitedRange;
         }
 
-        public override IFilter<ITexture> Compile()
+        protected override IFilter<ITexture> Optimize()
         {
-            var output = base.Compile();
             var input = InputFilters[0] as YuvFilter;
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
-                output = (IFilter<ITexture>) input.InputFilters[0];
+                return (IFilter<ITexture>) input.InputFilters[0];
 
-            return output;
+            return this;
         }
 
         public override TextureSize OutputSize
@@ -611,14 +612,13 @@ namespace Mpdn.RenderScript
             OutputLimitedRange = limitedRange;
         }
 
-        public override IFilter<ITexture> Compile()
+        protected override IFilter<ITexture> Optimize()
         {
-            var output = base.Compile();
             var input = InputFilters[0] as RgbFilter;
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
-                output = (IFilter<ITexture>)input.InputFilters[0];
+                return (IFilter<ITexture>) input.InputFilters[0];
 
-            return output;
+            return this;
         }
 
         public override TextureSize OutputSize
@@ -701,14 +701,14 @@ namespace Mpdn.RenderScript
             m_OutputSize = targetSize;
         }
 
-        public override IFilter<ITexture> Compile()
+        protected override IFilter<ITexture> Optimize()
         {
             if (InputFilters[0].OutputSize == m_OutputSize && m_Convolver == null)
             {
-                PassthroughFilter = InputFilters[0] as IFilter;
+                return InputFilters[0] as IFilter;
             }
 
-            return base.Compile();
+            return this;
         }
 
         public override TextureSize OutputSize
@@ -773,7 +773,7 @@ namespace Mpdn.RenderScript
                 : base(new IBaseFilter[0])
             {
                 m_InputFilter = inputFilter;
-                PassthroughFilter = transformation(m_InputFilter);
+                CompilationResult = transformation(m_InputFilter);
                 CheckSize();
             }
 
@@ -785,7 +785,7 @@ namespace Mpdn.RenderScript
 
             private void CheckSize()
             {
-                if (m_InputFilter.OutputSize != PassthroughFilter.OutputSize)
+                if (m_InputFilter.OutputSize != CompilationResult.OutputSize)
                 {
                     throw new InvalidOperationException("Transformation is not allowed to change the size.");
                 }
