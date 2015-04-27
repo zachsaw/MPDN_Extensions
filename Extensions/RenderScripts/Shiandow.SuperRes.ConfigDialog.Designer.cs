@@ -261,6 +261,7 @@ namespace Mpdn.RenderScript
             // 
             // PrescalerBox
             // 
+			this.PrescalerBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.PrescalerBox.FormattingEnabled = true;
             this.PrescalerBox.Location = new System.Drawing.Point(81, 85);
             this.PrescalerBox.Name = "PrescalerBox";
