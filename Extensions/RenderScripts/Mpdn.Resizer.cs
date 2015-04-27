@@ -207,6 +207,11 @@ namespace Mpdn.RenderScript
                 get { return "Mpdn.Resizer"; }
             }
 
+            public override string Category
+            {
+                get { return "Scaling"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get
