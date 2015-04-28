@@ -40,9 +40,9 @@ namespace Mpdn.RenderScript
                 AntiRingingSetter.Value = (Decimal)Settings.AntiRinging;
                 FastBox.Checked = Settings.FastMethod;
 
-                PrescalerBox.DataSource = Settings.PreScalerPresets;
+                PrescalerBox.DataSource = Settings.PreScalerPresets.Options;
                 PrescalerBox.DisplayMember = "Name";
-                PrescalerBox.SelectedIndex = Settings.PreScalerIndex;
+                PrescalerBox.SelectedIndex = Settings.PreScalerPresets.SelectedIndex;
 
                 UpdateGui();
             }
@@ -55,7 +55,8 @@ namespace Mpdn.RenderScript
                 Settings.AntiAliasing = (float)AntiAliasingSetter.Value;
                 Settings.AntiRinging = (float)AntiRingingSetter.Value;
                 Settings.FastMethod = FastBox.Checked;
-                Settings.PreScalerIndex = (int)PrescalerBox.SelectedIndex;
+
+                Settings.PreScalerPresets.SelectedIndex = (int)PrescalerBox.SelectedIndex;
             }
 
             private void ValueChanged(object sender, EventArgs e)
@@ -67,13 +68,13 @@ namespace Mpdn.RenderScript
             {
                 AntiRingingSetter.Enabled = !FastBox.Checked;
                 ConfigButton.Enabled =
-                    (PrescalerBox.SelectedValue as RenderScriptPreset != null) ? 
-                    (PrescalerBox.SelectedValue as RenderScriptPreset).Script.HasConfigDialog() : false;
+                    (PrescalerBox.SelectedValue as Preset != null) ? 
+                    (PrescalerBox.SelectedValue as Preset).HasConfigDialog() : false;
             }
 
             private void ConfigButton_Click(object sender, EventArgs e)
             {
-                (PrescalerBox.SelectedValue as RenderScriptPreset).Script.ShowConfigDialog(Owner);
+                (PrescalerBox.SelectedValue as Preset).ShowConfigDialog(Owner);
             }
         }
 

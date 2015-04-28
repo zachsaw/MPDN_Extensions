@@ -83,6 +83,11 @@ namespace Mpdn.RenderScript
                 get { return "Shiandow.Nedi"; }
             }
 
+            public override string Category
+            {
+                get { return "Upscaling"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get

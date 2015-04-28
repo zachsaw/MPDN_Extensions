@@ -155,6 +155,11 @@ namespace Mpdn.RenderScript
                 get { return "Mpdn.ImageProcessor"; }
             }
 
+            public override string Category
+            {
+                get { return "Processing"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get

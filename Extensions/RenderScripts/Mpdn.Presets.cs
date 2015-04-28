@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 using Mpdn.PlayerExtensions;
 using YAXLib;
 
@@ -24,44 +25,83 @@ namespace Mpdn.RenderScript
 {
     namespace Mpdn.Presets
     {
-        public class Selector<TOption> : RenderChain
-            where TOption : RenderChain, new()
+        public class Preset : RenderChain
         {
-            public List<TOption> Options { get; set; }
+            [YAXAttributeForClass]
+            public virtual string Name { get; set; }
 
-            public int SelectedIndex { get; set; }
+            [YAXAttributeForClass]
+            public virtual Guid Guid { get; set; }
 
             [YAXDontSerialize]
-            public TOption SelectedOption { get { return Options.ElementAtOrDefault(SelectedIndex); } }
+            public virtual string Description { get { return null; } }
 
-            public Selector()
+            public virtual bool HasConfigDialog()
             {
-                Options = new List<TOption>();
-                SelectedIndex = -1;
+                return false;
+            }
+
+            public virtual bool ShowConfigDialog(IWin32Window owner)
+            {
+                throw new NotImplementedException();
             }
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                if (SelectedOption != null)
-                    return SelectedOption.CreateFilter(sourceFilter);
-                else
-                    return sourceFilter;
+                throw new NotImplementedException();
+            }
+
+            public virtual void Destroy() { }
+
+            public Preset()
+            {
+                Guid = Guid.NewGuid();
+            }
+
+            public static Preset Make<T>(string name = null)
+                where T : IRenderChainUi, new()
+            {
+                var script = new T();
+                return new SinglePreset() { Name = (name ?? script.Descriptor.Name), Script = script };
             }
         }
 
-        public class RenderScriptPreset : RenderChain
+        public static class PresetHelper
         {
-            [YAXAttributeForClass]
-            public string Name { get; set; }
-
-            [YAXAttributeForClass]
-            public Guid Guid { get; set; }
-
-            public IRenderChainUi Script { get; set; }
-
-            public RenderScriptPreset()
+            public static Preset MakeNewPreset(this IRenderChainUi renderScript, string name = null)
             {
-                Guid = Guid.NewGuid();
+                return renderScript.CreateNew().ToPreset();
+            }
+
+            public static Preset ToPreset(this IRenderChainUi renderScript, string name = null)
+            {
+                return renderScript.GetChain() as Preset 
+                    ?? new SinglePreset() { Name = (name ?? renderScript.Descriptor.Name), Script = renderScript };
+            }
+        }
+
+        public class SinglePreset : Preset
+        {
+            public virtual IRenderChainUi Script { get; set; }
+
+            public override bool HasConfigDialog()
+            {
+                return Script.HasConfigDialog();
+            }
+
+            public override bool ShowConfigDialog(IWin32Window owner)
+            {
+                return Script.ShowConfigDialog(owner);
+            }
+
+            public override void Destroy()
+            {
+                Script.Destroy();
+            }
+
+            public override string Description
+            {
+                get { return Script.Descriptor.Description;  }
             }
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
@@ -73,31 +113,133 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class PresetSettings : Selector<RenderScriptPreset> 
+        public class MultiPreset : Preset
         {
-            private Guid HotkeyGuid = Guid.NewGuid();
-            private string m_Hotkey;
+            public IList<Preset> Options { get; set; }
 
-            public string Name { get; set; }
-            public string Hotkey 
+            public MultiPreset()
+                : base()
+            {
+                Options = new List<Preset>();
+            }
+
+            public override void Destroy()
+            {
+                foreach (var option in Options)
+                    option.Destroy();
+            }
+        }
+
+        public class PresetChain : MultiPreset
+        {
+            public PresetChain()
+                : base()
+            {
+                Name = "Script Chain";
+            }
+
+            public override bool HasConfigDialog()
+            {
+                return true;
+            }
+
+            public override bool ShowConfigDialog(IWin32Window owner)
+            {
+                using (var dialog = new PresetChainDialog())
+                {
+                    dialog.Setup(this);
+                    return (dialog.ShowDialog(owner) == DialogResult.OK);
+                }
+            }
+
+            public override string Description
+            {
+                get
+                {
+                    return Options.Count > 0
+                        ? string.Join(" ➔ ", Options.Select(x => x.Name))
+                        : "Chains together multiple renderscripts";
+                }
+            }
+
+            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            {
+                return Options.Aggregate(sourceFilter, (a, b) => a + b);
+            }
+        }
+
+        public class PresetGroup : MultiPreset
+        {
+            #region Settings
+
+            public int SelectedIndex { get; set; }
+
+            public string Hotkey
             {
                 get { return m_Hotkey; }
                 set
                 {
-                    m_Hotkey = value;
+                    m_Hotkey = value ?? "";
                     RegisterHotkey();
-                } 
+                }
             }
 
-            public PresetSettings()
+            [YAXDontSerialize]
+            public Preset SelectedOption { get { return Options.ElementAtOrDefault(SelectedIndex); } }
+
+            #endregion
+
+            public PresetGroup()
+                : base()
             {
-                Name = "Preset Group";
-                Hotkey = "";
+                Name = "Script Group";
+                SelectedIndex = -1;
             }
+
+            public override bool HasConfigDialog()
+            {
+                return true;
+            }
+
+            public override bool ShowConfigDialog(IWin32Window owner)
+            {
+                using (var dialog = new PresetGroupDialog())
+                {
+                    dialog.Setup(this);
+                    return (dialog.ShowDialog(owner) == DialogResult.OK);
+                }
+            }
+
+            public override string Description
+            {
+                get
+                {
+                    return 
+                        (Options.Count > 0)
+                        ? string.Join(", ", 
+                            Options.Select(x => 
+                            (x == SelectedOption) 
+                            ? "[" + x.Name + "]" 
+                            :       x.Name      ))
+                        : "Picks one out of several renderscripts";
+                }
+            }
+
+            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            {
+                if (SelectedOption != null)
+                    return SelectedOption.CreateFilter(sourceFilter);
+                else
+                    return sourceFilter;
+            }
+
+            #region Hotkey Handling
+
+            private string m_Hotkey;
 
             private void RegisterHotkey()
             {
-                DynamicHotkeys.RegisterHotkey(HotkeyGuid, Hotkey, IncrementSelection);
+                DynamicHotkeys.RegisterHotkey(Guid, Hotkey, IncrementSelection);
             }
 
             private void IncrementSelection()
@@ -110,13 +252,50 @@ namespace Mpdn.RenderScript
 
                 PlayerControl.SetRenderScript(PlayerControl.ActiveRenderScriptGuid);
             }
+
+            #endregion
         }
 
-        public class PresetRenderScript : RenderChainUi<PresetSettings, PresetDialog>
+        public class PresetChainDialog : PresetDialog
+        {
+            public PresetChainDialog()
+                : base()
+            {
+                Text = "Script Chain";
+            }
+        }
+
+        public class PresetGroupAdvDialog : PresetDialog
+        {
+            public PresetGroupAdvDialog()
+                : base()
+            {
+                Text = "Script Group";
+            }
+
+            protected override void SaveSettings()
+            {
+                base.SaveSettings();
+                (Settings as PresetGroup).SelectedIndex = SelectedIndex;
+            }
+
+            protected override void LoadSettings()
+            {
+                base.LoadSettings();
+                SelectedIndex = (Settings as PresetGroup).SelectedIndex;
+            }
+        }
+
+        public class ScriptChainScript : RenderChainUi<PresetChain, PresetChainDialog>
         {
             protected override string ConfigFileName
             {
-                get { return "Mpdn.Presets"; }
+                get { return "Mpdn.ScriptChain"; }
+            }
+
+            public override string Category
+            {
+                get { return "Meta"; }
             }
 
             public override ExtensionUiDescriptor Descriptor
@@ -125,9 +304,35 @@ namespace Mpdn.RenderScript
                 {
                     return new ExtensionUiDescriptor
                     {
-                        Name = Settings.Name ?? "Preset Group",
-                        Guid = new Guid("B1F3B882-3E8F-4A8C-B225-30C9ABD67DB1"),
-                        Description = (Settings.SelectedOption == null) ? "Group of Presets" : Settings.SelectedOption.Name
+                        Guid = new Guid("3A462015-2D92-43AC-B559-396DACF896C3"),
+                        Name = Settings.Name,
+                        Description = Settings.Description
+                    };
+                }
+            }
+        }
+
+        public class ScriptGroupScript : RenderChainUi<PresetGroup, PresetGroupDialog>
+        {
+            protected override string ConfigFileName
+            {
+                get { return "Mpdn.ScriptGroup"; }
+            }
+
+            public override string Category
+            {
+                get { return "Meta"; }
+            }
+
+            public override ExtensionUiDescriptor Descriptor
+            {
+                get
+                {
+                    return new ExtensionUiDescriptor
+                    {
+                        Guid = new Guid("57D79B2B-4303-4102-A797-17EC4D003130"),
+                        Name = Settings.Name,
+                        Description = Settings.Description
                     };
                 }
             }

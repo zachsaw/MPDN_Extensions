@@ -185,6 +185,11 @@ namespace Mpdn.RenderScript
 
         public class Lut3DUi : RenderChainUi<Lut3D, Lut3DConfigDialog>
         {
+            public override string Category
+            {
+                get { return "Processing"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get
