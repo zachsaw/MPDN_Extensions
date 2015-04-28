@@ -494,6 +494,11 @@ namespace Mpdn.RenderScript
                 UpdateButtons();
             }
 
+            private void PresetDialogActivated(object sender, EventArgs e)
+            {
+                buttonOk.Focus(); // Prevent people from accidentally removing scripts when pressing enter
+            }
+
             #endregion
 
             #region Name Editing
@@ -593,6 +598,7 @@ namespace Mpdn.RenderScript
             }
 
             #endregion
+
         }
 
         public class PresetDialogBase : ScriptConfigDialog<MultiPreset>
