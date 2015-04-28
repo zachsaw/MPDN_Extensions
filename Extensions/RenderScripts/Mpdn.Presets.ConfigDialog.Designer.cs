@@ -60,10 +60,13 @@ namespace Mpdn.RenderScript
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.menuChain = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuConfigure = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.menuClear = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSelectAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuUngroup = new System.Windows.Forms.ToolStripMenuItem();
             this.buttonAdd = new System.Windows.Forms.Button();
             this.buttonMinus = new System.Windows.Forms.Button();
             this.buttonClear = new System.Windows.Forms.Button();
@@ -208,12 +211,15 @@ namespace Mpdn.RenderScript
             // 
             this.menuChain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuConfigure,
-            this.toolStripMenuItem1,
+            this.toolStripSeparator1,
             this.menuRemove,
             this.menuClear,
-            this.menuSelectAll});
+            this.menuSelectAll,
+            this.toolStripSeparator2,
+            this.menuGroup,
+            this.menuUngroup});
             this.menuChain.Name = "contextMenuStrip1";
-            this.menuChain.Size = new System.Drawing.Size(165, 98);
+            this.menuChain.Size = new System.Drawing.Size(165, 170);
             // 
             // menuConfigure
             // 
@@ -222,10 +228,10 @@ namespace Mpdn.RenderScript
             this.menuConfigure.Text = "Configure...";
             this.menuConfigure.Click += new System.EventHandler(this.ButtonConfigureClick);
             // 
-            // toolStripMenuItem1
+            // toolStripSeparator1
             // 
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(161, 6);
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(161, 6);
             // 
             // menuRemove
             // 
@@ -249,6 +255,25 @@ namespace Mpdn.RenderScript
             this.menuSelectAll.Size = new System.Drawing.Size(164, 22);
             this.menuSelectAll.Text = "Select All";
             this.menuSelectAll.Click += new System.EventHandler(this.SelectAll);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(161, 6);
+            // 
+            // menuGroup
+            // 
+            this.menuGroup.Name = "menuGroup";
+            this.menuGroup.Size = new System.Drawing.Size(164, 22);
+            this.menuGroup.Text = "Group";
+            this.menuGroup.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuGroupItemClicked);
+            // 
+            // menuUngroup
+            // 
+            this.menuUngroup.Name = "menuUngroup";
+            this.menuUngroup.Size = new System.Drawing.Size(164, 22);
+            this.menuUngroup.Text = "Ungroup";
+            this.menuUngroup.Click += new System.EventHandler(this.MenuUngroupClicked);
             // 
             // buttonAdd
             // 
@@ -386,7 +411,7 @@ namespace Mpdn.RenderScript
             this.splitContainer.Size = new System.Drawing.Size(807, 495);
             this.splitContainer.SplitterDistance = 400;
             this.splitContainer.TabIndex = 9;
-            this.splitContainer.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer1_SplitterMoved);
+            this.splitContainer.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitterMoved);
             // 
             // splitter1
             // 
@@ -413,9 +438,9 @@ namespace Mpdn.RenderScript
             this.NameBox.Name = "NameBox";
             this.NameBox.Size = new System.Drawing.Size(152, 20);
             this.NameBox.TabIndex = 10;
-            this.NameBox.TextChanged += new System.EventHandler(this.presetTextChanged);
-            this.NameBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NameBox_KeyDown);
-            this.NameBox.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.NameBox_PreviewKeyDown);
+            this.NameBox.TextChanged += new System.EventHandler(this.NameChanged);
+            this.NameBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NameKeyDown);
+            this.NameBox.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.NamePreviewKeyDown);
             // 
             // PresetDialog
             // 
@@ -434,7 +459,7 @@ namespace Mpdn.RenderScript
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "<INSERT TITLE>";
-            this.ResizeEnd += new System.EventHandler(this.PresetDialog_ResizeEnd);
+            this.ResizeEnd += new System.EventHandler(this.DialogResizeEnd);
             this.menuAvail.ResumeLayout(false);
             this.menuChain.ResumeLayout(false);
             this.panelReorder.ResumeLayout(false);
@@ -466,9 +491,8 @@ namespace Mpdn.RenderScript
             private System.Windows.Forms.Panel panelReorder;
             private System.Windows.Forms.Button buttonUp;
             private System.Windows.Forms.Button buttonDown;
-            private System.Windows.Forms.ContextMenuStrip menuChain;
             private System.Windows.Forms.ToolStripMenuItem menuConfigure;
-            private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+            private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
             private System.Windows.Forms.ToolStripMenuItem menuRemove;
             private System.Windows.Forms.ToolStripMenuItem menuClear;
             private System.Windows.Forms.ContextMenuStrip menuAvail;
@@ -480,6 +504,10 @@ namespace Mpdn.RenderScript
             private System.Windows.Forms.Splitter splitter1;
             private System.Windows.Forms.TextBox NameBox;
             private System.Windows.Forms.Label NameLable;
+            private System.Windows.Forms.ToolStripMenuItem menuGroup;
+            private System.Windows.Forms.ToolStripMenuItem menuUngroup;
+            private System.Windows.Forms.ContextMenuStrip menuChain;
+            private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         }
     }
 }  
