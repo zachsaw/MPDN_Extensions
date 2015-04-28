@@ -219,7 +219,7 @@ namespace Mpdn.RenderScript
             this.menuGroup,
             this.menuUngroup});
             this.menuChain.Name = "contextMenuStrip1";
-            this.menuChain.Size = new System.Drawing.Size(165, 170);
+            this.menuChain.Size = new System.Drawing.Size(165, 148);
             // 
             // menuConfigure
             // 
@@ -459,6 +459,7 @@ namespace Mpdn.RenderScript
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "<INSERT TITLE>";
+            this.Activated += new System.EventHandler(this.PresetDialogActivated);
             this.ResizeEnd += new System.EventHandler(this.DialogResizeEnd);
             this.menuAvail.ResumeLayout(false);
             this.menuChain.ResumeLayout(false);
