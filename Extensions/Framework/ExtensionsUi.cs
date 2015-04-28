@@ -49,7 +49,14 @@ namespace Mpdn
 
         public class NoSettings { }
 
-        public class ScriptConfigDialog<TSettings> : Form
+        public interface IScriptConfigDialog<in TSettings> : IDisposable
+            where TSettings : class, new()
+        {
+            void Setup(TSettings settings);
+            DialogResult ShowDialog(IWin32Window owner);
+        }
+
+        public class ScriptConfigDialog<TSettings> : Form, IScriptConfigDialog<TSettings>
             where TSettings : class, new()
         {
             protected TSettings Settings { get; private set; }
@@ -86,7 +93,7 @@ namespace Mpdn
 
         public abstract class ExtensionUi<TExtensionClass, TSettings, TDialog> : IExtensionUi
             where TSettings : class, new()
-            where TDialog : ScriptConfigDialog<TSettings>, new()
+            where TDialog : IScriptConfigDialog<TSettings>, new()
         {
             protected virtual string ConfigFileName { get { return this.GetType().Name; } }
 

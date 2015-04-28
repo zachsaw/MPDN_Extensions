@@ -17,6 +17,8 @@
 using System;
 using System.Drawing;
 using Mpdn.RenderScript.Mpdn.Presets;
+using Mpdn.RenderScript.Shiandow.Nedi;
+using Mpdn.RenderScript.Shiandow.NNedi3;
 
 namespace Mpdn.RenderScript
 {
@@ -41,8 +43,7 @@ namespace Mpdn.RenderScript
             public float AntiRinging { get; set; }
             public bool FastMethod { get; set; }
 
-            public RenderScriptPreset[] PreScalerPresets { get; set; }
-            public int PreScalerIndex { get; set; }
+            public PresetGroup PreScalerPresets { get; set; }
 
             public bool NoIntermediates { get; set; }
 
@@ -50,9 +51,9 @@ namespace Mpdn.RenderScript
 
             #endregion
 
-            public RenderScriptPreset PreScaler
+            public Preset PreScaler
             {
-                get { return PreScalerPresets[PreScalerIndex]; }
+                get { return PreScalerPresets.SelectedOption; }
             }
 
             public Func<TextureSize> TargetSize; // Not saved
@@ -71,24 +72,18 @@ namespace Mpdn.RenderScript
 
                 NoIntermediates = false;
 
-                PreScalerPresets = new RenderScriptPreset[] {
-                    new RenderScriptPreset() { 
-                        Name = "None", 
-                        Script = RenderChainUi.Identity },
-                    new RenderScriptPreset() { 
-                        Name = "NEDI", 
-                        Script = new Nedi.NediScaler() 
-                        { Chain = new Nedi.Nedi() { ForceCentered = true} }},
-                    new RenderScriptPreset() { 
-                        Name = "NNEDI3", 
-                        Script = new NNedi3.NNedi3Scaler() 
-                        { Chain = new NNedi3.NNedi3() { ForceCentered = true} }},
-                    new RenderScriptPreset() { 
-                        Name = "Custom", 
-                        Script = new Mpdn.ScriptChain.ScriptChainScript() }
+                PreScalerPresets = new PresetGroup()
+                {
+                    Options = new Preset[] {
+                        RenderChainUi.Identity.ToPreset(),
+                        new NediScaler() { 
+                            Chain = new Nedi.Nedi() { ForceCentered = true } }.ToPreset(),
+                        new NNedi3Scaler() { 
+                            Chain = new NNedi3.NNedi3() { ForceCentered = true } }.ToPreset(),
+                        Preset.Make<ScriptChainScript>("Custom")
+                    },
+                    SelectedIndex = 0
                 };
-
-                PreScalerIndex = 0;
 
                 FirstPassOnly = false;
                 upscaler = new Scaler.Jinc(ScalerTaps.Four, false);
@@ -120,7 +115,7 @@ namespace Mpdn.RenderScript
 
                 // Skip if downscaling
                 if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
-                    return initial;
+                    return original;
 
                 // Initial scaling
                 lab = new ShaderFilter(GammaToLab, initial);
@@ -188,6 +183,11 @@ namespace Mpdn.RenderScript
             protected override string ConfigFileName
             {
                 get { return "Shiandow.SuperRes"; }
+            }
+
+            public override string Category
+            {
+                get { return "Upscaling"; }
             }
 
             public override ExtensionUiDescriptor Descriptor

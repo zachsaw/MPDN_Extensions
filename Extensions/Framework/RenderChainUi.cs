@@ -23,6 +23,7 @@ namespace Mpdn.RenderScript
     public interface IRenderChainUi : IRenderScriptUi
     {
         RenderChain GetChain();
+        string Category { get; }
     }
 
     public static class RenderChainUi
@@ -41,6 +42,11 @@ namespace Mpdn.RenderScript
 
         private class IdentityRenderChainUi : RenderChainUi<IdentityRenderChain>
         {
+            public override string Category
+            {
+                get { return "Meta"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get
@@ -62,7 +68,7 @@ namespace Mpdn.RenderScript
 
     public abstract class RenderChainUi<TChain, TDialog> : ExtensionUi<Config.Internal.RenderScripts, TChain, TDialog>, IRenderChainUi
         where TChain : RenderChain, new()
-        where TDialog : ScriptConfigDialog<TChain>, new()
+        where TDialog : IScriptConfigDialog<TChain>, new()
     {
         [YAXSerializeAs("Settings")]
         public TChain Chain
@@ -70,6 +76,8 @@ namespace Mpdn.RenderScript
             get { return Settings; }
             set { Settings = value; }
         }
+
+        public abstract string Category { get; }
 
         protected RenderChainUi()
         {

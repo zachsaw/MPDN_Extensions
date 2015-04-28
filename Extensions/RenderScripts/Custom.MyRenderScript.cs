@@ -79,6 +79,11 @@ namespace Mpdn.RenderScript
 
         public class MyRenderScript : RenderChainUi<MyRenderChain>
         {
+            public override string Category
+            {
+                get { return "Hidden"; } // Change to something else to make it visible in MPDN
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get

@@ -116,6 +116,11 @@ namespace Mpdn.RenderScript
                 get { return "Shiandow.Chroma"; }
             }
 
+            public override string Category
+            {
+                get { return "Chroma Scaling"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get

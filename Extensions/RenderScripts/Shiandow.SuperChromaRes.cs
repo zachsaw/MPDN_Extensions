@@ -132,6 +132,11 @@ namespace Mpdn.RenderScript
                 get { return "SuperChromaRes"; }
             }
 
+            public override string Category
+            {
+                get { return "Chroma Scaling"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get
