@@ -29,6 +29,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             InitializeComponent();
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
             CancelButton = btnCancel;
+            this.dataGridView1.MultiSelect = false;
             FormClosed += OpenSubtitlesForm_FormClosed;
         }
 
