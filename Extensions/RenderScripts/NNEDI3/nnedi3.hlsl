@@ -153,8 +153,8 @@ float4 main( PS_IN In ) : SV_TARGET
 	}
 
 #ifdef EXTRA_CHECKS
-	return float4(mstd[0] + (wsum > 1e-10 ? (5*vsum/wsum)*mstd[1] : 0.0), 1, 1, 1);
+	return float4(saturate(mstd[0] + (wsum > 1e-10 ? (5*vsum/wsum)*mstd[1] : 0.0)), 1, 1, 1);
 #else
-    return float4(mstd[0] + (5*vsum/wsum)*mstd[1], 1, 1, 1);
+    return float4(saturate(mstd[0] + (5*vsum/wsum)*mstd[1]), 1, 1, 1);
 #endif
 }
