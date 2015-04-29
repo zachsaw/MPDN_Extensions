@@ -172,8 +172,7 @@ namespace Mpdn.RenderScript
 
                 item.Tag = preset;
                 UpdateItemText(item, preset);
-                listViewChain.Items.Add(item);
-
+                
                 ResizeLists();
                 UpdateButtons();
             }
@@ -411,6 +410,8 @@ namespace Mpdn.RenderScript
 
             private void UpdateItemText(ListViewItem item, Preset preset)
             {
+                while (item.SubItems.Count < 3) 
+                    item.SubItems.Add(string.Empty);
                 item.SubItems[1].Text = preset.Name;
                 item.SubItems[2].Text = preset.Description;
 
