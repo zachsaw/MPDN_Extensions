@@ -103,7 +103,7 @@ namespace Mpdn
 
             private Config ScriptConfig { get; set; }
 
-            protected TSettings Settings
+            public TSettings Settings
             {
                 get 
                 {

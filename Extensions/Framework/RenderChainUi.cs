@@ -22,7 +22,7 @@ namespace Mpdn.RenderScript
 {
     public interface IRenderChainUi : IRenderScriptUi
     {
-        RenderChain GetChain();
+        RenderChain Chain { get; }
         string Category { get; }
     }
 
@@ -70,13 +70,6 @@ namespace Mpdn.RenderScript
         where TChain : RenderChain, new()
         where TDialog : IScriptConfigDialog<TChain>, new()
     {
-        [YAXSerializeAs("Settings")]
-        public TChain Chain
-        {
-            get { return Settings; }
-            set { Settings = value; }
-        }
-
         public abstract string Category { get; }
 
         protected RenderChainUi()
@@ -86,14 +79,15 @@ namespace Mpdn.RenderScript
 
         public IRenderScript CreateRenderScript()
         {
-            return new RenderChainScript(Chain);
+            return new RenderChainScript(Settings);
         }
 
         #region Implementation
 
-        public RenderChain GetChain()
+        [YAXDontSerialize]
+        public RenderChain Chain
         {
-            return Chain;
+            get { return Settings; }
         }
 
         public override void Destroy()

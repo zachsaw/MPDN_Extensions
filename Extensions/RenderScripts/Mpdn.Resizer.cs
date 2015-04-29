@@ -224,9 +224,9 @@ namespace Mpdn.RenderScript
 
             private string GetDescription()
             {
-                var desc = Chain.ResizerOption == ResizerOption.TargetSize100Percent
+                var desc = Settings.ResizerOption == ResizerOption.TargetSize100Percent
                     ? "Resizes the image"
-                    : string.Format("Resize to: {0}", Chain.ResizerOption.ToDescription());
+                    : string.Format("Resize to: {0}", Settings.ResizerOption.ToDescription());
                 return desc;
             }
         }
