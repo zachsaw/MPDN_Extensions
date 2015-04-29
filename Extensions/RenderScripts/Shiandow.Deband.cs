@@ -36,7 +36,7 @@ namespace Mpdn.RenderScript
                 detaillevel = 2;
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter input)
             {
                 var bilinear = new Scaler.HwBilinear();
              
@@ -47,10 +47,10 @@ namespace Mpdn.RenderScript
                     case FrameBufferInputFormat.Y410: bits = 10; break;
                     case FrameBufferInputFormat.P016: bits = 16; break;
                     case FrameBufferInputFormat.Y416: bits = 16; break;
-                    case FrameBufferInputFormat.Rgb24: return sourceFilter;
-                    case FrameBufferInputFormat.Rgb32: return sourceFilter;
+                    case FrameBufferInputFormat.Rgb24: return input;
+                    case FrameBufferInputFormat.Rgb32: return input;
                 }
-                if (bits > maxbitdepth) return sourceFilter;
+                if (bits > maxbitdepth) return input;
 
                 float[] YuvConsts = new float[2];
                 switch (Renderer.Colorimetric)
@@ -74,10 +74,10 @@ namespace Mpdn.RenderScript
                 var Subtract = CompileShader("Subtract.hlsl").Configure(true, format: TextureFormat.Float16);
                 var SubtractLimited = CompileShader("SubtractLimited.hlsl").Configure(true, Consts);
 
-                IFilter input = sourceFilter.ConvertToYuv();
-                var inputsize = input.OutputSize;
+                IFilter yuv = input.ConvertToYuv();
+                var inputsize = yuv.OutputSize;
 
-                var current = input;
+                var current = yuv;
                 var downscaled = new Stack<IFilter>();
                 downscaled.Push(current);
 

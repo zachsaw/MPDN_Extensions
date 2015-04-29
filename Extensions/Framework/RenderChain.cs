@@ -23,7 +23,7 @@ namespace Mpdn.RenderScript
 {
     public abstract class RenderChain : IDisposable
     {
-        public abstract IFilter CreateFilter(IResizeableFilter sourceFilter);
+        public abstract IFilter CreateFilter(IResizeableFilter input);
 
         #region Operators
 
@@ -172,9 +172,9 @@ namespace Mpdn.RenderScript
             m_Compiler = compiler;
         }
 
-        public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+        public override IFilter CreateFilter(IResizeableFilter input)
         {
-            return m_Compiler(sourceFilter);
+            return m_Compiler(input);
         }
     }
 }

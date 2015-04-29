@@ -109,12 +109,12 @@ namespace Mpdn.RenderScript
                 DisposeHelper.Dispose(Script);
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter input)
             {
                 if (Script != null)
-                    return Chain.CreateFilter(sourceFilter);
+                    return Chain.CreateFilter(input);
                 else
-                    return sourceFilter;
+                    return input;
             }
 
             #endregion
@@ -168,7 +168,7 @@ namespace Mpdn.RenderScript
                         option.Dispose();
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter input)
             {
                 throw new NotImplementedException();
             }
@@ -176,9 +176,9 @@ namespace Mpdn.RenderScript
 
         public class PresetChain : PresetCollection
         {
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter input)
             {
-                return Options.Aggregate(sourceFilter, (a, b) => a + b);
+                return Options.Aggregate(input, (a, b) => a + b);
             }
         }
 
@@ -210,12 +210,12 @@ namespace Mpdn.RenderScript
                 m_HotkeyGuid = Guid.NewGuid();
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter input)
             {
                 if (SelectedOption != null)
-                    return SelectedOption.CreateFilter(sourceFilter);
+                    return SelectedOption.CreateFilter(input);
                 else
-                    return sourceFilter;
+                    return input;
             }
 
             #region Hotkey Handling

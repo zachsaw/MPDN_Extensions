@@ -59,12 +59,12 @@ namespace Mpdn.RenderScript
                 get { return "SuperRes"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter input)
             {
                 IFilter yuv;
 
                 var chromaSize = Renderer.ChromaSize;
-                var targetSize = sourceFilter.OutputSize;
+                var targetSize = input.OutputSize;
 
                 // Original values
                 var yInput = new YSourceFilter();
@@ -74,7 +74,7 @@ namespace Mpdn.RenderScript
                 float[] YuvConsts = new float[2];
                 switch (Renderer.Colorimetric)
                 {
-                    case YuvColorimetric.Auto : return sourceFilter;
+                    case YuvColorimetric.Auto : return input;
                     case YuvColorimetric.FullRangePc601: YuvConsts = new[] { 0.114f, 0.299f, 0.0f}; break;
                     case YuvColorimetric.FullRangePc709: YuvConsts = new[] { 0.0722f, 0.2126f, 0.0f }; break;
                     case YuvColorimetric.FullRangePc2020: YuvConsts = new[] { 0.0593f, 0.2627f, 0.0f }; break;
@@ -85,7 +85,7 @@ namespace Mpdn.RenderScript
 
                 // Skip if downscaling
                 if (targetSize.Width <= chromaSize.Width && targetSize.Height <= chromaSize.Height)
-                    return sourceFilter;
+                    return input;
 
                 var Consts = new[] { Strength, Sharpness   , AntiAliasing, AntiRinging,  
                                      Softness, YuvConsts[0], YuvConsts[1]};
@@ -102,7 +102,7 @@ namespace Mpdn.RenderScript
                 var LabToLinear = CompileShader("../Common/LabToLinear.hlsl");
                 var LinearToLab = CompileShader("../Common/LinearToLab.hlsl");
 
-                yuv = sourceFilter.ConvertToYuv();
+                yuv = input.ConvertToYuv();
 
                 for (int i = 1; i <= Passes; i++)
                 {

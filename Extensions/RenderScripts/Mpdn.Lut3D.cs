@@ -76,14 +76,14 @@ namespace Mpdn.RenderScript
                 get { return "Lut3D"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter input)
             {
                 if (!Activate || !File.Exists(FileName))
-                    return sourceFilter;
+                    return input;
 
                 Create3DTexture();
                 var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling : true);
-                return new ShaderFilter(shader, sourceFilter, new Texture3DSourceFilter(m_Texture3D));
+                return new ShaderFilter(shader, input, new Texture3DSourceFilter(m_Texture3D));
             }
 
             public override void RenderScriptDisposed()

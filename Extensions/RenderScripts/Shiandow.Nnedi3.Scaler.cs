@@ -42,10 +42,10 @@ namespace Mpdn.RenderScript
             private static readonly int[] s_NeuronCount = {16, 32, 64, 128, 256};
             private static readonly string[] s_CodePath = {"A", "B", "C", "D", "E"};
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter input)
             {
                 if (!Renderer.IsDx11Avail)
-                    return sourceFilter; // DX11 is not available; fallback
+                    return input; // DX11 is not available; fallback
 
                 Func<TextureSize, TextureSize> Transformation = s => new TextureSize(2 * s.Height, s.Width);
 
@@ -53,19 +53,19 @@ namespace Mpdn.RenderScript
                 var Interleave = CompileShader("Interleave.hlsl").Configure(transform: Transformation);
                 var Combine = CompileShader("Combine.hlsl").Configure(transform: Transformation);
 
-                var sourceSize = sourceFilter.OutputSize;
+                var sourceSize = input.OutputSize;
                 if (!IsUpscalingFrom(sourceSize))
-                    return sourceFilter;
+                    return input;
 
-                IFilter input = sourceFilter.ConvertToYuv();
+                var yuv = input.ConvertToYuv();
 
-                var chroma = new ResizeFilter(input, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
+                var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
                     TextureChannels.ChromaOnly, new Vector2(-0.5f, -0.5f), Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
                 
                 IFilter resultY, result;
 
-                var pass1 = NNedi3Helpers.CreateFilter(NNEDI3, input, Neurons);
-                resultY = new ShaderFilter(Interleave, input, pass1);
+                var pass1 = NNedi3Helpers.CreateFilter(NNEDI3, yuv, Neurons);
+                resultY = new ShaderFilter(Interleave, yuv, pass1);
                 var pass2 = NNedi3Helpers.CreateFilter(NNEDI3, resultY, Neurons);
                 result = new ShaderFilter(Combine, resultY, pass2, chroma);
 

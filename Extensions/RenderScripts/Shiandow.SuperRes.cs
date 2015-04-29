@@ -105,9 +105,9 @@ namespace Mpdn.RenderScript
                 downscaler = new Scaler.Bilinear();
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter input)
             {
-                return CreateFilter(sourceFilter, new ResizeFilter(sourceFilter, sourceFilter.OutputSize) + SelectedOption);
+                return CreateFilter(input, new ResizeFilter(input, input.OutputSize) + SelectedOption);
             }
 
             public IFilter CreateFilter(IFilter original, IResizeableFilter initial)
@@ -183,7 +183,7 @@ namespace Mpdn.RenderScript
             private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k, int Passes)
             {            
                 double w, h;
-                var MaxScale = 2.0;
+                var MaxScale = 2.25;
                 var MinScale = Math.Sqrt(MaxScale);
                 
                 int minW = sizeA.Width; int minH = sizeA.Height;

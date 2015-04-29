@@ -88,7 +88,7 @@ namespace Mpdn.RenderScript
                 get { return "ChromaScaler"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IResizeableFilter input)
             {
                 var yInput = new YSourceFilter();
                 var uInput = new USourceFilter();
