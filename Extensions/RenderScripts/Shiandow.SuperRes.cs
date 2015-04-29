@@ -49,6 +49,12 @@ namespace Mpdn.RenderScript
 
             public bool FirstPassOnly;
 
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                PreScalerPresets.Destroy();
+            }
+
             #endregion
 
             public Preset PreScaler
