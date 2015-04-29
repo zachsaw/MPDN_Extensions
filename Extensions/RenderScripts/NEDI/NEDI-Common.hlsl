@@ -102,5 +102,5 @@ float4 NediProcess(float2 tex, float2 dir[4], float4x2 wind[4])
 	//	t = saturate(1-100*sqrt(sqr(mul(R,float2(0.25,0.25))-r)-sqr(mul(R,a)-r)));
 	c += t*(d-mul(float1x2(1,1)/4.0,x));
 	
-	return float4(c.rgb, 1);
+	return float4(saturate(c.rgb), 1);
 }
