@@ -66,14 +66,14 @@ namespace Mpdn.RenderScript
             {
                 var preset = (Preset)ScriptBox.SelectedItem;
                 
-                buttonConfigure.Enabled = preset != null && preset.HasConfigDialog();
-                DescriptionLabel.Text = preset != null ? preset.Description : "";
+                buttonConfigure.Enabled = preset != null && preset.Script.HasConfigDialog();
+                DescriptionLabel.Text = preset != null ? preset.Script.Descriptor.Description : "";
             }
 
             private void buttonConfigure_Click(object sender, EventArgs e)
             {
                 var preset = (Preset)ScriptBox.SelectedItem;
-                if (preset != null && preset.HasConfigDialog() && preset.ShowConfigDialog(Owner))
+                if (preset != null && preset.Script.HasConfigDialog() && preset.Script.ShowConfigDialog(Owner))
                     UpdateControls();
             }
 
