@@ -57,6 +57,7 @@ namespace Mpdn.RenderScript
             protected override void SaveSettings()
             {
                 Settings.SelectedIndex = PrescalerBox.SelectedIndex;
+                Settings.Hotkey = HotkeyBox.Text;
                 SaveOption();
             }
 

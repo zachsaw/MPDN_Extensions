@@ -71,7 +71,7 @@ namespace Mpdn.RenderScript
                         Sharpness = 0.5f,
                         AntiAliasing = 0.5f,
                         AntiRinging = 0.50f,
-                        Script = RenderChainUi.Identity
+                        Script = new ScriptChainScript()
                     },
                     new SuperResPreset() 
                     {
@@ -94,17 +94,7 @@ namespace Mpdn.RenderScript
                         AntiRinging = 0.50f,
                         Script = new NNedi3Scaler() { 
                             Settings = new NNedi3.NNedi3() { ForceCentered = true } }
-                    },
-                    new SuperResPreset() 
-                    {
-                        Name = "Custom",
-                        Passes = 3,
-                        Strength = 0.75f,
-                        Sharpness = 0.5f,
-                        AntiAliasing = 0.5f,
-                        AntiRinging = 0.50f,
-                        Script = new ScriptChainScript()
-                    }
+                    }                    
                 };
 
                 SelectedIndex = 0;
