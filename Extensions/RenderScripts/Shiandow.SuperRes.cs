@@ -16,6 +16,7 @@
 // 
 using System;
 using System.Drawing;
+using System.Collections.Generic;
 using Mpdn.RenderScript.Mpdn.Presets;
 using Mpdn.RenderScript.Shiandow.Nedi;
 using Mpdn.RenderScript.Shiandow.NNedi3;
@@ -24,7 +25,17 @@ namespace Mpdn.RenderScript
 {
     namespace Shiandow.SuperRes
     {
-        public class SuperRes : RenderChain
+        public class SuperResPreset : Preset
+        {
+            public int Passes { get; set; }
+            public float Strength { get; set; }
+            public float Sharpness { get; set; }
+            public float AntiAliasing { get; set; }
+            public float AntiRinging { get; set; }
+            public bool FastMethod { get; set; }
+        }
+
+        public class SuperRes : PresetGroup
         {
             #region Settings
 
@@ -35,32 +46,13 @@ namespace Mpdn.RenderScript
                 NNEDI3
             };
 
-            public int Passes { get; set; }
-
-            public float Strength { get; set; }
-            public float Sharpness { get; set; }
-            public float AntiAliasing { get; set; }
-            public float AntiRinging { get; set; }
-            public bool FastMethod { get; set; }
-
-            public PresetGroup PreScalerPresets { get; set; }
-
             public bool NoIntermediates { get; set; }
 
             public bool FirstPassOnly;
 
-            protected override void Dispose(bool disposing)
-            {
-                base.Dispose(disposing);
-                PreScalerPresets.Destroy();
-            }
-
             #endregion
 
-            public Preset PreScaler
-            {
-                get { return PreScalerPresets.SelectedOption; }
-            }
+            public override bool AllowRegrouping { get { return false; } }
 
             public Func<TextureSize> TargetSize; // Not saved
             private IScaler downscaler, upscaler;
@@ -69,28 +61,55 @@ namespace Mpdn.RenderScript
             {
                 TargetSize = () => Renderer.TargetSize;
 
-                Passes = 3;
-
-                Strength = 0.75f;
-                Sharpness = 0.5f;
-                AntiAliasing = 0.5f;
-                AntiRinging = 0.75f;
-
-                NoIntermediates = false;
-
-                PreScalerPresets = new PresetGroup()
+                Options = new List<Preset>
                 {
-                    Options = new Preset[] {
-                        RenderChainUi.Identity.ToPreset(),
-                        new NediScaler() { 
-                            Chain = new Nedi.Nedi() { ForceCentered = true } }.ToPreset(),
-                        new NNedi3Scaler() { 
-                            Chain = new NNedi3.NNedi3() { ForceCentered = true } }.ToPreset(),
-                        Preset.Make<ScriptChainScript>("Custom")
+                    new SuperResPreset() 
+                    {
+                        Name = "Default",
+                        Passes = 3,
+                        Strength = 0.75f,
+                        Sharpness = 0.5f,
+                        AntiAliasing = 0.5f,
+                        AntiRinging = 0.50f,
+                        Script = RenderChainUi.Identity
                     },
-                    SelectedIndex = 0
+                    new SuperResPreset() 
+                    {
+                        Name = "NEDI",
+                        Passes = 2,
+                        Strength = 0.5f,
+                        Sharpness = 0.35f,
+                        AntiAliasing = 0.25f,
+                        AntiRinging = 0.50f,
+                        Script = new NediScaler() { 
+                            Settings = new Nedi.Nedi() { ForceCentered = true } }
+                    },                    
+                    new SuperResPreset() 
+                    {
+                        Name = "NNEDI3",
+                        Passes = 2,
+                        Strength = 0.5f,
+                        Sharpness = 0.25f,
+                        AntiAliasing = 0.15f,
+                        AntiRinging = 0.50f,
+                        Script = new NNedi3Scaler() { 
+                            Settings = new NNedi3.NNedi3() { ForceCentered = true } }
+                    },
+                    new SuperResPreset() 
+                    {
+                        Name = "Custom",
+                        Passes = 3,
+                        Strength = 0.75f,
+                        Sharpness = 0.5f,
+                        AntiAliasing = 0.5f,
+                        AntiRinging = 0.50f,
+                        Script = new ScriptChainScript()
+                    }
                 };
 
+                SelectedIndex = 0;
+
+                NoIntermediates = false;
                 FirstPassOnly = false;
                 upscaler = new Scaler.Jinc(ScalerTaps.Four, false);
                 downscaler = new Scaler.Bilinear();
@@ -98,12 +117,20 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IResizeableFilter sourceFilter)
             {
-                return CreateFilter(sourceFilter, new ResizeFilter(sourceFilter, sourceFilter.OutputSize) + PreScaler);
+                return CreateFilter(sourceFilter, new ResizeFilter(sourceFilter, sourceFilter.OutputSize) + SelectedOption);
             }
 
             public IFilter CreateFilter(IFilter original, IResizeableFilter initial)
             {
                 IFilter lab, linear, result = initial;
+
+                var settings = (SuperResPreset)SelectedOption;
+                var Passes = settings.Passes;
+                var Strength = settings.Strength;
+                var Sharpness = settings.Sharpness;
+                var AntiAliasing = settings.AntiAliasing;
+                var AntiRinging = settings.AntiRinging;
+                var FastMethod = settings.FastMethod;
 
                 var inputSize = original.OutputSize;
                 var currentSize = original.OutputSize;
@@ -134,7 +161,7 @@ namespace Mpdn.RenderScript
 
                     // Calculate size
                     if (i == Passes || NoIntermediates) currentSize = targetSize;
-                    else currentSize = CalculateSize(currentSize, targetSize, i);
+                    else currentSize = CalculateSize(currentSize, targetSize, i, Passes);
                                         
                     // Resize
                     if (i == 1)
@@ -163,8 +190,8 @@ namespace Mpdn.RenderScript
                 return result;
             }
 
-            private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k)
-            {
+            private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k, int Passes)
+            {            
                 double w, h;
                 var MaxScale = 2.0;
                 var MinScale = Math.Sqrt(MaxScale);

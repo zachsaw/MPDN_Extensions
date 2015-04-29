@@ -26,6 +26,8 @@ namespace Mpdn.RenderScript
     {
         public partial class SuperResConfigDialog : SuperResConfigDialogBase
         {
+            protected SuperResPreset selectedPreset = null;
+
             public SuperResConfigDialog()
             {
                 InitializeComponent();
@@ -33,34 +35,50 @@ namespace Mpdn.RenderScript
 
             protected override void LoadSettings()
             {
-                PassesSetter.Value = (Decimal)Settings.Passes;
-                StrengthSetter.Value = (Decimal)Settings.Strength;
-                SharpnessSetter.Value = (Decimal)Settings.Sharpness;
-                AntiAliasingSetter.Value = (Decimal)Settings.AntiAliasing;
-                AntiRingingSetter.Value = (Decimal)Settings.AntiRinging;
-                FastBox.Checked = Settings.FastMethod;
-
-                PrescalerBox.DataSource = Settings.PreScalerPresets.Options;
+                PrescalerBox.DataSource = Settings.Options;
                 PrescalerBox.DisplayMember = "Name";
-                PrescalerBox.SelectedIndex = Settings.PreScalerPresets.SelectedIndex;
-
+                PrescalerBox.SelectedIndex = Settings.SelectedIndex;
+                
                 UpdateGui();
+            }
+
+            protected void LoadOption()
+            {
+                var option = selectedPreset;
+
+                PassesSetter.Value = (Decimal)option.Passes;
+                StrengthSetter.Value = (Decimal)option.Strength;
+                SharpnessSetter.Value = (Decimal)option.Sharpness;
+                AntiAliasingSetter.Value = (Decimal)option.AntiAliasing;
+                AntiRingingSetter.Value = (Decimal)option.AntiRinging;
+                FastBox.Checked = option.FastMethod;
             }
 
             protected override void SaveSettings()
             {
-                Settings.Passes = (int)PassesSetter.Value;
-                Settings.Strength = (float)StrengthSetter.Value;
-                Settings.Sharpness = (float)SharpnessSetter.Value;
-                Settings.AntiAliasing = (float)AntiAliasingSetter.Value;
-                Settings.AntiRinging = (float)AntiRingingSetter.Value;
-                Settings.FastMethod = FastBox.Checked;
-
-                Settings.PreScalerPresets.SelectedIndex = (int)PrescalerBox.SelectedIndex;
+                Settings.SelectedIndex = PrescalerBox.SelectedIndex;
+                SaveOption();
             }
 
-            private void ValueChanged(object sender, EventArgs e)
+            protected void SaveOption()
             {
+                var option = selectedPreset;
+                if (option == null)
+                    return;
+
+                option.Passes = (int)PassesSetter.Value;
+                option.Strength = (float)StrengthSetter.Value;
+                option.Sharpness = (float)SharpnessSetter.Value;
+                option.AntiAliasing = (float)AntiAliasingSetter.Value;
+                option.AntiRinging = (float)AntiRingingSetter.Value;
+                option.FastMethod = FastBox.Checked;
+            }
+
+            private void SelectionChanged(object sender, EventArgs e)
+            {
+                SaveOption();
+                selectedPreset = (SuperResPreset)PrescalerBox.SelectedValue;
+                LoadOption();
                 UpdateGui();
             }
 
