@@ -60,9 +60,7 @@ namespace Mpdn.RenderScript
 
             public BicubicChroma()
             {
-                B = (float) (1.0/3.0);
-                C = (float) (1.0/3.0);
-                Preset = Presets.Custom;
+                Preset = Presets.MitchellNetravali;
             }
 
             public float B { get; set; }
