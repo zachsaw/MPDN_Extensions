@@ -91,7 +91,6 @@ namespace Mpdn.RenderScript
 
                 listViewAvail.Sort();
 
-
                 var menuitem = (ToolStripMenuItem)menuChain.Items
                     .Find("menuGroup", false).First();
 
@@ -126,6 +125,7 @@ namespace Mpdn.RenderScript
             protected override void LoadSettings()
             {
                 AddPresets(Settings.Options);
+                listViewChain.SelectedIndices.Clear();
 
                 ResizeLists();
                 UpdateButtons();
