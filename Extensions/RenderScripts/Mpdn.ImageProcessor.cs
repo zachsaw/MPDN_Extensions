@@ -175,14 +175,14 @@ namespace Mpdn.RenderScript
 
             private string GetDescription()
             {
-                return Chain.ShaderFileNames.Length == 0
+                return Settings.ShaderFileNames.Length == 0
                     ? "Pixel shader pre-/post-processing filter"
-                    : GetUsageString() + string.Join(" ➔ ", Chain.ShaderFileNames);
+                    : GetUsageString() + string.Join(" ➔ ", Settings.ShaderFileNames);
             }
 
             private string GetUsageString()
             {
-                var usage = Chain.ImageProcessorUsage;
+                var usage = Settings.ImageProcessorUsage;
                 string result;
                 switch (usage)
                 {

@@ -62,6 +62,8 @@ namespace Mpdn.RenderScript
             this.label6 = new System.Windows.Forms.Label();
             this.FastBox = new System.Windows.Forms.CheckBox();
             this.ConfigButton = new System.Windows.Forms.Button();
+            this.HotkeyBox = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.StrengthSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SharpnessSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.AntiAliasingSetter)).BeginInit();
@@ -77,7 +79,7 @@ namespace Mpdn.RenderScript
             0,
             0,
             131072});
-            this.StrengthSetter.Location = new System.Drawing.Point(81, 33);
+            this.StrengthSetter.Location = new System.Drawing.Point(81, 91);
             this.StrengthSetter.Maximum = new decimal(new int[] {
             1,
             0,
@@ -85,14 +87,13 @@ namespace Mpdn.RenderScript
             0});
             this.StrengthSetter.Name = "StrengthSetter";
             this.StrengthSetter.Size = new System.Drawing.Size(44, 20);
-            this.StrengthSetter.TabIndex = 1;
+            this.StrengthSetter.TabIndex = 3;
             this.StrengthSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.StrengthSetter.Value = new decimal(new int[] {
             8,
             0,
             0,
             65536});
-            this.StrengthSetter.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // SharpnessSetter
             // 
@@ -102,7 +103,7 @@ namespace Mpdn.RenderScript
             0,
             0,
             131072});
-            this.SharpnessSetter.Location = new System.Drawing.Point(81, 59);
+            this.SharpnessSetter.Location = new System.Drawing.Point(81, 117);
             this.SharpnessSetter.Maximum = new decimal(new int[] {
             2,
             0,
@@ -115,19 +116,18 @@ namespace Mpdn.RenderScript
             -2147483648});
             this.SharpnessSetter.Name = "SharpnessSetter";
             this.SharpnessSetter.Size = new System.Drawing.Size(44, 20);
-            this.SharpnessSetter.TabIndex = 2;
+            this.SharpnessSetter.TabIndex = 4;
             this.SharpnessSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.SharpnessSetter.Value = new decimal(new int[] {
             5,
             0,
             0,
             65536});
-            this.SharpnessSetter.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 35);
+            this.label1.Location = new System.Drawing.Point(12, 93);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(47, 13);
             this.label1.TabIndex = 2;
@@ -136,7 +136,7 @@ namespace Mpdn.RenderScript
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 61);
+            this.label2.Location = new System.Drawing.Point(12, 119);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(57, 13);
             this.label2.TabIndex = 3;
@@ -147,7 +147,7 @@ namespace Mpdn.RenderScript
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(141, 132);
+            this.ButtonOK.Location = new System.Drawing.Point(140, 165);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 8;
@@ -159,7 +159,7 @@ namespace Mpdn.RenderScript
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(222, 132);
+            this.ButtonCancel.Location = new System.Drawing.Point(221, 165);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 9;
@@ -169,7 +169,7 @@ namespace Mpdn.RenderScript
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(152, 35);
+            this.label3.Location = new System.Drawing.Point(152, 93);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(64, 13);
             this.label3.TabIndex = 6;
@@ -183,7 +183,7 @@ namespace Mpdn.RenderScript
             0,
             0,
             131072});
-            this.AntiAliasingSetter.Location = new System.Drawing.Point(221, 33);
+            this.AntiAliasingSetter.Location = new System.Drawing.Point(221, 91);
             this.AntiAliasingSetter.Maximum = new decimal(new int[] {
             2,
             0,
@@ -191,7 +191,7 @@ namespace Mpdn.RenderScript
             0});
             this.AntiAliasingSetter.Name = "AntiAliasingSetter";
             this.AntiAliasingSetter.Size = new System.Drawing.Size(44, 20);
-            this.AntiAliasingSetter.TabIndex = 3;
+            this.AntiAliasingSetter.TabIndex = 5;
             this.AntiAliasingSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.AntiAliasingSetter.Value = new decimal(new int[] {
             10,
@@ -202,7 +202,7 @@ namespace Mpdn.RenderScript
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(152, 61);
+            this.label4.Location = new System.Drawing.Point(152, 119);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(64, 13);
             this.label4.TabIndex = 8;
@@ -216,7 +216,7 @@ namespace Mpdn.RenderScript
             0,
             0,
             131072});
-            this.AntiRingingSetter.Location = new System.Drawing.Point(221, 59);
+            this.AntiRingingSetter.Location = new System.Drawing.Point(221, 117);
             this.AntiRingingSetter.Maximum = new decimal(new int[] {
             1,
             0,
@@ -224,7 +224,7 @@ namespace Mpdn.RenderScript
             0});
             this.AntiRingingSetter.Name = "AntiRingingSetter";
             this.AntiRingingSetter.Size = new System.Drawing.Size(44, 20);
-            this.AntiRingingSetter.TabIndex = 4;
+            this.AntiRingingSetter.TabIndex = 6;
             this.AntiRingingSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.AntiRingingSetter.Value = new decimal(new int[] {
             8,
@@ -235,7 +235,7 @@ namespace Mpdn.RenderScript
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 9);
+            this.label5.Location = new System.Drawing.Point(12, 67);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(41, 13);
             this.label5.TabIndex = 11;
@@ -243,7 +243,7 @@ namespace Mpdn.RenderScript
             // 
             // PassesSetter
             // 
-            this.PassesSetter.Location = new System.Drawing.Point(81, 7);
+            this.PassesSetter.Location = new System.Drawing.Point(81, 65);
             this.PassesSetter.Maximum = new decimal(new int[] {
             10,
             0,
@@ -251,7 +251,7 @@ namespace Mpdn.RenderScript
             0});
             this.PassesSetter.Name = "PassesSetter";
             this.PassesSetter.Size = new System.Drawing.Size(44, 20);
-            this.PassesSetter.TabIndex = 0;
+            this.PassesSetter.TabIndex = 2;
             this.PassesSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.PassesSetter.Value = new decimal(new int[] {
             2,
@@ -264,16 +264,16 @@ namespace Mpdn.RenderScript
             this.PrescalerBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.PrescalerBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.PrescalerBox.FormattingEnabled = true;
-            this.PrescalerBox.Location = new System.Drawing.Point(81, 85);
+            this.PrescalerBox.Location = new System.Drawing.Point(81, 12);
             this.PrescalerBox.Name = "PrescalerBox";
             this.PrescalerBox.Size = new System.Drawing.Size(135, 21);
-            this.PrescalerBox.TabIndex = 5;
-            this.PrescalerBox.SelectedIndexChanged += new System.EventHandler(this.ValueChanged);
+            this.PrescalerBox.TabIndex = 0;
+            this.PrescalerBox.SelectedIndexChanged += new System.EventHandler(this.SelectionChanged);
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 88);
+            this.label6.Location = new System.Drawing.Point(12, 15);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(51, 13);
             this.label6.TabIndex = 13;
@@ -282,18 +282,16 @@ namespace Mpdn.RenderScript
             // FastBox
             // 
             this.FastBox.AutoSize = true;
-            this.FastBox.Location = new System.Drawing.Point(15, 112);
+            this.FastBox.Location = new System.Drawing.Point(15, 143);
             this.FastBox.Name = "FastBox";
             this.FastBox.Size = new System.Drawing.Size(103, 17);
             this.FastBox.TabIndex = 7;
             this.FastBox.Text = "Use fast method";
             this.FastBox.UseVisualStyleBackColor = true;
-            this.FastBox.CheckedChanged += new System.EventHandler(this.ValueChanged);
-            this.FastBox.CheckStateChanged += new System.EventHandler(this.ValueChanged);
             // 
             // ConfigButton
             // 
-            this.ConfigButton.Location = new System.Drawing.Point(222, 83);
+            this.ConfigButton.Location = new System.Drawing.Point(221, 10);
             this.ConfigButton.Name = "ConfigButton";
             this.ConfigButton.Size = new System.Drawing.Size(75, 23);
             this.ConfigButton.TabIndex = 6;
@@ -301,13 +299,31 @@ namespace Mpdn.RenderScript
             this.ConfigButton.UseVisualStyleBackColor = true;
             this.ConfigButton.Click += new System.EventHandler(this.ConfigButton_Click);
             // 
+            // HotkeyBox
+            // 
+            this.HotkeyBox.Location = new System.Drawing.Point(81, 39);
+            this.HotkeyBox.Name = "HotkeyBox";
+            this.HotkeyBox.Size = new System.Drawing.Size(215, 20);
+            this.HotkeyBox.TabIndex = 1;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(12, 42);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(41, 13);
+            this.label7.TabIndex = 15;
+            this.label7.Text = "Hotkey";
+            // 
             // SuperResConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(309, 167);
+            this.ClientSize = new System.Drawing.Size(308, 200);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.HotkeyBox);
             this.Controls.Add(this.ConfigButton);
             this.Controls.Add(this.FastBox);
             this.Controls.Add(this.label6);
@@ -360,6 +376,8 @@ namespace Mpdn.RenderScript
             private System.Windows.Forms.Label label6;
             private System.Windows.Forms.CheckBox FastBox;
             private System.Windows.Forms.Button ConfigButton;
+            private System.Windows.Forms.TextBox HotkeyBox;
+            private System.Windows.Forms.Label label7;
 
         }
     }

@@ -155,6 +155,11 @@ namespace Mpdn.RenderScript
         {
         }
 
+        ~RenderChain()
+        {
+            Dispose(false);
+        }
+
         #endregion
     }
 

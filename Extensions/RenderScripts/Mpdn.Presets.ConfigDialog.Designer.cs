@@ -108,10 +108,10 @@ namespace Mpdn.RenderScript
             this.listViewAvail.TabIndex = 0;
             this.listViewAvail.UseCompatibleStateImageBehavior = false;
             this.listViewAvail.View = System.Windows.Forms.View.Details;
-            this.listViewAvail.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.list_ItemCopyDrag);
+            this.listViewAvail.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.ItemCopyDrag);
             this.listViewAvail.SelectedIndexChanged += new System.EventHandler(this.ListViewSelectedIndexChanged);
-            this.listViewAvail.DragDrop += new System.Windows.Forms.DragEventHandler(this.list_DragDropRemove);
-            this.listViewAvail.DragEnter += new System.Windows.Forms.DragEventHandler(this.list_DragEnter);
+            this.listViewAvail.DragDrop += new System.Windows.Forms.DragEventHandler(this.ListDragDropRemove);
+            this.listViewAvail.DragEnter += new System.Windows.Forms.DragEventHandler(this.ListDragEnter);
             this.listViewAvail.DoubleClick += new System.EventHandler(this.ButtonAddClick);
             // 
             // columnHeader3
@@ -185,10 +185,10 @@ namespace Mpdn.RenderScript
             this.listViewChain.TabIndex = 4;
             this.listViewChain.UseCompatibleStateImageBehavior = false;
             this.listViewChain.View = System.Windows.Forms.View.Details;
-            this.listViewChain.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.list_ItemMoveDrag);
+            this.listViewChain.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.ItemMoveDrag);
             this.listViewChain.SelectedIndexChanged += new System.EventHandler(this.ListViewChainSelectedIndexChanged);
-            this.listViewChain.DragDrop += new System.Windows.Forms.DragEventHandler(this.list_DragDrop);
-            this.listViewChain.DragEnter += new System.Windows.Forms.DragEventHandler(this.list_DragEnter);
+            this.listViewChain.DragDrop += new System.Windows.Forms.DragEventHandler(this.ListDragDrop);
+            this.listViewChain.DragEnter += new System.Windows.Forms.DragEventHandler(this.ListDragEnter);
             this.listViewChain.DoubleClick += new System.EventHandler(this.ButtonConfigureClick);
             // 
             // columnHeader4
@@ -219,13 +219,15 @@ namespace Mpdn.RenderScript
             this.menuGroup,
             this.menuUngroup});
             this.menuChain.Name = "contextMenuStrip1";
-            this.menuChain.Size = new System.Drawing.Size(165, 148);
+            this.menuChain.Size = new System.Drawing.Size(165, 170);
+            this.menuChain.Opening += new System.ComponentModel.CancelEventHandler(this.MenuChainOpening);
             // 
             // menuConfigure
             // 
             this.menuConfigure.Name = "menuConfigure";
             this.menuConfigure.Size = new System.Drawing.Size(164, 22);
             this.menuConfigure.Text = "Configure...";
+            this.menuConfigure.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.menuConfigureItemClicked);
             this.menuConfigure.Click += new System.EventHandler(this.ButtonConfigureClick);
             // 
             // toolStripSeparator1
