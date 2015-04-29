@@ -64,8 +64,6 @@ namespace Mpdn.RenderScript
                     .Concat(new [] { RenderChainUi.Identity } )
                     .OrderBy(x => x.Category + SELECTED_INDICATOR_STR + x.Descriptor.Name);
 
-                var multipresets = renderScripts.Where(x => x.GetChain() is MultiPreset);
-
                 var groups = new Dictionary<string, ListViewGroup>();
 
                 foreach (var script in renderScripts)
@@ -97,24 +95,28 @@ namespace Mpdn.RenderScript
                 var menuitem = (ToolStripMenuItem)menuChain.Items
                     .Find("menuGroup", false).First();
 
-                foreach (var preset in multipresets)
+                foreach (var script in renderScripts)
                 {
-                    var item = menuitem.DropDownItems.Add(preset.Descriptor.Name);
-                    item.Tag = preset;
+                    var group = script.Chain as PresetCollection;
+                    if (group != null && group.AllowRegrouping)
+                    {
+                        var item = menuitem.DropDownItems.Add(script.Descriptor.Name);
+                        item.Tag = script;
+                    }
                 }
 
                 ResizeLists();
                 UpdateButtons();
             }
 
-            protected IList<Preset> GatherPresets(ListView.ListViewItemCollection items)
+            protected List<Preset> GatherPresets(ListView.ListViewItemCollection items)
             {
                 var scripts = from item in listViewChain.Items.Cast<ListViewItem>()
                               select (Preset)item.Tag;
                 return scripts.ToList();
             }
 
-            protected IList<Preset> GatherPresets(ListViewGroupCollection items)
+            protected List<Preset> GatherPresets(ListViewGroupCollection items)
             {
                 var scripts = from item in listViewChain.Items.Cast<ListViewItem>()
                               select (Preset)item.Tag;
@@ -138,7 +140,7 @@ namespace Mpdn.RenderScript
 
             /* List Manipulation */
 
-            #region Adding / (Re)Moving
+            #region Item manipulation
 
             private void AddPresets(IEnumerable<Preset> presets, int index = -1)
             {
@@ -158,6 +160,7 @@ namespace Mpdn.RenderScript
                     listViewChain.SelectedIndices.Add(item.Index);
                 }
                 ResizeLists();
+                UpdateButtons();
             }
 
             private void AddPreset(Preset preset, int index = -1)
@@ -165,22 +168,19 @@ namespace Mpdn.RenderScript
                 AddPresets(new[] { preset }, index);
             }
 
-            private void AddScript(IRenderChainUi renderScript)
+            private void AddScripts(IEnumerable<IRenderChainUi> renderScripts, int index = -1) 
             {
-                var item = listViewChain.Items.Add(string.Empty);
-                var preset = renderScript.MakeNewPreset();
-
-                item.Tag = preset;
-                UpdateItemText(item, preset);
-                
-                ResizeLists();
-                UpdateButtons();
+				AddPresets(renderScripts.Select(script => script.MakeNewPreset()), index);
             }
 
-            private void RemovePreset(ListViewItem selectedItem)
+            private void AddScript(IRenderChainUi renderScript, int index = -1)
+            {
+                AddScripts(new[] { renderScript }, index);
+            }
+
+            private void RemoveItem(ListViewItem selectedItem)
             {
                 var preset = (Preset)selectedItem.Tag;
-                preset.Destroy();
 
                 var index = selectedItem.Index;
                 selectedItem.Remove();
@@ -195,6 +195,13 @@ namespace Mpdn.RenderScript
 
                 ResizeLists();
                 UpdateButtons();
+            }
+
+            private void ConfigureItem(ListViewItem item)
+            {
+                var preset = (Preset)item.Tag;
+                if (preset.HasConfigDialog() && preset.ShowConfigDialog(Owner))
+                    UpdateItemText(item);
             }
 
             private enum MoveDirection
@@ -270,17 +277,16 @@ namespace Mpdn.RenderScript
                     i.Text = string.Empty;
                 }
 
+                if (listViewAvail.SelectedItems.Count > 0)
+                {
+                    var item = listViewAvail.SelectedItems[0];
+                    var script = (IRenderChainUi)item.Tag;
+
+                    item.Text = SELECTED_INDICATOR_STR;
+                    labelCopyright.Text = script == null ? string.Empty : script.Descriptor.Copyright;
+                }
+
                 UpdateButtons();
-
-                if (listViewAvail.SelectedItems.Count <= 0)
-                    return;
-
-                var item = listViewAvail.SelectedItems[0];
-
-                item.Text = SELECTED_INDICATOR_STR;
-
-                var script = (IRenderChainUi)item.Tag;
-                labelCopyright.Text = script == null ? string.Empty : script.Descriptor.Copyright;
             }
 
             private void ListViewChainSelectedIndexChanged(object sender, EventArgs e)
@@ -293,10 +299,10 @@ namespace Mpdn.RenderScript
                 if (listViewChain.SelectedItems.Count > 0)
                 {
                     var item = listViewChain.SelectedItems[0];
+                    var preset = (Preset)item.Tag;
+
                     m_SelectedIndex = item.Index;
                     item.Text = SELECTED_INDICATOR_STR;
-
-                    var preset = (Preset)item.Tag;
                     NameBox.Text = preset.Name;
                 }
                 else
@@ -315,22 +321,22 @@ namespace Mpdn.RenderScript
 
             #region Drap / Drop
 
-            private void list_ItemCopyDrag(object sender, ItemDragEventArgs e)
+            private void ItemCopyDrag(object sender, ItemDragEventArgs e)
             {
                 DoDragDrop((sender as ListView).SelectedItems, DragDropEffects.Copy);
             }
 
-            private void list_ItemMoveDrag(object sender, ItemDragEventArgs e)
+            private void ItemMoveDrag(object sender, ItemDragEventArgs e)
             {
                 DoDragDrop((sender as ListView).SelectedItems, DragDropEffects.Move);
             }
 
-            private void list_DragEnter(object sender, DragEventArgs e)
+            private void ListDragEnter(object sender, DragEventArgs e)
             {
                 e.Effect = e.AllowedEffect;
             }
 
-            private void list_DragDrop(object sender, DragEventArgs e)
+            private void ListDragDrop(object sender, DragEventArgs e)
             {
                 Point cp = listViewChain.PointToClient(new Point(e.X, e.Y));
                 ListViewItem dragToItem = listViewChain.GetItemAt(cp.X, cp.Y);
@@ -344,7 +350,7 @@ namespace Mpdn.RenderScript
                     var items = draggedItems.Cast<ListViewItem>();
                     var index = dragToItem == null ? listViewChain.Items.Count : dragToItem.Index + (after ? 1 : 0);
 
-                    AddPresets(items.Select(item => (item.Tag as IRenderChainUi).MakeNewPreset()), index);
+                    AddScripts(items.Select(item => (item.Tag as IRenderChainUi)), index);
                 }
                 else if (e.Effect == DragDropEffects.Move)
                 {
@@ -369,7 +375,7 @@ namespace Mpdn.RenderScript
                 listViewChain.Focus();
             }
 
-            private void list_DragDropRemove(object sender, DragEventArgs e)
+            private void ListDragDropRemove(object sender, DragEventArgs e)
             {
                 var draggedItems = e.Data.GetData(typeof(ListView.SelectedListViewItemCollection)) as ListView.SelectedListViewItemCollection;
                 if (draggedItems == null)
@@ -379,7 +385,7 @@ namespace Mpdn.RenderScript
                 {
                     var items = new List<ListViewItem>();
                     foreach (ListViewItem item in draggedItems.Cast<ListViewItem>())
-                        RemovePreset(item);
+                        RemoveItem(item);
                 }
             }
 
@@ -397,19 +403,31 @@ namespace Mpdn.RenderScript
                 buttonUp.Enabled = listViewChain.SelectedItems.Count > 0 && listViewChain.SelectedItems[0].Index > 0;
                 buttonDown.Enabled = listViewChain.SelectedItems.Count > 0 &&
                                      listViewChain.SelectedItems[listViewChain.SelectedItems.Count - 1].Index < listViewChain.Items.Count - 1;
-                buttonConfigure.Enabled = buttonMinus.Enabled && (listViewChain.SelectedItems[0].Tag as Preset).HasConfigDialog();
-
+                buttonConfigure.Enabled = buttonMinus.Enabled;
+                
                 menuAdd.Enabled = buttonAdd.Enabled;
                 menuRemove.Enabled = buttonMinus.Enabled;
                 menuClear.Enabled = buttonClear.Enabled;
-                menuConfigure.Enabled = buttonConfigure.Enabled;
+                menuGroup.Enabled = buttonMinus.Enabled;
+                menuUngroup.Enabled = buttonMinus.Enabled;
 
-                menuGroup.Enabled = menuRemove.Enabled;
-                menuUngroup.Enabled = (listViewChain.SelectedItems.Count == 1) && (listViewChain.SelectedItems[0].Tag is MultiPreset);
+                if (listViewChain.SelectedItems.Count > 0)
+                {
+                    var item = listViewChain.SelectedItems[0];
+                    var preset = item.Tag as Preset;
+                    var chain = preset.Chain as PresetCollection;
+
+                    buttonConfigure.Enabled = preset.HasConfigDialog();
+                    menuUngroup.Enabled = chain != null && chain.AllowRegrouping;
+                }
+
+                menuConfigure.Enabled = buttonConfigure.Enabled;
             }
 
-            private void UpdateItemText(ListViewItem item, Preset preset)
+            private void UpdateItemText(ListViewItem item)
             {
+                var preset = (Preset)item.Tag;
+
                 while (item.SubItems.Count < 3) 
                     item.SubItems.Add(string.Empty);
                 item.SubItems[1].Text = preset.Name;
@@ -457,9 +475,7 @@ namespace Mpdn.RenderScript
                     return;
 
                 var item = listViewChain.SelectedItems[0];
-                var preset = (Preset)item.Tag;
-                if (preset.HasConfigDialog() && preset.ShowConfigDialog(Owner))
-                    UpdateItemText(item, preset);
+                ConfigureItem(item);
             }
 
             private void ButtonAddClick(object sender, EventArgs e)
@@ -471,14 +487,14 @@ namespace Mpdn.RenderScript
             private void ButtonMinusClick(object sender, EventArgs e)
             {
                 foreach (ListViewItem item in listViewChain.SelectedItems)
-                    RemovePreset(item);
+                    RemoveItem(item);
             }
 
             private void ButtonClearClick(object sender, EventArgs e)
             {
                 while (listViewChain.Items.Count > 0)
                 {
-                    RemovePreset(listViewChain.Items[0]);
+                    RemoveItem(listViewChain.Items[0]);
                 }
                 UpdateButtons();
             }
@@ -512,7 +528,7 @@ namespace Mpdn.RenderScript
                     Preset preset = (Preset)item.Tag;
 
                     preset.Name = NameBox.Text;
-                    UpdateItemText(item, preset);
+                    UpdateItemText(item);
                 }
             }
 
@@ -567,7 +583,8 @@ namespace Mpdn.RenderScript
             private void MenuGroupItemClicked(object sender, ToolStripItemClickedEventArgs e)
             {
                 var script = (IRenderChainUi)e.ClickedItem.Tag;
-                var group = (MultiPreset)script.MakeNewPreset();
+                var grouppreset = script.MakeNewPreset();
+                var group = (PresetCollection)grouppreset.Chain;
                 int index = (listViewChain.SelectedItems.Count > 0)
                     ? listViewChain.SelectedItems[0].Index
                     : -1;
@@ -576,9 +593,9 @@ namespace Mpdn.RenderScript
                 {
                     var preset = (Preset)item.Tag;
                     group.Options.Add(preset);
-                    RemovePreset(item);
+                    RemoveItem(item);
                 }
-                AddPreset(group, index);
+                AddPreset(grouppreset, index);
                 listViewChain.SelectedIndices.Clear();
                 listViewChain.SelectedIndices.Add(index);
             }
@@ -588,21 +605,68 @@ namespace Mpdn.RenderScript
                 if (listViewChain.SelectedItems.Count == 1)
                 {
                     var item = listViewChain.SelectedItems[0];
-                    var group = listViewChain.SelectedItems[0].Tag as MultiPreset;
+                    var preset = (Preset)item.Tag;
+                    var group = preset.Chain as PresetCollection;
                     var index = item.Index;
                     
-                    if (group == null) return;
+                    if (group == null || !group.AllowRegrouping) 
+                        return;
 
-                    RemovePreset(item);
+                    RemoveItem(item);
                     AddPresets(group.Options, index);
                 }
             }
 
             #endregion
 
+            #region Configure Menu
+
+            private void MenuChainOpening(object sender, System.ComponentModel.CancelEventArgs e)
+            {
+                var menuitem = (ToolStripMenuItem)menuChain.Items
+                    .Find("menuConfigure", false).First();
+
+                if (listViewChain.SelectedItems.Count <= 0)
+                    return;
+
+                var item = listViewChain.SelectedItems[0];
+                var preset = (Preset)item.Tag;
+                AddSubItems(menuitem, preset);
+            }
+
+            private void AddSubItems(ToolStripMenuItem menuitem, Preset preset)
+            {
+                menuitem.DropDownItemClicked -= menuConfigureItemClicked;
+                menuitem.DropDownItems.Clear();
+                menuitem.DropDownItemClicked += menuConfigureItemClicked;
+                var presetCollection = preset.Chain as PresetCollection;
+                if (presetCollection != null)
+                {
+                    var options = presetCollection.Options;
+
+                    foreach (var option in options)
+                    {
+                        var item = (ToolStripMenuItem)menuitem.DropDownItems.Add(option.Name);
+                        item.Tag = option;
+                        AddSubItems(item, option);
+                    }
+                }
+            }
+
+            private void menuConfigureItemClicked(object sender, ToolStripItemClickedEventArgs e)
+            {
+                var preset = (Preset)e.ClickedItem.Tag;
+                if (preset.HasConfigDialog()
+                    && preset.ShowConfigDialog(Owner) 
+                    && listViewChain.SelectedItems.Count > 0)
+                    UpdateItemText(listViewChain.SelectedItems[0]);
+            }
+
+            #endregion
+
         }
 
-        public class PresetDialogBase : ScriptConfigDialog<MultiPreset>
+        public class PresetDialogBase : ScriptConfigDialog<PresetCollection>
         {
         }
     }
