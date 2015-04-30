@@ -23,7 +23,7 @@ namespace Mpdn.RenderScript
 {
     public abstract class RenderChain : IDisposable
     {
-        public abstract IFilter CreateFilter(IResizeableFilter sourceFilter);
+        public abstract IFilter CreateFilter(IFilter input);
 
         #region Operators
 
@@ -31,17 +31,17 @@ namespace Mpdn.RenderScript
 
         public static implicit operator Func<IFilter, IFilter>(RenderChain map)
         {
-            return filter => map.CreateFilter(filter.MakeResizeable());
+            return filter => map.CreateFilter(filter);
         }
 
-        public static implicit operator RenderChain(Func<IResizeableFilter, IFilter> map)
+        public static implicit operator RenderChain(Func<IFilter, IFilter> map)
         {
             return new StaticChain(map);
         }
 
-        public static IResizeableFilter operator +(IFilter filter, RenderChain map)
+        public static IFilter operator +(IFilter filter, RenderChain map)
         {
-            return filter.Apply(map).MakeResizeable();
+            return filter.Apply(map);
         }
 
         public static RenderChain operator +(RenderChain f, RenderChain g)
@@ -165,16 +165,16 @@ namespace Mpdn.RenderScript
 
     public class StaticChain : RenderChain
     {
-        private readonly Func<IResizeableFilter, IFilter> m_Compiler;
+        private readonly Func<IFilter, IFilter> m_Compiler;
 
-        public StaticChain(Func<IResizeableFilter, IFilter> compiler)
+        public StaticChain(Func<IFilter, IFilter> compiler)
         {
             m_Compiler = compiler;
         }
 
-        public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+        public override IFilter CreateFilter(IFilter input)
         {
-            return m_Compiler(sourceFilter);
+            return m_Compiler(input);
         }
     }
 }

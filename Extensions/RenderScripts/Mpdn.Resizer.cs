@@ -67,10 +67,10 @@ namespace Mpdn.RenderScript
 
             #endregion
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IFilter input)
             {
-                sourceFilter.SetSize(GetOutputSize());
-                return sourceFilter;
+                input.SetSize(GetOutputSize());
+                return input;
             }
 
             #region Size Calculation

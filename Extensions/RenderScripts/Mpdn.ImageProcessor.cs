@@ -69,17 +69,17 @@ namespace Mpdn.RenderScript
                 get { return ShaderDataFilePath; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IFilter input)
             {
-                if (UseImageProcessor(sourceFilter))
+                if (UseImageProcessor(input))
                 {
-                    return ShaderFileNames.Aggregate((IFilter) sourceFilter,
+                    return ShaderFileNames.Aggregate((IFilter) input,
                         (current, filename) => new ShaderFilter(CompileShader(filename), current));
                 }
-                return sourceFilter;
+                return input;
             }
 
-            private bool UseImageProcessor(IFilter sourceFilter)
+            private bool UseImageProcessor(IFilter input)
             {
                 var notscalingVideo = false;
                 var upscalingVideo = false;
@@ -107,7 +107,7 @@ namespace Mpdn.RenderScript
                     downscalingVideo = true;
                 }
 
-                inputSize = sourceFilter.OutputSize;
+                inputSize = input.OutputSize;
                 if (outputSize == inputSize)
                 {
                     // Not scaling input

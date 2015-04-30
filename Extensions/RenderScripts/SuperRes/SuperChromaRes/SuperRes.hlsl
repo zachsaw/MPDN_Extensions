@@ -38,15 +38,14 @@ float2 p1	  : register(c1);
 float4 size2  : register(c2);
 float4 args0  : register(c3);
 float4 args1  : register(c4);
+float4 args2  : register(c5);
 
 #define width  (p0[0])
 #define height (p0[1])
 
-#define px (p1[0])
-#define py (p1[1])
-
-#define ppx (size2[2])
-#define ppy (size2[3])
+#define dxdy (p1.xy)
+#define ddxddy (size2.zw)
+#define offset (args2.xy)
 
 #define sqr(x) dot(x,x)
 #define spread (exp(-1/(2.0*radius*radius)))
@@ -59,15 +58,16 @@ float4 args1  : register(c4);
 
 // -- Input processing --
 //Current high res value
-#define Get(x,y)  	(tex2D(s0,tex+float2(px,py)*int2(x,y)).xyz)
+#define Get(x,y)  	(tex2D(s0,tex+dxdy*int2(x,y)).xyz)
 //Difference between downsampled result and original
-#define Diff(x,y)	(tex2D(sDiff,tex+float2(px,py)*int2(x,y)).xyz)
+#define Diff(x,y)	(tex2D(sDiff,tex+dxdy*int2(x,y)).xyz)
 //Original YUV
-#define Original(x,y)	float2(tex2D(sU,tex+float2(ppx,ppy)*int2(x,y))[0], tex2D(sV,tex+float2(ppx,ppy)*int2(x,y))[0])
+#define Original(x,y)	float2(tex2D(sU,pos+ddxddy*int2(x,y))[0], tex2D(sV,tex+ddxddy*int2(x,y))[0])
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
 	float4 c0 = tex2D(s0, tex);
+	float2 pos = tex - ddxddy*offset;
 	
 	float3 stab = 0;
 	float W = 0;

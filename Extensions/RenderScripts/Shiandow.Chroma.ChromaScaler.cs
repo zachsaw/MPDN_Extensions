@@ -88,14 +88,13 @@ namespace Mpdn.RenderScript
                 get { return "ChromaScaler"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IFilter input)
             {
                 var yInput = new YSourceFilter();
                 var uInput = new USourceFilter();
                 var vInput = new VSourceFilter();
 
-                Vector2 offset = Renderer.ChromaOffset420;
-                offset = 2 * offset - new Vector2(0.5f, 0.5f);
+                Vector2 offset = Renderer.ChromaOffset420 + new Vector2(0.5f, 0.5f);
 
                 var chromaShader = CompileShader("Chroma.hlsl").Configure(arguments: new[] { B, C, offset[0], offset[1] });
 

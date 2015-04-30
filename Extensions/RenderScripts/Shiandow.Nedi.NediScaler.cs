@@ -38,9 +38,9 @@ namespace Mpdn.RenderScript
 
             public float[] LumaConstants = {0.2126f, 0.7152f, 0.0722f};
 
-            private bool UseNedi(IFilter sourceFilter)
+            private bool UseNedi(IFilter input)
             {
-                var size = sourceFilter.OutputSize;
+                var size = input.OutputSize;
                 if (size.IsEmpty)
                     return false;
 
@@ -51,7 +51,7 @@ namespace Mpdn.RenderScript
                        Renderer.TargetSize.Height > size.Height;
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IFilter input)
             {
                 Func<TextureSize, TextureSize> transformWidth;
                 Func<TextureSize, TextureSize> transformHeight;
@@ -63,11 +63,11 @@ namespace Mpdn.RenderScript
                 var nediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl").Configure(transform: transformWidth);
                 var nediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl").Configure(transform: transformHeight);
 
-                if (!UseNedi(sourceFilter))
-                    return sourceFilter;
+                if (!UseNedi(input))
+                    return input;
 
-                var nedi1 = new ShaderFilter(nedi1Shader, sourceFilter);
-                var nediH = new ShaderFilter(nediHInterleaveShader, sourceFilter, nedi1);
+                var nedi1 = new ShaderFilter(nedi1Shader, input);
+                var nediH = new ShaderFilter(nediHInterleaveShader, input, nedi1);
                 var nedi2 = new ShaderFilter(nedi2Shader, nediH);
                 var nediV = new ShaderFilter(nediVInterleaveShader, nediH, nedi2);
 
