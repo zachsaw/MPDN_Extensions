@@ -15,24 +15,57 @@
 // License along with this library.
 // 
 using Mpdn.Config;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions.GitHub
 {
     public partial class OpenSubtitlesConfigDialog : OpenSubtitlesConfigBase
     {
+        private readonly CultureInfo InvariantCulture;
         public OpenSubtitlesConfigDialog()
         {
             InitializeComponent();
+            var listCulture = new List<CultureInfo>();
+            listCulture.AddRange(CultureInfo.GetCultures(CultureTypes.NeutralCultures));
+            InvariantCulture = listCulture[0];
+            listCulture.Remove(InvariantCulture);
+            listCulture.Sort((a, b) => a.EnglishName.CompareTo(b.EnglishName));
+            listCulture.Insert(0, InvariantCulture);
+            cultureBindingSource.DataSource = listCulture;
         }
 
         protected override void LoadSettings()
         {
             checkBoxEnableAutoDownloader.Checked = Settings.EnableAutoDownloader;
+            if (Settings.PreferedLanguage != null)
+            {
+                comboBoxPrefLanguage.SelectedValue = Settings.PreferedLanguage;
+            }
+            else
+            {
+                comboBoxPrefLanguage.SelectedItem = InvariantCulture;
+            }
         }
 
         protected override void SaveSettings()
         {
             Settings.EnableAutoDownloader = checkBoxEnableAutoDownloader.Checked;
+            if (comboBoxPrefLanguage.SelectedItem.Equals(InvariantCulture))
+            {
+                Settings.PreferedLanguage = null;
+            }
+            else
+            {
+                Settings.PreferedLanguage = (string)comboBoxPrefLanguage.SelectedValue;
+            }
+            
+        }
+
+        private void comboBoxPrefLanguage_MouseEnter(object sender, System.EventArgs e)
+        {
+            toolTipComboBox.SetToolTip((Control)sender, "Used to filter the subtitles. If your language is unavailable it will show all the subtitles.");
         }
     }
 
