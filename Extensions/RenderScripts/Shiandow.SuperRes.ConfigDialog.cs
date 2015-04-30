@@ -38,6 +38,7 @@ namespace Mpdn.RenderScript
                 PrescalerBox.DataSource = Settings.Options;
                 PrescalerBox.DisplayMember = "Name";
                 PrescalerBox.SelectedIndex = Settings.SelectedIndex;
+                HotkeyBox.Text = Settings.Hotkey;
                 
                 UpdateGui();
             }

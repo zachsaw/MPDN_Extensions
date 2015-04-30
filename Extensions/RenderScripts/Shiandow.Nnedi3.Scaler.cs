@@ -60,7 +60,7 @@ namespace Mpdn.RenderScript
                 var yuv = input.ConvertToYuv();
 
                 var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
-                    TextureChannels.ChromaOnly, new Vector2(-0.5f, -0.5f), Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+                    TextureChannels.ChromaOnly, new Vector2(-0.25f, -0.25f), Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
                 
                 IFilter resultY, result;
 
