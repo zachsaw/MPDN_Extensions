@@ -42,7 +42,7 @@ namespace Mpdn.RenderScript
             private static readonly int[] s_NeuronCount = {16, 32, 64, 128, 256};
             private static readonly string[] s_CodePath = {"A", "B", "C", "D", "E"};
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 if (!Renderer.IsDx11Avail)
                     return input; // DX11 is not available; fallback

@@ -109,7 +109,7 @@ namespace Mpdn.RenderScript
                 DisposeHelper.Dispose(Script);
             }
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 if (Script != null)
                     return Chain.CreateFilter(input);
@@ -168,7 +168,7 @@ namespace Mpdn.RenderScript
                         option.Dispose();
             }
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 throw new NotImplementedException();
             }
@@ -176,7 +176,7 @@ namespace Mpdn.RenderScript
 
         public class PresetChain : PresetCollection
         {
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 return Options.Aggregate(input, (a, b) => a + b);
             }
@@ -210,7 +210,7 @@ namespace Mpdn.RenderScript
                 m_HotkeyGuid = Guid.NewGuid();
             }
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 if (SelectedOption != null)
                     return SelectedOption.CreateFilter(input);

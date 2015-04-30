@@ -105,12 +105,12 @@ namespace Mpdn.RenderScript
                 downscaler = new Scaler.Bilinear();
             }
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
-                return CreateFilter(input, new ResizeFilter(input, input.OutputSize) + SelectedOption);
+                return CreateFilter(input, new ResizeFilter(input) + SelectedOption);
             }
 
-            public IFilter CreateFilter(IFilter original, IResizeableFilter initial)
+            public IFilter CreateFilter(IFilter original, IFilter initial)
             {
                 IFilter lab, linear, result = initial;
 

@@ -123,6 +123,11 @@ namespace Mpdn.RenderScript
         {
             return new Size(size.Width, size.Height);
         }
+
+        public static implicit operator Vector2(TextureSize size)
+        {
+            return new Vector2(size.Width, size.Height);
+        }
     }
 
     public static class TextureHelper
@@ -650,6 +655,11 @@ namespace Mpdn.RenderScript
         private TextureSize m_OutputSize;
         private readonly TextureChannels m_Channels;
 
+        public ResizeFilter(IFilter<ITexture> inputFilter)
+            : this(inputFilter, inputFilter.OutputSize)
+        {
+        }
+
         public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler convolver = null)
             : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
@@ -743,11 +753,6 @@ namespace Mpdn.RenderScript
             return new YuvFilter(filter);
         }
 
-        public static IResizeableFilter MakeResizeable(this IFilter filter)
-        {
-            return (filter as IResizeableFilter) ?? new ResizeFilter(filter, filter.OutputSize);
-        }
-
         public static IResizeableFilter Transform(this IResizeableFilter filter, Func<IFilter, IFilter> transformation)
         {
             return new TransformedResizeableFilter(transformation, filter);
@@ -758,9 +763,10 @@ namespace Mpdn.RenderScript
             return map(filter);
         }
 
-        public static IFilter Apply(this IFilter filter, Func<IResizeableFilter, IFilter> map)
+        public static void SetSize(this IFilter filter, TextureSize size)
         {
-            return map(filter.MakeResizeable());
+            var resizeable = (filter as IResizeableFilter) ?? new ResizeFilter(filter);
+            resizeable.SetSize(size);
         }
 
         #region Auxilary class(es)

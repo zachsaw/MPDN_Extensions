@@ -32,7 +32,7 @@ namespace Mpdn.RenderScript
             private string[] ToGamma = { @"ConvertToGammaLight.hlsl" };
             private string[] ToLinear = { @"ConvertToLinearLight.hlsl" };
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 // Scale chroma first (this bypasses MPDN's chroma scaler)
                 input += new BicubicChroma { Preset = Presets.MitchellNetravali };

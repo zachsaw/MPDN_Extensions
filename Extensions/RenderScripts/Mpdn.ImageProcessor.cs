@@ -69,7 +69,7 @@ namespace Mpdn.RenderScript
                 get { return ShaderDataFilePath; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 if (UseImageProcessor(input))
                 {

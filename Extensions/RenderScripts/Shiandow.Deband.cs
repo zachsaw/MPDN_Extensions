@@ -36,7 +36,7 @@ namespace Mpdn.RenderScript
                 detaillevel = 2;
             }
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 var bilinear = new Scaler.HwBilinear();
              

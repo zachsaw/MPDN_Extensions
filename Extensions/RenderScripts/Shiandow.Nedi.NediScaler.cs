@@ -51,7 +51,7 @@ namespace Mpdn.RenderScript
                        Renderer.TargetSize.Height > size.Height;
             }
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 Func<TextureSize, TextureSize> transformWidth;
                 Func<TextureSize, TextureSize> transformHeight;

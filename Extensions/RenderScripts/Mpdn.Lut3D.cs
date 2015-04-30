@@ -76,7 +76,7 @@ namespace Mpdn.RenderScript
                 get { return "Lut3D"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 if (!Activate || !File.Exists(FileName))
                     return input;
