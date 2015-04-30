@@ -16,6 +16,7 @@
 // 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -70,6 +71,15 @@ namespace Mpdn.PlayerExtensions.GitHub
                     return;
                 }
                 subList.Sort((a, b) => a.Lang.CompareTo(b.Lang));
+                if (Settings.PreferedLanguage != null)
+                {
+                    var filteredSubList = subList.FindAll((sub) => sub.Lang.Contains(Settings.PreferedLanguage));
+                    if (filteredSubList.Count > 0)
+                    {
+                        subList = filteredSubList;
+                    }
+                }
+
                 m_Form.SetSubtitles(subList);
                 m_Form.ShowDialog(PlayerControl.Form);
             }
@@ -129,8 +139,17 @@ namespace Mpdn.PlayerExtensions.GitHub
         public OpenSubtitlesSettings()
         {
             EnableAutoDownloader = false;
+            if (CultureInfo.CurrentUICulture.Parent != null)
+            {
+                PreferedLanguage = CultureInfo.CurrentUICulture.Parent.EnglishName;
+            }
+            else
+            {
+                PreferedLanguage = null;
+            }
         }
 
         public bool EnableAutoDownloader { get; set; }
+        public string PreferedLanguage { get; set; }
     }
 }
