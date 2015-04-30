@@ -16,6 +16,7 @@
 // 
 using System;
 using YAXLib;
+using SharpDX;
 
 namespace Mpdn.RenderScript
 {
@@ -59,11 +60,11 @@ namespace Mpdn.RenderScript
                 get { return "SuperRes"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter input)
+            public override IFilter CreateFilter(IFilter input)
             {
                 IFilter yuv;
 
-                var chromaSize = Renderer.ChromaSize;
+                var chromaSize = (TextureSize)Renderer.ChromaSize;
                 var targetSize = input.OutputSize;
 
                 // Original values
@@ -87,8 +88,12 @@ namespace Mpdn.RenderScript
                 if (targetSize.Width <= chromaSize.Width && targetSize.Height <= chromaSize.Height)
                     return input;
 
+                Vector2 offset = Renderer.ChromaOffset420;
+                Vector2 adjointOffset = -offset * targetSize / chromaSize;
+
                 var Consts = new[] { Strength, Sharpness   , AntiAliasing, AntiRinging,  
-                                     Softness, YuvConsts[0], YuvConsts[1]};
+                                     Softness, YuvConsts[0], YuvConsts[1], 0.0f,
+                                     offset.X, offset.Y };
 
                 var CopyLuma = CompileShader("SuperChromaRes/CopyLuma.hlsl");
                 var CopyChroma = CompileShader("SuperChromaRes/CopyChroma.hlsl");
@@ -111,11 +116,11 @@ namespace Mpdn.RenderScript
 
                     // Compare to chroma
                     linear = new ShaderFilter(GammaToLinear, yuv.ConvertToRgb());
-                    res = new ResizeFilter(linear, chromaSize, upscaler, downscaler);
+                    res = new ResizeFilter(linear, chromaSize, adjointOffset, upscaler, downscaler);
                     res = new ShaderFilter(LinearToGamma, res).ConvertToYuv();
                     diff = new ShaderFilter(Diff, res, uInput, vInput);
                     if (!useBilinear)
-                        diff = new ResizeFilter(diff, targetSize, upscaler, downscaler); // Scale to output size
+                        diff = new ResizeFilter(diff, targetSize, offset, upscaler, downscaler); // Scale to output size
 
                     // Update result
                     yuv = new ShaderFilter(SuperRes.Configure(useBilinear, arguments: Consts), yuv, diff, uInput, vInput);
