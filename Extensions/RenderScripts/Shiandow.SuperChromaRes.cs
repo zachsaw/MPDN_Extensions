@@ -88,7 +88,7 @@ namespace Mpdn.RenderScript
                 if (targetSize.Width <= chromaSize.Width && targetSize.Height <= chromaSize.Height)
                     return input;
 
-                Vector2 offset = Renderer.ChromaOffset420;
+                Vector2 offset = Renderer.ChromaOffset;
                 Vector2 adjointOffset = -offset * targetSize / chromaSize;
 
                 var Consts = new[] { Strength, Sharpness   , AntiAliasing, AntiRinging,  
