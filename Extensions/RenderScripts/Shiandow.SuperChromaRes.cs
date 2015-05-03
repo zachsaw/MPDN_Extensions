@@ -45,10 +45,10 @@ namespace Mpdn.RenderScript
                 Passes = 2;
 
                 Strength = 0.75f;
-                Sharpness = 0.15f;
-                AntiAliasing = 0.25f;
-                AntiRinging = 0.75f;
-                Softness = 0.5f;
+                Sharpness = 0.25f;
+                AntiAliasing = 0.5f;
+                AntiRinging = 0.0f;
+                Softness = 0.1f;
 
                 FirstPassOnly = true;
                 upscaler = new Scaler.Bilinear();
@@ -57,7 +57,7 @@ namespace Mpdn.RenderScript
 
             protected override string ShaderPath
             {
-                get { return "SuperRes"; }
+                get { return @"SuperRes\SuperChromaRes"; }
             }
 
             public override IFilter CreateFilter(IFilter input)
@@ -95,17 +95,22 @@ namespace Mpdn.RenderScript
                                      Softness, YuvConsts[0], YuvConsts[1], 0.0f,
                                      offset.X, offset.Y };
 
-                var CopyLuma = CompileShader("SuperChromaRes/CopyLuma.hlsl");
-                var CopyChroma = CompileShader("SuperChromaRes/CopyChroma.hlsl");
-                var Diff = CompileShader("SuperChromaRes/Diff.hlsl").Configure(arguments: YuvConsts, format: TextureFormat.Float16);
-                var SuperRes = CompileShader("SuperChromaRes/SuperRes.hlsl");
+                var CopyLuma = CompileShader("CopyLuma.hlsl");
+                var CopyChroma = CompileShader("CopyChroma.hlsl");
+                var Diff = CompileShader("Diff.hlsl").Configure(arguments: YuvConsts, format: TextureFormat.Float16);
+                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions:
+                        (AntiRinging  == 0 ? "SkipAntiRinging  = 1;" : "") +
+                        (AntiAliasing == 0 ? "SkipAntiAliasing = 1;" : "") +
+                        (Sharpness == 0 ? "SkipSharpening = 1;" : "") +
+                        (Softness  == 0 ? "SkipSoftening  = 1;" : "")
+                    ).Configure(arguments: new[] { Strength, Sharpness, AntiAliasing, AntiRinging, Softness });
 
-                var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
-                var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
-                var LinearToGamma = CompileShader("../Common/LinearToGamma.hlsl");
-                var GammaToLinear = CompileShader("../Common/GammaToLinear.hlsl");
-                var LabToLinear = CompileShader("../Common/LabToLinear.hlsl");
-                var LinearToLab = CompileShader("../Common/LinearToLab.hlsl");
+                var GammaToLab = CompileShader("../../Common/GammaToLab.hlsl");
+                var LabToGamma = CompileShader("../../Common/LabToGamma.hlsl");
+                var LinearToGamma = CompileShader("../../Common/LinearToGamma.hlsl");
+                var GammaToLinear = CompileShader("../../Common/GammaToLinear.hlsl");
+                var LabToLinear = CompileShader("../../Common/LabToLinear.hlsl");
+                var LinearToLab = CompileShader("../../Common/LinearToLab.hlsl");
 
                 yuv = input.ConvertToYuv();
 

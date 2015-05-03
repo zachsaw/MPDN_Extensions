@@ -32,7 +32,7 @@ namespace Mpdn.RenderScript
             public float Sharpness { get; set; }
             public float AntiAliasing { get; set; }
             public float AntiRinging { get; set; }
-            public bool FastMethod { get; set; }
+            public float Softness { get; set; }
         }
 
         public class SuperRes : PresetGroup
@@ -68,19 +68,21 @@ namespace Mpdn.RenderScript
                         Name = "Default",
                         Passes = 3,
                         Strength = 0.75f,
-                        Sharpness = 0.5f,
-                        AntiAliasing = 0.5f,
-                        AntiRinging = 0.50f,
+                        Sharpness = 0.3f,
+                        AntiAliasing = 0.3f,
+                        AntiRinging = 0.5f,
+                        Softness = 0.1f,
                         Script = new ScriptChainScript()
                     },
                     new SuperResPreset() 
                     {
                         Name = "NEDI",
                         Passes = 2,
-                        Strength = 0.5f,
-                        Sharpness = 0.35f,
+                        Strength = 0.65f,
+                        Sharpness = 0.4f,
                         AntiAliasing = 0.25f,
                         AntiRinging = 0.50f,
+                        Softness = 0.1f,
                         Script = new NediScaler() { 
                             Settings = new Nedi.Nedi() { ForceCentered = true } }
                     },                    
@@ -92,6 +94,7 @@ namespace Mpdn.RenderScript
                         Sharpness = 0.25f,
                         AntiAliasing = 0.15f,
                         AntiRinging = 0.50f,
+                        Softness = 0.1f,
                         Script = new NNedi3Scaler() { 
                             Settings = new NNedi3.NNedi3() { ForceCentered = true } }
                     }                    
@@ -114,20 +117,28 @@ namespace Mpdn.RenderScript
             {
                 IFilter lab, linear, result = initial;
 
+                // Load Settings
                 var settings = (SuperResPreset)SelectedOption;
                 var Passes = settings.Passes;
                 var Strength = settings.Strength;
                 var Sharpness = settings.Sharpness;
                 var AntiAliasing = settings.AntiAliasing;
                 var AntiRinging = settings.AntiRinging;
-                var FastMethod = settings.FastMethod;
+                var Softness = settings.Softness;
 
+                // Calculate Sizes
                 var inputSize = original.OutputSize;
                 var currentSize = original.OutputSize;
                 var targetSize = TargetSize();
 
+                // Compile Shaders
                 var Diff = CompileShader("Diff.hlsl").Configure(format: TextureFormat.Float16);
-                var SuperRes = CompileShader(FastMethod ? "SuperResFast.hlsl" : "SuperRes.hlsl");
+                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions:
+                        (AntiRinging  == 0 ? "SkipAntiRinging  = 1;" : "") +
+                        (AntiAliasing == 0 ? "SkipAntiAliasing = 1;" : "") +
+                        (Sharpness == 0 ? "SkipSharpening = 1;" : "") +
+                        (Softness  == 0 ? "SkipSoftening  = 1;" : "")
+                    ).Configure(arguments: new[] { Strength, Sharpness, AntiAliasing, AntiRinging, Softness });
 
                 var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
                 var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
@@ -169,11 +180,7 @@ namespace Mpdn.RenderScript
                         diff = new ResizeFilter(diff, currentSize, upscaler, downscaler);
                     
                     // Update result
-                    var Consts = new[] { Strength, Sharpness, AntiAliasing, AntiRinging };
-                    if (FastMethod)
-                        lab = new ShaderFilter(SuperRes.Configure(useBilinear, arguments: Consts), lab, diff);
-                    else
-                        lab = new ShaderFilter(SuperRes.Configure(useBilinear, arguments: Consts), lab, diff, original);
+                    lab = new ShaderFilter(SuperRes.Configure(useBilinear), lab, diff, original);
                     result = new ShaderFilter(LabToGamma, lab);
                 }
 

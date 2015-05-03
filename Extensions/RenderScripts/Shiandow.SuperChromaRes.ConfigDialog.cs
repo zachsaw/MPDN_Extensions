@@ -47,11 +47,6 @@ namespace Mpdn.RenderScript
                 Settings.AntiRinging = (float)AntiRingingSetter.Value;
                 Settings.Softness = (float)SoftnessSetter.Value;
             }
-
-            private void ValueChanged(object sender, EventArgs e)
-            {
-
-            }
         }
 
         public class SuperChromaResConfigDialogBase : ScriptConfigDialog<SuperChromaRes>
