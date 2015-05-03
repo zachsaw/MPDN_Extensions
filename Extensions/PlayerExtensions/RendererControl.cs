@@ -10,9 +10,25 @@ namespace Mpdn.PlayerExtensions.GitHub
 {
     public class RenderControl : PlayerExtension
     {
+        public YuvColorimetric? savedSettings;
+
         protected static VideoRendererSettings RendererSettings
         {
             get { return PlayerControl.PlayerSettings.VideoRendererSettings;  }
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            PlayerControl.PlaybackCompleted += PlaybackCompleted;
+        }
+
+        public override void Destroy()
+        {
+            base.Destroy();
+
+            PlayerControl.PlaybackCompleted -= PlaybackCompleted;
         }
 
         public override ExtensionUiDescriptor Descriptor
@@ -40,9 +56,14 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
         }
 
+        private void PlaybackCompleted(object sender, EventArgs e)
+        {
+            RendererSettings.OutputLevels = savedSettings ?? RendererSettings.OutputLevels;
+        }
+
         private void ToggleLevels()
         {
-            var settings = RendererSettings.OutputLevels;
+            savedSettings = RendererSettings.OutputLevels;
             switch (Renderer.Colorimetric)
             {
                 case YuvColorimetric.FullRangePc601: RendererSettings.OutputLevels = YuvColorimetric.ItuBt601; break;
@@ -53,13 +74,12 @@ namespace Mpdn.PlayerExtensions.GitHub
                 case YuvColorimetric.ItuBt2020: RendererSettings.OutputLevels = YuvColorimetric.FullRangePc2020; break;
             }
             PlayerControl.ShowOsdText("Colour space: " + RendererSettings.OutputLevels.ToDescription());
-            PlayerControl.RefreshSettings();
-            RendererSettings.OutputLevels = settings;
+            PlayerControl.RefreshSettings();            
         }
 
         private void ToggleYUV()
         {
-            var settings = RendererSettings.OutputLevels;
+            savedSettings = RendererSettings.OutputLevels;
             switch (Renderer.Colorimetric)
             {
                 case YuvColorimetric.FullRangePc601:    RendererSettings.OutputLevels = YuvColorimetric.FullRangePc709; break;
@@ -71,7 +91,6 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
             PlayerControl.ShowOsdText("Colour space: " + RendererSettings.OutputLevels.ToDescription());
             PlayerControl.RefreshSettings();
-            RendererSettings.OutputLevels = settings;
         }
 
         private static Verb GetVerb(string menuItemText, string shortCutString, Action action)
