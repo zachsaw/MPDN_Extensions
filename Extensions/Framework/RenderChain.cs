@@ -67,29 +67,24 @@ namespace Mpdn.RenderScript
             }
         }
 
-        protected IShader CompileShader(string shaderFileName)
+        protected IShader CompileShader(string shaderFileName, string entryPoint = "main", string macroDefinitions = null)
         {
-            return ShaderCache.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName));
+            return ShaderCache.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName), entryPoint, macroDefinitions);
         }
 
-        protected IShader LoadShader(string shaderFileName)
+        protected IShader11 CompileShader11(string shaderFileName, string profile, string entryPoint = "main", string macroDefinitions = null)
         {
-            return ShaderCache.LoadShader(Path.Combine(ShaderDataFilePath, shaderFileName));
-        }
-
-        protected IShader11 CompileShader11(string shaderFileName, string profile)
-        {
-            return CompileShader11(shaderFileName, "main", profile);
-        }
-
-        protected IShader11 CompileShader11(string shaderFileName, string entryPoint, string profile)
-        {
-            return ShaderCache.CompileShader11(Path.Combine(ShaderDataFilePath, shaderFileName), entryPoint, profile);
+            return ShaderCache.CompileShader11(Path.Combine(ShaderDataFilePath, shaderFileName), entryPoint, profile, macroDefinitions);
         }
 
         protected IKernel CompileClKernel(string sourceFileName, string entryPoint, string options = null)
         {
             return ShaderCache.CompileClKernel(Path.Combine(ShaderDataFilePath, sourceFileName), entryPoint, options);
+        }
+
+        protected IShader LoadShader(string shaderFileName)
+        {
+            return ShaderCache.LoadShader(Path.Combine(ShaderDataFilePath, shaderFileName));
         }
 
         protected IShader11 LoadShader11(string shaderFileName)
