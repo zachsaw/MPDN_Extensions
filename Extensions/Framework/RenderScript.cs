@@ -18,6 +18,7 @@ using System;
 using System.IO;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using Mpdn.OpenCl;
 
 namespace Mpdn.RenderScript
 {
@@ -70,45 +71,83 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public static class ShaderCache<T>
-    where T : class
+
+    public static class ShaderCache
     {
-        private static readonly Dictionary<string, ShaderWithDateTime> s_CompiledShaders =
-            new Dictionary<string, ShaderWithDateTime>();
-
-        public static T Add(string shaderPath, Func<string, T> compileFunc)
+        private static class InternalCache<T>
+        where T : class
         {
-            var lastMod = File.GetLastWriteTimeUtc(shaderPath);
+            private static readonly Dictionary<string, ShaderWithDateTime> s_CompiledShaders =
+                new Dictionary<string, ShaderWithDateTime>();
 
-            ShaderWithDateTime result;
-            if (s_CompiledShaders.TryGetValue(shaderPath, out result) &&
-                result.LastModified == lastMod)
+            public static T Add(string shaderPath, string key, Func<T> compileFunc)
             {
-                return result.Shader;
+                var lastMod = File.GetLastWriteTimeUtc(shaderPath);
+
+                ShaderWithDateTime result;
+                if (s_CompiledShaders.TryGetValue(key, out result) &&
+                    result.LastModified == lastMod)
+                {
+                    return result.Shader;
+                }
+
+                if (result != null)
+                {
+                    DisposeHelper.Dispose(result.Shader);
+                    s_CompiledShaders.Remove(key);
+                }
+
+                var shader = compileFunc();
+                s_CompiledShaders.Add(key, new ShaderWithDateTime(shader, lastMod));
+                return shader;
             }
 
-            if (result != null)
+            public class ShaderWithDateTime
             {
-                DisposeHelper.Dispose(result.Shader);
-                s_CompiledShaders.Remove(shaderPath);
-            }
+                public T Shader { get; private set; }
+                public DateTime LastModified { get; private set; }
 
-            var shader = compileFunc(shaderPath);
-            s_CompiledShaders.Add(shaderPath, new ShaderWithDateTime(shader, lastMod));
-            return shader;
+                public ShaderWithDateTime(T shader, DateTime lastModified)
+                {
+                    Shader = shader;
+                    LastModified = lastModified;
+                }
+            }
         }
 
-        public class ShaderWithDateTime
+        public static IShader CompileShader(string shaderFileName, string entryPoint = "main", string macroDefinitions = null)
         {
-            public T Shader { get; private set; }
-            public DateTime LastModified { get; private set; }
+            return InternalCache<IShader>.Add(shaderFileName,
+                String.Format("\"{0}\" /E {1} /D {2}", shaderFileName, entryPoint, macroDefinitions),
+                () => Renderer.CompileShader(shaderFileName, entryPoint, macroDefinitions));
+        }
 
-            public ShaderWithDateTime(T shader, DateTime lastModified)
-            {
-                Shader = shader;
-                LastModified = lastModified;
-            }
+        public static IShader11 CompileShader11(string shaderFileName, string profile, string entryPoint = "main", string macroDefinitions = null)
+        {
+            return InternalCache<IShader11>.Add(shaderFileName,
+                String.Format("\"{0}\" /E {1} /T {2} /D {3}", shaderFileName, entryPoint, profile, macroDefinitions),
+                () => Renderer.CompileShader11(shaderFileName, entryPoint, profile, macroDefinitions));
+        }
+
+        public static IKernel CompileClKernel(string sourceFileName, string entryPoint, string options = null)
+        {
+            return InternalCache<IKernel>.Add(sourceFileName,
+                String.Format("\"{0}\" /E {1} /Opts {2}", sourceFileName, entryPoint, options),
+                () => Renderer.CompileClKernel(sourceFileName, entryPoint, options));
+        }
+
+        public static IShader LoadShader(string shaderFileName)
+        {
+            return InternalCache<IShader>.Add(shaderFileName,
+                shaderFileName,
+                () => Renderer.LoadShader(shaderFileName));
+        }
+
+        public static IShader11 LoadShader11(string shaderFileName)
+        {
+            return InternalCache<IShader11>.Add(shaderFileName,
+                shaderFileName,
+                () => Renderer.LoadShader11(shaderFileName));
         }
     }
-
 }

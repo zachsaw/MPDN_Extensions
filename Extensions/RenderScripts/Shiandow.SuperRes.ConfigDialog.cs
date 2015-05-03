@@ -26,7 +26,15 @@ namespace Mpdn.RenderScript
     {
         public partial class SuperResConfigDialog : SuperResConfigDialogBase
         {
-            protected SuperResPreset selectedPreset = null;
+            protected int? selectedIndex = null;
+
+            protected SuperResPreset selectedPreset
+            {
+                get
+                {
+                    return (SuperResPreset)Settings.Options.ElementAtOrDefault(selectedIndex ?? -1);
+                }
+            }
 
             public SuperResConfigDialog()
             {
@@ -46,13 +54,15 @@ namespace Mpdn.RenderScript
             protected void LoadOption()
             {
                 var option = selectedPreset;
+                if (option == null)
+                    return;
 
                 PassesSetter.Value = (Decimal)option.Passes;
                 StrengthSetter.Value = (Decimal)option.Strength;
                 SharpnessSetter.Value = (Decimal)option.Sharpness;
                 AntiAliasingSetter.Value = (Decimal)option.AntiAliasing;
                 AntiRingingSetter.Value = (Decimal)option.AntiRinging;
-                FastBox.Checked = option.FastMethod;
+                SoftnessSetter.Value = (Decimal)option.Softness;
             }
 
             protected override void SaveSettings()
@@ -64,8 +74,8 @@ namespace Mpdn.RenderScript
 
             protected void SaveOption()
             {
-                var option = selectedPreset;
-                if (option == null)
+                SuperResPreset option = selectedPreset;
+                if (option == null) 
                     return;
 
                 option.Passes = (int)PassesSetter.Value;
@@ -73,20 +83,19 @@ namespace Mpdn.RenderScript
                 option.Sharpness = (float)SharpnessSetter.Value;
                 option.AntiAliasing = (float)AntiAliasingSetter.Value;
                 option.AntiRinging = (float)AntiRingingSetter.Value;
-                option.FastMethod = FastBox.Checked;
+                option.Softness = (float)SoftnessSetter.Value;
             }
 
             private void SelectionChanged(object sender, EventArgs e)
             {
                 SaveOption();
-                selectedPreset = (SuperResPreset)PrescalerBox.SelectedValue;
+                selectedIndex = PrescalerBox.SelectedIndex;
                 LoadOption();
                 UpdateGui();
             }
 
             private void UpdateGui()
             {
-                AntiRingingSetter.Enabled = !FastBox.Checked;
                 ConfigButton.Enabled =
                     (PrescalerBox.SelectedValue as Preset != null) ? 
                     (PrescalerBox.SelectedValue as Preset).HasConfigDialog() : false;

@@ -22,7 +22,7 @@
 #define softness (args1[0])
 
 // -- Edge detection options -- 
-#define edge_adaptiveness 1.0
+#define edge_adaptiveness 0.0
 #define baseline 0.0
 #define acuity 6.0
 #define radius 1.5
@@ -49,7 +49,7 @@ float4 args2  : register(c5);
 
 #define sqr(x) dot(x,x)
 #define spread (exp(-1/(2.0*radius*radius)))
-#define h 1.5
+#define h 1.2
 
 // -- Colour space Processing --
 #include "../../Common/ColourProcessing.hlsl"
@@ -67,52 +67,64 @@ float4 args2  : register(c5);
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
 	float4 c0 = tex2D(s0, tex);
-	float2 pos = tex - ddxddy*offset;
-	
 	float3 stab = 0;
-	float W = 0;
-	for (int i = -1; i <= 1; i++)
-	for (int j = -1; j <= 1; j++) {
-		float3 d = Get(0, 0) - Get(i, j);
-		float x2 = sqr(acuity*d);
-		float w = pow(spread, i*i + j*j)*lerp(1 / sqr(1 + x2), rsqrt(1 + x2), baseline);
-		stab += d*w;
-		W += w;
-	}
-	[branch] if (softness != 0)
-	stab = softness*(stab / W)*pow(W / (1 + 4 * spread + 4 * spread*spread), edge_adaptiveness - 1.0);
-	
+
 	float3 Ix = (Get(1, 0) - Get(-1, 0)) / (2.0*h);
 	float3 Iy = (Get(0, 1) - Get(0, -1)) / (2.0*h);
 	float3 Ixx = (Get(1, 0) - 2 * Get(0, 0) + Get(-1, 0)) / (h*h);
 	float3 Iyy = (Get(0, 1) - 2 * Get(0, 0) + Get(0, -1)) / (h*h);
 	float3 Ixy = (Get(1, 1) - Get(1, -1) - Get(-1, 1) + Get(-1, -1)) / (4.0*h*h);
 	//	Ixy = (Get(1,1) - Get(1,0) - Get(0,1) + 2*Get(0,0) - Get(-1,0) - Get(0,-1) + Get(-1,-1))/(2.0*h*h);
-	float2x3 I = transpose(float3x2(
-		normalize(float2(Ix[0], Iy[0])),
-		normalize(float2(Ix[1], Iy[1])),
-		normalize(float2(Ix[2], Iy[2]))
-	));
-	[branch] if (anti_aliasing != 0)
-	stab -= anti_aliasing*(I[0] * I[0] * Iyy - 2 * I[0] * I[1] * Ixy + I[1] * I[1] * Ixx);
+	
+#ifndef SkipAntiAliasing
+	// Mean curvature flow
+	float3 N = rsqrt(Ix*Ix + Iy*Iy);
+	Ix *= N; Iy *= N;
+	stab -= anti_aliasing*(Ix*Ix*Iyy - 2*Ix*Iy*Ixy + Iy*Iy*Ixx);
+#endif
 
+#ifndef SkipSharpening
+	// Inverse heat equation
 	stab += sharpness*0.5*(Ixx + Iyy);
+#endif
 
-	//Calculate faithfulness force
+#ifndef SkipSoftening
+	// Softening
+	float W = 1;
+	float3 soft = 0;
+	float3 D[8] = {	{Get(0,0) - Get(0,1), Get(0,0) - Get(1, 0), Get(0,0) - Get(0 ,-1), Get(0,0) - Get(-1,0)},
+				 	{Get(0,0) - Get(1,1), Get(0,0) - Get(1,-1), Get(0,0) - Get(-1,-1), Get(0,0) - Get(-1,1)} };
+	[unroll] for( int k = 0; k < 8; k++)
+	{
+		float3 d = D[k];
+		float x2 = sqr(acuity*d);
+		float w = pow(spread, k < 4 ? 1.0 : 2.0)*exp(-x2);
+		soft += w*d;
+		W += w;
+	}
+	stab += softness * soft * pow(W / (1 + 4 * spread + 4 * spread * spread), edge_adaptiveness);
+#endif
+
+	// Calculate faithfulness force
 	float3 diff = Diff(0, 0);
 
-	//Apply forces
+	// Apply forces
 	c0.yz -= strength*(diff + stab).yz;
 
-	//Find extrema
+#ifndef SkipAntiRinging
+	// Calculate Position
+	float2 pos = tex - ddxddy*offset;
+
+	// Find extrema
 	float2 Min = min(min(Original(0, 0), Original(1, 0)),
 					 min(Original(0, 1), Original(1, 1)));
 	float2 Max = max(max(Original(0, 0), Original(1, 0)),
 					 max(Original(0, 1), Original(1, 1)));
 
-	//Apply anti-ringing
+	// Apply anti-ringing
 	float2 AR = c0.yz - clamp(c0.yz, Min, Max);
 	c0.yz -= AR*smoothstep(0, (Max - Min) / anti_ringing - (Max - Min) + pow(2, -16), abs(AR));
+#endif
 
 	return c0;
 }

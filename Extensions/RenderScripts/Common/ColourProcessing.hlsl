@@ -15,22 +15,26 @@
 // License along with this library.
 // 
 // -- Color space options --
-#define GammaCurve sRGB
+#define GammaCurve Rec709
 #define gamma 2.2
 #define QuasiLab true
 
 // -- Option values --
-#define None  1
-#define sRGB  2
-#define Power 3
-#define Fast  4
-#define true  5
-#define false 6
+#define None   1
+#define Rec709 2
+#define sRGB   3
+#define Power  4
+#define Fast   5
+#define true   6
+#define false  7
 
 // -- Gamma processing --
 #define A (0.272433)
 
-#if GammaCurve == sRGB
+#if GammaCurve == Rec709
+float3 Gamma(float3 x)   { return x < 0.018						 ? x * 4.506198600878514 : 1.099 * pow(x, 0.45) - 0.099; }
+float3 GammaInv(float3 x){ return x < 0.018 * 4.506198600878514  ? x / 4.506198600878514 : pow((x + 0.099) / 1.099, 1 / 0.45); }
+#elif GammaCurve == sRGB
 float3 Gamma(float3 x)   { return x < 0.00303993442528169  ? x * 12.9232102 : 1.055*pow(x, 1 / 2.4) - 0.055; }
 float3 GammaInv(float3 x){ return x < 0.039285711572131475 ? x / 12.9232102 : pow((x + 0.055) / 1.055, 2.4); }
 #elif GammaCurve == Power
@@ -71,12 +75,12 @@ float3 RGBtoLab(float3 rgb) {
 	#endif
 }
 
-float QuasiLabNorm(float3 x, float3 y) {
-	float3x3 M = {{1.16, 0, 0},
-				  {-5.0, 5.0, 0},
-				  {-2.0, 0.0, 2.0}};
-	float3x3 M2 = mul(transpose(M),M);
-	return dot(x, mul(M2,y));
+const static float3x3 QuasiLabTransform = {{0, 1.16, 0}, {5.0, -5.0, 0}, {0.0, -2.0, 2.0}};
+const static float3x3 QuasiLabInverse = {{25.0/29.0, 1.0/5.0, 0}, {25.0/29.0, 0, 0}, {25.0/29.0, 0, 1.0/2.0}};
+
+float QuasiLabNorm(float3 xyz) {
+	xyz = float3(1.16*xyz.y, 5.0*(xyz.x - xyz.y), 2.0*(xyz.y - xyz.z));
+	return dot(xyz,xyz);
 }
 
 float3 LabtoRGB(float3 lab) {
