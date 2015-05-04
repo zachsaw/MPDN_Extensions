@@ -71,5 +71,10 @@ namespace Mpdn.PlayerExtensions.GitHub
             m_SelectedSub = (Subtitle) dataGridView1.SelectedRows[0].DataBoundItem;
         }
 
+        private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            DownloadButton_Click(sender, e);
+        }
+
     }
 }
