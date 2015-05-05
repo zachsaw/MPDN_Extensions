@@ -33,7 +33,7 @@ namespace Mpdn.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IFilter sourceFilter)
             {
                 if (!Renderer.IsOpenClAvail)
                     return new NullFilter(); // display blank screen on purpose
@@ -85,7 +85,7 @@ namespace Mpdn.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IFilter sourceFilter)
             {
                 if (!Renderer.IsOpenClAvail)
                     return new NullFilter(); // display blank screen on purpose
@@ -130,7 +130,7 @@ namespace Mpdn.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IFilter sourceFilter)
             {
                 if (!Renderer.IsOpenClAvail)
                     return new NullFilter(); // display blank screen on purpose
@@ -162,6 +162,11 @@ namespace Mpdn.RenderScripts
                         Copyright = "" // Optional field
                     };
                 }
+            }
+
+            public override string Category
+            {
+                get { return "Example"; }
             }
         }
     }

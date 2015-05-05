@@ -33,7 +33,7 @@ namespace Mpdn.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IFilter sourceFilter)
             {
                 CreateTextures();
                 var shader = CompileShader("CustomTextures.hlsl");
@@ -124,6 +124,11 @@ namespace Mpdn.RenderScripts
                         Copyright = "" // Optional field
                     };
                 }
+            }
+
+            public override string Category
+            {
+                get { return "Example"; }
             }
         }
     }

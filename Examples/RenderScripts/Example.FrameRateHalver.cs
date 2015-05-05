@@ -62,7 +62,7 @@ namespace Mpdn.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            public override IFilter CreateFilter(IFilter sourceFilter)
             {
                 // apply the halving filter
                 return new FramerateHalvingFilter(sourceFilter);
@@ -83,6 +83,11 @@ namespace Mpdn.RenderScripts
                         Copyright = "" // Optional field
                     };
                 }
+            }
+
+            public override string Category
+            {
+                get { return "Example"; }
             }
         }
     }
