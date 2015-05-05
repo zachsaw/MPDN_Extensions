@@ -132,7 +132,7 @@ float getPixel(__read_only image2d_t srcImg, uint x, uint y, uint swapXy, uint w
     return pix.s0;
 }
 
-#define offset 1
+#define offset 0
 #define GetIX(x) get_group_id(0) * 64 + (x) - 3
 #define GetIY(y) get_group_id(1) * 8 + (y) - 1 - offset
 
@@ -189,18 +189,6 @@ void nnedi3(__read_only image2d_t srcImg, __write_only image2d_t dstImg,
                                 ? ((int2) (y + 1 - offset, x + i)) 
                                 : ((int2) (x + i, y + 1 - offset)), 
                                 ((float*) &mstd3)[i]);
-        /*
-                write_imagef(dstImg, 
-                            (swapXy) 
-                                ? ((int2) (y    , x + i)) 
-                                : ((int2) (x + i, y    )), 
-                            input[get_local_id(1) + 1][get_local_id(0) * 8 + 3 + i]);
-
-                write_imagef(dstImg, 
-                             (swapXy) 
-                                ? ((int2) (y + 1, x + i)) 
-                                : ((int2) (x + i, y + 1)), 
-                            ((float*) &mstd3)[i]);*/
             }
         }
     }

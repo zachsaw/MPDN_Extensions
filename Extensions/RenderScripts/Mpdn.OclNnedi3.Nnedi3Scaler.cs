@@ -165,7 +165,7 @@ namespace Mpdn.RenderScripts
                 var yuv = sourceFilter.ConvertToYuv();
 
                 var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
-                    TextureChannels.ChromaOnly, new Vector2(-0.25f, -0.25f), Renderer.ChromaUpscaler,
+                    TextureChannels.ChromaOnly, new Vector2(0.25f, 0.25f), Renderer.ChromaUpscaler,
                     Renderer.ChromaDownscaler);
 
                 var localWorkSizes = new[] {8, 8};
@@ -175,7 +175,7 @@ namespace Mpdn.RenderScripts
                     new TextureSize(nnedi3H.OutputSize.Width, nnedi3H.OutputSize.Height), localWorkSizes, nnedi3H);
 
                 var result = new ShaderFilter(combine, nnedi3V, chroma);
-                return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(-1.0f, -1.0f),
+                return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),
                     Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
             }
         }
