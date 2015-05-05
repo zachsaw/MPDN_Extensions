@@ -10,13 +10,14 @@ MPDN project page - http://forum.doom9.org/showthread.php?t=171120
 <li>DeadlyEmbrace</li>
 <li>Mercy07</li>
 <li>Garteal</li>
+<li>Belphemur</li>
 </ul>
 
 
 How to use Extensions?
 ----------------------
 
-To use these extensions (compatible with ***MPDN v2.25.13*** and above), click the **Download ZIP** button on the right to download the whole repository.
+To use these extensions (compatible with ***MPDN v2.25.14*** and above), click the **Download ZIP** button on the right to download the whole repository.
 
 Then extract the files and folders in the Extensions folder to your MPDN's Extensions folder.
 
