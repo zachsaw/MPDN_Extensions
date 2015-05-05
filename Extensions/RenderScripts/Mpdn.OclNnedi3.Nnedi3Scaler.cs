@@ -165,7 +165,7 @@ namespace Mpdn.RenderScripts
                 var yuv = sourceFilter.ConvertToYuv();
 
                 var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
-                    TextureChannels.ChromaOnly, new Vector2(0.25f, 0.25f), Renderer.ChromaUpscaler,
+                    TextureChannels.ChromaOnly, new Vector2(-0.25f, -0.25f), Renderer.ChromaUpscaler,
                     Renderer.ChromaDownscaler);
 
                 var localWorkSizes = new[] {8, 8};
