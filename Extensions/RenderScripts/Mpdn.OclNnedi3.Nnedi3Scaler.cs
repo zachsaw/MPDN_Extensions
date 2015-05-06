@@ -115,7 +115,8 @@ namespace Mpdn.RenderScripts
 
                 protected override void LoadInputs(IList<IBaseTexture> inputs)
                 {
-                    Shader.SetInputTextureArg(0, (ITexture) inputs[0]); // srcImg
+                    // Use the 'temp' texture from first pass as input
+                    Shader.SetTempTextureArg(0, (ITexture) inputs[0]); // srcImg
                     Shader.SetOutputTextureArg(1, OutputTexture); // dstImg
                     Shader.SetArg(4, m_TextureSize.Width); // SrcWidth
                     Shader.SetArg(5, m_TextureSize.Height); // SrcHeight
