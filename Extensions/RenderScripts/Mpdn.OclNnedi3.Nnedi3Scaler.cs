@@ -115,7 +115,8 @@ namespace Mpdn.RenderScripts
 
                 protected override void LoadInputs(IList<IBaseTexture> inputs)
                 {
-                    Shader.SetInputTextureArg(0, (ITexture) inputs[0]); // srcImg
+                    // Use the 'temp' texture from first pass as input
+                    Shader.SetTempTextureArg(0, (ITexture) inputs[0]); // srcImg
                     Shader.SetOutputTextureArg(1, OutputTexture); // dstImg
                     Shader.SetArg(4, m_TextureSize.Width); // SrcWidth
                     Shader.SetArg(5, m_TextureSize.Height); // SrcHeight
@@ -165,7 +166,7 @@ namespace Mpdn.RenderScripts
                 var yuv = sourceFilter.ConvertToYuv();
 
                 var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
-                    TextureChannels.ChromaOnly, new Vector2(0.25f, 0.25f), Renderer.ChromaUpscaler,
+                    TextureChannels.ChromaOnly, new Vector2(-0.25f, -0.25f), Renderer.ChromaUpscaler,
                     Renderer.ChromaDownscaler);
 
                 var localWorkSizes = new[] {8, 8};
@@ -175,7 +176,7 @@ namespace Mpdn.RenderScripts
                     new TextureSize(nnedi3H.OutputSize.Width, nnedi3H.OutputSize.Height), localWorkSizes, nnedi3H);
 
                 var result = new ShaderFilter(combine, nnedi3V, chroma);
-                return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(-0.5f, -0.5f),
+                return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),
                     Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
             }
         }
