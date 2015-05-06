@@ -31,7 +31,7 @@ namespace Mpdn.RenderScripts
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                if (!Renderer.IsDx11Avail)
+                if (!Renderer.IsDx11Avail || Renderer.RenderQuality == RenderQuality.MaxPerformance)
                     return new NullFilter(); // display blank screen on purpose
 
                 // get MPDN to scale image to target size first

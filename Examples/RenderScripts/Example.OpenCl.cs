@@ -35,7 +35,7 @@ namespace Mpdn.RenderScripts
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                if (!Renderer.IsOpenClAvail)
+                if (!Renderer.IsOpenClAvail || Renderer.RenderQuality == RenderQuality.MaxPerformance)
                     return new NullFilter(); // display blank screen on purpose
 
                 // get MPDN to scale image to target size first
@@ -87,7 +87,7 @@ namespace Mpdn.RenderScripts
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                if (!Renderer.IsOpenClAvail)
+                if (!Renderer.IsOpenClAvail || Renderer.RenderQuality == RenderQuality.MaxPerformance)
                     return new NullFilter(); // display blank screen on purpose
 
                 m_Buffer = Renderer.CreateClBuffer(new[] {0.25f, 0.5f, 0.75f});
@@ -132,7 +132,7 @@ namespace Mpdn.RenderScripts
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                if (!Renderer.IsOpenClAvail)
+                if (!Renderer.IsOpenClAvail || Renderer.RenderQuality == RenderQuality.MaxPerformance)
                     return new NullFilter(); // display blank screen on purpose
 
                 // get MPDN to scale image to target size first

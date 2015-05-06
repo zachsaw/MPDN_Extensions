@@ -146,6 +146,9 @@ namespace Mpdn.RenderScripts
                 if (!Renderer.IsOpenClAvail)
                     return sourceFilter; // OpenCL is not available; fallback
 
+                if (Renderer.RenderQuality == RenderQuality.MaxPerformance)
+                    return sourceFilter; // UNORM8 textures aren't supported; fallback
+
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2*s.Width, s.Height);
                 Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2*s.Height);
 
