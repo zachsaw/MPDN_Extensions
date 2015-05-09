@@ -17,13 +17,11 @@
 using System;
 using System.Collections.Generic;
 using Mpdn.OpenCl;
-using Mpdn.RenderScript;
-using Mpdn.RenderScript.Mpdn.OclNNedi3;
 using SharpDX;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.RenderScript
 {
-    namespace Mpdn.OclNnedi3
+    namespace Mpdn.OclNNedi3
     {
         public enum NNedi3Neurons
         {

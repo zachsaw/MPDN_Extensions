@@ -16,7 +16,6 @@
 // 
 using System;
 using System.ComponentModel;
-using System.Drawing;
 
 namespace Mpdn.RenderScript
 {

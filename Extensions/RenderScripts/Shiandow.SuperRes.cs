@@ -15,11 +15,11 @@
 // License along with this library.
 // 
 using System;
-using System.Drawing;
 using System.Collections.Generic;
 using Mpdn.RenderScript.Mpdn.Presets;
 using Mpdn.RenderScript.Shiandow.Nedi;
 using Mpdn.RenderScript.Shiandow.NNedi3;
+using OpenCLNNedi3 = Mpdn.RenderScript.Mpdn.OclNNedi3;
 
 namespace Mpdn.RenderScript
 {
@@ -63,7 +63,7 @@ namespace Mpdn.RenderScript
 
                 Options = new List<Preset>
                 {
-                    new SuperResPreset() 
+                    new SuperResPreset
                     {
                         Name = "Default",
                         Passes = 3,
@@ -74,7 +74,7 @@ namespace Mpdn.RenderScript
                         Softness = 0.1f,
                         Script = new ScriptChainScript()
                     },
-                    new SuperResPreset() 
+                    new SuperResPreset
                     {
                         Name = "NEDI",
                         Passes = 2,
@@ -83,10 +83,9 @@ namespace Mpdn.RenderScript
                         AntiAliasing = 0.25f,
                         AntiRinging = 0.50f,
                         Softness = 0.1f,
-                        Script = new NediScaler() { 
-                            Settings = new Nedi.Nedi() { ForceCentered = true } }
-                    },                    
-                    new SuperResPreset() 
+                        Script = new NediScaler {Settings = new Nedi.Nedi {ForceCentered = true}}
+                    },
+                    new SuperResPreset
                     {
                         Name = "NNEDI3",
                         Passes = 2,
@@ -95,9 +94,19 @@ namespace Mpdn.RenderScript
                         AntiAliasing = 0.15f,
                         AntiRinging = 0.50f,
                         Softness = 0.1f,
-                        Script = new NNedi3Scaler() { 
-                            Settings = new NNedi3.NNedi3() { ForceCentered = true } }
-                    }                    
+                        Script = new NNedi3Scaler {Settings = new NNedi3.NNedi3 {ForceCentered = true}}
+                    },
+                    new SuperResPreset
+                    {
+                        Name = "OpenCL NNEDI3",
+                        Passes = 2,
+                        Strength = 0.5f,
+                        Sharpness = 0.25f,
+                        AntiAliasing = 0.15f,
+                        AntiRinging = 0.50f,
+                        Softness = 0.1f,
+                        Script = new OpenCLNNedi3.NNedi3Scaler {Settings = new OpenCLNNedi3.NNedi3 {ForceCentered = true}}
+                    }
                 };
 
                 SelectedIndex = 0;
