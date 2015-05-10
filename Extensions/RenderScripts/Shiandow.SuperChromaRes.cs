@@ -46,11 +46,11 @@ namespace Mpdn.RenderScript
 
                 Strength = 0.75f;
                 Sharpness = 0.25f;
-                AntiAliasing = 0.5f;
+                AntiAliasing = 0.25f;
                 AntiRinging = 0.0f;
-                Softness = 0.1f;
+                Softness = 0.5f;
 
-                FirstPassOnly = true;
+                FirstPassOnly = false; /* Not used anyway */
                 upscaler = new Scaler.Bilinear();
                 downscaler = new Scaler.Bilinear();
             }
@@ -62,17 +62,16 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter input)
             {
-                IFilter yuv;
+                IFilter gamma, chroma;
 
                 var chromaSize = (TextureSize)Renderer.ChromaSize;
                 var targetSize = input.OutputSize;
 
                 // Original values
-                var yInput = new YSourceFilter();
                 var uInput = new USourceFilter();
                 var vInput = new VSourceFilter();
 
-                float[] YuvConsts = new float[2];
+                float[] YuvConsts = new float[0];
                 switch (Renderer.Colorimetric)
                 {
                     case YuvColorimetric.Auto : return input;
@@ -97,13 +96,14 @@ namespace Mpdn.RenderScript
 
                 var CopyLuma = CompileShader("CopyLuma.hlsl");
                 var CopyChroma = CompileShader("CopyChroma.hlsl");
+                var MergeChroma = CompileShader("MergeChroma.hlsl").Configure( format: TextureFormat.Float16 );
                 var Diff = CompileShader("Diff.hlsl").Configure(arguments: YuvConsts, format: TextureFormat.Float16);
                 var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions:
-                        (AntiRinging  == 0 ? "SkipAntiRinging  = 1;" : "") +
+                        (AntiRinging == 0 ? "SkipAntiRinging  = 1;" : "") +
                         (AntiAliasing == 0 ? "SkipAntiAliasing = 1;" : "") +
                         (Sharpness == 0 ? "SkipSharpening = 1;" : "") +
                         (Softness  == 0 ? "SkipSoftening  = 1;" : "")
-                    ).Configure(arguments: new[] { Strength, Sharpness, AntiAliasing, AntiRinging, Softness });
+                        ).Configure(arguments: Consts);
 
                 var GammaToLab = CompileShader("../../Common/GammaToLab.hlsl");
                 var LabToGamma = CompileShader("../../Common/LabToGamma.hlsl");
@@ -112,26 +112,28 @@ namespace Mpdn.RenderScript
                 var LabToLinear = CompileShader("../../Common/LabToLinear.hlsl");
                 var LinearToLab = CompileShader("../../Common/LinearToLab.hlsl");
 
-                yuv = input.ConvertToYuv();
+                chroma = new ShaderFilter(MergeChroma, uInput, vInput).ConvertToRgb();
+                gamma = input;
 
                 for (int i = 1; i <= Passes; i++)
                 {
-                    IFilter res, diff, linear;
+                    IFilter loRes, diff, linear;
                     bool useBilinear = (upscaler is Scaler.Bilinear) || (FirstPassOnly && !(i == 1));
 
                     // Compare to chroma
-                    linear = new ShaderFilter(GammaToLinear, yuv.ConvertToRgb());
-                    res = new ResizeFilter(linear, chromaSize, adjointOffset, upscaler, downscaler);
-                    res = new ShaderFilter(LinearToGamma, res).ConvertToYuv();
-                    diff = new ShaderFilter(Diff, res, uInput, vInput);
+                    linear = new ShaderFilter(GammaToLinear, gamma);
+                    loRes = new ResizeFilter(linear, chromaSize, adjointOffset, upscaler, downscaler);
+                    diff = new ShaderFilter(Diff, loRes, chroma);
                     if (!useBilinear)
                         diff = new ResizeFilter(diff, targetSize, offset, upscaler, downscaler); // Scale to output size
 
                     // Update result
-                    yuv = new ShaderFilter(SuperRes.Configure(useBilinear, arguments: Consts), yuv, diff, uInput, vInput);
+                    gamma = new ShaderFilter( 
+                        SuperRes.Configure( perTextureLinearSampling: new [] { false, useBilinear, false } ),
+                        gamma, diff, chroma);
                 }
 
-                return yuv.ConvertToRgb();
+                return gamma;
             }
         }
 

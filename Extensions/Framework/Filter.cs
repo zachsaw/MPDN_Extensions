@@ -820,6 +820,7 @@ namespace Mpdn.RenderScript
     {
         public T Shader;
         public bool LinearSampling = false;
+        public bool[] PerTextureLinearSampling = new bool[0];
         public TransformFunc Transform = (s => s);
         public TextureFormat Format = Renderer.RenderQuality.GetTextureFormat();
         public int SizeIndex = 0;
@@ -835,8 +836,9 @@ namespace Mpdn.RenderScript
             return new ShaderFilterSettings<T>(shader);
         }
 
-        public ShaderFilterSettings<T> Configure(bool? linearSampling = null, float[] arguments = null,
-            TransformFunc transform = null, int? sizeIndex = null, TextureFormat? format = null)
+        public ShaderFilterSettings<T> Configure(bool? linearSampling = null, 
+            float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null, TextureFormat? format = null, 
+            bool[] perTextureLinearSampling = null)
         {
             return new ShaderFilterSettings<T>(Shader)
             {
@@ -844,7 +846,8 @@ namespace Mpdn.RenderScript
                 LinearSampling = linearSampling ?? LinearSampling,
                 Format = format ?? Format,
                 SizeIndex = sizeIndex ?? SizeIndex,
-                Args = arguments ?? Args
+                Args = arguments ?? Args,
+                PerTextureLinearSampling = perTextureLinearSampling ?? PerTextureLinearSampling
             };
         }
     }
@@ -853,26 +856,26 @@ namespace Mpdn.RenderScript
     {
         public static ShaderFilterSettings<IShader> Configure(this IShader shader, bool? linearSampling = null,
             float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null,
-            TextureFormat? format = null)
+            TextureFormat? format = null, bool[] perTextureLinearSampling = null)
         {
             return new ShaderFilterSettings<IShader>(shader).Configure(linearSampling, arguments, transform, sizeIndex,
-                format);
+                format, perTextureLinearSampling);
         }
 
         public static ShaderFilterSettings<IShader11> Configure(this IShader11 shader, bool? linearSampling = null,
             float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null,
-            TextureFormat? format = null)
+            TextureFormat? format = null, bool[] perTextureLinearSampling = null)
         {
             return new ShaderFilterSettings<IShader11>(shader).Configure(linearSampling, arguments, transform, sizeIndex,
-                format);
+                format, perTextureLinearSampling);
         }
 
         public static ShaderFilterSettings<IKernel> Configure(this IKernel kernel, bool? linearSampling = null,
             float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null,
-            TextureFormat? format = null)
+            TextureFormat? format = null, bool[] perTextureLinearSampling = null)
         {
             return new ShaderFilterSettings<IKernel>(kernel).Configure(linearSampling, arguments, transform, sizeIndex,
-                format);
+                format, perTextureLinearSampling);
         }
     }
 
@@ -887,7 +890,10 @@ namespace Mpdn.RenderScript
             : base(inputFilters)
         {
             Shader = settings.Shader;
-            LinearSampling = settings.LinearSampling;
+            if (settings.PerTextureLinearSampling.Length > 0)
+                LinearSampling = settings.PerTextureLinearSampling;
+            else
+                LinearSampling = Enumerable.Repeat(settings.LinearSampling, inputFilters.Length).ToArray();
             Transform = settings.Transform;
             Format = settings.Format;
             SizeIndex = settings.SizeIndex;
@@ -903,7 +909,7 @@ namespace Mpdn.RenderScript
         }
 
         protected T Shader { get; private set; }
-        protected bool LinearSampling { get; private set; }
+        protected bool[] LinearSampling { get; private set; }
         protected TransformFunc Transform { get; private set; }
         protected TextureFormat Format { get; private set; }
         protected int SizeIndex { get; private set; }
@@ -951,14 +957,14 @@ namespace Mpdn.RenderScript
                 if (input as ITexture != null)
                 {
                     var tex = (ITexture) input;
-                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
                     Shader.SetConstant(String.Format("size{0}", i),
                         new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
                 }
                 else
                 {
                     var tex = (ITexture3D) input;
-                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
                     Shader.SetConstant(String.Format("size3d{0}", i),
                         new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
                 }
@@ -1006,14 +1012,14 @@ namespace Mpdn.RenderScript
                 if (input as ITexture != null)
                 {
                     var tex = (ITexture) input;
-                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
                     Shader.SetConstantBuffer(String.Format("size{0}", i),
                         new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
                 }
                 else
                 {
                     var tex = (ITexture3D) input;
-                    Shader.SetTextureConstant(i, tex, LinearSampling, false);
+                    Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
                     Shader.SetConstantBuffer(String.Format("size3d{0}", i),
                         new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
                 }
