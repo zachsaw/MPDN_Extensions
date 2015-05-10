@@ -119,7 +119,7 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter input)
             {
-                return CreateFilter(input, new ResizeFilter(input) + SelectedOption);
+                return CreateFilter(input, input + SelectedOption);
             }
 
             public IFilter CreateFilter(IFilter original, IFilter initial)
@@ -161,8 +161,16 @@ namespace Mpdn.RenderScript
                     return original;
 
                 // Initial scaling
-                lab = new ShaderFilter(GammaToLab, initial);
-                original = new ShaderFilter(GammaToLab, original);
+                if (initial != original)
+                {
+                    original = new ShaderFilter(GammaToLab, original);
+                    lab = new ShaderFilter(GammaToLab, initial);
+                }
+                else
+                {
+                    original = new ShaderFilter(GammaToLab, original);
+                    lab = new ResizeFilter(original);
+                }
 
                 for (int i = 1; i <= Passes; i++)
                 {
@@ -172,7 +180,7 @@ namespace Mpdn.RenderScript
                     // Calculate size
                     if (i == Passes || NoIntermediates) currentSize = targetSize;
                     else currentSize = CalculateSize(currentSize, targetSize, i, Passes);
-                                        
+
                     // Resize
                     if (i == 1)
                         initial.SetSize(currentSize);
@@ -189,7 +197,9 @@ namespace Mpdn.RenderScript
                         diff = new ResizeFilter(diff, currentSize, upscaler, downscaler);
                     
                     // Update result
-                    lab = new ShaderFilter(SuperRes.Configure(useBilinear), lab, diff, original);
+                    lab = new ShaderFilter(
+                        SuperRes.Configure(perTextureLinearSampling: new[] { false, useBilinear, false }),
+                        lab, diff, original);
                     result = new ShaderFilter(LabToGamma, lab);
                 }
 

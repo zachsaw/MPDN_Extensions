@@ -32,21 +32,16 @@ float4 args0  : register(c3);
 float4 args1  : register(c4);
 
 // -- Edge detection options -- 
-#define edge_adaptiveness 0.0
-#define baseline 0.0
 #define acuity 20
-#define radius 1.5
+#define radius 0.75
 
 #define originalSize size2
 
 #define width  (p0[0])
 #define height (p0[1])
 
-#define px (p1[0])
-#define py (p1[1])
-
-#define ppx (originalSize[2])
-#define ppy (originalSize[3])
+#define dxdy (p1.xy)
+#define ddxddy (originalSize.zw)
 
 #define sqr(x) dot(x,x)
 #define spread (exp(-1/(2.0*radius*radius)))
@@ -57,11 +52,11 @@ float4 args1  : register(c4);
 
 // -- Input processing --
 //Current high res value
-#define Get(x,y)  	(tex2D(s0,tex+float2(px,py)*int2(x,y)).rgb)
+#define Get(x,y)  	(tex2D(s0,tex+dxdy*int2(x,y)).rgb)
 //Difference between downsampled result and original
-#define Diff(x,y)	(tex2D(sDiff,tex+float2(px,py)*int2(x,y)).rgb)
+#define Diff(x,y)	(tex2D(sDiff,tex+dxdy*int2(x,y)).rgb)
 //Original values
-#define Original(x,y)	(tex2D(s2,float2(ppx,ppy)*(pos2+int2(x,y)+0.5)).rgb)
+#define Original(x,y)	(tex2D(s2,ddxddy*(pos+int2(x,y)+0.5)).rgb)
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
@@ -94,14 +89,13 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 				 	{Get(0,0) - Get(1,1), Get(0,0) - Get(1,-1), Get(0,0) - Get(-1,-1), Get(0,0) - Get(-1,1)} };
 	[unroll] for( int k = 0; k < 8; k++)
 	{
-		float3 d = D[k];//mul(D[k], acuity*transpose(QuasiLabTransform));
-		float x2 = QuasiLabNorm(acuity*d);// , sqr(d[1]), sqr(d[2]), sqr(d[3]) };
+		float3 d = D[k];
+		float x2 = QuasiLabNorm(acuity*d);
 		float w = pow(spread, k < 4 ? 1.0 : 2.0)*exp(-x2);
 		soft += w*d;
 		W += w;
 	}
-	//soft = mul(QuasiLabInverse/acuity, soft);
-	stab += softness * soft * pow(W / (1 + 4 * spread + 4 * spread * spread), edge_adaptiveness);
+	stab += 4 * softness * soft / (1 + 4*spread*(1+spread));
 #endif
 
 	//Calculate faithfulness force
@@ -112,8 +106,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 
 #ifndef SkipAntiRinging
 	//Calculate position
-	int2 pos = floor(tex*p0.xy);
-	int2 pos2 = floor((pos + 0.5) * originalSize.xy / p0.xy - 0.5);
+	int2 pos = floor(tex * originalSize.xy - 0.5);
 
 	//Find extrema
 	float3 Min = min(min(Original(0, 0), Original(1, 0)),
