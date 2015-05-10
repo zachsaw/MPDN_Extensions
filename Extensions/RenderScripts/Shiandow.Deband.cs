@@ -70,9 +70,12 @@ namespace Mpdn.RenderScript
                     YuvConsts[0], YuvConsts[1]
                 };
 
-                var Deband = CompileShader("Deband.hlsl").Configure(false, Consts);
-                var Subtract = CompileShader("Subtract.hlsl").Configure(true, format: TextureFormat.Float16);
-                var SubtractLimited = CompileShader("SubtractLimited.hlsl").Configure(true, Consts);
+                var Deband = CompileShader("Deband.hlsl")
+                    .Configure(arguments: Consts);
+                /*var Subtract = CompileShader("Subtract.hlsl")
+                    .Configure(perTextureLinearSampling: new[] { false, true }, format: TextureFormat.Float16);
+                var SubtractLimited = CompileShader("SubtractLimited.hlsl")
+                    .Configure(perTextureLinearSampling: new[] { false, true }, arguments: Consts);*/
 
                 IFilter yuv = input.ConvertToYuv();
                 var inputsize = yuv.OutputSize;
@@ -98,15 +101,7 @@ namespace Mpdn.RenderScript
                 var deband = downscaled.Pop();
                 while (downscaled.Count > 0)
                 {
-                    current = downscaled.Pop();
-
-                    if (downscaled.Count > 0)
-                    {
-                        current = new ShaderFilter(Deband, current, deband);
-                        var diff = new ShaderFilter(Subtract, deband, current);
-                        deband = new ShaderFilter(SubtractLimited, current, diff);
-                    }
-                    else deband = new ShaderFilter(Deband, current, deband);
+                    deband = new ShaderFilter(Deband, downscaled.Pop(), deband);
                 }
 
                 return deband.ConvertToRgb();
