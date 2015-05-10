@@ -22,16 +22,13 @@
 #define softness (args1[0])
 
 // -- Edge detection options -- 
-#define edge_adaptiveness 0.0
-#define baseline 0.0
 #define acuity 6.0
-#define radius 1.5
+#define radius 0.75
 
 // -- Misc --
 sampler s0 	  : register(s0);
 sampler sDiff : register(s1);
-sampler sU	  : register(s2);
-sampler sV    : register(s3);
+sampler sUV	  : register(s2);
 
 float4 p0	  : register(c0);
 float2 p1	  : register(c1);
@@ -42,9 +39,10 @@ float4 args2  : register(c5);
 
 #define width  (p0[0])
 #define height (p0[1])
+#define chromaSize size2
 
 #define dxdy (p1.xy)
-#define ddxddy (size2.zw)
+#define ddxddy (chromaSize.zw)
 #define offset (args2.xy)
 
 #define sqr(x) dot(x,x)
@@ -60,14 +58,15 @@ float4 args2  : register(c5);
 //Current high res value
 #define Get(x,y)  	(tex2D(s0,tex+dxdy*int2(x,y)).xyz)
 //Difference between downsampled result and original
-#define Diff(x,y)	(tex2D(sDiff,tex+dxdy*int2(x,y)).xyz)
+#define Diff(x,y)	(tex2D(sDiff,tex + ddxddy*(int2(x,y) - offset)).xyz)
 //Original YUV
-#define Original(x,y)	float2(tex2D(sU,pos+ddxddy*int2(x,y))[0], tex2D(sV,tex+ddxddy*int2(x,y))[0])
+#define Original(x,y)	(mul(RGBtoYUV, tex2D(sUV,ddxddy*(pos + int2(x,y) + 0.5)).rgb).yz)
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
 	float4 c0 = tex2D(s0, tex);
 	float3 stab = 0;
+	float Lum = dot(RGBtoYUV[0], c0.rgb);
 
 	float3 Ix = (Get(1, 0) - Get(-1, 0)) / (2.0*h);
 	float3 Iy = (Get(0, 1) - Get(0, -1)) / (2.0*h);
@@ -102,18 +101,20 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 		soft += w*d;
 		W += w;
 	}
-	stab += softness * soft * pow(W / (1 + 4 * spread + 4 * spread * spread), edge_adaptiveness);
+	stab += 4 * softness * soft / (1 + 4*spread*(1+spread));
 #endif
 
 	// Calculate faithfulness force
 	float3 diff = Diff(0, 0);
 
 	// Apply forces
-	c0.yz -= strength*(diff + stab).yz;
+	c0.rgb -= strength*(diff + stab);
 
 #ifndef SkipAntiRinging
-	// Calculate Position
-	float2 pos = tex - ddxddy*offset;
+	//Calculate position
+	int2 pos = floor(tex * chromaSize.xy - offset - 0.5);
+
+	c0.xyz = mul(RGBtoYUV, c0.rgb);
 
 	// Find extrema
 	float2 Min = min(min(Original(0, 0), Original(1, 0)),
@@ -122,8 +123,16 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 					 max(Original(0, 1), Original(1, 1)));
 
 	// Apply anti-ringing
-	float2 AR = c0.yz - clamp(c0.yz, Min, Max);
+	float2 AR = c0.yz  - clamp(c0.yz, Min, Max);
 	c0.yz -= AR*smoothstep(0, (Max - Min) / anti_ringing - (Max - Min) + pow(2, -16), abs(AR));
+
+	// Restore Luma
+	c0.x = Lum;
+
+	c0.rgb = mul(YUVtoRGB, c0.xyz);
+#else
+	// Restore Luma
+	c0.rgb += Lum - dot(RGBtoYUV[0], c0.rgb);
 #endif
 
 	return c0;

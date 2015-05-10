@@ -15,23 +15,21 @@
 // License along with this library.
 // 
 // -- Misc --
-sampler s0 : register(s0);
-sampler sUV : register(s1);
+sampler sU : register(s0);
+sampler sV : register(s1);
 float4 p0 :  register(c0);
 float2 p1 :  register(c1);
-float4 args0 : register(c2);
 
-// -- Colour space Processing --
-#include "../../Common/ColourProcessing.hlsl"
-#define Kb args0[0] //redefinition
-#define Kr args0[1] //redefinition
+#define width  (p0[0])
+#define height (p0[1])
+
+#define px (p1[0])
+#define py (p1[1])
 
 // -- Main code --
-float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
-	float4 chroma = tex2D(sUV, tex);
+float4 main(float2 tex : TEXCOORD0) : COLOR{
+	float u = tex2D(sU, tex)[0];
+	float v = tex2D(sV, tex)[0];
 
-	c0.rgb = Gamma(c0.rgb);
-
-	return float4(c0.rgb - chroma.rgb, 0);
+	return float4(0, u, v, 1);
 }
