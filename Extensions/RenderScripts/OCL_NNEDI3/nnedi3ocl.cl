@@ -25,46 +25,53 @@
 // (4) padding + mirroring built into the main kernel
 // (5) flexible image channel handling
 
-// further modded by Zachs for use in MPDN
+// further modded and optimized by Zachs for use in MPDN
 
 //#define EXTRA_CHECKS
 
-#ifndef cl_nv_pragma_unroll
-    #if __OPENCL_VERSION__ >= 110
-        #define _ALT_PATH
-    #endif
+constant sampler_t Sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
+
+#if !defined(cl_nv_pragma_unroll) && (__OPENCL_VERSION__ >= 110)
+#define FASTLOAD
 #endif
 
-constant sampler_t srcSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
+#define LOAD_INPUTS(t) \
+    float16 _t = *(local float16*) in[j]; \
+    float8 t[8] = { _t.s01234567, _t.s12345678, _t.s23456789, _t.s3456789A, \
+                    _t.s456789AB, _t.s56789ABC, _t.s6789ABCD, _t.s789ABCDE };                                  
 
-float8 nnedi3process(__local float (*restrict in)[74], __global const float *restrict weights, uint nnst)
+#define LOAD_WEIGHTS(w1, w2) \
+    float _w[16]; float w1[8]; float w2[8]; \
+    *((float16*) _w) = *(__global const float16*) weights; \
+    *((float8*) w1) = *(float8*) _w; *((float8*) w2) = *(((float8*) _w)+1); \
+
+float8 nnedi3process(__local float (* restrict in)[74], __global const float* restrict weights, uint nnst)
 {
     float8 sum = 0, sumsq = 0;
+    
     for (uint j = 0; j < 4; j++)
     {
-#if defined(_ALT_PATH)
-        float8 t = *((__local float8*) &in[j][0]);
-        #pragma unroll
-        for (uint i = 0; i < 8 - 1; i++)
-        {
-            sum += t;
-            sumsq += t * t;
-            t = (float8) (t.s1234, t.s567, in[j][i + 8]);
-        }
-        sum += t;
-        sumsq += t * t;
-#else
-        float8 t = (float8)(0, in[j][0], in[j][1], in[j][2], in[j][3], in[j][4], in[j][5], in[j][6]);
+#ifdef FASTLOAD
+        LOAD_INPUTS(p)
         #pragma unroll
         for (uint i = 0; i < 8; i++)
         {
-            t = (float8)(t.s1234, t.s567, in[j][i + 7]);
-            sum += t;
-            sumsq += t * t;
+            float8 pix = p[i];
+            sum += pix;
+            sumsq += pix*pix;
+        }
+#else
+        float8 pix = (float8)(0, in[j][0], in[j][1], in[j][2], in[j][3], in[j][4], in[j][5], in[j][6]);
+        #pragma unroll
+        for (uint i = 0; i < 8; i++)
+        {
+            pix = (float8)(pix.s1234567, in[j][i + 7]);
+            sum += pix;
+            sumsq += pix*pix;
         }
 #endif
     }
-
+    
     float8 mstd0, mstd1, mstd2, mstd3 = 0;
     mstd0 = sum / 32.0f;
     mstd1 = sumsq / 32.0f - mstd0 * mstd0;
@@ -79,29 +86,28 @@ float8 nnedi3process(__local float (*restrict in)[74], __global const float *res
         #pragma unroll 2
         for (uint j = 0; j < 4; j++)
         {
-            float w[16];
-            *((float16*) w) = *(__global const float16*) weights;
+#ifdef FASTLOAD
+            LOAD_INPUTS(p)
+            LOAD_WEIGHTS(w1, w2)
             weights += 16;
-            
-#if defined(_ALT_PATH)
-            float8 t = *((__local float8*) &in[j][0]);
-            #pragma unroll
-            for (uint i = 0; i < 8 - 1; i++)
-            {
-                sum1 += t * w[i];
-                sum2 += t * w[i + 8];
-                t = (float8) (t.s1234, t.s567, in[j][i + 8]);
-            }
-            sum1 += t * w[7];
-            sum2 += t * w[15];
-#else
-            float8 t = (float8)(0, in[j][0], in[j][1], in[j][2], in[j][3], in[j][4], in[j][5], in[j][6]);
             #pragma unroll
             for (uint i = 0; i < 8; i++)
             {
-                t = (float8) (t.s1234, t.s567, in[j][i + 7]);
-                sum1 += t * w[i];
-                sum2 += t * w[i + 8];
+                float8 pix = p[i];
+                sum1 += pix * w1[i];
+                sum2 += pix * w2[i];
+            }
+#else
+            float w[16];
+            *((float16*) w) = *(__global const float16*) weights;
+            weights += 16;
+            float8 pix = (float8)(0, in[j][0], in[j][1], in[j][2], in[j][3], in[j][4], in[j][5], in[j][6]);
+            #pragma unroll
+            for (uint i = 0; i < 8; i++)
+            {
+                pix = (float8) (pix.s1234567, in[j][i + 7]);
+                sum1 += pix * w[i];
+                sum2 += pix * w[i + 8];
             }
 #endif
         }
@@ -121,24 +127,18 @@ float8 nnedi3process(__local float (*restrict in)[74], __global const float *res
 #else
     mstd3 += mstd0 + 5.0f * vsum / wsum * mstd1;
 #endif
-	return mstd3;
+    return mstd3;
 }
 
-float getPixel(__read_only image2d_t srcImg, uint x, uint y, uint swapXy, uint width, uint height)
-{
-    x = abs(x);
-    y = abs(y);
-    float4 pix = read_imagef(srcImg, srcSampler, (swapXy) ? ((int2) (y, x)) : ((int2) (x, y)));
-    return pix.s0;
-}
-
-#define offset 0
+#define OFFSET 0
 #define GetIX(x) get_group_id(0) * 64 + (x) - 3
-#define GetIY(y) get_group_id(1) * 8 + (y) - 1 - offset
+#define GetIY(y) get_group_id(1) * 8 + (y) - 1 - OFFSET
+#define GET(x, y, swapXy) \
+    read_imagef(srcImg, Sampler, (swapXy) ? ((int2) (y, x)) : ((int2) (x, y))).s0
 
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
 void nnedi3(__read_only image2d_t srcImg, __write_only image2d_t dstImg, 
-            __global float *restrict weights, uint nnst,
+            __global float* restrict weights, uint nnst,
             uint srcWidth, uint srcHeight, uint swapXy)
 {
     __local float input[11][74];
@@ -149,17 +149,13 @@ void nnedi3(__read_only image2d_t srcImg, __write_only image2d_t dstImg,
         uint y = xy / 9;
         for (uint i = x; i < x + 8; i++)
         {
-            input[y][i] = 
-                getPixel(srcImg, GetIX(i), GetIY(y),
-                         swapXy, srcWidth, srcHeight);
+            input[y][i] = GET(GetIX(i), GetIY(y), swapXy);
         }
         if (y < 4)
         {
             for (uint i = x; i < x + 8; i++)
             {
-                input[y + 7][i] = 
-                    getPixel(srcImg, GetIX(i), GetIY(y) + 7,
-                             swapXy, srcWidth, srcHeight);
+                input[y + 7][i] = GET(GetIX(i), GetIY(y) + 7, swapXy);
             }
         }
     }
@@ -172,24 +168,25 @@ void nnedi3(__read_only image2d_t srcImg, __write_only image2d_t dstImg,
             (__global const float *restrict) weights, nnst);
 
     uint y = get_group_id(1) * 16 + get_local_id(1) * 2;
-    if (y < srcHeight * 2)
+    if (y >= srcHeight * 2)
+        return;
+
+    uint x = get_group_id(0) * 64 + get_local_id(0) * 8;
+    for (uint i = 0; i < 8; i++)
     {
-        uint x = get_group_id(0) * 64 + get_local_id(0) * 8;
-        for (uint i = 0; i < 8; i++)
-        {
-            if (x + i < srcWidth)
-            {
-                write_imagef(dstImg, 
-                            (swapXy) 
-                                ? ((int2) (y +     offset, x + i)) 
-                                : ((int2) (x + i, y +     offset)), 
-                                input[get_local_id(1) + 1 + offset][get_local_id(0) * 8 + 3 + i]);
-                write_imagef(dstImg, 
-                            (swapXy) 
-                                ? ((int2) (y + 1 - offset, x + i)) 
-                                : ((int2) (x + i, y + 1 - offset)), 
-                                ((float*) &mstd3)[i]);
-            }
-        }
+        if (x + i >= srcWidth)
+            continue;
+        
+        write_imagef(dstImg, 
+                     swapXy 
+                        ? (int2) (y +     OFFSET, x + i) 
+                        : (int2) (x + i, y +     OFFSET), 
+                        input[get_local_id(1) + 1 + OFFSET][get_local_id(0) * 8 + 3 + i]);
+
+        write_imagef(dstImg, 
+                     swapXy
+                        ? (int2) (y + 1 - OFFSET, x + i) 
+                        : (int2) (x + i, y + 1 - OFFSET), 
+                        ((float*) &mstd3)[i]);
     }
 }

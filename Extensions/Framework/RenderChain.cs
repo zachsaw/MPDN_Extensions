@@ -74,7 +74,7 @@ namespace Mpdn.RenderScript
 
         protected IShader11 CompileShader11(string shaderFileName, string profile, string entryPoint = "main", string macroDefinitions = null)
         {
-            return ShaderCache.CompileShader11(Path.Combine(ShaderDataFilePath, shaderFileName), entryPoint, profile, macroDefinitions);
+            return ShaderCache.CompileShader11(Path.Combine(ShaderDataFilePath, shaderFileName), profile, entryPoint, macroDefinitions);
         }
 
         protected IKernel CompileClKernel(string sourceFileName, string entryPoint, string options = null)

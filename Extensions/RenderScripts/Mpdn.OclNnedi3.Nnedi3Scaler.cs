@@ -17,13 +17,11 @@
 using System;
 using System.Collections.Generic;
 using Mpdn.OpenCl;
-using Mpdn.RenderScript;
-using Mpdn.RenderScript.Mpdn.OclNNedi3;
 using SharpDX;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.RenderScript
 {
-    namespace Mpdn.OclNnedi3
+    namespace Mpdn.OclNNedi3
     {
         public enum NNedi3Neurons
         {
@@ -145,6 +143,9 @@ namespace Mpdn.RenderScripts
             {
                 if (!Renderer.IsOpenClAvail)
                     return sourceFilter; // OpenCL is not available; fallback
+
+                if (Renderer.RenderQuality == RenderQuality.MaxPerformance)
+                    return sourceFilter; // UNORM8 textures aren't supported; fallback
 
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2*s.Width, s.Height);
                 Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2*s.Height);

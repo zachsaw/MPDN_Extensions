@@ -15,7 +15,6 @@
 // License along with this library.
 // 
 using Mpdn.Config;
-using Mpdn.RenderScripts.Mpdn.OclNnedi3;
 
 namespace Mpdn.RenderScript
 {
