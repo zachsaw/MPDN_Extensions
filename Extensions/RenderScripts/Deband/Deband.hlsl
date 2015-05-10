@@ -49,18 +49,16 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 	float4 w = {(1-offset.x)*(1-offset.y), offset.x*(1-offset.y), (1-offset.x)*offset.y, offset.x*offset.y };
 	for (int i = 0; i < 4; i++) {
 		float3 d = X[i] - c0;
-		d -= clamp(d, -2.0/acuity, 2.0/acuity);
-		//d = mul(YUVtoRGB, d);
-		w[i] *= smoothstep(0.1, 1.0, 4*threshold - length(d*acuity));
+		d -= clamp(d, -4.0/acuity, 4.0/acuity);
+		w[i] *= (sqr(d) > 0 ? 0.01 : 1 );
 	}
 	
 	float3 avg = mul(float1x4(w),X)/dot(w,1);
 
 	float3 diff = avg - c0;
 	diff -= clamp(diff, -0.5/acuity, 0.5/acuity);
-	//diff = mul(YUVtoRGB, diff);
-	float str = smoothstep(0, 0.5, threshold - length(diff*acuity));
-	c0.xyz = lerp(c0, avg, str);
+	float str = smoothstep(0, threshold, length(diff*acuity));
+	c0.xyz = lerp(avg, c0, str);
 
 	return c0;
 }
