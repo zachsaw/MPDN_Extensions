@@ -79,32 +79,32 @@ namespace Mpdn.RenderScript
                         Name = "NEDI",
                         Passes = 2,
                         Strength = 0.65f,
-                        Sharpness = 0.4f,
+                        Sharpness = 0.25f,
                         AntiAliasing = 0.25f,
-                        AntiRinging = 0.50f,
-                        Softness = 0.1f,
+                        AntiRinging = 0.0f,
+                        Softness = 0.25f,
                         Script = new NediScaler {Settings = new Nedi.Nedi {ForceCentered = true}}
                     },
                     new SuperResPreset
                     {
                         Name = "NNEDI3",
                         Passes = 2,
-                        Strength = 0.5f,
+                        Strength = 0.35f,
                         Sharpness = 0.25f,
-                        AntiAliasing = 0.15f,
-                        AntiRinging = 0.50f,
-                        Softness = 0.1f,
+                        AntiAliasing = 0.25f,
+                        AntiRinging = 0.0f,
+                        Softness = 0.25f,
                         Script = new NNedi3Scaler {Settings = new NNedi3.NNedi3 {ForceCentered = true}}
                     },
                     new SuperResPreset
                     {
                         Name = "OpenCL NNEDI3",
                         Passes = 2,
-                        Strength = 0.5f,
+                        Strength = 0.35f,
                         Sharpness = 0.25f,
-                        AntiAliasing = 0.15f,
-                        AntiRinging = 0.50f,
-                        Softness = 0.1f,
+                        AntiAliasing = 0.25f,
+                        AntiRinging = 0.0f,
+                        Softness = 0.25f,
                         Script = new OpenCLNNedi3.NNedi3Scaler {Settings = new OpenCLNNedi3.NNedi3 {ForceCentered = true}}
                     }
                 };
