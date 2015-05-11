@@ -26,7 +26,8 @@ namespace Mpdn.RenderScript
     {
         public class MyRenderChain : RenderChain
         {
-            private string[] Deinterlace = { @"MPC-HC\Deinterlace (blend).hlsl" };
+// Uncomment if you have MPC-HC's shader pack installed
+//            private string[] Deinterlace = { @"MPC-HC\Deinterlace (blend).hlsl" };
             private string[] PostProcess = { @"SweetFX\LumaSharpen.hlsl" };
             private string[] PreProcess = { @"SweetFX\Bloom.hlsl", @"SweetFX\LiftGammaGain.hlsl" };
             private string[] ToGamma = { @"ConvertToGammaLight.hlsl" };
@@ -36,13 +37,14 @@ namespace Mpdn.RenderScript
             {
                 // Scale chroma first (this bypasses MPDN's chroma scaler)
                 input += new BicubicChroma { Preset = Presets.MitchellNetravali };
-
+// Uncomment if you want to deinterlace with MPC-HC's deinterlace (blend) shader
+/***
                 if (Renderer.InterlaceFlags.HasFlag(InterlaceFlags.IsInterlaced))
                 {
                     // Deinterlace using blend
                     input += new ImageProcessor { ShaderFileNames = Deinterlace };
                 }
-
+***/
                 // Pre resize shaders, followed by NEDI image doubler
                 input += new ImageProcessor { ShaderFileNames = PreProcess };
 
