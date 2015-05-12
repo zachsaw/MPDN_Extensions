@@ -49,8 +49,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 	float4 w = {(1-offset.x)*(1-offset.y), offset.x*(1-offset.y), (1-offset.x)*offset.y, offset.x*offset.y };
 	for (int i = 0; i < 4; i++) {
 		float3 d = X[i] - c0;
-		d -= clamp(d, -4.0/acuity, 4.0/acuity);
-		w[i] *= (sqr(d) > 0 ? 0.01 : 1 );
+		w[i] *= saturate(1/length(acuity*d));
 	}
 	
 	float3 avg = mul(float1x4(w),X)/dot(w,1);
