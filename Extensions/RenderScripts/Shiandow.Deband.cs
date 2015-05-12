@@ -32,8 +32,8 @@ namespace Mpdn.RenderScript
             public Deband()
             {
                 maxbitdepth = 8;
-                threshold = 0.7f;
-                detaillevel = 2;
+                threshold = 0.2f;
+                detaillevel = 1;
             }
 
             public override IFilter CreateFilter(IFilter input)
@@ -84,20 +84,21 @@ namespace Mpdn.RenderScript
                 var downscaled = new Stack<IFilter>();
                 downscaled.Push(current);
 
+                var rand = new Random();
+
                 // Generate downscaled images
-                var size = inputsize;
+                double phi = 0.5 * Math.Sqrt(5) + 0.5; // Use irrational factor to prevent blocking.
                 for (int i = 0; i < 8; i++)
                 {
-                    double factor = i == 0 ? (1 << detaillevel) : 2.0;
-                    size = new Size((int)Math.Floor(size.Width / factor), (int)Math.Floor(size.Height / factor));
+                    double factor = Math.Pow(phi, detaillevel + i);
+                    var size = new Size((int)Math.Floor(inputsize.Width / factor), (int)Math.Floor(inputsize.Height / factor));
                     if (size.Width == 0 || size.Height == 0)
                         break;
 
-                    current = new ResizeFilter(current, size, bilinear, bilinear);
+                    current = new ResizeFilter(yuv, size, bilinear, bilinear);
                     downscaled.Push(current);
                 }
 
-                size = downscaled.ElementAt(Math.Max(0,downscaled.Count - detaillevel - 1)).OutputSize;
                 var deband = downscaled.Pop();
                 while (downscaled.Count > 0)
                 {
