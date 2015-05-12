@@ -1034,7 +1034,7 @@ namespace Mpdn.RenderScript
 
             // Legacy constants 
             var output = OutputTexture;
-            Shader.SetConstantBuffer(0, new Vector4(output.Width, output.Height, Counter++, Stopwatch.GetTimestamp()),
+            Shader.SetConstantBuffer(0, new Vector4(output.Width, output.Height, Counter++ & 0x7fffff, Renderer.FrameTimeStampMicrosec / 1000000.0f),
                 false);
         }
 
