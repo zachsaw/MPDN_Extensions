@@ -94,7 +94,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class Lut3DConfigDialogBase : ScriptConfigDialog<Lut3D>
+        public class Lut3DConfigDialogBase : ScriptConfigDialog<Lut3DColorCorrection>
         {
         }
     }

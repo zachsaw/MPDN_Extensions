@@ -23,7 +23,7 @@ namespace Mpdn.RenderScript
 {
     namespace Mpdn.OclNNedi3
     {
-        public enum NNedi3Neurons
+        public enum OclNNedi3Neurons
         {
             Neurons16 = 0,
             Neurons32 = 1,
@@ -32,17 +32,17 @@ namespace Mpdn.RenderScript
             Neurons256 = 4
         }
 
-        public class NNedi3 : RenderChain
+        public class OclNNedi3 : RenderChain
         {
             #region Settings
 
-            public NNedi3()
+            public OclNNedi3()
             {
-                Neurons = NNedi3Neurons.Neurons16;
+                Neurons = OclNNedi3Neurons.Neurons16;
                 ForceCentered = false;
             }
 
-            public NNedi3Neurons Neurons { get; set; }
+            public OclNNedi3Neurons Neurons { get; set; }
             public bool ForceCentered { get; set; }
 
             #endregion
@@ -182,7 +182,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class NNedi3Scaler : RenderChainUi<NNedi3, NNedi3ConfigDialog>
+        public class OclNNedi3Scaler : RenderChainUi<OclNNedi3, OclNNedi3ConfigDialog>
         {
             protected override string ConfigFileName
             {

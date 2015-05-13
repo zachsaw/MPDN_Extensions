@@ -15,10 +15,9 @@
 // License along with this library.
 // 
 using System;
-using Mpdn.RenderScript;
 using Mpdn.RenderScript.Mpdn.Resizer;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.RenderScript
 {
     namespace Example
     {

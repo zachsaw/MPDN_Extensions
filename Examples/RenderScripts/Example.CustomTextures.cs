@@ -16,10 +16,9 @@
 // 
 using System;
 using System.Drawing;
-using Mpdn.RenderScript;
 using SharpDX;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.RenderScript
 {
     namespace Example
     {

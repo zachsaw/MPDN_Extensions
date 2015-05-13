@@ -15,13 +15,9 @@
 // License along with this library.
 // 
 using System;
-using System.Runtime.InteropServices;
-using Mpdn.OpenCl;
-using Mpdn.RenderScript;
 using Mpdn.RenderScript.Mpdn.Resizer;
-using SharpDX;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.RenderScript
 {
     namespace Example
     {

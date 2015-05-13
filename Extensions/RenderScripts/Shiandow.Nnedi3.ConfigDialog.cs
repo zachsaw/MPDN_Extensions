@@ -21,7 +21,7 @@ namespace Mpdn.RenderScript
 {
     namespace Shiandow.NNedi3
     {
-        public partial class NNedi3ConfigDialog : NediConfigDialogBase
+        public partial class NNedi3ConfigDialog : NNedi3ConfigDialogBase
         {
             public NNedi3ConfigDialog()
             {
@@ -41,7 +41,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class NediConfigDialogBase : ScriptConfigDialog<NNedi3>
+        public class NNedi3ConfigDialogBase : ScriptConfigDialog<NNedi3>
         {
         }
     }

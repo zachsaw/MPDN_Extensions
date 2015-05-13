@@ -105,7 +105,7 @@ namespace Mpdn.RenderScript
                         AntiAliasing = 0.25f,
                         AntiRinging = 0.0f,
                         Softness = 0.25f,
-                        Script = new OpenCLNNedi3.NNedi3Scaler {Settings = new OpenCLNNedi3.NNedi3 {ForceCentered = true}}
+                        Script = new OpenCLNNedi3.OclNNedi3Scaler {Settings = new OpenCLNNedi3.OclNNedi3 {ForceCentered = true}}
                     }
                 };
 
