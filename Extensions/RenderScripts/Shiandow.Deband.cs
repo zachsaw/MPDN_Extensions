@@ -25,15 +25,15 @@ namespace Mpdn.RenderScript
     {
         public class Deband : RenderChain
         {
-            public int detaillevel { get; set; }
             public int maxbitdepth { get; set; }
-            public float threshold { get; set; }
+            public float margin { get; set; }
+            public float power { get; set; }
 
             public Deband()
             {
                 maxbitdepth = 8;
-                threshold = 0.2f;
-                detaillevel = 1;
+                margin = 0.0f;
+                power = 0.5f;
             }
 
             public override IFilter CreateFilter(IFilter input)
@@ -66,12 +66,12 @@ namespace Mpdn.RenderScript
 
                 float[] Consts = new[] {
                     (1 << bits) - 1, 
-                    threshold,
-                    YuvConsts[0], YuvConsts[1]
+                    power,
+                    margin                    
                 };
 
                 var Deband = CompileShader("Deband.hlsl")
-                    .Configure(arguments: Consts);
+                    .Configure(arguments: Consts, perTextureLinearSampling: new[] { true, false });
                 /*var Subtract = CompileShader("Subtract.hlsl")
                     .Configure(perTextureLinearSampling: new[] { false, true }, format: TextureFormat.Float16);
                 var SubtractLimited = CompileShader("SubtractLimited.hlsl")
@@ -80,29 +80,16 @@ namespace Mpdn.RenderScript
                 IFilter yuv = input.ConvertToYuv();
                 var inputsize = yuv.OutputSize;
 
-                var current = yuv;
-                var downscaled = new Stack<IFilter>();
-                downscaled.Push(current);
-
-                var rand = new Random();
-
-                // Generate downscaled images
+                var deband = yuv;
                 double phi = 0.5 * Math.Sqrt(5) + 0.5; // Use irrational factor to prevent blocking.
-                for (int i = 0; i < 8; i++)
+                for (int i = 8; i >= 0; i--)
                 {
-                    double factor = Math.Pow(phi, detaillevel + i);
-                    var size = new Size((int)Math.Floor(inputsize.Width / factor), (int)Math.Floor(inputsize.Height / factor));
-                    if (size.Width == 0 || size.Height == 0)
-                        break;
+                    double factor = Math.Pow(phi, i);
+                    var size = new TextureSize((int)Math.Round(inputsize.Width / factor), (int)Math.Round(inputsize.Height / factor));
+                    if (size.Width == 0 || size.Height == 0) continue;
+                    if (i == 0) size = inputsize;
 
-                    current = new ResizeFilter(yuv, size, bilinear, bilinear);
-                    downscaled.Push(current);
-                }
-
-                var deband = downscaled.Pop();
-                while (downscaled.Count > 0)
-                {
-                    deband = new ShaderFilter(Deband, downscaled.Pop(), deband);
+                    deband = new ShaderFilter( Deband.Configure(transform: s => size), yuv, deband);
                 }
 
                 return deband.ConvertToRgb();

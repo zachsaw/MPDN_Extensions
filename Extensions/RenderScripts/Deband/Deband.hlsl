@@ -19,23 +19,21 @@ sampler s1 : register(s1);
 float4 p0 : register(c0);
 float4 p1 : register(c1);
 float4 args0 : register(c2);
-float4 size1 : register(c3);
+float4 size0 : register(c3);
+float4 size1 : register(c4);
 
 #define ppx (size1[2])
 #define ppy (size1[3])
 
 #define acuity args0[0]
-#define threshold args0[1]
-
-#include "../Common/Colourprocessing.hlsl"
-#define Kb args0[2] //redefinition
-#define Kr args0[3] //redefinition
+#define power  args0[1]
+#define	margin args0[2]
 
 #define sqr(x) dot(x,x)
 #define norm(x) (rsqrt(rsqrt(sqr(sqr(x)))))
 
 // Input Processing
-#define Get(x,y)  	(tex2D(s1,float2(ppx,ppy)*(pos + 0.5 + float2(x,y))).xyz)
+#define Get(x,y)  	(tex2D(s1,float2(ppx,ppy)*(pos + 0.5 + float2(x,y))))
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
 	float4 c0 = tex2D(s0, tex);
@@ -44,20 +42,25 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 	float2 offset = frac(pos);
 	pos -= offset;
 
-	float4x3 X = {Get(0,0), Get(1,0), Get(0,1), Get(1,1)};
+	// Load input
+	float4x4 X = {Get(0,0) - c0, Get(1,0) - c0, Get(0,1) - c0, Get(1,1) - c0};
 	
-	float4 w = {(1-offset.x)*(1-offset.y), offset.x*(1-offset.y), (1-offset.x)*offset.y, offset.x*offset.y };
-	for (int i = 0; i < 4; i++) {
-		float3 d = X[i] - c0;
-		w[i] *= saturate(1/length(acuity*d));
-	}
-	
-	float3 avg = mul(float1x4(w),X)/dot(w,1);
+	// Use linear regression to interpolate
+	float3x4 LinFit = {{-2, 2, -2, 2}, {-2, -2, 2, 2}, {1, 1, 1, 1}};
+	float4 w = 0.25*mul(float1x3(offset-0.5,1), LinFit);
+	float4 avg = c0 + mul(w,X);
 
-	float3 diff = avg - c0;
-	diff -= clamp(diff, -0.5/acuity, 0.5/acuity);
-	float str = smoothstep(0, threshold, length(diff*acuity));
-	c0.xyz = lerp(avg, c0, str);
+	// Coefficient of determination
+	float SSres = sqr(mul(float4(1,-1,-1,1),X).xyz);
+	float SStot = (sqr(X[0].xyz) + sqr(X[1].xyz) + sqr(X[2].xyz) + sqr(X[3].xyz)) - sqr(mul(float4(0.25,0.25,0.25,0.25),X).xyz);
+	float R = 1 - (SSres/SStot);
+
+	// Merge with high res values
+	float str = (1 + margin)*smoothstep(1 - power, 1, R);
+	c0.rgb = clamp(avg, c0-0.5*str/acuity, c0+0.5*str/acuity);
+
+	// Debugging
+	//if (all(p0.xy == size0.xy)) return float4(R,0.5,0.5,1);
 
 	return c0;
 }
