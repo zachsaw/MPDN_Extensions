@@ -49,6 +49,9 @@ float4 args2  : register(c5);
 #define spread (exp(-1/(2.0*radius*radius)))
 #define h 1.2
 
+#define max3(c) (max(c[0],max(c[1],c[2])))
+#define min3(c) (min(c[0],min(c[1],c[2])))
+
 // -- Colour space Processing --
 #include "../../Common/ColourProcessing.hlsl"
 #define Kb args1[1] //redefinition
@@ -133,6 +136,9 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 #else
 	// Restore Luma
 	c0.rgb += Lum - dot(RGBtoYUV[0], c0.rgb);
+
+	// "Spill" out of bounds chroma
+	c0.rgb = lerp(c0, Lum, saturate(max3(abs((c0 - saturate(c0))/(c0 - Lum)))));	
 #endif
 
 	return c0;
