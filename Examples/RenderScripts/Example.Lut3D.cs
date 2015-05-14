@@ -15,9 +15,8 @@
 // License along with this library.
 // 
 using System;
-using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.RenderScript
 {
     namespace Example
     {

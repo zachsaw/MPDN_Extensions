@@ -17,10 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mpdn.RenderScript;
 using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.RenderScript
 {
     namespace Example
     {

@@ -18,7 +18,7 @@ namespace Mpdn.RenderScript
 {
     namespace Mpdn.OclNNedi3
     {
-        partial class NNedi3ConfigDialog
+        partial class OclNNedi3ConfigDialog
         {
             /// <summary>
             /// Required designer variable.
@@ -112,7 +112,7 @@ namespace Mpdn.RenderScript
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "NNedi3ConfigDialog";
+            this.Name = "OclNNedi3ConfigDialog";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "NNEDI3 Configuration";

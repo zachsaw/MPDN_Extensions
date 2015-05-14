@@ -17,7 +17,6 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using SharpDX;
 
 namespace Mpdn.RenderScript
 {
@@ -60,7 +59,7 @@ namespace Mpdn.RenderScript
             // and by the array 'lutDataxx', of length 'lutCompressedSize'.
         };
 
-        public class Lut3D : RenderChain
+        public class Lut3DColorCorrection : RenderChain
         {
             #region Settings
 
@@ -183,7 +182,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class Lut3DUi : RenderChainUi<Lut3D, Lut3DConfigDialog>
+        public class Lut3DUi : RenderChainUi<Lut3DColorCorrection, Lut3DConfigDialog>
         {
             public override string Category
             {

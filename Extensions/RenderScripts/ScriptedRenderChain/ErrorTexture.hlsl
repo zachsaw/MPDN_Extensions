@@ -14,32 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using Mpdn.Config;
-
-namespace Mpdn.RenderScript
+sampler s0 : register(s0);
+float4 main(float2 tex : TEXCOORD0) : COLOR
 {
-    namespace Mpdn.OclNNedi3
-    {
-        public partial class OclNNedi3ConfigDialog : OclNNedi3ConfigDialogBase
-        {
-            public OclNNedi3ConfigDialog()
-            {
-                InitializeComponent();
-            }
-
-            protected override void LoadSettings()
-            {
-                comboBoxNeurons.SelectedIndex = (int) Settings.Neurons;
-            }
-
-            protected override void SaveSettings()
-            {
-                Settings.Neurons = (OclNNedi3Neurons) comboBoxNeurons.SelectedIndex;
-            }
-        }
-
-        public class OclNNedi3ConfigDialogBase : ScriptConfigDialog<OclNNedi3>
-        {
-        }
-    }
+    return tex2D(s0, tex);
 }

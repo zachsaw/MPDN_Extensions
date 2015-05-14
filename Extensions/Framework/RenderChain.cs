@@ -31,7 +31,7 @@ namespace Mpdn.RenderScript
 
         public static implicit operator Func<IFilter, IFilter>(RenderChain map)
         {
-            return filter => map.CreateFilter(filter);
+            return map.CreateFilter;
         }
 
         public static implicit operator RenderChain(Func<IFilter, IFilter> map)
@@ -46,7 +46,7 @@ namespace Mpdn.RenderScript
 
         public static RenderChain operator +(RenderChain f, RenderChain g)
         {
-            return (RenderChain)(filter => (filter + f) + g);
+            return (RenderChain) (filter => (filter + f) + g);
         }
 
         #endregion
@@ -96,33 +96,33 @@ namespace Mpdn.RenderScript
 
         #region Size Calculations
 
-        protected bool IsDownscalingFrom(TextureSize size)
+        public bool IsDownscalingFrom(TextureSize size)
         {
             return !IsNotScalingFrom(size) && !IsUpscalingFrom(size);
         }
 
-        protected bool IsNotScalingFrom(TextureSize size)
+        public bool IsNotScalingFrom(TextureSize size)
         {
             return size == Renderer.TargetSize;
         }
 
-        protected bool IsUpscalingFrom(TextureSize size)
+        public bool IsUpscalingFrom(TextureSize size)
         {
             var targetSize = Renderer.TargetSize;
             return targetSize.Width > size.Width || targetSize.Height > size.Height;
         }
 
-        protected bool IsDownscalingFrom(IFilter chain)
+        public bool IsDownscalingFrom(IFilter chain)
         {
             return IsDownscalingFrom(chain.OutputSize);
         }
 
-        protected bool IsNotScalingFrom(IFilter chain)
+        public bool IsNotScalingFrom(IFilter chain)
         {
             return IsNotScalingFrom(chain.OutputSize);
         }
 
-        protected bool IsUpscalingFrom(IFilter chain)
+        public bool IsUpscalingFrom(IFilter chain)
         {
             return IsUpscalingFrom(chain.OutputSize);
         }
