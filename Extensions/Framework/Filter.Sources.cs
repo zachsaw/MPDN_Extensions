@@ -61,11 +61,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public void NewFrame()
-        {
-        }
-
-        public void Render(ITextureCache cache)
+        public virtual void Render(ITextureCache cache)
         {
         }
 
@@ -169,7 +165,6 @@ namespace Mpdn.RenderScript
             get { return Renderer.TargetSize; }
         }
     }
-
 
     public sealed class TextureSourceFilter : BaseSourceFilter
     {

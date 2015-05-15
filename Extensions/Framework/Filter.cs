@@ -75,10 +75,7 @@ namespace Mpdn.RenderScript
         public IBaseFilter[] InputFilters { get; private set; }
         public ITexture OutputTexture { get; private set; }
 
-        public virtual TextureSize OutputSize
-        {
-            get { return InputFilters[0].OutputSize; }
-        }
+        public abstract TextureSize OutputSize { get; }
 
         public virtual TextureFormat OutputFormat
         {
@@ -131,7 +128,7 @@ namespace Mpdn.RenderScript
             return this;
         }
 
-        public virtual void Render(ITextureCache cache)
+        public void Render(ITextureCache cache)
         {
             if (Updated)
                 return;
@@ -161,7 +158,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public virtual void Reset(ITextureCache cache)
+        public void Reset(ITextureCache cache)
         {
             Updated = false;
 
