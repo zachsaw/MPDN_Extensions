@@ -24,7 +24,7 @@ namespace Mpdn.RenderScript
 
             public string BuildScript(string contents)
             {
-                contents = RemoveComments(contents);
+                contents = RemoveComments(contents + Environment.NewLine);
                 contents = ReplaceConstructorDecls(contents);
                 return contents;
             }

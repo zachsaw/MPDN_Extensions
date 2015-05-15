@@ -166,8 +166,7 @@ namespace Mpdn.RenderScript
                 message = string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
                     m_RsFileName, string.IsNullOrEmpty(message) ? GetInnerMostMessage(ex) : message);
                 Trace.WriteLine(message);
-                CreateErrorText(message);
-                return new ShaderFilter(CompileShader("ErrorTexture.hlsl"), new TextureSourceFilter(m_ErrorText));
+                return DisplayError(message);
             }
 
             private static string GetInnerMostMessage(Exception e)
@@ -182,6 +181,12 @@ namespace Mpdn.RenderScript
                     return scriptEngineException.ErrorDetails;
                 }
                 return e.Message;
+            }
+
+            private IFilter DisplayError(string message)
+            {
+                CreateErrorText(message);
+                return new ShaderFilter(CompileShader("ErrorTexture.hlsl"), new TextureSourceFilter(m_ErrorText));
             }
 
             private void CreateErrorText(string message)
