@@ -112,7 +112,7 @@ namespace Mpdn.RenderScript
             public override IFilter CreateFilter(IFilter input)
             {
                 if (Script != null)
-                    return Chain.CreateFilter(input);
+                    return Chain.CreateSafeFilter(input);
                 else
                     return input;
             }
@@ -178,7 +178,7 @@ namespace Mpdn.RenderScript
         {
             public override IFilter CreateFilter(IFilter input)
             {
-                return Options.Aggregate(input, (a, b) => a + b);
+                return Options.Aggregate(input, (result, chain) => chain.CreateSafeFilter(result));
             }
         }
 
@@ -213,7 +213,7 @@ namespace Mpdn.RenderScript
             public override IFilter CreateFilter(IFilter input)
             {
                 if (SelectedOption != null)
-                    return SelectedOption.CreateFilter(input);
+                    return SelectedOption.CreateSafeFilter(input);
                 else
                     return input;
             }

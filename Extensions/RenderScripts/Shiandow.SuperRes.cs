@@ -143,10 +143,10 @@ namespace Mpdn.RenderScript
                 // Compile Shaders
                 var Diff = CompileShader("Diff.hlsl").Configure(format: TextureFormat.Float16);
                 var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions:
-                        (AntiRinging  == 0 ? "SkipAntiRinging  = 1;" : "") +
+                        (AntiRinging  == 0 ? "SkipAntiRinging = 1;" : "") +
                         (AntiAliasing == 0 ? "SkipAntiAliasing = 1;" : "") +
                         (Sharpness == 0 ? "SkipSharpening = 1;" : "") +
-                        (Softness  == 0 ? "SkipSoftening  = 1;" : "")
+                        (Softness  == 0 ? "SkipSoftening = 1;" : "")
                     ).Configure(arguments: new[] { Strength, Sharpness, AntiAliasing, AntiRinging, Softness });
 
                 var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");

@@ -182,7 +182,7 @@ namespace Mpdn.RenderScript
             return e;
         }
 
-        protected virtual string ErrorMessage(Exception e) 
+        private string ErrorMessage(Exception e) 
         {
             return string.Format("Error in {0}:\r\n\r\n{1}",
                     GetType().Name, InnerMostException(e).Message);

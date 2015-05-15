@@ -119,23 +119,21 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter input)
             {
-                m_Engine.CollectGarbage(true);
-                var clip = new Clip(this, input);
-                m_Engine.Script["input"] = clip;
-                m_Engine.Execute("RenderScript", true, BuildScript(ScriptFileName));
-                return clip.Filter;
-            }
-
-            protected override string ErrorMessage(Exception e)
-            {
-                var message = m_Engine.GetStackTrace();
-                var scriptEngineException = InnerMostException(e) as ScriptEngineException;
-
-                if (scriptEngineException == null)
-                    return base.ErrorMessage(e);
-                else
-                    return string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
-                    m_RsFileName, string.IsNullOrEmpty(message) ? scriptEngineException.ErrorDetails : message);
+                try
+                {
+                    m_Engine.CollectGarbage(true);
+                    var clip = new Clip(this, input);
+                    m_Engine.Script["input"] = clip;
+                    m_Engine.Execute("RenderScript", true, BuildScript(ScriptFileName));
+                    return clip.Filter;
+                }
+                catch (ScriptEngineException e)
+                {
+                    var message = m_Engine.GetStackTrace();
+                    throw new ScriptEngineException(
+                        string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
+                        m_RsFileName, string.IsNullOrEmpty(message) ? e.ErrorDetails : message));
+                }
             }
 
             private string BuildScript(string scriptRs)
