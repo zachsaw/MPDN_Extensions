@@ -55,10 +55,10 @@ namespace Mpdn.RenderScript
             this.ThresholdSetter = new System.Windows.Forms.NumericUpDown();
             this.label6 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.DetailSetter = new System.Windows.Forms.NumericUpDown();
+            this.PowerSetter = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitdepthSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ThresholdSetter)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.DetailSetter)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PowerSetter)).BeginInit();
             this.SuspendLayout();
             // 
             // ButtonOK
@@ -66,7 +66,7 @@ namespace Mpdn.RenderScript
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(80, 97);
+            this.ButtonOK.Location = new System.Drawing.Point(86, 96);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 3;
@@ -78,7 +78,7 @@ namespace Mpdn.RenderScript
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(161, 97);
+            this.ButtonCancel.Location = new System.Drawing.Point(167, 96);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 4;
@@ -129,28 +129,23 @@ namespace Mpdn.RenderScript
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(20, 41);
+            this.label2.Location = new System.Drawing.Point(20, 67);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(54, 13);
+            this.label2.Size = new System.Drawing.Size(78, 13);
             this.label2.TabIndex = 3;
-            this.label2.Text = "Threshold";
+            this.label2.Text = "Margin for error";
             // 
             // ThresholdSetter
             // 
-            this.ThresholdSetter.DecimalPlaces = 1;
+            this.ThresholdSetter.DecimalPlaces = 2;
             this.ThresholdSetter.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.ThresholdSetter.Location = new System.Drawing.Point(153, 39);
+            131072});
+            this.ThresholdSetter.Location = new System.Drawing.Point(153, 65);
             this.ThresholdSetter.Maximum = new decimal(new int[] {
-            256,
-            0,
-            0,
-            0});
-            this.ThresholdSetter.Minimum = new decimal(new int[] {
-            1,
+            10,
             0,
             0,
             65536});
@@ -168,7 +163,7 @@ namespace Mpdn.RenderScript
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(203, 41);
+            this.label6.Location = new System.Drawing.Point(203, 67);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(29, 13);
             this.label6.TabIndex = 15;
@@ -177,30 +172,31 @@ namespace Mpdn.RenderScript
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(20, 67);
+            this.label4.Location = new System.Drawing.Point(20, 41);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(63, 13);
+            this.label4.Size = new System.Drawing.Size(37, 13);
             this.label4.TabIndex = 17;
-            this.label4.Text = "Detail Level";
+            this.label4.Text = "Power";
             // 
-            // DetailSetter
+            // PowerSetter
             // 
-            this.DetailSetter.Location = new System.Drawing.Point(153, 65);
-            this.DetailSetter.Maximum = new decimal(new int[] {
-            8,
+            this.PowerSetter.DecimalPlaces = 2;
+            this.PowerSetter.Increment = new decimal(new int[] {
+            1,
             0,
             0,
-            0});
-            this.DetailSetter.Minimum = new decimal(new int[] {
+            131072});
+            this.PowerSetter.Location = new System.Drawing.Point(153, 39);
+            this.PowerSetter.Maximum = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            this.DetailSetter.Name = "DetailSetter";
-            this.DetailSetter.Size = new System.Drawing.Size(44, 20);
-            this.DetailSetter.TabIndex = 16;
-            this.DetailSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.DetailSetter.Value = new decimal(new int[] {
+            this.PowerSetter.Name = "PowerSetter";
+            this.PowerSetter.Size = new System.Drawing.Size(44, 20);
+            this.PowerSetter.TabIndex = 16;
+            this.PowerSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.PowerSetter.Value = new decimal(new int[] {
             1,
             0,
             0,
@@ -212,8 +208,8 @@ namespace Mpdn.RenderScript
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(248, 132);
-            this.Controls.Add(this.DetailSetter);
+            this.ClientSize = new System.Drawing.Size(254, 131);
+            this.Controls.Add(this.PowerSetter);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label6);
@@ -233,7 +229,7 @@ namespace Mpdn.RenderScript
             this.Text = "Deband Settings";
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitdepthSetter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ThresholdSetter)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.DetailSetter)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PowerSetter)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -250,7 +246,7 @@ namespace Mpdn.RenderScript
             private System.Windows.Forms.NumericUpDown ThresholdSetter;
             private System.Windows.Forms.Label label6;
             private System.Windows.Forms.Label label4;
-            private System.Windows.Forms.NumericUpDown DetailSetter;
+            private System.Windows.Forms.NumericUpDown PowerSetter;
 
         }
     }

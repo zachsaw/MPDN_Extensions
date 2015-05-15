@@ -31,8 +31,8 @@ namespace Mpdn.RenderScript
             protected override void LoadSettings()
             {
                 MaxBitdepthSetter.Value = (Decimal)Settings.maxbitdepth;
-                ThresholdSetter.Value = (Decimal)Settings.threshold;
-                DetailSetter.Value = (Decimal)Settings.detaillevel;
+                ThresholdSetter.Value = (Decimal)Settings.margin;
+                PowerSetter.Value = (Decimal)Settings.power;
 
                 UpdateGui();
             }
@@ -40,8 +40,8 @@ namespace Mpdn.RenderScript
             protected override void SaveSettings()
             {
                 Settings.maxbitdepth = (int)MaxBitdepthSetter.Value;
-                Settings.threshold = (float)ThresholdSetter.Value;
-                Settings.detaillevel = (int)DetailSetter.Value;
+                Settings.margin = (float)ThresholdSetter.Value;
+                Settings.power = (float)PowerSetter.Value;
             }
 
             private void ValueChanged(object sender, EventArgs e)
