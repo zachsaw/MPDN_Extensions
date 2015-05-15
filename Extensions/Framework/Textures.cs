@@ -1,0 +1,177 @@
+// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using SharpDX;
+
+namespace Mpdn.RenderScript
+{
+    public interface ITextureCache
+    {
+        ITexture GetTexture(TextureSize textureSize, TextureFormat textureFormat);
+        void PutTexture(ITexture texture);
+        void PutTempTexture(ITexture texture);
+    }
+
+    public struct TextureSize
+    {
+        public readonly int Width;
+        public readonly int Height;
+        public readonly int Depth;
+
+        public bool Is3D
+        {
+            get { return Depth != 1; }
+        }
+
+        public bool IsEmpty
+        {
+            get { return (Width == 0) || (Height == 0) || (Depth == 0); }
+        }
+
+        public TextureSize(int width, int height, int depth = 1)
+        {
+            Width = width;
+            Height = height;
+            Depth = depth;
+        }
+
+        public static bool operator ==(TextureSize a, TextureSize b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(TextureSize a, TextureSize b)
+        {
+            return !a.Equals(b);
+        }
+
+        public bool Equals(TextureSize other)
+        {
+            return Width == other.Width && Height == other.Height && Depth == other.Depth;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+
+            return obj is TextureSize && Equals((TextureSize)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Width;
+                hashCode = (hashCode * 397) ^ Height;
+                hashCode = (hashCode * 397) ^ Depth;
+                return hashCode;
+            }
+        }
+
+        public static implicit operator TextureSize(Size size)
+        {
+            return new TextureSize(size.Width, size.Height);
+        }
+
+        public static explicit operator Size(TextureSize size)
+        {
+            return new Size(size.Width, size.Height);
+        }
+
+        public static implicit operator Vector2(TextureSize size)
+        {
+            return new Vector2(size.Width, size.Height);
+        }
+    }
+
+    public static class TextureHelper
+    {
+        public static TextureSize GetSize(this IBaseTexture texture)
+        {
+            if (texture is ITexture)
+            {
+                var t = texture as ITexture;
+                return new TextureSize(t.Width, t.Height);
+            }
+            if (texture is ITexture3D)
+            {
+                var t = texture as ITexture3D;
+                return new TextureSize(t.Width, t.Height, t.Depth);
+            }
+            throw new ArgumentException("Invalid texture type");
+        }
+    }
+
+    public class TextureCache : ITextureCache, IDisposable
+    {
+        private List<ITexture> m_OldTextures = new List<ITexture>();
+        private List<ITexture> m_SavedTextures = new List<ITexture>();
+        private List<ITexture> m_TempTextures = new List<ITexture>();
+
+        public ITexture GetTexture(TextureSize textureSize, TextureFormat textureFormat)
+        {
+            foreach (var list in new[] { m_SavedTextures, m_OldTextures })
+            {
+                var index = list.FindIndex(x => (x.GetSize() == textureSize) && (x.Format == textureFormat));
+                if (index < 0) continue;
+
+                var texture = list[index];
+                list.RemoveAt(index);
+                return texture;
+            }
+
+            return Renderer.CreateRenderTarget(textureSize.Width, textureSize.Height, textureFormat);
+        }
+
+        public void PutTempTexture(ITexture texture)
+        {
+            m_TempTextures.Add(texture);
+            m_SavedTextures.Add(texture);
+        }
+
+        public void PutTexture(ITexture texture)
+        {
+            m_SavedTextures.Add(texture);
+        }
+
+        public void FlushTextures()
+        {
+            foreach (var texture in m_OldTextures)
+            {
+                DisposeHelper.Dispose(texture);
+            }
+
+            foreach (var texture in m_TempTextures)
+            {
+                m_SavedTextures.Remove(texture);
+            }
+
+            m_OldTextures = m_SavedTextures;
+            m_TempTextures = new List<ITexture>();
+            m_SavedTextures = new List<ITexture>();
+        }
+
+        public void Dispose()
+        {
+            FlushTextures();
+            FlushTextures();
+        }
+    }
+}
