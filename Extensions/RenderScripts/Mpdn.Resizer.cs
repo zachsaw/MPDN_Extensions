@@ -68,8 +68,7 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter input)
             {
-                input.SetSize(GetOutputSize());
-                return input;
+                return input.SetSize(GetOutputSize()); ;
             }
 
             #region Size Calculation

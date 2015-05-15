@@ -161,15 +161,16 @@ namespace Mpdn.RenderScript
                     return original;
 
                 // Initial scaling
+                currentSize = CalculateSize(currentSize, targetSize, 1, Passes);
                 if (initial != original)
                 {
                     original = new ShaderFilter(GammaToLab, original);
-                    lab = new ShaderFilter(GammaToLab, initial);
+                    lab = new ShaderFilter(GammaToLab, initial.SetSize(currentSize));
                 }
                 else
                 {
                     original = new ShaderFilter(GammaToLab, original);
-                    lab = new ResizeFilter(original);
+                    lab = new ResizeFilter(original, currentSize);
                 }
 
                 for (int i = 1; i <= Passes; i++)
@@ -177,15 +178,15 @@ namespace Mpdn.RenderScript
                     IFilter res, diff;
                     bool useBilinear = (upscaler is Scaler.Bilinear) || (FirstPassOnly && !(i == 1));
 
-                    // Calculate size
-                    if (i == Passes || NoIntermediates) currentSize = targetSize;
-                    else currentSize = CalculateSize(currentSize, targetSize, i, Passes);
+                    if (i != 1)
+                    {
+                        // Calculate size
+                        if (i == Passes || NoIntermediates) currentSize = targetSize;
+                        else currentSize = CalculateSize(currentSize, targetSize, i, Passes);
 
-                    // Resize
-                    if (i == 1)
-                        initial.SetSize(currentSize);
-                    else
+                        // Resize
                         lab = new ResizeFilter(lab, currentSize, upscaler, downscaler);
+                    }
 
                     // Downscale and Subtract
                     linear = new ShaderFilter(LabToLinear, lab);

@@ -63,9 +63,10 @@ namespace Mpdn.RenderScript
         {
             m_SourceFilter = new SourceFilter();
             var rgbInput = m_SourceFilter.Transform(x => new RgbFilter(x));
-            var result = Chain.CreateFilter(rgbInput);
-            result.SetSize(Renderer.TargetSize);
-            m_Filter = result.Compile();
+            m_Filter = Chain
+                .CreateSafeFilter(rgbInput)
+                .SetSize(Renderer.TargetSize)
+                .Compile();
             m_Filter.Initialize();
         }
 
