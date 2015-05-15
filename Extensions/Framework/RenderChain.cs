@@ -16,6 +16,7 @@
 // 
 using System;
 using System.IO;
+using System.Diagnostics;
 using Mpdn.OpenCl;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
@@ -148,6 +149,43 @@ namespace Mpdn.RenderScript
         ~RenderChain()
         {
             Dispose(false);
+        }
+
+        #endregion
+
+        #region Error Handling
+
+        public IFilter CreateSafeFilter(IFilter input)
+        {
+            try
+            {
+                return CreateFilter(input);
+            }
+            catch (Exception ex)
+            {
+                return DisplayError(ex);
+            }
+        }
+
+        private IFilter DisplayError(Exception e)
+        {
+            var message = ErrorMessage(e);
+            Trace.WriteLine(message);
+            return new TextFilter(message);
+        }
+
+        protected static Exception InnerMostException(Exception e)
+        {
+            while (e.InnerException != null)
+                e = e.InnerException;
+
+            return e;
+        }
+
+        protected virtual string ErrorMessage(Exception e) 
+        {
+            return string.Format("Error in {0}:\r\n\r\n{1}",
+                    GetType().Name, InnerMostException(e).Message);
         }
 
         #endregion

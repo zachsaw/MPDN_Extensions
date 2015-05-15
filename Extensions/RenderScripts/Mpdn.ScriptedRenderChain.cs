@@ -17,19 +17,11 @@
 //css_reference Microsoft.CSharp;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Windows.Forms;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.Windows;
-using SharpDX;
-using Color = System.Drawing.Color;
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
 
 namespace Mpdn.RenderScript
 {
@@ -50,21 +42,11 @@ namespace Mpdn.RenderScript
             private string m_RsFileName;
             private DateTime m_LastModified = DateTime.MinValue;
 
-            private ITexture m_ErrorText;
-            private Font m_ErrorFont;
             private readonly ScriptParser m_ScriptParser;
 
             protected override string ShaderPath
             {
                 get { return "ScriptedRenderChain"; }
-            }
-
-            private Font ErrorFont
-            {
-                get
-                {
-                    return m_ErrorFont = m_ErrorFont ?? new Font(FontFamily.GenericMonospace, 11, FontStyle.Bold);
-                }
             }
 
             private static string DefaultScriptFileName
@@ -95,14 +77,6 @@ namespace Mpdn.RenderScript
                 AddEnumTypes(asm);
 
                 m_ScriptParser = new ScriptParser(m_FilterTypeNames);
-            }
-
-            public override void RenderScriptDisposed()
-            {
-                DisposeHelper.Dispose(ref m_ErrorText);
-                DisposeHelper.Dispose(ref m_ErrorFont);
-
-                base.RenderScriptDisposed();
             }
 
             private void CreateDefaultScriptFile()
@@ -145,93 +119,23 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter input)
             {
-                DisposeHelper.Dispose(ref m_ErrorText);
-                try
-                {
-                    m_Engine.CollectGarbage(true);
-                    var clip = new Clip(this, input);
-                    m_Engine.Script["input"] = clip;
-                    m_Engine.Execute("RenderScript", true, BuildScript(ScriptFileName));
-                    return clip.Filter;
-                }
-                catch (Exception ex)
-                {
-                    return DisplayError(ex);
-                }
+                m_Engine.CollectGarbage(true);
+                var clip = new Clip(this, input);
+                m_Engine.Script["input"] = clip;
+                m_Engine.Execute("RenderScript", true, BuildScript(ScriptFileName));
+                return clip.Filter;
             }
 
-            private IFilter DisplayError(Exception ex)
+            protected override string ErrorMessage(Exception e)
             {
                 var message = m_Engine.GetStackTrace();
-                message = string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
-                    m_RsFileName, string.IsNullOrEmpty(message) ? GetInnerMostMessage(ex) : message);
-                Trace.WriteLine(message);
-                CreateErrorText(message);
-                return new ShaderFilter(CompileShader("ErrorTexture.hlsl"), new TextureSourceFilter(m_ErrorText));
-            }
+                var scriptEngineException = InnerMostException(e) as ScriptEngineException;
 
-            private static string GetInnerMostMessage(Exception e)
-            {
-                while (e.InnerException != null)
-                {
-                    e = e.InnerException;
-                }
-                var scriptEngineException = e as ScriptEngineException;
-                if (scriptEngineException != null)
-                {
-                    return scriptEngineException.ErrorDetails;
-                }
-                return e.Message;
-            }
-
-            private void CreateErrorText(string message)
-            {
-                var width = Renderer.TargetSize.Width;
-                var height = Renderer.TargetSize.Height;
-                using (var bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb))
-                {
-                    var bounds = new Rectangle(0, 0, bmp.Width, bmp.Height);
-                    using (var g = Graphics.FromImage(bmp))
-                    {
-                        g.FillRectangle(Brushes.DarkSlateBlue, bounds);
-                        TextRenderer.DrawText(g, message, ErrorFont, new Point(10, 10), Color.OrangeRed);
-                    }
-                    UpdateErrorTexture(bmp);
-                }
-            }
-
-            private unsafe void UpdateErrorTexture(Bitmap bmp)
-            {
-                var width = bmp.Width;
-                var height = bmp.Height;
-                var bounds = new Rectangle(0, 0, width, height);
-
-                var bmpData = bmp.LockBits(bounds, ImageLockMode.ReadOnly, bmp.PixelFormat);
-                try
-                {
-                    var result = Renderer.CreateTexture(new Size(width, height));
-                    m_ErrorText = result;
-
-                    var pitch = width*4;
-                    var tex = new Half[height, pitch];
-                    var bmpPtr = (byte*) bmpData.Scan0.ToPointer();
-                    for (int j = 0; j < height; j++)
-                    {
-                        byte* ptr = bmpPtr + bmpData.Stride*j;
-                        for (int i = 0; i < pitch; i += 4)
-                        {
-                            tex[j, (i + 3)] = 1; // a
-                            tex[j, (i + 2)] = *ptr++/255.0f; // b
-                            tex[j, (i + 1)] = *ptr++/255.0f; // g
-                            tex[j, (i + 0)] = *ptr++/255.0f; // r
-                        }
-                    }
-                    Renderer.UpdateTexture(result, tex);
-                }
-                finally
-                {
-                    bmp.UnlockBits(bmpData);
-                }
+                if (scriptEngineException == null)
+                    return base.ErrorMessage(e);
+                else
+                    return string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
+                    m_RsFileName, string.IsNullOrEmpty(message) ? scriptEngineException.ErrorDetails : message);
             }
 
             private string BuildScript(string scriptRs)
