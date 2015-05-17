@@ -136,10 +136,13 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 #else
 	// Restore Luma
 	c0.rgb += Lum - dot(RGBtoYUV[0], c0.rgb);
-
-	// "Spill" out of bounds chroma
-	c0.rgb = lerp(c0, Lum, saturate(max3(abs((c0 - saturate(c0))/(c0 - Lum)))));	
 #endif
+
+	// Limit chroma
+	float3 Y = RGBtoYUV[0];
+	float4 S = saturate(c0);
+	float3 X = abs(c0 - S).rgb > 1e-6 ? 0 : 1;
+	c0.rgb = S + X*(Lum - dot(Y,S))/dot(Y,X);
 
 	return c0;
 }
