@@ -15,31 +15,25 @@
 // License along with this library.
 // 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.RenderScript
 {
     namespace Example
     {
-        public class FrameRateHalver : RenderChain
+        public sealed class FrameRateHalver : RenderChain
         {
-            private class FramerateHalvingFilter : Filter
+            private class FramerateHalvingFilter : BasicFilter
             {
                 private int m_Counter;
 
-                public FramerateHalvingFilter(IBaseFilter inputFilter)
+                public FramerateHalvingFilter(IFilter inputFilter)
                     : base(inputFilter)
                 {
                 }
 
-                protected override void Render(IList<IBaseTexture> inputs)
+                protected override void Render(ITexture texture)
                 {
-                    var texture = inputs.OfType<ITexture>().SingleOrDefault();
-                    if (texture == null)
-                        return;
-
                     // Render all frames but only present half of them
                     // In real life scenario, you'd probably want to use Renderer.RenderQueue[i].Frame
                     // to do something useful with the current frame.

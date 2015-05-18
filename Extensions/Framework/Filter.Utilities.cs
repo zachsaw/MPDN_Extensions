@@ -22,7 +22,37 @@ using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.RenderScript
 {
-    public sealed class RgbFilter : Filter
+    public abstract class BasicFilter : Filter
+    {
+        protected BasicFilter(IFilter inputFilter)
+            : base(inputFilter)
+        {
+        }
+
+        protected abstract void Render(ITexture input);
+
+        protected override void Render(IList<IBaseTexture> inputs)
+        {
+            var texture = inputs.OfType<ITexture>().SingleOrDefault();
+            if (texture == null)
+                return;
+
+            Render(texture);
+        }
+
+        public override TextureSize OutputSize
+        {
+            get { return InputFilters[0].OutputSize; }
+        }
+
+        public override TextureFormat OutputFormat
+        {
+            get { return InputFilters[0].OutputFormat; }
+        }
+
+    }
+
+    public sealed class RgbFilter : BasicFilter
     {
         public readonly YuvColorimetric Colorimetric;
         public readonly bool OutputLimitedRange;
@@ -58,27 +88,13 @@ namespace Mpdn.RenderScript
             return this;
         }
 
-        public override TextureSize OutputSize
+        protected override void Render(ITexture input)
         {
-            get { return InputFilters[0].OutputSize; }
-        }
-
-        public override TextureFormat OutputFormat
-        {
-            get { return InputFilters[0].OutputFormat; }
-        }
-
-        protected override void Render(IList<IBaseTexture> inputs)
-        {
-            var texture = inputs.OfType<ITexture>().SingleOrDefault();
-            if (texture == null)
-                return;
-
-            Renderer.ConvertToRgb(OutputTexture, texture, Colorimetric, OutputLimitedRange);
+            Renderer.ConvertToRgb(OutputTexture, input, Colorimetric, OutputLimitedRange);
         }
     }
 
-    public sealed class YuvFilter : Filter
+    public sealed class YuvFilter : BasicFilter
     {
         public readonly YuvColorimetric Colorimetric;
         public readonly bool OutputLimitedRange;
@@ -114,23 +130,9 @@ namespace Mpdn.RenderScript
             return this;
         }
 
-        public override TextureSize OutputSize
+        protected override void Render(ITexture input)
         {
-            get { return InputFilters[0].OutputSize; }
-        }
-
-        public override TextureFormat OutputFormat
-        {
-            get { return InputFilters[0].OutputFormat; }
-        }
-
-        protected override void Render(IList<IBaseTexture> inputs)
-        {
-            var texture = inputs.OfType<ITexture>().SingleOrDefault();
-            if (texture == null)
-                return;
-
-            Renderer.ConvertToYuv(OutputTexture, texture, Colorimetric, OutputLimitedRange);
+            Renderer.ConvertToYuv(OutputTexture, input, Colorimetric, OutputLimitedRange);
         }
     }
 
