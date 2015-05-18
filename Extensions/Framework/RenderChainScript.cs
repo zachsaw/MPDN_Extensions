@@ -76,13 +76,13 @@ namespace Mpdn.RenderScript
             m_Filter.Render(m_Cache);
             if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
             {
-                Scale(Renderer.OutputRenderTarget, (ITexture)m_Filter.OutputTexture);
+                Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
             }
             m_Filter.Reset(m_Cache);
             m_Cache.FlushTextures();
         }
 
-        private static void Scale(ITexture output, ITexture input)
+        private static void Scale(ITexture output, ITexture2D input)
         {
             Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }
