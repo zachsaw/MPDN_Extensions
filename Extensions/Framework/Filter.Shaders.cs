@@ -23,6 +23,7 @@ using Mpdn.OpenCl;
 using SharpDX;
 using TransformFunc = System.Func<Mpdn.RenderScript.TextureSize, Mpdn.RenderScript.TextureSize>;
 using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
+using ITexture3D = Mpdn.ISourceTexture3D;
 
 namespace Mpdn.RenderScript
 {
@@ -188,7 +189,7 @@ namespace Mpdn.RenderScript
             }
 
             // Legacy constants 
-            var output = OutputTexture;
+            var output = OutputTarget;
             Shader.SetConstant(0, new Vector4(output.Width, output.Height, Counter++ & 0x7fffff, Renderer.FrameTimeStampMicrosec / 1000000.0f),
                 false);
             Shader.SetConstant(1, new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
@@ -196,7 +197,7 @@ namespace Mpdn.RenderScript
 
         protected override void Render(IShader shader)
         {
-            Renderer.Render(OutputTexture, shader);
+            Renderer.Render(OutputTarget, shader);
         }
     }
 
@@ -243,14 +244,14 @@ namespace Mpdn.RenderScript
             }
 
             // Legacy constants 
-            var output = OutputTexture;
+            var output = OutputTarget;
             Shader.SetConstantBuffer(0, new Vector4(output.Width, output.Height, Counter++ & 0x7fffff, Renderer.FrameTimeStampMicrosec / 1000000.0f),
                 false);
         }
 
         protected override void Render(IShader11 shader)
         {
-            Renderer.Render(OutputTexture, shader);
+            Renderer.Render(OutputTarget, shader);
         }
     }
 
@@ -276,7 +277,7 @@ namespace Mpdn.RenderScript
 
         protected override void Render(IShader11 shader)
         {
-            Renderer.Compute(OutputTexture, shader, ThreadGroupX, ThreadGroupY, ThreadGroupZ);
+            Renderer.Compute(OutputTarget, shader, ThreadGroupX, ThreadGroupY, ThreadGroupZ);
         }
 
         public int ThreadGroupX { get; private set; }
@@ -321,7 +322,7 @@ namespace Mpdn.RenderScript
 
         protected override void LoadInputs(IList<IBaseTexture> inputs)
         {
-            Shader.SetOutputTextureArg(0, OutputTexture); // Note: MPDN only supports one output texture per kernel
+            Shader.SetOutputTextureArg(0, OutputTarget); // Note: MPDN only supports one output texture per kernel
 
             var i = 1;
             foreach (var input in inputs)

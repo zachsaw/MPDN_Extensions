@@ -41,7 +41,7 @@ namespace Mpdn.RenderScript
         IFilter<TTexture> Compile();
     }
 
-    public interface IFilter : IFilter<ITexture>
+    public interface IFilter : IFilter<ITexture2D>
     {
     }
 
@@ -70,10 +70,11 @@ namespace Mpdn.RenderScript
 
         protected bool Updated { get; set; }
         protected bool Initialized { get; set; }
-        protected IFilter<ITexture> CompilationResult { get; set; }
+        protected IFilter<ITexture2D> CompilationResult { get; set; }
 
         public IBaseFilter[] InputFilters { get; private set; }
-        public ITexture OutputTexture { get; private set; }
+        public ITexture2D OutputTexture { get { return OutputTarget; } }
+        protected ITexture OutputTarget { get; private set; }
 
         public abstract TextureSize OutputSize { get; }
 
@@ -110,7 +111,7 @@ namespace Mpdn.RenderScript
             Initialized = true;
         }
 
-        public IFilter<ITexture> Compile()
+        public IFilter<ITexture2D> Compile()
         {
             if (CompilationResult == null)
             {
@@ -123,7 +124,7 @@ namespace Mpdn.RenderScript
             return CompilationResult;
         }
 
-        protected virtual IFilter<ITexture> Optimize()
+        protected virtual IFilter<ITexture2D> Optimize()
         {
             return this;
         }
@@ -145,7 +146,7 @@ namespace Mpdn.RenderScript
                     .Select(f => f.OutputTexture)
                     .ToList();
 
-            OutputTexture = cache.GetTexture(OutputSize, OutputFormat);
+            OutputTarget = cache.GetTexture(OutputSize, OutputFormat);
 
             Render(inputTextures);
 
@@ -162,12 +163,12 @@ namespace Mpdn.RenderScript
         {
             Updated = false;
 
-            if (OutputTexture != null)
+            if (OutputTarget != null)
             {
-                cache.PutTexture(OutputTexture);
+                cache.PutTexture(OutputTarget);
             }
 
-            OutputTexture = null;
+            OutputTarget = null;
         }
 
         #endregion

@@ -25,11 +25,11 @@ using Rectangle = System.Drawing.Rectangle;
 
 namespace Mpdn.RenderScript
 {
-    public class TextFilter : BaseSourceFilter<ITexture>, IFilter
+    public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter
     {
         private string m_Text;
         private Font m_Font;
-        private ITexture m_Texture;
+        private ISourceTexture m_Texture;
         Func<TextureSize> m_Size;
 
         public TextFilter(string text, Func<TextureSize> size = null)
@@ -44,9 +44,13 @@ namespace Mpdn.RenderScript
             get { return m_Size(); }
         }
 
-        public override ITexture OutputTexture
+        public override ITexture2D OutputTexture
         {
             get { return m_Texture; }
+        }
+
+        public override void Reset(ITextureCache cache)
+        {
         }
 
         public override void Render(ITextureCache cache)
@@ -114,7 +118,7 @@ namespace Mpdn.RenderScript
                         tex[j, (i + 0)] = *ptr++ / 255.0f; // r
                     }
                 }
-                Renderer.UpdateTexture(OutputTexture, tex);
+                Renderer.UpdateTexture(m_Texture, tex);
             }
             finally
             {

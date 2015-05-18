@@ -68,7 +68,7 @@ namespace Mpdn.RenderScript
 
             #endregion
 
-            private ITexture3D m_Texture3D;
+            private ISourceTexture3D m_Texture3D;
 
             protected override string ShaderPath
             {
@@ -82,7 +82,7 @@ namespace Mpdn.RenderScript
 
                 Create3DTexture();
                 var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling : true);
-                return new ShaderFilter(shader, input, new Texture3DSourceFilter(m_Texture3D));
+                return new ShaderFilter(shader, input, new TextureSourceFilter<ISourceTexture3D>(m_Texture3D));
             }
 
             public override void RenderScriptDisposed()
