@@ -141,8 +141,8 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 	// Limit chroma
 	float3 Y = RGBtoYUV[0];
 	float4 S = saturate(c0);
-	float3 X = abs(c0 - S).rgb > 1e-6 ? 0 : 1;
-	c0.rgb = S + X*(Lum - dot(Y,S))/dot(Y,X);
+	float3 X = abs(c0 - S).rgb > 1e-6 ? 0 : Y;
+	c0.rgb = S + X*dot(Y,c0 - S)/dot(Y,X);
 
 	return c0;
 }

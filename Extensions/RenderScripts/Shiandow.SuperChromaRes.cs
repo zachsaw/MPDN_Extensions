@@ -112,7 +112,8 @@ namespace Mpdn.RenderScript
                 var LabToLinear = CompileShader("../../Common/LabToLinear.hlsl");
                 var LinearToLab = CompileShader("../../Common/LinearToLab.hlsl");
 
-                chroma = new ShaderFilter(MergeChroma, uInput, vInput).ConvertToRgb();
+                chroma = new ShaderFilter(MergeChroma, uInput, vInput);
+                chroma = new RgbFilter(chroma, limitChroma: false);
                 gamma = input;
 
                 for (int i = 1; i <= Passes; i++)
