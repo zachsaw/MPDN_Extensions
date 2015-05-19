@@ -34,11 +34,11 @@ The easiest way to develop or debug extensions is to use Microsoft Visual Studio
 
 Follow these simple steps:
 1. Create a class library
-1. Add all the DLLs in MPDN's root folder as assembly references to your project
-1. Copy the resource files in the Sources folder to Extensions folder (e.g. PlaylistForm.resx should be placed in the same folder as PlaylistForm.cs)
-1. Add all the files from the Extensions folder of this repository to your project
-1. Set your class library's output folder to MPDN's Extensions folder
-1. Set the program to debug your class library to MediaPlayerDotNet.exe
-1. You're all set! This allows your IDE to run MPDN which in turn loads your class library (Extension plugin) when you start a debug session
+2. Add all the DLLs in MPDN's root folder as assembly references to your project
+3. Copy the resource files in the Sources folder to Extensions folder (e.g. PlaylistForm.resx should be placed in the same folder as PlaylistForm.cs)
+4. Add all the files from the Extensions folder of this repository to your project
+5. Set your class library's output folder to MPDN's Extensions folder
+6. Set the program to debug your class library to MediaPlayerDotNet.exe
+7. You're all set! This allows your IDE to run MPDN which in turn loads your class library (Extension plugin) when you start a debug session
 
 You can set breakpoints and step through your code just as you normally would. Intellisense should work too.
