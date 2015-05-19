@@ -97,7 +97,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             this.Name = "UpdateCheckerConfigDialog";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "UpdateChecker Configuration";
+            this.Text = "Update Checker";
             this.ResumeLayout(false);
             this.PerformLayout();
 

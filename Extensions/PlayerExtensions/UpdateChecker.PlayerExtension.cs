@@ -43,14 +43,7 @@ namespace Mpdn.PlayerExtensions.GitHub
 
         public override IList<Verb> Verbs
         {
-            get
-            {
-                return new[]
-                {
-                    new Verb(Category.View, string.Empty, "Toggle Update Checker", "Ctrl+Shift+U", string.Empty,
-                        ToggleUpdateChecker)
-                };
-            }
+            get { return new Verb[0]; }
         }
 
         public override void Initialize()
@@ -64,10 +57,11 @@ namespace Mpdn.PlayerExtensions.GitHub
         {
             if (!Settings.CheckForUpdate)
                 return;
+
             m_currentVersion = new UpdateChecker.Version(Application.ProductVersion);
             if (!Settings.ForgetVersion && Settings.VersionOnServer > m_currentVersion)
             {
-                new UpdateCheckerNewVersionForm(Settings.VersionOnServer, Settings).ShowDialog(PlayerControl.Form);
+                new UpdateCheckerNewVersionForm(Settings.VersionOnServer, Settings).ShowDialog(PlayerControl.VideoPanel);
             }
             m_checker.CheckVersion();
 
@@ -78,11 +72,6 @@ namespace Mpdn.PlayerExtensions.GitHub
             base.Destroy();
             PlayerControl.PlayerLoaded -= PlayerControl_PlayerLoaded;
         }
-
-        private void ToggleUpdateChecker()
-        {
-            Settings.CheckForUpdate = !Settings.CheckForUpdate;
-        }
     }
 
     public class UpdateCheckerSettings
@@ -92,12 +81,12 @@ namespace Mpdn.PlayerExtensions.GitHub
             CheckForUpdate = true;
             ForgetVersion = false;
         }
-
-
+        
         public bool CheckForUpdate { get; set; }
         public UpdateChecker.Version VersionOnServer { get; set; }
         public bool ForgetVersion { get; set; }
     }
+
     #region UpdateChecker
 
     public class UpdateChecker
@@ -188,13 +177,14 @@ namespace Mpdn.PlayerExtensions.GitHub
                     return true;
                 if (v1 == v2)
                     return false;
-                if (v1.Major > v2.Major)
-                    return true;
-                if (v1.Minor > v2.Minor)
-                    return true;
-                if (v1.Revision > v2.Revision)
-                    return true;
-                return false;
+                var iv1 = GetInteger(v1);
+                var iv2 = GetInteger(v2);
+                return iv1 > iv2;
+            }
+
+            private static int GetInteger(Version v)
+            {
+                return (int) (((v.Major & 0xFF) << 24) + (v.Minor << 12) + v.Revision);
             }
 
             public static bool operator <(Version v1, Version v2)

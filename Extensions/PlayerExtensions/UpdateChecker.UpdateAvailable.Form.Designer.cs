@@ -48,66 +48,116 @@ namespace Mpdn.PlayerExtensions.GitHub
             this.forgetUpdate = new System.Windows.Forms.Button();
             this.CloseButton = new System.Windows.Forms.Button();
             this.changelogBox = new System.Windows.Forms.RichTextBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.checkBoxDisable = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // downloadButton
             // 
             this.downloadButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.downloadButton.Location = new System.Drawing.Point(337, 133);
+            this.downloadButton.Location = new System.Drawing.Point(204, 180);
             this.downloadButton.Name = "downloadButton";
             this.downloadButton.Size = new System.Drawing.Size(75, 23);
             this.downloadButton.TabIndex = 0;
-            this.downloadButton.Text = "Download";
+            this.downloadButton.Text = "&Download...";
             this.downloadButton.UseVisualStyleBackColor = true;
             this.downloadButton.Click += new System.EventHandler(this.downloadButton_Click);
             // 
             // forgetUpdate
             // 
-            this.forgetUpdate.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.forgetUpdate.Location = new System.Drawing.Point(169, 133);
+            this.forgetUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.forgetUpdate.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.forgetUpdate.Location = new System.Drawing.Point(285, 180);
             this.forgetUpdate.Name = "forgetUpdate";
             this.forgetUpdate.Size = new System.Drawing.Size(86, 23);
             this.forgetUpdate.TabIndex = 1;
-            this.forgetUpdate.Text = "Forget Update";
+            this.forgetUpdate.Text = "&Forget Update";
             this.forgetUpdate.UseVisualStyleBackColor = true;
             this.forgetUpdate.Click += new System.EventHandler(this.forgetUpdate_Click);
             // 
             // CloseButton
             // 
-            this.CloseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.CloseButton.Location = new System.Drawing.Point(12, 133);
+            this.CloseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.CloseButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.CloseButton.Location = new System.Drawing.Point(377, 180);
             this.CloseButton.Name = "CloseButton";
             this.CloseButton.Size = new System.Drawing.Size(75, 23);
             this.CloseButton.TabIndex = 2;
-            this.CloseButton.Text = "Close";
+            this.CloseButton.Text = "&Cancel";
             this.CloseButton.UseVisualStyleBackColor = true;
             // 
             // changelogBox
             // 
-            this.changelogBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.changelogBox.Location = new System.Drawing.Point(12, 12);
+            this.changelogBox.BackColor = System.Drawing.SystemColors.Control;
+            this.changelogBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.changelogBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.changelogBox.Location = new System.Drawing.Point(1, 1);
             this.changelogBox.Name = "changelogBox";
             this.changelogBox.ReadOnly = true;
-            this.changelogBox.Size = new System.Drawing.Size(400, 115);
-            this.changelogBox.TabIndex = 4;
+            this.changelogBox.Size = new System.Drawing.Size(439, 105);
+            this.changelogBox.TabIndex = 0;
             this.changelogBox.Text = "";
+            this.changelogBox.WordWrap = false;
+            // 
+            // panel1
+            // 
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel1.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.panel1.Controls.Add(this.changelogBox);
+            this.panel1.Location = new System.Drawing.Point(12, 29);
+            this.panel1.Name = "panel1";
+            this.panel1.Padding = new System.Windows.Forms.Padding(1);
+            this.panel1.Size = new System.Drawing.Size(441, 107);
+            this.panel1.TabIndex = 3;
+            // 
+            // checkBoxDisable
+            // 
+            this.checkBoxDisable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.checkBoxDisable.AutoSize = true;
+            this.checkBoxDisable.Location = new System.Drawing.Point(13, 144);
+            this.checkBoxDisable.Name = "checkBoxDisable";
+            this.checkBoxDisable.Size = new System.Drawing.Size(430, 17);
+            this.checkBoxDisable.TabIndex = 4;
+            this.checkBoxDisable.Text = "Never check for updates (you can also change this in update checker\'s config dial" +
+    "og)";
+            this.checkBoxDisable.UseVisualStyleBackColor = true;
+            this.checkBoxDisable.CheckedChanged += new System.EventHandler(this.checkBoxDisable_CheckedChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(52, 13);
+            this.label1.TabIndex = 5;
+            this.label1.Text = "Changes:";
             // 
             // UpdateCheckerNewVersionForm
             // 
+            this.AcceptButton = this.downloadButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(424, 168);
-            this.Controls.Add(this.changelogBox);
+            this.CancelButton = this.forgetUpdate;
+            this.ClientSize = new System.Drawing.Size(465, 215);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.checkBoxDisable);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.CloseButton);
             this.Controls.Add(this.forgetUpdate);
             this.Controls.Add(this.downloadButton);
+            this.MinimizeBox = false;
             this.Name = "UpdateCheckerNewVersionForm";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "New Version Available";
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -117,5 +167,8 @@ namespace Mpdn.PlayerExtensions.GitHub
         private System.Windows.Forms.Button forgetUpdate;
         private System.Windows.Forms.Button CloseButton;
         private System.Windows.Forms.RichTextBox changelogBox;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.CheckBox checkBoxDisable;
+        private System.Windows.Forms.Label label1;
     }
 }
