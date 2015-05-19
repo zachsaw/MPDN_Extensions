@@ -215,6 +215,12 @@ namespace Mpdn.RenderScript
                     return input;
             }
 
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
+            }
+
             #region Hotkey Handling
 
             private Guid m_HotkeyGuid;
