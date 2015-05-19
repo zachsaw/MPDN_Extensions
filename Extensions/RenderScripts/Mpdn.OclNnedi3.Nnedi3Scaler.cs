@@ -122,11 +122,11 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            public override void RenderScriptDisposed()
+            protected override void Dispose(bool disposing)
             {
                 DisposeHelper.Dispose(ref m_Buffer);
 
-                base.RenderScriptDisposed();
+                base.Dispose(disposing);
             }
 
             protected override string ShaderPath

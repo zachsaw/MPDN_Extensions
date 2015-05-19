@@ -38,14 +38,6 @@ namespace Mpdn.RenderScript
             m_Text = text;
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            DisposeHelper.Dispose(ref m_Font);
-            DisposeHelper.Dispose(ref m_Texture);
-
-            base.Dispose(disposing);
-        }
-
         public override TextureSize OutputSize
         {
             get { return m_Size(); }

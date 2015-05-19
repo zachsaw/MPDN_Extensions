@@ -142,10 +142,6 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public virtual void RenderScriptDisposed()
-        {
-        }
-
         ~RenderChain()
         {
             Dispose(false);

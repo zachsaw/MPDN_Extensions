@@ -22,7 +22,7 @@ using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.RenderScript
 {
-    public interface IFilter<out TTexture> : IDisposable
+    public interface IFilter<out TTexture>
         where TTexture : class, IBaseTexture
     {
         IBaseFilter[] InputFilters { get; }
@@ -58,21 +58,6 @@ namespace Mpdn.RenderScript
             Initialized = false;
             CompilationResult = null;
             InputFilters = inputFilters;
-        }
-
-        ~Filter()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
         }
 
         protected abstract void Render(IList<IBaseTexture> inputs);
