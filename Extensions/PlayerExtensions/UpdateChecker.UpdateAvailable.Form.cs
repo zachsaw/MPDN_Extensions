@@ -23,13 +23,13 @@ namespace Mpdn.PlayerExtensions.GitHub
     public partial class UpdateCheckerNewVersionForm : Form
     {
         private readonly UpdateCheckerSettings m_settings;
+
         public UpdateCheckerNewVersionForm(UpdateChecker.Version version, UpdateCheckerSettings settings)
         {
             InitializeComponent();
             m_settings = settings;
             Text += ": " + version;
             changelogBox.Text = version.Changelog;
-            CancelButton = CloseButton;
         }
 
         private void forgetUpdate_Click(object sender, EventArgs e)
@@ -42,6 +42,11 @@ namespace Mpdn.PlayerExtensions.GitHub
         {
             Process.Start(UpdateChecker.WebsiteUrl);
             Close();
+        }
+
+        private void checkBoxDisable_CheckedChanged(object sender, EventArgs e)
+        {
+            m_settings.CheckForUpdate = !checkBoxDisable.Checked;
         }
     }
 }

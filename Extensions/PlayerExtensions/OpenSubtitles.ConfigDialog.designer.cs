@@ -59,7 +59,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(206, 117);
+            this.buttonCancel.Location = new System.Drawing.Point(211, 98);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1005;
@@ -70,7 +70,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(125, 117);
+            this.buttonOk.Location = new System.Drawing.Point(130, 98);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 1004;
@@ -92,7 +92,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             this.comboBoxPrefLanguage.DataSource = this.cultureBindingSource;
             this.comboBoxPrefLanguage.DisplayMember = "EnglishName";
             this.comboBoxPrefLanguage.FormattingEnabled = true;
-            this.comboBoxPrefLanguage.Location = new System.Drawing.Point(125, 43);
+            this.comboBoxPrefLanguage.Location = new System.Drawing.Point(151, 51);
             this.comboBoxPrefLanguage.Name = "comboBoxPrefLanguage";
             this.comboBoxPrefLanguage.Size = new System.Drawing.Size(121, 21);
             this.comboBoxPrefLanguage.TabIndex = 1007;
@@ -109,7 +109,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelPrefLang.AutoSize = true;
-            this.labelPrefLang.Location = new System.Drawing.Point(19, 46);
+            this.labelPrefLang.Location = new System.Drawing.Point(41, 54);
             this.labelPrefLang.Name = "labelPrefLang";
             this.labelPrefLang.Size = new System.Drawing.Size(104, 13);
             this.labelPrefLang.TabIndex = 1008;
@@ -121,7 +121,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(293, 152);
+            this.ClientSize = new System.Drawing.Size(298, 133);
             this.Controls.Add(this.labelPrefLang);
             this.Controls.Add(this.comboBoxPrefLanguage);
             this.Controls.Add(this.checkBoxEnableAutoDownloader);
