@@ -27,21 +27,6 @@ namespace Mpdn.RenderScript
             InputFilters = inputFilters;
         }
 
-        ~BaseSourceFilter()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-        }
-
         public abstract TTexture OutputTexture { get; }
 
         public abstract TextureSize OutputSize { get; }

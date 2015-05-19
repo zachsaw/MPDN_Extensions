@@ -103,13 +103,6 @@ namespace Mpdn.RenderScript
                 Guid = Guid.NewGuid();
             }
 
-            protected override void Dispose(bool disposing)
-            {
-                base.Dispose(disposing);
-                DisposeHelper.Dispose(Script);
-                Script = null;
-            }
-
             public override IFilter CreateFilter(IFilter input)
             {
                 return Script != null ? Chain.CreateSafeFilter(input) : input;
@@ -156,14 +149,6 @@ namespace Mpdn.RenderScript
                 : base()
             {
                 Options = new List<Preset>();
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                base.Dispose(disposing);
-                if (disposing && Options != null)
-                    foreach (var option in Options)
-                        option.Dispose();
             }
 
             public override IFilter CreateFilter(IFilter input)
