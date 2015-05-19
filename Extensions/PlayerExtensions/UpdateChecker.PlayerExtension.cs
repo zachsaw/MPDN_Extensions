@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Mpdn.PlayerExtensions.GitHub
@@ -99,10 +100,10 @@ namespace Mpdn.PlayerExtensions.GitHub
         public UpdateChecker(UpdateCheckerSettings settings)
         {
             m_settings = settings;
-            m_WebClient.DownloadStringCompleted += m_WebClient_DownloadStringCompleted;
+            m_WebClient.DownloadStringCompleted += DownloadStringCompleted;
         }
 
-        private void m_WebClient_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
+        private void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
             string changelog;
             try
@@ -133,16 +134,21 @@ namespace Mpdn.PlayerExtensions.GitHub
                     serverVersion.Changelog += line.Trim() + Environment.NewLine;
                 }
             }
-            if (m_settings.VersionOnServer != serverVersion)
+
+            PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() =>
             {
+                if (m_settings.VersionOnServer == serverVersion) 
+                    return;
+
                 m_settings.VersionOnServer = serverVersion;
                 m_settings.ForgetVersion = false;
-            }
+            }));
         }
 
         public void CheckVersion()
         {
-            m_WebClient.DownloadStringAsync(ChangelogUrl);
+            // While download is async, detecting proxy settings isn't, so let's call it in the background anyway
+            Task.Factory.StartNew(() => m_WebClient.DownloadStringAsync(ChangelogUrl));
         }
 
         #region Version
