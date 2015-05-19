@@ -49,12 +49,18 @@ namespace Mpdn.RenderScript
             get { return m_Texture; }
         }
 
-        public override void Reset(ITextureCache cache)
+        public override void Reset()
         {
         }
 
-        public override void Render(ITextureCache cache)
+        public override void Render()
         {
+            if (m_Texture != null && Renderer.TargetSize == m_Texture.GetSize())
+                return;
+
+            DisposeHelper.Dispose(ref m_Texture);
+            m_Texture = TexturePool.GetSourceTexture(Renderer.TargetSize, TextureFormat.Float16);
+            DrawText();
         }
 
         #region Text rendering

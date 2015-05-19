@@ -31,8 +31,8 @@ namespace Mpdn.RenderScript
         TextureFormat OutputFormat { get; }
         int FilterIndex { get; }
         int LastDependentIndex { get; }
-        void Render(ITextureCache cache);
-        void Reset(ITextureCache cache);
+        void Render();
+        void Reset();
         void Initialize(int time = 1);
         IFilter<TTexture> Compile();
     }
@@ -127,7 +127,7 @@ namespace Mpdn.RenderScript
             return this;
         }
 
-        public void Render(ITextureCache cache)
+        public void Render()
         {
             if (Updated)
                 return;
@@ -136,7 +136,7 @@ namespace Mpdn.RenderScript
 
             foreach (var filter in InputFilters)
             {
-                filter.Render(cache);
+                filter.Render();
             }
 
             var inputTextures =
@@ -144,7 +144,7 @@ namespace Mpdn.RenderScript
                     .Select(f => f.OutputTexture)
                     .ToList();
 
-            OutputTarget = cache.GetTexture(OutputSize, OutputFormat);
+            OutputTarget = TexturePool.GetTexture(OutputSize, OutputFormat);
 
             Render(inputTextures);
 
@@ -152,18 +152,18 @@ namespace Mpdn.RenderScript
             {
                 if (filter.LastDependentIndex <= FilterIndex)
                 {
-                    filter.Reset(cache);
+                    filter.Reset();
                 }
             }
         }
 
-        public void Reset(ITextureCache cache)
+        public void Reset()
         {
             Updated = false;
 
             if (OutputTarget != null)
             {
-                cache.PutTexture(OutputTarget);
+                TexturePool.PutTexture(OutputTarget);
             }
 
             OutputTarget = null;
