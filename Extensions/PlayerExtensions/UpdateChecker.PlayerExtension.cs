@@ -147,7 +147,8 @@ namespace Mpdn.PlayerExtensions.GitHub
 
         public void CheckVersion()
         {
-            // While download is async, detecting proxy settings isn't, so let's call it in the background anyway
+            // DownloadStringAsync isn't fully async!
+            // It blocks when it is detecting proxy settings and especially noticeable if user is behind a proxy server
             Task.Factory.StartNew(() => m_WebClient.DownloadStringAsync(ChangelogUrl));
         }
 
