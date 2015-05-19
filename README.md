@@ -14,12 +14,19 @@ MPDN project page - http://forum.doom9.org/showthread.php?t=171120
 </ul>
 
 
-How to use Extensions?
-----------------------
+Prerequisites
+-------------
+<ul>
+<li>***MPDN v2.26.0*** and above</li>
+<li>.NET Framework version 4.0</li>
+</ul>
 
-To use these extensions (compatible with ***MPDN v2.25.15*** and above), click the **Download ZIP** button on the right to download the whole repository.
+How to use the Extensions?
+--------------------------
 
-Then extract the files and folders in the Extensions folder to your MPDN's Extensions folder.
+To use these extensions, click the **Download ZIP** button on the right sidebar to download the whole repository.
+
+Then extract the files and folders in the Extensions folder to your MPDN Extensions folder (replacing it).
 
 
 Developing / Debugging Extensions
