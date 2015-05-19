@@ -16,17 +16,13 @@
 // 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Drawing;
-using Mpdn.OpenCl;
-using SharpDX;
 using TransformFunc = System.Func<Mpdn.RenderScript.TextureSize, Mpdn.RenderScript.TextureSize>;
 using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.RenderScript
 {
-    public interface IFilter<out TTexture>
+    public interface IFilter<out TTexture> : IDisposable
         where TTexture : class, IBaseTexture
     {
         IBaseFilter[] InputFilters { get; }
@@ -41,7 +37,7 @@ namespace Mpdn.RenderScript
         IFilter<TTexture> Compile();
     }
 
-    public interface IFilter : IFilter<ITexture>
+    public interface IFilter : IFilter<ITexture2D>
     {
     }
 
@@ -64,16 +60,32 @@ namespace Mpdn.RenderScript
             InputFilters = inputFilters;
         }
 
+        ~Filter()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
         protected abstract void Render(IList<IBaseTexture> inputs);
 
         #region IFilter Implementation
 
         protected bool Updated { get; set; }
         protected bool Initialized { get; set; }
-        protected IFilter<ITexture> CompilationResult { get; set; }
+        protected IFilter<ITexture2D> CompilationResult { get; set; }
 
         public IBaseFilter[] InputFilters { get; private set; }
-        public ITexture OutputTexture { get; private set; }
+        public ITexture2D OutputTexture { get { return OutputTarget; } }
+        protected ITargetTexture OutputTarget { get; private set; }
 
         public abstract TextureSize OutputSize { get; }
 
@@ -92,10 +104,10 @@ namespace Mpdn.RenderScript
             if (Initialized)
                 return;
 
-            for (int i = 0; i < InputFilters.Length; i++)
+            foreach (var f in InputFilters)
             {
-                InputFilters[i].Initialize(LastDependentIndex);
-                LastDependentIndex = InputFilters[i].LastDependentIndex;
+                f.Initialize(LastDependentIndex);
+                LastDependentIndex = f.LastDependentIndex;
             }
 
             FilterIndex = LastDependentIndex;
@@ -110,20 +122,22 @@ namespace Mpdn.RenderScript
             Initialized = true;
         }
 
-        public IFilter<ITexture> Compile()
+        public IFilter<ITexture2D> Compile()
         {
-            if (CompilationResult == null)
-            {
-                for (int i = 0; i < InputFilters.Length; i++)
-                    InputFilters[i] = InputFilters[i].Compile();
+            if (CompilationResult != null) 
+                return CompilationResult;
 
-                CompilationResult = Optimize();
-            };
-            
+            for (int i = 0; i < InputFilters.Length; i++)
+            {
+                InputFilters[i] = InputFilters[i].Compile();
+            }
+
+            CompilationResult = Optimize();
+
             return CompilationResult;
         }
 
-        protected virtual IFilter<ITexture> Optimize()
+        protected virtual IFilter<ITexture2D> Optimize()
         {
             return this;
         }
@@ -145,7 +159,7 @@ namespace Mpdn.RenderScript
                     .Select(f => f.OutputTexture)
                     .ToList();
 
-            OutputTexture = cache.GetTexture(OutputSize, OutputFormat);
+            OutputTarget = cache.GetTexture(OutputSize, OutputFormat);
 
             Render(inputTextures);
 
@@ -162,12 +176,12 @@ namespace Mpdn.RenderScript
         {
             Updated = false;
 
-            if (OutputTexture != null)
+            if (OutputTarget != null)
             {
-                cache.PutTexture(OutputTexture);
+                cache.PutTexture(OutputTarget);
             }
 
-            OutputTexture = null;
+            OutputTarget = null;
         }
 
         #endregion

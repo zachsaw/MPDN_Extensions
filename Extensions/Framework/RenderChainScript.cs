@@ -23,7 +23,7 @@ namespace Mpdn.RenderScript
     {
         private TextureCache m_Cache;
         private SourceFilter m_SourceFilter;
-        private IFilter<ITexture> m_Filter;
+        private IFilter<ITexture2D> m_Filter;
 
         protected RenderChain Chain;
 
@@ -33,8 +33,22 @@ namespace Mpdn.RenderScript
             m_Cache = new TextureCache();
         }
 
+        ~RenderChainScript()
+        {
+            Dispose(false);
+        }
+
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            DisposeHelper.Dispose(ref m_SourceFilter);
+            DisposeHelper.Dispose(ref m_Filter);
+
             if (m_Cache == null)
                 return;
 
@@ -61,6 +75,12 @@ namespace Mpdn.RenderScript
 
         public void Update()
         {
+            DiscardResources();
+            CreateResources();
+        }
+
+        private void CreateResources()
+        {
             m_SourceFilter = new SourceFilter();
             var rgbInput = m_SourceFilter.Transform(x => new RgbFilter(x));
             m_Filter = Chain
@@ -68,6 +88,14 @@ namespace Mpdn.RenderScript
                 .SetSize(Renderer.TargetSize)
                 .Compile();
             m_Filter.Initialize();
+        }
+
+        private void DiscardResources()
+        {
+            DisposeHelper.Dispose(ref m_Filter);
+            DisposeHelper.Dispose(ref m_SourceFilter);
+            m_Cache.FlushTextures();
+            m_Cache.FlushTextures();
         }
 
         public void Render()
@@ -82,7 +110,7 @@ namespace Mpdn.RenderScript
             m_Cache.FlushTextures();
         }
 
-        private static void Scale(ITexture output, ITexture input)
+        private static void Scale(ITargetTexture output, ITexture2D input)
         {
             Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }

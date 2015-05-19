@@ -20,23 +20,30 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using SharpDX;
 using Color = System.Drawing.Color;
-using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace Mpdn.RenderScript
 {
-    public class TextFilter : BaseSourceFilter<ITexture>, IFilter
+    public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter
     {
-        private string m_Text;
+        private readonly string m_Text;
+        private readonly Func<TextureSize> m_Size;
+
         private Font m_Font;
-        private ITexture m_Texture;
-        Func<TextureSize> m_Size;
+        private ISourceTexture m_Texture;
 
         public TextFilter(string text, Func<TextureSize> size = null)
-            : base()
         {
             m_Size = size ?? (() => Renderer.TargetSize);
             m_Text = text;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            DisposeHelper.Dispose(ref m_Font);
+            DisposeHelper.Dispose(ref m_Texture);
+
+            base.Dispose(disposing);
         }
 
         public override TextureSize OutputSize
@@ -44,9 +51,13 @@ namespace Mpdn.RenderScript
             get { return m_Size(); }
         }
 
-        public override ITexture OutputTexture
+        public override ITexture2D OutputTexture
         {
             get { return m_Texture; }
+        }
+
+        public override void Reset(ITextureCache cache)
+        {
         }
 
         public override void Render(ITextureCache cache)
@@ -59,15 +70,9 @@ namespace Mpdn.RenderScript
             DrawText();
         }
 
-        ~TextFilter()
-        {
-            DisposeHelper.Dispose(ref m_Font);
-            DisposeHelper.Dispose(ref m_Texture);
-        }
-
         #region Text rendering
 
-        private Font textFont
+        private Font TextFont
         {
             get
             {
@@ -77,15 +82,19 @@ namespace Mpdn.RenderScript
 
         private void DrawText()
         {
-            var width = Renderer.TargetSize.Width;
-            var height = Renderer.TargetSize.Height;
+            var size = Renderer.TargetSize;
+            var width = size.Width;
+            var height = size.Height;
             using (var bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb))
             {
                 var bounds = new Rectangle(0, 0, bmp.Width, bmp.Height);
                 using (var g = Graphics.FromImage(bmp))
                 {
                     g.FillRectangle(Brushes.DarkSlateBlue, bounds);
-                    TextRenderer.DrawText(g, m_Text, textFont, new Point(10, 10), Color.OrangeRed);
+                    const int margin = 10;
+                    var textBounds = new Rectangle(margin, margin, width-margin*2, height-margin*2);
+                    TextRenderer.DrawText(g, m_Text, TextFont, textBounds, Color.OrangeRed, Color.Transparent,
+                        TextFormatFlags.WordBreak);
                 }
                 UpdateTexture(bmp);
             }
@@ -114,7 +123,7 @@ namespace Mpdn.RenderScript
                         tex[j, (i + 0)] = *ptr++ / 255.0f; // r
                     }
                 }
-                Renderer.UpdateTexture(OutputTexture, tex);
+                Renderer.UpdateTexture(m_Texture, tex);
             }
             finally
             {

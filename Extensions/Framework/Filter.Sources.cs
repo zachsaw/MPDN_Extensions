@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+using System;
 using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.RenderScript
@@ -26,9 +27,26 @@ namespace Mpdn.RenderScript
             InputFilters = inputFilters;
         }
 
+        ~BaseSourceFilter()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
         public abstract TTexture OutputTexture { get; }
 
         public abstract TextureSize OutputSize { get; }
+
+        public abstract void Reset(ITextureCache cache);
 
         #region IFilter Implementation
 
@@ -65,16 +83,10 @@ namespace Mpdn.RenderScript
         {
         }
 
-        public virtual void Reset(ITextureCache cache)
-        {
-            if (typeof(TTexture) == typeof(ITexture))
-                cache.PutTempTexture(OutputTexture as ITexture);
-        }
-
         #endregion
     }
 
-    public abstract class BaseSourceFilter : BaseSourceFilter<ITexture>, IFilter
+    public abstract class BaseSourceFilter : BaseSourceFilter<ITexture2D>, IFilter
     {
     }
 
@@ -89,7 +101,7 @@ namespace Mpdn.RenderScript
 
         #region IFilter Implementation
 
-        public override ITexture OutputTexture
+        public override ITexture2D OutputTexture
         {
             get { return Renderer.InputRenderTarget; }
         }
@@ -99,12 +111,17 @@ namespace Mpdn.RenderScript
             get { return (m_OutputSize.IsEmpty ? Renderer.VideoSize : m_OutputSize); }
         }
 
+        public override void Reset(ITextureCache cache)
+        {
+            cache.PutTempTexture(OutputTexture as ITargetTexture);
+        }
+
         #endregion
     }
 
     public sealed class YSourceFilter : BaseSourceFilter
     {
-        public override ITexture OutputTexture
+        public override ITexture2D OutputTexture
         {
             get { return Renderer.TextureY; }
         }
@@ -121,7 +138,7 @@ namespace Mpdn.RenderScript
 
     public sealed class USourceFilter : BaseSourceFilter
     {
-        public override ITexture OutputTexture
+        public override ITexture2D OutputTexture
         {
             get { return Renderer.TextureU; }
         }
@@ -138,7 +155,7 @@ namespace Mpdn.RenderScript
 
     public sealed class VSourceFilter : BaseSourceFilter
     {
-        public override ITexture OutputTexture
+        public override ITexture2D OutputTexture
         {
             get { return Renderer.TextureV; }
         }
@@ -155,7 +172,7 @@ namespace Mpdn.RenderScript
 
     public sealed class NullFilter : BaseSourceFilter
     {
-        public override ITexture OutputTexture
+        public override ITexture2D OutputTexture
         {
             get { return Renderer.OutputRenderTarget; }
         }
@@ -164,46 +181,25 @@ namespace Mpdn.RenderScript
         {
             get { return Renderer.TargetSize; }
         }
-    }
-
-    public sealed class TextureSourceFilter : BaseSourceFilter
-    {
-        private readonly ITexture m_Texture;
-        private readonly TextureSize m_Size;
-
-        public TextureSourceFilter(ITexture texture)
-        {
-            m_Texture = texture;
-            m_Size = new TextureSize(texture.Width, texture.Height);
-        }
-
-        public override ITexture OutputTexture
-        {
-            get { return m_Texture; }
-        }
-
-        public override TextureSize OutputSize
-        {
-            get { return m_Size; }
-        }
 
         public override void Reset(ITextureCache cache)
         {
         }
     }
 
-    public sealed class Texture3DSourceFilter : BaseSourceFilter<ITexture3D>
+    public sealed class TextureSourceFilter<TTexture> : BaseSourceFilter<TTexture>
+        where TTexture : class, IBaseTexture
     {
-        private readonly ITexture3D m_Texture;
+        private readonly TTexture m_Texture;
         private readonly TextureSize m_Size;
 
-        public Texture3DSourceFilter(ITexture3D texture)
+        public TextureSourceFilter(TTexture texture)
         {
             m_Texture = texture;
-            m_Size = new TextureSize(texture.Width, texture.Height, texture.Depth);
+            m_Size = m_Texture.GetSize();
         }
 
-        public override ITexture3D OutputTexture
+        public override TTexture OutputTexture
         {
             get { return m_Texture; }
         }

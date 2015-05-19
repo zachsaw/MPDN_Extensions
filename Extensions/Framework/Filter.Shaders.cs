@@ -16,9 +16,7 @@
 // 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Drawing;
 using Mpdn.OpenCl;
 using SharpDX;
 using TransformFunc = System.Func<Mpdn.RenderScript.TextureSize, Mpdn.RenderScript.TextureSize>;
@@ -100,10 +98,9 @@ namespace Mpdn.RenderScript
             : base(inputFilters)
         {
             Shader = settings.Shader;
-            if (settings.PerTextureLinearSampling.Length > 0)
-                LinearSampling = settings.PerTextureLinearSampling;
-            else
-                LinearSampling = Enumerable.Repeat(settings.LinearSampling, inputFilters.Length).ToArray();
+            LinearSampling = settings.PerTextureLinearSampling.Length > 0
+                ? settings.PerTextureLinearSampling
+                : Enumerable.Repeat(settings.LinearSampling, inputFilters.Length).ToArray();
             Transform = settings.Transform;
             Format = settings.Format;
             SizeIndex = settings.SizeIndex;
@@ -164,9 +161,9 @@ namespace Mpdn.RenderScript
             var i = 0;
             foreach (var input in inputs)
             {
-                if (input as ITexture != null)
+                if (input as ITexture2D != null)
                 {
-                    var tex = (ITexture) input;
+                    var tex = (ITexture2D) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
                     Shader.SetConstant(String.Format("size{0}", i),
                         new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
@@ -188,7 +185,7 @@ namespace Mpdn.RenderScript
             }
 
             // Legacy constants 
-            var output = OutputTexture;
+            var output = OutputTarget;
             Shader.SetConstant(0, new Vector4(output.Width, output.Height, Counter++ & 0x7fffff, Renderer.FrameTimeStampMicrosec / 1000000.0f),
                 false);
             Shader.SetConstant(1, new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
@@ -196,7 +193,7 @@ namespace Mpdn.RenderScript
 
         protected override void Render(IShader shader)
         {
-            Renderer.Render(OutputTexture, shader);
+            Renderer.Render(OutputTarget, shader);
         }
     }
 
@@ -219,9 +216,9 @@ namespace Mpdn.RenderScript
             var i = 0;
             foreach (var input in inputs)
             {
-                if (input as ITexture != null)
+                if (input as ITexture2D != null)
                 {
-                    var tex = (ITexture) input;
+                    var tex = (ITexture2D) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
                     Shader.SetConstantBuffer(String.Format("size{0}", i),
                         new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
@@ -243,14 +240,14 @@ namespace Mpdn.RenderScript
             }
 
             // Legacy constants 
-            var output = OutputTexture;
-            Shader.SetConstantBuffer(0, new Vector4(output.Width, output.Height, Counter++ & 0x7fffff, Renderer.FrameTimeStampMicrosec / 1000000.0f),
-                false);
+            var output = OutputTarget;
+            Shader.SetConstantBuffer(0, new Vector4(output.Width, output.Height, Counter++ & 0x7fffff, 
+                Renderer.FrameTimeStampMicrosec / 1000000.0f), false);
         }
 
         protected override void Render(IShader11 shader)
         {
-            Renderer.Render(OutputTexture, shader);
+            Renderer.Render(OutputTarget, shader);
         }
     }
 
@@ -276,7 +273,7 @@ namespace Mpdn.RenderScript
 
         protected override void Render(IShader11 shader)
         {
-            Renderer.Compute(OutputTexture, shader, ThreadGroupX, ThreadGroupY, ThreadGroupZ);
+            Renderer.Compute(OutputTarget, shader, ThreadGroupX, ThreadGroupY, ThreadGroupZ);
         }
 
         public int ThreadGroupX { get; private set; }
@@ -321,14 +318,14 @@ namespace Mpdn.RenderScript
 
         protected override void LoadInputs(IList<IBaseTexture> inputs)
         {
-            Shader.SetOutputTextureArg(0, OutputTexture); // Note: MPDN only supports one output texture per kernel
+            Shader.SetOutputTextureArg(0, OutputTarget); // Note: MPDN only supports one output texture per kernel
 
             var i = 1;
             foreach (var input in inputs)
             {
-                if (input as ITexture != null)
+                if (input as ITexture2D != null)
                 {
-                    var tex = (ITexture) input;
+                    var tex = (ITexture2D) input;
                     Shader.SetInputTextureArg(i, tex, false);
                 }
                 else
