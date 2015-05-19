@@ -85,7 +85,7 @@ namespace Mpdn.RenderScript
 
         public IBaseFilter[] InputFilters { get; private set; }
         public ITexture2D OutputTexture { get { return OutputTarget; } }
-        protected ITexture OutputTarget { get; private set; }
+        protected ITargetTexture OutputTarget { get; private set; }
 
         public abstract TextureSize OutputSize { get; }
 

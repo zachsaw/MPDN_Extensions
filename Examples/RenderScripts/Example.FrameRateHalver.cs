@@ -32,7 +32,7 @@ namespace Mpdn.RenderScript
                 {
                 }
 
-                protected override void Render(ITexture texture)
+                protected override void Render(ITexture2D texture)
                 {
                     // Render all frames but only present half of them
                     // In real life scenario, you'd probably want to use Renderer.RenderQueue[i].Frame

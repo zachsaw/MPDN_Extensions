@@ -161,9 +161,9 @@ namespace Mpdn.RenderScript
             var i = 0;
             foreach (var input in inputs)
             {
-                if (input as ITexture != null)
+                if (input as ITexture2D != null)
                 {
-                    var tex = (ITexture) input;
+                    var tex = (ITexture2D) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
                     Shader.SetConstant(String.Format("size{0}", i),
                         new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
@@ -216,9 +216,9 @@ namespace Mpdn.RenderScript
             var i = 0;
             foreach (var input in inputs)
             {
-                if (input as ITexture != null)
+                if (input as ITexture2D != null)
                 {
-                    var tex = (ITexture) input;
+                    var tex = (ITexture2D) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
                     Shader.SetConstantBuffer(String.Format("size{0}", i),
                         new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
@@ -323,9 +323,9 @@ namespace Mpdn.RenderScript
             var i = 1;
             foreach (var input in inputs)
             {
-                if (input as ITexture != null)
+                if (input as ITexture2D != null)
                 {
-                    var tex = (ITexture) input;
+                    var tex = (ITexture2D) input;
                     Shader.SetInputTextureArg(i, tex, false);
                 }
                 else

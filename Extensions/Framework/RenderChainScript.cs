@@ -110,7 +110,7 @@ namespace Mpdn.RenderScript
             m_Cache.FlushTextures();
         }
 
-        private static void Scale(ITexture output, ITexture2D input)
+        private static void Scale(ITargetTexture output, ITexture2D input)
         {
             Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }

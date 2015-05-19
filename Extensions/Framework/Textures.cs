@@ -24,9 +24,9 @@ namespace Mpdn.RenderScript
 {
     public interface ITextureCache
     {
-        ITexture GetTexture(TextureSize textureSize, TextureFormat textureFormat);
-        void PutTexture(ITexture texture);
-        void PutTempTexture(ITexture texture);
+        ITargetTexture GetTexture(TextureSize textureSize, TextureFormat textureFormat);
+        void PutTexture(ITargetTexture texture);
+        void PutTempTexture(ITargetTexture texture);
     }
 
     public struct TextureSize
@@ -122,11 +122,11 @@ namespace Mpdn.RenderScript
 
     public class TextureCache : ITextureCache, IDisposable
     {
-        private List<ITexture> m_OldTextures = new List<ITexture>();
-        private List<ITexture> m_SavedTextures = new List<ITexture>();
-        private List<ITexture> m_TempTextures = new List<ITexture>();
+        private List<ITargetTexture> m_OldTextures = new List<ITargetTexture>();
+        private List<ITargetTexture> m_SavedTextures = new List<ITargetTexture>();
+        private List<ITargetTexture> m_TempTextures = new List<ITargetTexture>();
 
-        public ITexture GetTexture(TextureSize textureSize, TextureFormat textureFormat)
+        public ITargetTexture GetTexture(TextureSize textureSize, TextureFormat textureFormat)
         {
             foreach (var list in new[] { m_SavedTextures, m_OldTextures })
             {
@@ -141,13 +141,13 @@ namespace Mpdn.RenderScript
             return Renderer.CreateRenderTarget(textureSize.Width, textureSize.Height, textureFormat);
         }
 
-        public void PutTempTexture(ITexture texture)
+        public void PutTempTexture(ITargetTexture texture)
         {
             m_TempTextures.Add(texture);
             m_SavedTextures.Add(texture);
         }
 
-        public void PutTexture(ITexture texture)
+        public void PutTexture(ITargetTexture texture)
         {
             m_SavedTextures.Add(texture);
         }
@@ -165,8 +165,8 @@ namespace Mpdn.RenderScript
             }
 
             m_OldTextures = m_SavedTextures;
-            m_TempTextures = new List<ITexture>();
-            m_SavedTextures = new List<ITexture>();
+            m_TempTextures = new List<ITargetTexture>();
+            m_SavedTextures = new List<ITargetTexture>();
         }
 
         public void Dispose()
