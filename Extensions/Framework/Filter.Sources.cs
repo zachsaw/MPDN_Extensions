@@ -113,7 +113,7 @@ namespace Mpdn.RenderScript
 
         public override void Reset(ITextureCache cache)
         {
-            cache.PutTempTexture(OutputTexture as ITexture);
+            cache.PutTempTexture(OutputTexture as ITargetTexture);
         }
 
         #endregion

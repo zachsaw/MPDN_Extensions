@@ -29,11 +29,11 @@ namespace Mpdn.RenderScript
         {
         }
 
-        protected abstract void Render(ITexture input);
+        protected abstract void Render(ITexture2D input);
 
         protected override void Render(IList<IBaseTexture> inputs)
         {
-            var texture = inputs.OfType<ITexture>().SingleOrDefault();
+            var texture = inputs.OfType<ITexture2D>().SingleOrDefault();
             if (texture == null)
                 return;
 
@@ -95,7 +95,7 @@ namespace Mpdn.RenderScript
             return this;
         }
 
-        protected override void Render(ITexture input)
+        protected override void Render(ITexture2D input)
         {
             Renderer.ConvertToRgb(OutputTarget, input, Colorimetric, OutputLimitedRange, OutputLimitChroma);
         }
@@ -132,12 +132,12 @@ namespace Mpdn.RenderScript
         {
             var input = InputFilters[0] as RgbFilter;
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
-                return (IFilter<ITexture>)input.InputFilters[0];
+                return (IFilter<ITexture2D>) input.InputFilters[0];
 
             return this;
         }
 
-        protected override void Render(ITexture input)
+        protected override void Render(ITexture2D input)
         {
             Renderer.ConvertToYuv(OutputTarget, input, Colorimetric, OutputLimitedRange);
         }
@@ -230,7 +230,7 @@ namespace Mpdn.RenderScript
 
         protected override void Render(IList<IBaseTexture> inputs)
         {
-            var texture = inputs.OfType<ITexture>().SingleOrDefault();
+            var texture = inputs.OfType<ITexture2D>().SingleOrDefault();
             if (texture == null)
                 return;
 

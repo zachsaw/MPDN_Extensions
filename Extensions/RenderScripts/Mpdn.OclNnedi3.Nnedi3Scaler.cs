@@ -89,7 +89,7 @@ namespace Mpdn.RenderScript
 
                 protected override void LoadInputs(IList<IBaseTexture> inputs)
                 {
-                    Shader.SetInputTextureArg(0, (ITexture) inputs[0]); // srcImg
+                    Shader.SetInputTextureArg(0, (ITexture2D) inputs[0]); // srcImg
                     // First pass doesn't require result to be copied back to Direct3D - so we use a 'temp' texture
                     Shader.SetTempTextureArg(1, OutputTarget); // dstImg
                     Shader.SetBufferArg(2, m_Buffer); // weights
@@ -114,7 +114,7 @@ namespace Mpdn.RenderScript
                 protected override void LoadInputs(IList<IBaseTexture> inputs)
                 {
                     // Use the 'temp' texture from first pass as input
-                    Shader.SetTempTextureArg(0, (ITexture) inputs[0]); // srcImg
+                    Shader.SetTempTextureArg(0, (ITexture2D) inputs[0]); // srcImg
                     Shader.SetOutputTextureArg(1, OutputTarget); // dstImg
                     Shader.SetArg(4, m_TextureSize.Width); // SrcWidth
                     Shader.SetArg(5, m_TextureSize.Height); // SrcHeight
