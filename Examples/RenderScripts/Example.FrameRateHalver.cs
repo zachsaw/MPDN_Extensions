@@ -40,7 +40,7 @@ namespace Mpdn.RenderScript
                     // (Note: Renderer.RenderQueue.First().Frame is the frame before the current, while 
                     //        Renderer.RenderQueue.Last().Frame is earliest frame in the queue.
                     //        Renderer.RenderQueue will have no elements to start off with!)
-                    Renderer.Render(OutputTexture, texture, false);
+                    Renderer.Render(OutputTarget, texture, false);
 
                     // Note: To get actual odd/even frame number, you should calculate from 
                     //       Renderer.FrameRateHz and Renderer.FrameTimeStampMicrosec instead of relying on m_Counter

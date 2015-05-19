@@ -108,7 +108,7 @@ namespace Mpdn.RenderScript
         {
             if (texture is ITexture2D)
             {
-                var t = texture as ITexture;
+                var t = texture as ITexture2D;
                 return new TextureSize(t.Width, t.Height);
             }
             if (texture is ITexture3D)

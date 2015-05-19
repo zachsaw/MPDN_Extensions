@@ -46,7 +46,7 @@ namespace Mpdn.RenderScript
                     s_CompiledShaders.Remove(key);
                 }
 
-                T shader = null;
+                T shader;
                 try
                 {
                    shader = compileFunc();
@@ -61,7 +61,7 @@ namespace Mpdn.RenderScript
                 return shader;
             }
 
-            public class ShaderWithDateTime
+            private class ShaderWithDateTime
             {
                 public T Shader { get; private set; }
                 public DateTime LastModified { get; private set; }

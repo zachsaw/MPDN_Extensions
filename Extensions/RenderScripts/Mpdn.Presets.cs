@@ -107,14 +107,12 @@ namespace Mpdn.RenderScript
             {
                 base.Dispose(disposing);
                 DisposeHelper.Dispose(Script);
+                Script = null;
             }
 
             public override IFilter CreateFilter(IFilter input)
             {
-                if (Script != null)
-                    return Chain.CreateSafeFilter(input);
-                else
-                    return input;
+                return Script != null ? Chain.CreateSafeFilter(input) : input;
             }
 
             #endregion

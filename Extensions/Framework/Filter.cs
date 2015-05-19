@@ -16,17 +16,13 @@
 // 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Drawing;
-using Mpdn.OpenCl;
-using SharpDX;
 using TransformFunc = System.Func<Mpdn.RenderScript.TextureSize, Mpdn.RenderScript.TextureSize>;
 using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.RenderScript
 {
-    public interface IFilter<out TTexture>
+    public interface IFilter<out TTexture> : IDisposable
         where TTexture : class, IBaseTexture
     {
         IBaseFilter[] InputFilters { get; }
@@ -64,6 +60,21 @@ namespace Mpdn.RenderScript
             InputFilters = inputFilters;
         }
 
+        ~Filter()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
         protected abstract void Render(IList<IBaseTexture> inputs);
 
         #region IFilter Implementation
@@ -93,10 +104,10 @@ namespace Mpdn.RenderScript
             if (Initialized)
                 return;
 
-            for (int i = 0; i < InputFilters.Length; i++)
+            foreach (var f in InputFilters)
             {
-                InputFilters[i].Initialize(LastDependentIndex);
-                LastDependentIndex = InputFilters[i].LastDependentIndex;
+                f.Initialize(LastDependentIndex);
+                LastDependentIndex = f.LastDependentIndex;
             }
 
             FilterIndex = LastDependentIndex;
@@ -113,14 +124,16 @@ namespace Mpdn.RenderScript
 
         public IFilter<ITexture2D> Compile()
         {
-            if (CompilationResult == null)
-            {
-                for (int i = 0; i < InputFilters.Length; i++)
-                    InputFilters[i] = InputFilters[i].Compile();
+            if (CompilationResult != null) 
+                return CompilationResult;
 
-                CompilationResult = Optimize();
-            };
-            
+            for (int i = 0; i < InputFilters.Length; i++)
+            {
+                InputFilters[i] = InputFilters[i].Compile();
+            }
+
+            CompilationResult = Optimize();
+
             return CompilationResult;
         }
 

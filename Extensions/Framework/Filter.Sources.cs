@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+using System;
 using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.RenderScript
@@ -24,6 +25,21 @@ namespace Mpdn.RenderScript
         protected BaseSourceFilter(params IBaseFilter[] inputFilters)
         {
             InputFilters = inputFilters;
+        }
+
+        ~BaseSourceFilter()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
         }
 
         public abstract TTexture OutputTexture { get; }

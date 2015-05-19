@@ -24,8 +24,8 @@ namespace Mpdn.RenderScript
     {
         public class CustomTextures : RenderChain
         {
-            private ITexture m_Texture1;
-            private ITexture m_Texture2;
+            private ISourceTexture m_Texture1;
+            private ISourceTexture m_Texture2;
 
             protected override string ShaderPath
             {
@@ -36,8 +36,8 @@ namespace Mpdn.RenderScript
             {
                 CreateTextures();
                 var shader = CompileShader("CustomTextures.hlsl");
-                return new ShaderFilter(shader, sourceFilter, new TextureSourceFilter(m_Texture1),
-                    new TextureSourceFilter(m_Texture2));
+                return new ShaderFilter(shader, sourceFilter, new TextureSourceFilter<ISourceTexture>(m_Texture1),
+                    new TextureSourceFilter<ISourceTexture>(m_Texture2));
             }
 
             public override void RenderScriptDisposed()
@@ -79,7 +79,7 @@ namespace Mpdn.RenderScript
                 m_Texture2 = CreateTexture(width, height);
             }
 
-            private static ITexture CreateTexture(int width, int height)
+            private static ISourceTexture CreateTexture(int width, int height)
             {
                 int pitch = width*4;
                 var result = Renderer.CreateTexture(new Size(width, height));

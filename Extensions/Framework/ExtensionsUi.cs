@@ -95,7 +95,7 @@ namespace Mpdn
             where TSettings : class, new()
             where TDialog : IScriptConfigDialog<TSettings>, new()
         {
-            protected virtual string ConfigFileName { get { return this.GetType().Name; } }
+            protected virtual string ConfigFileName { get { return GetType().Name; } }
 
             public abstract ExtensionUiDescriptor Descriptor { get; }
 
