@@ -33,8 +33,22 @@ namespace Mpdn.RenderScript
             m_Cache = new TextureCache();
         }
 
+        ~RenderChainScript()
+        {
+            Dispose(false);
+        }
+
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            DisposeHelper.Dispose(ref m_SourceFilter);
+            DisposeHelper.Dispose(ref m_Filter);
+
             if (m_Cache == null)
                 return;
 
@@ -61,6 +75,12 @@ namespace Mpdn.RenderScript
 
         public void Update()
         {
+            DiscardResources();
+            CreateResources();
+        }
+
+        private void CreateResources()
+        {
             m_SourceFilter = new SourceFilter();
             var rgbInput = m_SourceFilter.Transform(x => new RgbFilter(x));
             m_Filter = Chain
@@ -68,6 +88,14 @@ namespace Mpdn.RenderScript
                 .SetSize(Renderer.TargetSize)
                 .Compile();
             m_Filter.Initialize();
+        }
+
+        private void DiscardResources()
+        {
+            DisposeHelper.Dispose(ref m_Filter);
+            DisposeHelper.Dispose(ref m_SourceFilter);
+            m_Cache.FlushTextures();
+            m_Cache.FlushTextures();
         }
 
         public void Render()

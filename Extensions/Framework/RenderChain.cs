@@ -177,15 +177,18 @@ namespace Mpdn.RenderScript
         protected static Exception InnerMostException(Exception e)
         {
             while (e.InnerException != null)
+            {
                 e = e.InnerException;
+            }
 
             return e;
         }
 
-        private string ErrorMessage(Exception e) 
+        private string ErrorMessage(Exception e)
         {
-            return string.Format("Error in {0}:\r\n\r\n{1}",
-                    GetType().Name, InnerMostException(e).Message);
+            var ex = InnerMostException(e);
+            return string.Format("Error in {0}:\r\n\r\n{1}\r\n\r\n~\r\nStack Trace:\r\n{2}",
+                    GetType().Name, ex.Message, ex.StackTrace);
         }
 
         #endregion

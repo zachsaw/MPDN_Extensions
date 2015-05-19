@@ -90,7 +90,7 @@ namespace Mpdn.RenderScript
         {
             var input = InputFilters[0] as YuvFilter;
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
-                return (IFilter<ITexture2D>)input.InputFilters[0];
+                return (IFilter<ITexture2D>) input.InputFilters[0];
 
             return this;
         }

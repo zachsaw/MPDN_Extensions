@@ -16,14 +16,11 @@
 // 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Drawing;
 using Mpdn.OpenCl;
 using SharpDX;
 using TransformFunc = System.Func<Mpdn.RenderScript.TextureSize, Mpdn.RenderScript.TextureSize>;
 using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
-using ITexture3D = Mpdn.ISourceTexture3D;
 
 namespace Mpdn.RenderScript
 {
@@ -101,10 +98,9 @@ namespace Mpdn.RenderScript
             : base(inputFilters)
         {
             Shader = settings.Shader;
-            if (settings.PerTextureLinearSampling.Length > 0)
-                LinearSampling = settings.PerTextureLinearSampling;
-            else
-                LinearSampling = Enumerable.Repeat(settings.LinearSampling, inputFilters.Length).ToArray();
+            LinearSampling = settings.PerTextureLinearSampling.Length > 0
+                ? settings.PerTextureLinearSampling
+                : Enumerable.Repeat(settings.LinearSampling, inputFilters.Length).ToArray();
             Transform = settings.Transform;
             Format = settings.Format;
             SizeIndex = settings.SizeIndex;
@@ -245,8 +241,8 @@ namespace Mpdn.RenderScript
 
             // Legacy constants 
             var output = OutputTarget;
-            Shader.SetConstantBuffer(0, new Vector4(output.Width, output.Height, Counter++ & 0x7fffff, Renderer.FrameTimeStampMicrosec / 1000000.0f),
-                false);
+            Shader.SetConstantBuffer(0, new Vector4(output.Width, output.Height, Counter++ & 0x7fffff, 
+                Renderer.FrameTimeStampMicrosec / 1000000.0f), false);
         }
 
         protected override void Render(IShader11 shader)
