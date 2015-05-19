@@ -4,22 +4,18 @@ MPDN Extensions
 MPDN project page - http://forum.doom9.org/showthread.php?t=171120
 
 <H3>Developers</H3>
-<ul>
-<li>Zachs</li>
-<li>Shiandow</li>
-<li>DeadlyEmbrace</li>
-<li>Mercy07</li>
-<li>Garteal</li>
-<li>Belphemur</li>
-</ul>
+* Zachs
+* Shiandow
+* DeadlyEmbrace
+* Mercy07
+* Garteal
+* Belphemur
 
 
 Prerequisites
 -------------
-<ul>
-<li>**MPDN v2.26.0** and above</li>
-<li>.NET Framework version 4.0</li>
-</ul>
+* **MPDN v2.26.0** and above
+* .NET Framework version 4.0
 
 How to use the Extensions?
 --------------------------
