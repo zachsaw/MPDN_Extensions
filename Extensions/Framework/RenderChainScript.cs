@@ -23,7 +23,7 @@ namespace Mpdn.RenderScript
     {
         private TextureCache m_Cache;
         private SourceFilter m_SourceFilter;
-        private IFilter<ITexture> m_Filter;
+        private IFilter<ITexture2D> m_Filter;
 
         protected RenderChain Chain;
 
@@ -82,7 +82,7 @@ namespace Mpdn.RenderScript
             m_Cache.FlushTextures();
         }
 
-        private static void Scale(ITexture output, ITexture input)
+        private static void Scale(ITexture output, ITexture2D input)
         {
             Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }

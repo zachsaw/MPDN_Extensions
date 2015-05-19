@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using SharpDX;
+using ITexture3D = Mpdn.ISourceTexture3D;
 
 namespace Mpdn.RenderScript
 {
@@ -105,7 +106,7 @@ namespace Mpdn.RenderScript
     {
         public static TextureSize GetSize(this IBaseTexture texture)
         {
-            if (texture is ITexture)
+            if (texture is ITexture2D)
             {
                 var t = texture as ITexture;
                 return new TextureSize(t.Width, t.Height);

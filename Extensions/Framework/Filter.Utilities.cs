@@ -56,41 +56,48 @@ namespace Mpdn.RenderScript
     {
         public readonly YuvColorimetric Colorimetric;
         public readonly bool OutputLimitedRange;
+        public readonly bool OutputLimitChroma;
 
         public RgbFilter(IFilter inputFilter)
-            : this(inputFilter, Renderer.Colorimetric, Renderer.OutputLimitedRange)
+            : this(inputFilter, null, null)
         {
         }
 
         public RgbFilter(IFilter inputFilter, bool limitedRange)
-            : this(inputFilter, Renderer.Colorimetric, limitedRange)
+            : this(inputFilter, null, limitedRange)
         {
         }
 
         public RgbFilter(IFilter inputFilter, YuvColorimetric colorimetric)
-            : this(inputFilter, colorimetric, Renderer.OutputLimitedRange)
+            : this(inputFilter, colorimetric, null)
         {
         }
 
         public RgbFilter(IFilter inputFilter, YuvColorimetric colorimetric, bool limitedRange)
-            : base(inputFilter)
+            : this(inputFilter, colorimetric, limitedRange, null)
         {
-            Colorimetric = colorimetric;
-            OutputLimitedRange = limitedRange;
         }
 
-        protected override IFilter<ITexture> Optimize()
+        public RgbFilter(IFilter inputFilter, YuvColorimetric? colorimetric = null, bool? limitedRange = null, bool? limitChroma = null)
+            : base(inputFilter)
+        {
+            Colorimetric = colorimetric ?? Renderer.Colorimetric;
+            OutputLimitedRange = limitedRange ?? Renderer.OutputLimitedRange;
+            OutputLimitChroma = limitChroma ?? Renderer.LimitChroma;
+        }
+
+        protected override IFilter<ITexture2D> Optimize()
         {
             var input = InputFilters[0] as YuvFilter;
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
-                return (IFilter<ITexture>)input.InputFilters[0];
+                return (IFilter<ITexture2D>)input.InputFilters[0];
 
             return this;
         }
 
         protected override void Render(ITexture input)
         {
-            Renderer.ConvertToRgb(OutputTexture, input, Colorimetric, OutputLimitedRange);
+            Renderer.ConvertToRgb(OutputTarget, input, Colorimetric, OutputLimitedRange, OutputLimitChroma);
         }
     }
 
@@ -121,7 +128,7 @@ namespace Mpdn.RenderScript
             OutputLimitedRange = limitedRange;
         }
 
-        protected override IFilter<ITexture> Optimize()
+        protected override IFilter<ITexture2D> Optimize()
         {
             var input = InputFilters[0] as RgbFilter;
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
@@ -132,7 +139,7 @@ namespace Mpdn.RenderScript
 
         protected override void Render(ITexture input)
         {
-            Renderer.ConvertToYuv(OutputTexture, input, Colorimetric, OutputLimitedRange);
+            Renderer.ConvertToYuv(OutputTarget, input, Colorimetric, OutputLimitedRange);
         }
     }
 
@@ -145,47 +152,47 @@ namespace Mpdn.RenderScript
         private TextureSize m_OutputSize;
         private readonly TextureChannels m_Channels;
 
-        public ResizeFilter(IFilter<ITexture> inputFilter)
+        public ResizeFilter(IFilter inputFilter)
             : this(inputFilter, inputFilter.OutputSize)
         {
         }
 
-        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler convolver = null)
+        public ResizeFilter(IFilter inputFilter, TextureSize outputSize, IScaler convolver = null)
             : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
         }
 
-        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, Vector2 offset, IScaler convolver = null)
+        public ResizeFilter(IFilter inputFilter, TextureSize outputSize, Vector2 offset, IScaler convolver = null)
             : this(inputFilter, outputSize, TextureChannels.All, offset, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
         }
 
-        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+        public ResizeFilter(IFilter inputFilter, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
             : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver)
         {
         }
 
-        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, TextureChannels channels, IScaler convolver = null)
+        public ResizeFilter(IFilter inputFilter, TextureSize outputSize, TextureChannels channels, IScaler convolver = null)
             : this(inputFilter, outputSize, channels, Vector2.Zero, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
         }
 
-        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler convolver = null)
+        public ResizeFilter(IFilter inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler convolver = null)
             : this(inputFilter, outputSize, channels, offset, Renderer.LumaUpscaler, Renderer.LumaDownscaler, convolver)
         {
         }
 
-        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, TextureChannels channels, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+        public ResizeFilter(IFilter inputFilter, TextureSize outputSize, TextureChannels channels, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
             : this(inputFilter, outputSize, channels, Vector2.Zero, upscaler, downscaler, convolver)
         {
         }
 
-        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, Vector2 offset, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+        public ResizeFilter(IFilter inputFilter, TextureSize outputSize, Vector2 offset, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
             : this(inputFilter, outputSize, TextureChannels.All, offset, upscaler, downscaler, convolver)
         {
         }
 
-        public ResizeFilter(IFilter<ITexture> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+        public ResizeFilter(IFilter inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
             : base(inputFilter)
         {
             m_Upscaler = upscaler;
@@ -201,7 +208,7 @@ namespace Mpdn.RenderScript
             m_OutputSize = targetSize;
         }
 
-        protected override IFilter<ITexture> Optimize()
+        protected override IFilter<ITexture2D> Optimize()
         {
             if (InputFilters[0].OutputSize == m_OutputSize && m_Convolver == null)
             {
@@ -227,7 +234,7 @@ namespace Mpdn.RenderScript
             if (texture == null)
                 return;
 
-            Renderer.Scale(OutputTexture, texture, m_Channels, m_Offset, m_Upscaler, m_Downscaler, m_Convolver);
+            Renderer.Scale(OutputTarget, texture, m_Channels, m_Offset, m_Upscaler, m_Downscaler, m_Convolver);
         }
     }
 
