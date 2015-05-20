@@ -25,23 +25,23 @@ using Rectangle = System.Drawing.Rectangle;
 
 namespace Mpdn.RenderScript
 {
-    public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter, IDisposable
+    public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter
     {
-        private readonly Func<TextureSize> m_Size;
-
-        private Font m_Font;
         private ISourceTexture m_Texture;
 
-        public TextFilter(string text, Func<TextureSize> size = null)
+        public TextFilter(string text)
         {
-            m_Size = size ?? (() => Renderer.TargetSize);
             m_Texture = Renderer.CreateTexture(Renderer.TargetSize);
-            DrawText(text);
+
+            using (Font textFont = new Font(FontFamily.GenericMonospace, 11, FontStyle.Bold))
+            {
+                DrawText(text, textFont);
+            }
         }
 
         public override TextureSize OutputSize
         {
-            get { return m_Size(); }
+            get { return m_Texture.GetSize(); }
         }
 
         public override ITexture2D OutputTexture
@@ -51,29 +51,16 @@ namespace Mpdn.RenderScript
 
         public override void Reset()
         {
+            TexturePool.MarkUsed(m_Texture);
         }
 
         public override void Render()
         {
-            if (m_Texture != null && Renderer.TargetSize == m_Texture.GetSize())
-                return;
-
-            DisposeHelper.Dispose(ref m_Texture);
-            m_Texture = TexturePool.GetSourceTexture(Renderer.TargetSize, TextureFormat.Float16);
-            DrawText();
         }
 
         #region Text rendering
 
-        private Font TextFont
-        {
-            get
-            {
-                return m_Font = m_Font ?? new Font(FontFamily.GenericMonospace, 11, FontStyle.Bold);
-            }
-        }
-
-        private void DrawText(string text)
+        private void DrawText(string text, Font textFont)
         {
             var size = Renderer.TargetSize;
             var width = size.Width;
@@ -87,7 +74,7 @@ namespace Mpdn.RenderScript
                     g.TextRenderingHint = TextRenderingHint.AntiAlias;
                     const int margin = 10;
                     var textBounds = new Rectangle(margin, margin, width-margin*2, height-margin*2);
-                    TextRenderer.DrawText(g, text, TextFont, textBounds, Color.OrangeRed, Color.Transparent,
+                    TextRenderer.DrawText(g, text, textFont, textBounds, Color.OrangeRed, Color.Transparent,
                         TextFormatFlags.WordBreak);
                 }
                 UpdateTexture(bmp);
@@ -123,27 +110,6 @@ namespace Mpdn.RenderScript
             {
                 bmp.UnlockBits(bmpData);
             }
-        }
-
-        #endregion
-
-        #region Resource Disposal Methods
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected void Dispose(bool disposing)
-        {
-            DisposeHelper.Dispose(ref m_Font);
-            DisposeHelper.Dispose(ref m_Texture);
-        }
-
-        ~TextFilter()
-        {
-            Dispose(false);
         }
 
         #endregion

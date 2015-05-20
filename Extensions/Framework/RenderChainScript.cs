@@ -70,11 +70,6 @@ namespace Mpdn.RenderScript
             TexturePool.FlushTextures();
         }
 
-        public void Reset()
-        {
-            TexturePool.Reset();
-        }
-
         private static void Scale(ITargetTexture output, ITexture2D input)
         {
             Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
