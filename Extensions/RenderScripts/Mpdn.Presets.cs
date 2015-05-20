@@ -108,6 +108,13 @@ namespace Mpdn.RenderScript
                 return Script != null ? Chain.CreateSafeFilter(input) : input;
             }
 
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing && Script != null)
+                    DisposeHelper.Dispose(Chain);
+                Script = null;
+            }
+
             #endregion
 
             public static Preset Make<T>(string name = null)
@@ -155,6 +162,13 @@ namespace Mpdn.RenderScript
             {
                 throw new NotImplementedException();
             }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing && Options != null)
+                    foreach (var option in Options)
+                        option.Dispose();
+            }
         }
 
         public class PresetChain : PresetCollection
@@ -199,6 +213,12 @@ namespace Mpdn.RenderScript
                     return SelectedOption.CreateSafeFilter(input);
                 else
                     return input;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
             }
 
             #region Hotkey Handling

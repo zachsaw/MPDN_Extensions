@@ -22,13 +22,6 @@ using ITexture3D = Mpdn.ISourceTexture3D;
 
 namespace Mpdn.RenderScript
 {
-    public interface ITextureCache
-    {
-        ITargetTexture GetTexture(TextureSize textureSize, TextureFormat textureFormat);
-        void PutTexture(ITargetTexture texture);
-        void PutTempTexture(ITargetTexture texture);
-    }
-
     public struct TextureSize
     {
         public readonly int Width;
@@ -120,16 +113,17 @@ namespace Mpdn.RenderScript
         }
     }
 
-    public class TextureCache : ITextureCache, IDisposable
+    public static class TexturePool
     {
-        private List<ITargetTexture> m_OldTextures = new List<ITargetTexture>();
-        private List<ITargetTexture> m_SavedTextures = new List<ITargetTexture>();
-        private List<ITargetTexture> m_TempTextures = new List<ITargetTexture>();
-        private bool m_Disposed;
+        private static List<IBaseTexture> OldSourceTextures = new List<IBaseTexture>();
+        private static List<IBaseTexture> SourceTextures = new List<IBaseTexture>();
+        private static List<ITargetTexture> OldTextures = new List<ITargetTexture>();
+        private static List<ITargetTexture> SavedTextures = new List<ITargetTexture>();
+        private static List<ITargetTexture> TempTextures = new List<ITargetTexture>();
 
-        public ITargetTexture GetTexture(TextureSize textureSize, TextureFormat textureFormat)
+        public static ITargetTexture GetTexture(TextureSize textureSize, TextureFormat? textureFormat = null)
         {
-            foreach (var list in new[] { m_SavedTextures, m_OldTextures })
+            foreach (var list in new[] { SavedTextures, OldTextures })
             {
                 var index = list.FindIndex(x => (x.GetSize() == textureSize) && (x.Format == textureFormat));
                 if (index < 0) continue;
@@ -139,57 +133,65 @@ namespace Mpdn.RenderScript
                 return texture;
             }
 
-            return Renderer.CreateRenderTarget(textureSize.Width, textureSize.Height, textureFormat);
+            return Renderer.CreateRenderTarget(textureSize.Width, textureSize.Height, textureFormat ?? Renderer.RenderQuality.GetTextureFormat());
         }
 
-        public void PutTempTexture(ITargetTexture texture)
+        public static ISourceTexture GetSourceTexture(TextureSize textureSize, TextureFormat? textureFormat = null)
         {
-            m_TempTextures.Add(texture);
-            m_SavedTextures.Add(texture);
+            var texture = Renderer.CreateTexture(textureSize.Width, textureSize.Height, textureFormat ?? Renderer.RenderQuality.GetTextureFormat());
+            SourceTextures.Add(texture);
+            return texture;
         }
 
-        public void PutTexture(ITargetTexture texture)
+        public static ISourceTexture3D GetSourceTexture3D(TextureSize textureSize, TextureFormat? textureFormat = null)
         {
-            m_SavedTextures.Add(texture);
+            var texture = Renderer.CreateTexture3D(textureSize.Width, textureSize.Height, textureSize.Depth, textureFormat ?? Renderer.RenderQuality.GetTextureFormat());
+            SourceTextures.Add(texture);
+            return texture;
         }
 
-        public void FlushTextures()
+        public static void PutTempTexture(ITargetTexture texture)
         {
-            foreach (var texture in m_OldTextures)
+            TempTextures.Add(texture);
+            SavedTextures.Add(texture);
+        }
+
+        public static void PutTexture(ITargetTexture texture)
+        {
+            SavedTextures.Add(texture);
+        }
+
+        public static void MarkUsed(IBaseTexture texture)
+        {
+            if (OldSourceTextures.Remove(texture))
+                SourceTextures.Add(texture);
+        }
+
+        public static void FlushTextures()
+        {
+            foreach (var texture in OldTextures)
             {
                 DisposeHelper.Dispose(texture);
             }
 
-            foreach (var texture in m_TempTextures)
+            foreach (var texture in OldSourceTextures)
             {
-                m_SavedTextures.Remove(texture);
+                DisposeHelper.Dispose(texture);
             }
 
-            m_OldTextures = m_SavedTextures;
-            m_TempTextures = new List<ITargetTexture>();
-            m_SavedTextures = new List<ITargetTexture>();
-        }
+            foreach (var texture in TempTextures)
+            {
+                SavedTextures.Remove(texture);
+            }
 
-        ~TextureCache()
-        {
-            Dispose(false);
-        }
+            OldTextures.Clear();
+            OldSourceTextures.Clear();
+            OldTextures.AddRange(SavedTextures);
+            OldSourceTextures.AddRange(SourceTextures);
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (m_Disposed)
-                return;
-
-            FlushTextures();
-            FlushTextures();
-
-            m_Disposed = true;
+            TempTextures.Clear();
+            SavedTextures.Clear();
+            SourceTextures.Clear();
         }
     }
 }
