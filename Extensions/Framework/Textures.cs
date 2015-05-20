@@ -125,6 +125,7 @@ namespace Mpdn.RenderScript
         private List<ITargetTexture> m_OldTextures = new List<ITargetTexture>();
         private List<ITargetTexture> m_SavedTextures = new List<ITargetTexture>();
         private List<ITargetTexture> m_TempTextures = new List<ITargetTexture>();
+        private bool m_Disposed;
 
         public ITargetTexture GetTexture(TextureSize textureSize, TextureFormat textureFormat)
         {
@@ -169,10 +170,26 @@ namespace Mpdn.RenderScript
             m_SavedTextures = new List<ITargetTexture>();
         }
 
+        ~TextureCache()
+        {
+            Dispose(false);
+        }
+
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (m_Disposed)
+                return;
+
             FlushTextures();
             FlushTextures();
+
+            m_Disposed = true;
         }
     }
 }
