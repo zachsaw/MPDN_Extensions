@@ -17,6 +17,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Drawing.Text;
 using System.Windows.Forms;
 using SharpDX;
 using Color = System.Drawing.Color;
@@ -24,9 +25,8 @@ using Rectangle = System.Drawing.Rectangle;
 
 namespace Mpdn.RenderScript
 {
-    public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter
+    public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter, IDisposable
     {
-        private readonly string m_Text;
         private readonly Func<TextureSize> m_Size;
 
         private Font m_Font;
@@ -35,7 +35,8 @@ namespace Mpdn.RenderScript
         public TextFilter(string text, Func<TextureSize> size = null)
         {
             m_Size = size ?? (() => Renderer.TargetSize);
-            m_Text = text;
+            m_Texture = Renderer.CreateTexture(Renderer.TargetSize);
+            DrawText(text);
         }
 
         public override TextureSize OutputSize
@@ -54,12 +55,6 @@ namespace Mpdn.RenderScript
 
         public override void Render(ITextureCache cache)
         {
-            if (m_Texture != null && Renderer.TargetSize == m_Texture.GetSize())
-                return;
-
-            DisposeHelper.Dispose(ref m_Texture);
-            m_Texture = Renderer.CreateTexture(Renderer.TargetSize);
-            DrawText();
         }
 
         #region Text rendering
@@ -72,7 +67,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        private void DrawText()
+        private void DrawText(string text)
         {
             var size = Renderer.TargetSize;
             var width = size.Width;
@@ -83,9 +78,10 @@ namespace Mpdn.RenderScript
                 using (var g = Graphics.FromImage(bmp))
                 {
                     g.FillRectangle(Brushes.DarkSlateBlue, bounds);
+                    g.TextRenderingHint = TextRenderingHint.AntiAlias;
                     const int margin = 10;
                     var textBounds = new Rectangle(margin, margin, width-margin*2, height-margin*2);
-                    TextRenderer.DrawText(g, m_Text, TextFont, textBounds, Color.OrangeRed, Color.Transparent,
+                    TextRenderer.DrawText(g, text, TextFont, textBounds, Color.OrangeRed, Color.Transparent,
                         TextFormatFlags.WordBreak);
                 }
                 UpdateTexture(bmp);
@@ -121,6 +117,27 @@ namespace Mpdn.RenderScript
             {
                 bmp.UnlockBits(bmpData);
             }
+        }
+
+        #endregion
+
+        #region Resource Disposal Methods
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            DisposeHelper.Dispose(ref m_Font);
+            DisposeHelper.Dispose(ref m_Texture);
+        }
+
+        ~TextFilter()
+        {
+            Dispose(false);
         }
 
         #endregion

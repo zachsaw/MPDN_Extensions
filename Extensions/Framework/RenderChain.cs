@@ -29,6 +29,7 @@ namespace Mpdn.RenderScript
         #region Operators
 
         public static RenderChain Identity = new StaticChain(x => x);
+        private TextFilter m_TextFilter;
 
         public static implicit operator Func<IFilter, IFilter>(RenderChain map)
         {
@@ -140,6 +141,7 @@ namespace Mpdn.RenderScript
 
         protected virtual void Dispose(bool disposing)
         {
+            DisposeHelper.Dispose(ref m_TextFilter);
         }
 
         ~RenderChain()
@@ -153,6 +155,7 @@ namespace Mpdn.RenderScript
 
         public IFilter CreateSafeFilter(IFilter input)
         {
+            DisposeHelper.Dispose(ref m_TextFilter);
             try
             {
                 return CreateFilter(input);
@@ -167,7 +170,7 @@ namespace Mpdn.RenderScript
         {
             var message = ErrorMessage(e);
             Trace.WriteLine(message);
-            return new TextFilter(message);
+            return m_TextFilter = new TextFilter(message);
         }
 
         protected static Exception InnerMostException(Exception e)

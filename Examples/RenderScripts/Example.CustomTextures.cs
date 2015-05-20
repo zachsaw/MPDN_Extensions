@@ -40,11 +40,11 @@ namespace Mpdn.RenderScript
                     new TextureSourceFilter<ISourceTexture>(m_Texture2));
             }
 
-            public override void RenderScriptDisposed()
+            protected override void Dispose(bool disposing)
             {
                 DiscardTextures();
-
-                base.RenderScriptDisposed();
+                
+                base.Dispose(disposing);
             }
 
             private void DiscardTextures()
