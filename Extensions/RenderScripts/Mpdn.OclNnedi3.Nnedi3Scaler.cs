@@ -122,11 +122,11 @@ namespace Mpdn.RenderScript
                 }
             }
 
-            protected override void Dispose(bool disposing)
+            protected override void Clean(bool cleaning)
             {
                 DisposeHelper.Dispose(ref m_Buffer);
 
-                base.Dispose(disposing);
+                base.Clean(cleaning);
             }
 
             protected override string ShaderPath
