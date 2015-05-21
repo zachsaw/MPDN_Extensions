@@ -27,21 +27,18 @@ namespace Mpdn.RenderScript
 {
     public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter, IDisposable
     {
-        private readonly Func<TextureSize> m_Size;
-
         private Font m_Font;
         private ISourceTexture m_Texture;
 
-        public TextFilter(string text, Func<TextureSize> size = null)
+        public TextFilter(string text)
         {
-            m_Size = size ?? (() => Renderer.TargetSize);
             m_Texture = Renderer.CreateTexture(Renderer.TargetSize);
             DrawText(text);
         }
 
         public override TextureSize OutputSize
         {
-            get { return m_Size(); }
+            get { return m_Texture.GetSize(); }
         }
 
         public override ITexture2D OutputTexture
@@ -49,11 +46,11 @@ namespace Mpdn.RenderScript
             get { return m_Texture; }
         }
 
-        public override void Reset(ITextureCache cache)
+        public override void Reset()
         {
         }
 
-        public override void Render(ITextureCache cache)
+        public override void Render()
         {
         }
 

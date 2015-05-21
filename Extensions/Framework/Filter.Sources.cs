@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using System;
 using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.RenderScript
@@ -31,7 +30,7 @@ namespace Mpdn.RenderScript
 
         public abstract TextureSize OutputSize { get; }
 
-        public abstract void Reset(ITextureCache cache);
+        public abstract void Reset();
 
         #region IFilter Implementation
 
@@ -64,7 +63,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public virtual void Render(ITextureCache cache)
+        public virtual void Render()
         {
         }
 
@@ -96,9 +95,9 @@ namespace Mpdn.RenderScript
             get { return (m_OutputSize.IsEmpty ? Renderer.VideoSize : m_OutputSize); }
         }
 
-        public override void Reset(ITextureCache cache)
+        public override void Reset()
         {
-            cache.PutTempTexture(OutputTexture as ITargetTexture);
+            TexturePool.PutTempTexture(OutputTexture as ITargetTexture);
         }
 
         #endregion
@@ -116,7 +115,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.LumaSize; }
         }
 
-        public override void Reset(ITextureCache cache)
+        public override void Reset()
         {
         }
     }
@@ -133,7 +132,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.ChromaSize; }
         }
 
-        public override void Reset(ITextureCache cache)
+        public override void Reset()
         {
         }
     }
@@ -150,7 +149,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.ChromaSize; }
         }
 
-        public override void Reset(ITextureCache cache)
+        public override void Reset()
         {
         }
     }
@@ -167,7 +166,7 @@ namespace Mpdn.RenderScript
             get { return Renderer.TargetSize; }
         }
 
-        public override void Reset(ITextureCache cache)
+        public override void Reset()
         {
         }
     }
@@ -194,7 +193,7 @@ namespace Mpdn.RenderScript
             get { return m_Size; }
         }
 
-        public override void Reset(ITextureCache cache)
+        public override void Reset()
         {
         }
     }

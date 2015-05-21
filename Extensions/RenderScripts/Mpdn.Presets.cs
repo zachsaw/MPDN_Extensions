@@ -38,9 +38,10 @@ namespace Mpdn.RenderScript
             private IRenderChainUi m_Script;
 
             [YAXAttributeForClass]
-            public virtual string Name {
+            public string Name
+            {
                 get { return m_Name; }
-                set 
+                set
                 {
                     m_Name = value;
                     if (Script != null && Chain is INameable)
@@ -49,9 +50,9 @@ namespace Mpdn.RenderScript
             }
 
             [YAXAttributeForClass]
-            public virtual Guid Guid { get; set; }
-            
-            public virtual IRenderChainUi Script 
+            public Guid Guid { get; set; }
+
+            public IRenderChainUi Script
             {
                 get { return m_Script; }
                 set
@@ -80,18 +81,12 @@ namespace Mpdn.RenderScript
 
             public bool HasConfigDialog()
             {
-                if (Script != null)
-                    return Script.HasConfigDialog();
-                else
-                    return false;
+                return Script != null && Script.HasConfigDialog();
             }
 
             public bool ShowConfigDialog(IWin32Window owner)
             {
-                if (Script != null)
-                    return Script.ShowConfigDialog(owner);
-                else
-                    return false;
+                return Script != null && Script.ShowConfigDialog(owner);
             }
 
             #endregion
@@ -108,13 +103,20 @@ namespace Mpdn.RenderScript
                 return Script != null ? Chain.CreateSafeFilter(input) : input;
             }
 
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing && Script != null)
+                    DisposeHelper.Dispose(Chain);
+                Script = null;
+            }
+
             #endregion
 
             public static Preset Make<T>(string name = null)
                 where T : IRenderChainUi, new()
             {
                 var script = new T();
-                return new Preset() { Name = (name ?? script.Descriptor.Name), Script = script };
+                return new Preset {Name = (name ?? script.Descriptor.Name), Script = script};
             }
         }
 
@@ -127,7 +129,7 @@ namespace Mpdn.RenderScript
 
             public static Preset ToPreset(this IRenderChainUi renderScript, string name = null)
             {
-                return new Preset() { Name = name ?? renderScript.Descriptor.Name, Script = renderScript };
+                return new Preset {Name = name ?? renderScript.Descriptor.Name, Script = renderScript};
             }
         }
 
@@ -138,15 +140,17 @@ namespace Mpdn.RenderScript
             public List<Preset> Options { get; set; }
 
             [YAXDontSerialize]
-            public string Name { protected get; set; }
+            public virtual bool AllowRegrouping
+            {
+                get { return true; }
+            }
 
             [YAXDontSerialize]
-            public virtual bool AllowRegrouping { get { return true; } }
+            public string Name { protected get; set; }
 
-            #endregion 
+            #endregion
 
             public PresetCollection()
-                : base()
             {
                 Options = new List<Preset>();
             }
@@ -154,6 +158,13 @@ namespace Mpdn.RenderScript
             public override IFilter CreateFilter(IFilter input)
             {
                 throw new NotImplementedException();
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing && Options != null)
+                    foreach (Preset option in Options)
+                        option.Dispose();
             }
         }
 
@@ -182,12 +193,14 @@ namespace Mpdn.RenderScript
             }
 
             [YAXDontSerialize]
-            public Preset SelectedOption { get { return Options.ElementAtOrDefault(SelectedIndex); } }
+            public Preset SelectedOption
+            {
+                get { return Options.ElementAtOrDefault(SelectedIndex); }
+            }
 
             #endregion
 
             public PresetGroup()
-                : base()
             {
                 SelectedIndex = 0;
                 m_HotkeyGuid = Guid.NewGuid();
@@ -195,15 +208,18 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter input)
             {
-                if (SelectedOption != null)
-                    return SelectedOption.CreateSafeFilter(input);
-                else
-                    return input;
+                return SelectedOption != null ? SelectedOption.CreateSafeFilter(input) : input;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
             }
 
             #region Hotkey Handling
 
-            private Guid m_HotkeyGuid;
+            private readonly Guid m_HotkeyGuid;
 
             private string m_Hotkey;
 
@@ -215,7 +231,7 @@ namespace Mpdn.RenderScript
             private void IncrementSelection()
             {
                 if (Options.Count > 0)
-                    SelectedIndex = (SelectedIndex + 1) % Options.Count;
+                    SelectedIndex = (SelectedIndex + 1)%Options.Count;
 
                 if (SelectedOption != null)
                     PlayerControl.ShowOsdText(Name + ": " + SelectedOption.Name);
@@ -229,30 +245,40 @@ namespace Mpdn.RenderScript
         public class PresetChainDialog : PresetDialog
         {
             public PresetChainDialog()
-                : base()
             {
                 Text = "Script Chain";
+            }
+
+            public override sealed string Text
+            {
+                get { return base.Text; }
+                set { base.Text = value; }
             }
         }
 
         public class PresetGroupAdvDialog : PresetDialog
         {
             public PresetGroupAdvDialog()
-                : base()
             {
                 Text = "Script Group";
+            }
+
+            public override sealed string Text
+            {
+                get { return base.Text; }
+                set { base.Text = value; }
             }
 
             protected override void SaveSettings()
             {
                 base.SaveSettings();
-                (Settings as PresetGroup).SelectedIndex = SelectedIndex;
+                ((PresetGroup) Settings).SelectedIndex = SelectedIndex;
             }
 
             protected override void LoadSettings()
             {
                 base.LoadSettings();
-                SelectedIndex = (Settings as PresetGroup).SelectedIndex;
+                SelectedIndex = ((PresetGroup) Settings).SelectedIndex;
             }
         }
 
@@ -296,17 +322,6 @@ namespace Mpdn.RenderScript
                 get { return "Meta"; }
             }
 
-            public string Description()
-            {
-                return (Settings.Options.Count > 0)
-                        ? string.Join(", ",
-                            Settings.Options.Select(x => 
-                                (x == Settings.SelectedOption)
-                                ? "[" + x.Name + "]"
-                                : x.Name))
-                        : "Picks one out of several renderscripts";
-            }
-
             public override ExtensionUiDescriptor Descriptor
             {
                 get
@@ -318,6 +333,17 @@ namespace Mpdn.RenderScript
                         Description = Description()
                     };
                 }
+            }
+
+            public string Description()
+            {
+                return (Settings.Options.Count > 0)
+                    ? string.Join(", ",
+                        Settings.Options.Select(x =>
+                            (x == Settings.SelectedOption)
+                                ? "[" + x.Name + "]"
+                                : x.Name))
+                    : "Picks one out of several renderscripts";
             }
         }
     }

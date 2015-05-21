@@ -21,7 +21,6 @@ namespace Mpdn.RenderScript
 {
     public class RenderChainScript : IRenderScript, IDisposable
     {
-        private TextureCache m_Cache;
         private SourceFilter m_SourceFilter;
         private IFilter<ITexture2D> m_Filter;
 
@@ -30,7 +29,6 @@ namespace Mpdn.RenderScript
         public RenderChainScript(RenderChain chain)
         {
             Chain = chain;
-            m_Cache = new TextureCache();
         }
 
         ~RenderChainScript()
@@ -46,7 +44,6 @@ namespace Mpdn.RenderScript
 
         protected virtual void Dispose(bool disposing)
         {
-            DisposeHelper.Dispose(ref m_Cache);
             DisposeHelper.Dispose(ref Chain);
         }
 
@@ -79,14 +76,14 @@ namespace Mpdn.RenderScript
 
         public void Render()
         {
-            m_Cache.PutTempTexture(Renderer.OutputRenderTarget);
-            m_Filter.Render(m_Cache);
+            TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
+            m_Filter.Render();
             if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
             {
                 Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
             }
-            m_Filter.Reset(m_Cache);
-            m_Cache.FlushTextures();
+            m_Filter.Reset();
+            TexturePool.FlushTextures();
         }
 
         private static void Scale(ITargetTexture output, ITexture2D input)

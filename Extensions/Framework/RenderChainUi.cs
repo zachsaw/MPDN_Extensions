@@ -92,8 +92,8 @@ namespace Mpdn.RenderScript
 
         public override void Destroy()
         {
+            base.Destroy(); // Saves settings
             DisposeHelper.Dispose(Settings);
-            base.Destroy();
         }
 
         #endregion Implementation
