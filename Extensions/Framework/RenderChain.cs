@@ -22,7 +22,7 @@ using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.RenderScript
 {
-    public abstract class RenderChain
+    public abstract class RenderChain : IDisposable
     {
         public abstract IFilter CreateFilter(IFilter input);
 
@@ -133,20 +133,20 @@ namespace Mpdn.RenderScript
 
         #region Resource Disposal Methods
 
-        public void Clean()
+        public void Dispose()
         {
-            Clean(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Clean(bool cleaning)
+        protected virtual void Dispose(bool disposing)
         {
             DisposeHelper.Dispose(ref m_TextFilter);
         }
 
         ~RenderChain()
         {
-            Clean(false);
+            Dispose(false);
         }
 
         #endregion

@@ -103,11 +103,11 @@ namespace Mpdn.RenderScript
                 return Script != null ? Chain.CreateSafeFilter(input) : input;
             }
 
-            protected override void Clean(bool cleaning)
+            protected override void Dispose(bool disposing)
             {
-                if (cleaning && Script != null)
-                    Chain.Clean();
-                base.Clean(cleaning);
+                if (disposing && Script != null)
+                    DisposeHelper.Dispose(Chain);
+                Script = null;
             }
 
             #endregion
@@ -160,12 +160,11 @@ namespace Mpdn.RenderScript
                 throw new NotImplementedException();
             }
 
-            protected override void Clean(bool cleaning)
+            protected override void Dispose(bool disposing)
             {
-                if (cleaning && Options != null)
+                if (disposing && Options != null)
                     foreach (Preset option in Options)
-                        option.Clean();
-                base.Clean(cleaning);
+                        option.Dispose();
             }
         }
 
@@ -212,10 +211,10 @@ namespace Mpdn.RenderScript
                 return SelectedOption != null ? SelectedOption.CreateSafeFilter(input) : input;
             }
 
-            protected override void Clean(bool cleaning)
+            protected override void Dispose(bool disposing)
             {
+                base.Dispose(disposing);
                 DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
-                base.Clean(cleaning);
             }
 
             #region Hotkey Handling
