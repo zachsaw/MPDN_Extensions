@@ -37,6 +37,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private string m_Name;
             private IRenderChainUi m_Script;
+            private bool m_Disposed;
 
             [YAXAttributeForClass]
             public string Name
@@ -110,11 +111,18 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void Dispose(bool disposing)
             {
-                if (disposing && Script != null)
-                {
-                    Chain.Dispose();
-                }
                 base.Dispose(disposing);
+
+                if (m_Disposed)
+                    return;
+
+                m_Disposed = true;
+
+                if (Script == null)
+                    return;
+
+                DisposeHelper.Dispose(Chain);
+                Script.Dispose();
             }
 
             #endregion
@@ -142,6 +150,8 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class PresetCollection : RenderChain, INameable
         {
+            private bool m_Disposed;
+
             #region Settings
 
             public List<Preset> Options { get; set; }
@@ -171,7 +181,12 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 base.Dispose(disposing);
 
-                if (!disposing || Options == null)
+                if (m_Disposed)
+                    return;
+
+                m_Disposed = true;
+
+                if (Options == null)
                     return;
 
                 foreach (var option in Options)
