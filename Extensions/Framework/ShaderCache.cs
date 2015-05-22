@@ -18,8 +18,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using Mpdn.OpenCl;
+using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
     public static class ShaderCache
     {

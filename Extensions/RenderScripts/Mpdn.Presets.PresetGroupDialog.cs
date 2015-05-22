@@ -15,16 +15,10 @@
 // License along with this library.
 // 
 using System;
-using System.Drawing;
-//using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Windows.Forms;
-using Mpdn.RenderScript;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Presets
     {

@@ -17,10 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TransformFunc = System.Func<Mpdn.RenderScript.TextureSize, Mpdn.RenderScript.TextureSize>;
-using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
+using Mpdn.RenderScript;
+using TransformFunc = System.Func<Mpdn.Extensions.Framework.TextureSize, Mpdn.Extensions.Framework.TextureSize>;
+using IBaseFilter = Mpdn.Extensions.Framework.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
     public interface IFilter<out TTexture>
         where TTexture : class, IBaseTexture

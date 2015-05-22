@@ -19,10 +19,12 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
+using Mpdn.RenderScript;
 using SharpDX;
 using Point = System.Drawing.Point;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptedRenderChain
     {

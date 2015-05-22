@@ -14,42 +14,39 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions
 {
-    namespace GitHub
+    public partial class DisplayChangerConfigDialog : DisplayChangerConfigBase
     {
-        public partial class DisplayChangerConfigDialog : DisplayChangerConfigBase
+        public DisplayChangerConfigDialog()
         {
-            public DisplayChangerConfigDialog()
-            {
-                InitializeComponent();
-            }
-
-            protected override void LoadSettings()
-            {
-                checkBoxActivate.Checked = Settings.Activate;
-                checkBoxRestore.Checked = Settings.Restore;
-                checkBoxRestoreExit.Checked = Settings.RestoreOnExit;
-                checkBoxHighestRate.Checked = Settings.HighestRate;
-                checkBoxRestricted.Checked = Settings.Restricted;
-                textBoxVideoTypes.Text = Settings.VideoTypes;
-            }
-
-            protected override void SaveSettings()
-            {
-                Settings.Activate = checkBoxActivate.Checked;
-                Settings.Restore = checkBoxRestore.Checked;
-                Settings.RestoreOnExit = checkBoxRestoreExit.Checked;
-                Settings.HighestRate = checkBoxHighestRate.Checked;
-                Settings.Restricted = checkBoxRestricted.Checked;
-                Settings.VideoTypes = textBoxVideoTypes.Text;
-            }
+            InitializeComponent();
         }
 
-        public class DisplayChangerConfigBase : ScriptConfigDialog<DisplayChangerSettings>
+        protected override void LoadSettings()
         {
+            checkBoxActivate.Checked = Settings.Activate;
+            checkBoxRestore.Checked = Settings.Restore;
+            checkBoxRestoreExit.Checked = Settings.RestoreOnExit;
+            checkBoxHighestRate.Checked = Settings.HighestRate;
+            checkBoxRestricted.Checked = Settings.Restricted;
+            textBoxVideoTypes.Text = Settings.VideoTypes;
         }
+
+        protected override void SaveSettings()
+        {
+            Settings.Activate = checkBoxActivate.Checked;
+            Settings.Restore = checkBoxRestore.Checked;
+            Settings.RestoreOnExit = checkBoxRestoreExit.Checked;
+            Settings.HighestRate = checkBoxHighestRate.Checked;
+            Settings.Restricted = checkBoxRestricted.Checked;
+            Settings.VideoTypes = textBoxVideoTypes.Text;
+        }
+    }
+
+    public class DisplayChangerConfigBase : ScriptConfigDialog<DisplayChangerSettings>
+    {
     }
 }

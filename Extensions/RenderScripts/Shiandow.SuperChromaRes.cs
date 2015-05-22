@@ -15,10 +15,12 @@
 // License along with this library.
 // 
 using System;
-using YAXLib;
+using Mpdn.Extensions.Framework;
+using Mpdn.RenderScript;
+using Mpdn.RenderScript.Scaler;
 using SharpDX;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
@@ -51,8 +53,8 @@ namespace Mpdn.RenderScript
                 Softness = 0.5f;
 
                 FirstPassOnly = false; /* Not used anyway */
-                upscaler = new Scaler.Bilinear();
-                downscaler = new Scaler.Bilinear();
+                upscaler = new Bilinear();
+                downscaler = new Bilinear();
             }
 
             protected override string ShaderPath
@@ -119,7 +121,7 @@ namespace Mpdn.RenderScript
                 for (int i = 1; i <= Passes; i++)
                 {
                     IFilter loRes, diff, linear;
-                    bool useBilinear = (upscaler is Scaler.Bilinear) || (FirstPassOnly && !(i == 1));
+                    bool useBilinear = (upscaler is Bilinear) || (FirstPassOnly && !(i == 1));
 
                     // Compare to chroma
                     linear = new ShaderFilter(GammaToLinear, gamma);

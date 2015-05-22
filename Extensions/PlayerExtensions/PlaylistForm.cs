@@ -24,7 +24,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
-namespace Mpdn.PlayerExtensions.Playlist
+namespace Mpdn.Extensions.PlayerExtensions.Playlist
 {
     public partial class PlaylistForm : FormEx
     {
@@ -206,7 +206,7 @@ namespace Mpdn.PlayerExtensions.Playlist
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Invalid or corrupt playlist file.\nAdditional info: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, "Invalid or corrupt playlist file.\nAdditional info: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             PopulatePlaylist();

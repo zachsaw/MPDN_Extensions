@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.PlayerExtensions
+namespace Mpdn.Extensions.Framework
 {
     public abstract class PlayerExtension : PlayerExtension<NoSettings> { }
 
@@ -29,7 +29,7 @@ namespace Mpdn.PlayerExtensions
         where TSettings : class, new()
     { }
 
-    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<Config.Internal.PlayerExtensions, TSettings, TDialog>, IPlayerExtension
+    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<Framework.Config.Internal.PlayerExtensions, TSettings, TDialog>, IPlayerExtension
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
@@ -86,8 +86,8 @@ namespace Mpdn.PlayerExtensions
             Keys keys;
             if (TryDecodeKeyString(keyString, out keys))
                 return keys;
-            else
-                throw new ArgumentException("Can't convert string to keys.");
+
+            throw new ArgumentException("Can't convert string to keys.");
         }
 
         private static String DecodeKeyWord(String keyWord)

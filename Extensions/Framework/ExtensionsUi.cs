@@ -17,7 +17,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace Mpdn
+namespace Mpdn.Extensions.Framework
 {
     namespace Config
     {
@@ -34,20 +34,9 @@ namespace Mpdn
             }
         }
 
-        public abstract class ScriptSettings<TSettings> 
-            : ScriptSettingsBase<Internal.RenderScripts, TSettings> where TSettings : class, new()
+        public class NoSettings
         {
-            protected ScriptSettings()
-            {
-            }
-
-            protected ScriptSettings(TSettings settings)
-                : base(settings)
-            {
-            }
         }
-
-        public class NoSettings { }
 
         public interface IScriptConfigDialog<in TSettings> : IDisposable
             where TSettings : class, new()
@@ -95,7 +84,10 @@ namespace Mpdn
             where TSettings : class, new()
             where TDialog : IScriptConfigDialog<TSettings>, new()
         {
-            protected virtual string ConfigFileName { get { return GetType().Name; } }
+            protected virtual string ConfigFileName
+            {
+                get { return GetType().Name; }
+            }
 
             public abstract ExtensionUiDescriptor Descriptor { get; }
 
@@ -105,19 +97,21 @@ namespace Mpdn
 
             public TSettings Settings
             {
-                get 
+                get
                 {
-                    if (ScriptConfig == null) 
+                    if (ScriptConfig == null)
+                    {
                         ScriptConfig = new Config(new TSettings());
+                    }
 
-                    return ScriptConfig.Config; 
+                    return ScriptConfig.Config;
                 }
                 set { ScriptConfig = new Config(value); }
             }
 
             public bool HasConfigDialog()
             {
-                return !(typeof(TDialog).IsAssignableFrom(typeof(ScriptConfigDialog<TSettings>)));
+                return !(typeof (TDialog).IsAssignableFrom(typeof (ScriptConfigDialog<TSettings>)));
             }
 
             public virtual void Initialize()
@@ -135,11 +129,7 @@ namespace Mpdn
                 using (var dialog = new TDialog())
                 {
                     dialog.Setup(ScriptConfig.Config);
-                    if (dialog.ShowDialog(owner) != DialogResult.OK)
-                        return false;
-
-                    ScriptConfig.Save();
-                    return true;
+                    return dialog.ShowDialog(owner) == DialogResult.OK;
                 }
             }
 

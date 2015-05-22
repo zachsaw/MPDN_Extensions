@@ -17,8 +17,10 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Mpdn.Extensions.Framework;
+using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Lut3D
     {

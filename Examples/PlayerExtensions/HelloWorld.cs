@@ -14,11 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.Example
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public class HelloWorld : IPlayerExtension
     {

@@ -15,9 +15,11 @@
 // License along with this library.
 // 
 using System;
+using Mpdn.Extensions.Framework;
+using Mpdn.RenderScript;
 using SharpDX;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.Nedi
     {
@@ -53,10 +55,8 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter input)
             {
-                Func<TextureSize, TextureSize> transformWidth;
-                Func<TextureSize, TextureSize> transformHeight;
-                transformWidth = s => new TextureSize(2 * s.Width, s.Height);
-                transformHeight = s => new TextureSize(s.Width, 2 * s.Height);
+                Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2*s.Width, s.Height);
+                Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2*s.Height);
 
                 var nedi1Shader = CompileShader("NEDI-I.hlsl").Configure(arguments: LumaConstants);
                 var nedi2Shader = CompileShader("NEDI-II.hlsl").Configure(arguments: LumaConstants);
@@ -72,7 +72,7 @@ namespace Mpdn.RenderScript
                 var nediV = new ShaderFilter(nediVInterleaveShader, nediH, nedi2);
 
                 return new ResizeFilter(nediV, nediV.OutputSize, new Vector2(0.5f, 0.5f),
-                        Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
+                    Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
             }
         }
 

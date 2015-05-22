@@ -18,7 +18,7 @@ using System;
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public partial class GoToTimeForm : Form
     {

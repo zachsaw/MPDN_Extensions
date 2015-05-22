@@ -19,8 +19,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 
-namespace Mpdn.PlayerExtensions.Playlist
+namespace Mpdn.Extensions.PlayerExtensions.Playlist
 {
     public class Playlist : PlayerExtension<PlaylistSettings, PlaylistConfigDialog>
     {

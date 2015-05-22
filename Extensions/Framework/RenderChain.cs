@@ -18,9 +18,10 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using Mpdn.OpenCl;
+using Mpdn.RenderScript;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
     public abstract class RenderChain : IDisposable
     {

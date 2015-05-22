@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public class GoToTime : PlayerExtension
     {

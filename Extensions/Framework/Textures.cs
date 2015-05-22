@@ -17,10 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using Mpdn.RenderScript;
 using SharpDX;
 using ITexture3D = Mpdn.ISourceTexture3D;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
     public interface ITextureCache
     {

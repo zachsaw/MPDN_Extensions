@@ -22,8 +22,10 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.Windows;
+using Mpdn.Extensions.Framework;
+using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptedRenderChain
     {

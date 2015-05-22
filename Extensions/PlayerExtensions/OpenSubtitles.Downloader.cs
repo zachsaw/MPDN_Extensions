@@ -20,7 +20,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     #region Subtitle
     public class Subtitle

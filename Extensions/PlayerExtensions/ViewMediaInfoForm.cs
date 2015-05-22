@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using MediaInfoDotNet;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public partial class ViewMediaInfoForm : Form
     {

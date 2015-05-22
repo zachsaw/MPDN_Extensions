@@ -18,7 +18,7 @@ using System;
 using System.Windows.Forms;
 using System.Net;
 
-namespace Mpdn.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public partial class RemoteClients : Form
     {

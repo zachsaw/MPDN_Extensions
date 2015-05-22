@@ -15,9 +15,9 @@
 // License along with this library.
 // 
 using System;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.Deband
     {

@@ -15,12 +15,13 @@
 // License along with this library.
 // 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using Mpdn.Extensions.Framework;
+using Mpdn.RenderScript;
 using SharpDX;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.Chroma
     {

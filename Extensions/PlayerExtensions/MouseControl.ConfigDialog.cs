@@ -14,9 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.PlayerExtensions;
 
-namespace Mpdn.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions
 {
     namespace GitHub
     {

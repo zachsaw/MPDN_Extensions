@@ -16,7 +16,7 @@
 // 
 using System;
 
-namespace Mpdn.CustomLinearScaler
+namespace Mpdn.Extensions.CustomLinearScalers
 {
     public abstract class Sinc : ICustomLinearScaler
     {

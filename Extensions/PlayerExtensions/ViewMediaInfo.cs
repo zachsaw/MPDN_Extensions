@@ -16,9 +16,9 @@
 // 
 using System;
 using System.Collections.Generic;
-using MediaInfoDotNet;
+using Mpdn.Extensions.Framework;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public class ViewMediaInfo : PlayerExtension
     {
@@ -46,7 +46,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
         }
 
-        private void ShowMediaInfoDialog()
+        private static void ShowMediaInfoDialog()
         {
             if (PlayerControl.PlayerState == PlayerState.Closed)
                 return;

@@ -16,8 +16,9 @@
 // 
 using System;
 using System.Drawing;
+using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
     public class RenderChainScript : IRenderScript, IDisposable
     {
@@ -44,7 +45,7 @@ namespace Mpdn.RenderScript
 
         protected virtual void Dispose(bool disposing)
         {
-            //DisposeHelper.Dispose(ref Chain);
+            DisposeHelper.Dispose(ref Chain);
         }
 
         public ScriptInterfaceDescriptor Descriptor
