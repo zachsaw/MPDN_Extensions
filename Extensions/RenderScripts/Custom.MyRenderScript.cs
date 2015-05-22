@@ -15,10 +15,11 @@
 // License along with this library.
 // 
 using System;
-using Mpdn.RenderScript.Mpdn.ImageProcessor;
-using Mpdn.RenderScript.Mpdn.Resizer;
-using Mpdn.RenderScript.Shiandow.Chroma;
-using Mpdn.RenderScript.Shiandow.Nedi;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.RenderScripts.Mpdn.ImageProcessor;
+using Mpdn.Extensions.RenderScripts.Mpdn.Resizer;
+using Mpdn.Extensions.RenderScripts.Shiandow.Chroma;
+using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
 
 namespace Mpdn.RenderScript
 {

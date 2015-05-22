@@ -14,12 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using Mpdn.Config;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Windows.Forms;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public partial class UpdateCheckerConfigDialog : UpdateCheckerConfigBase
     {

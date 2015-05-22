@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
 using Mpdn.Config;
+using Mpdn.Extensions.Framework;
 using Mpdn.RenderScript;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public class RenderControl : PlayerExtension
     {
@@ -35,7 +33,7 @@ namespace Mpdn.PlayerExtensions.GitHub
                 return new[]
                 {
                     GetVerb("Toggle YUV levels", "Ctrl+Shift+L", ToggleLevels),
-                    GetVerb("Toggle YUV matrix", "Ctrl+Shift+M", ToggleYUV),
+                    GetVerb("Toggle YUV matrix", "Ctrl+Shift+M", ToggleYUV)
                 };
             }
         }

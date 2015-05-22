@@ -19,8 +19,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public class OpenSubtitlesExtension : PlayerExtension<OpenSubtitlesSettings, OpenSubtitlesConfigDialog>
     {
@@ -67,7 +68,7 @@ namespace Mpdn.PlayerExtensions.GitHub
                 }
                 if (subList == null || subList.Count == 0)
                 {
-                    MessageBox.Show("No Subtitles found.");
+                    MessageBox.Show(PlayerControl.VideoPanel, "No Subtitles found.");
                     return;
                 }
                 subList.Sort((a, b) => a.Lang.CompareTo(b.Lang));
@@ -85,11 +86,11 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
             catch (InternetConnectivityException)
             {
-                MessageBox.Show("MPDN can't access OpenSubtitles.org");
+                MessageBox.Show(PlayerControl.VideoPanel, "MPDN can't access OpenSubtitles.org");
             }
             catch (Exception)
             {
-                MessageBox.Show("No Subtitles found.");
+                MessageBox.Show(PlayerControl.VideoPanel, "No Subtitles found.");
             }
 
         }

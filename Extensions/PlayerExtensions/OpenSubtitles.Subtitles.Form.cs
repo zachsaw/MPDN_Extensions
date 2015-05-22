@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public partial class OpenSubtitlesForm : Form
     {
@@ -29,6 +29,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             InitializeComponent();
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
             CancelButton = btnCancel;
+            Icon = PlayerControl.ApplicationIcon;
             FormClosed += OpenSubtitlesForm_FormClosed;
         }
 
@@ -56,11 +57,11 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
             catch (InternetConnectivityException)
             {
-                MessageBox.Show("MPDN can't access OpenSubtitles.org");
+                MessageBox.Show(this, "MPDN was unable to access OpenSubtitles.org");
             }
             catch (Exception)
             {
-                MessageBox.Show("Can't download the selected subtitle.");
+                MessageBox.Show(this, "Can't download the selected subtitle.");
             }
         }
 

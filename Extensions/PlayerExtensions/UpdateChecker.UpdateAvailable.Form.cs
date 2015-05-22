@@ -18,7 +18,7 @@ using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public partial class UpdateCheckerNewVersionForm : Form
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptedRenderChain
     {

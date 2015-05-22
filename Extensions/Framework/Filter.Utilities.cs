@@ -17,10 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mpdn.RenderScript;
 using SharpDX;
-using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
+using IBaseFilter = Mpdn.Extensions.Framework.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
     public abstract class BasicFilter : Filter
     {

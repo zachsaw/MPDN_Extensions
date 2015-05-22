@@ -21,9 +21,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using DirectShowLib;
-using Mpdn.PlayerExtensions.GitHub.DisplayChangerNativeMethods;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.PlayerExtensions.DisplayChangerNativeMethods;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public class DisplayChanger : PlayerExtension<DisplayChangerSettings, DisplayChangerConfigDialog>
     {

@@ -16,12 +16,13 @@
 // 
 using System;
 using System.ComponentModel;
+using Mpdn.Extensions.Framework;
+using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Resizer
     {
-
         #region ResizerOptions
 
         public enum ResizerOption
@@ -68,7 +69,7 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter input)
             {
-                return input.SetSize(GetOutputSize()); ;
+                return input.SetSize(GetOutputSize());
             }
 
             #region Size Calculation

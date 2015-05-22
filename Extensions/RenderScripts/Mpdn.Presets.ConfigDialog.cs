@@ -16,15 +16,13 @@
 // 
 using System;
 using System.Drawing;
-//using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Forms;
-using Mpdn.RenderScript;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Presets
     {
@@ -147,11 +145,9 @@ namespace Mpdn.RenderScript
                 listViewChain.SelectedItems.Clear();
                 foreach (var preset in presets)
                 {
-                    ListViewItem item;
-                    if (index < 0)
-                        item = listViewChain.Items.Add(string.Empty);
-                    else
-                        item = listViewChain.Items.Insert(index++,string.Empty);
+                    var item = index < 0
+                        ? listViewChain.Items.Add(string.Empty)
+                        : listViewChain.Items.Insert(index++, string.Empty);
 
                     item.SubItems.Add(preset.Name);
                     item.SubItems.Add(preset.Description);
@@ -180,8 +176,6 @@ namespace Mpdn.RenderScript
 
             private void RemoveItem(ListViewItem selectedItem)
             {
-                var preset = (Preset)selectedItem.Tag;
-
                 var index = selectedItem.Index;
                 selectedItem.Remove();
                 if (index < listViewChain.Items.Count)
@@ -323,12 +317,12 @@ namespace Mpdn.RenderScript
 
             private void ItemCopyDrag(object sender, ItemDragEventArgs e)
             {
-                DoDragDrop((sender as ListView).SelectedItems, DragDropEffects.Copy);
+                DoDragDrop(((ListView) sender).SelectedItems, DragDropEffects.Copy);
             }
 
             private void ItemMoveDrag(object sender, ItemDragEventArgs e)
             {
-                DoDragDrop((sender as ListView).SelectedItems, DragDropEffects.Move);
+                DoDragDrop(((ListView) sender).SelectedItems, DragDropEffects.Move);
             }
 
             private void ListDragEnter(object sender, DragEventArgs e)
@@ -383,9 +377,10 @@ namespace Mpdn.RenderScript
 
                 if (e.Effect == DragDropEffects.Move)
                 {
-                    var items = new List<ListViewItem>();
                     foreach (ListViewItem item in draggedItems.Cast<ListViewItem>())
+                    {
                         RemoveItem(item);
+                    }
                 }
             }
 

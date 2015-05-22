@@ -15,10 +15,12 @@
 // License along with this library.
 // 
 using System;
-using Mpdn.RenderScript.Shiandow.NNedi3.Filters;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3.Filters;
+using Mpdn.RenderScript;
 using SharpDX;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.NNedi3
     {

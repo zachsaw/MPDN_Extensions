@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-namespace Mpdn.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions
 {
     partial class RemoteControlConfig
     {
@@ -54,8 +54,9 @@ namespace Mpdn.PlayerExtensions
             // 
             // btnOK
             // 
+            this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(47, 78);
+            this.btnOK.Location = new System.Drawing.Point(78, 99);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -64,8 +65,9 @@ namespace Mpdn.PlayerExtensions
             // 
             // btnCancel
             // 
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(128, 78);
+            this.btnCancel.Location = new System.Drawing.Point(159, 99);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 1;
@@ -75,7 +77,7 @@ namespace Mpdn.PlayerExtensions
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(15, 18);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(66, 13);
             this.label1.TabIndex = 2;
@@ -83,7 +85,7 @@ namespace Mpdn.PlayerExtensions
             // 
             // txbPort
             // 
-            this.txbPort.Location = new System.Drawing.Point(84, 6);
+            this.txbPort.Location = new System.Drawing.Point(87, 15);
             this.txbPort.Name = "txbPort";
             this.txbPort.Size = new System.Drawing.Size(119, 20);
             this.txbPort.TabIndex = 3;
@@ -92,7 +94,7 @@ namespace Mpdn.PlayerExtensions
             // cbRequireValidation
             // 
             this.cbRequireValidation.AutoSize = true;
-            this.cbRequireValidation.Location = new System.Drawing.Point(15, 55);
+            this.cbRequireValidation.Location = new System.Drawing.Point(18, 64);
             this.cbRequireValidation.Name = "cbRequireValidation";
             this.cbRequireValidation.Size = new System.Drawing.Size(98, 17);
             this.cbRequireValidation.TabIndex = 5;
@@ -102,7 +104,7 @@ namespace Mpdn.PlayerExtensions
             // cbIsOnline
             // 
             this.cbIsOnline.AutoSize = true;
-            this.cbIsOnline.Location = new System.Drawing.Point(15, 32);
+            this.cbIsOnline.Location = new System.Drawing.Point(18, 41);
             this.cbIsOnline.Name = "cbIsOnline";
             this.cbIsOnline.Size = new System.Drawing.Size(137, 17);
             this.cbIsOnline.TabIndex = 6;
@@ -115,7 +117,7 @@ namespace Mpdn.PlayerExtensions
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(215, 114);
+            this.ClientSize = new System.Drawing.Size(246, 134);
             this.Controls.Add(this.cbIsOnline);
             this.Controls.Add(this.cbRequireValidation);
             this.Controls.Add(this.txbPort);

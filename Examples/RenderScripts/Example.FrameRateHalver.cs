@@ -15,9 +15,10 @@
 // License along with this library.
 // 
 using System;
-using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
+using Mpdn.Extensions.Framework;
+using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Example
     {

@@ -17,8 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using Mpdn.Extensions.Framework;
+using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ImageProcessor
     {

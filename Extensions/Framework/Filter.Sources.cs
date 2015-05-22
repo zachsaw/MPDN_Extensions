@@ -14,9 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
+using Mpdn.RenderScript;
+using IBaseFilter = Mpdn.Extensions.Framework.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
     public abstract class BaseSourceFilter<TTexture> : IFilter<TTexture>
         where TTexture : class, IBaseTexture

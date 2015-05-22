@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 
-namespace Mpdn
+namespace Mpdn.Extensions.Framework
 {
     public static class DisposeHelper
     {

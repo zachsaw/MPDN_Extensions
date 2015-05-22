@@ -18,11 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.OpenCl;
+using Mpdn.RenderScript;
 using SharpDX;
-using TransformFunc = System.Func<Mpdn.RenderScript.TextureSize, Mpdn.RenderScript.TextureSize>;
-using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
+using TransformFunc = System.Func<Mpdn.Extensions.Framework.TextureSize, Mpdn.Extensions.Framework.TextureSize>;
+using IBaseFilter = Mpdn.Extensions.Framework.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
     public class ShaderFilterSettings<T>
     {

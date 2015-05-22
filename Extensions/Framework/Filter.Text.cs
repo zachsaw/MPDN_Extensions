@@ -19,11 +19,12 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Windows.Forms;
+using Mpdn.RenderScript;
 using SharpDX;
 using Color = System.Drawing.Color;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
     public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter, IDisposable
     {

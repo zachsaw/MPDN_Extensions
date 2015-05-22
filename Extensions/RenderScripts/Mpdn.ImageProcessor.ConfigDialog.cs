@@ -19,9 +19,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ImageProcessor
     {

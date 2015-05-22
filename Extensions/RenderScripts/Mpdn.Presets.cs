@@ -18,10 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Mpdn.PlayerExtensions;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.PlayerExtensions;
 using YAXLib;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Presets
     {
@@ -45,7 +46,9 @@ namespace Mpdn.RenderScript
                 {
                     m_Name = value;
                     if (Script != null && Chain is INameable)
+                    {
                         (Chain as INameable).Name = value;
+                    }
                 }
             }
 
@@ -59,7 +62,9 @@ namespace Mpdn.RenderScript
                 {
                     m_Script = value;
                     if (Script != null && Chain is INameable)
+                    {
                         (Chain as INameable).Name = Name;
+                    }
                 }
             }
 
@@ -106,8 +111,11 @@ namespace Mpdn.RenderScript
             protected override void Dispose(bool disposing)
             {
                 if (disposing && Script != null)
+                {
                     DisposeHelper.Dispose(Chain);
+                }
                 Script = null;
+                base.Dispose(disposing);
             }
 
             #endregion
@@ -162,9 +170,15 @@ namespace Mpdn.RenderScript
 
             protected override void Dispose(bool disposing)
             {
-                if (disposing && Options != null)
-                    foreach (Preset option in Options)
-                        option.Dispose();
+                base.Dispose(disposing);
+
+                if (!disposing || Options == null)
+                    return;
+
+                foreach (var option in Options)
+                {
+                    option.Dispose();
+                }
             }
         }
 

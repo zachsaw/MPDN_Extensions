@@ -15,12 +15,11 @@
 // License along with this library.
 // 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Mpdn.Config;
-using Mpdn.RenderScript.Mpdn.Presets;
+using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
@@ -96,14 +95,13 @@ namespace Mpdn.RenderScript
 
             private void UpdateGui()
             {
-                ConfigButton.Enabled =
-                    (PrescalerBox.SelectedValue as Preset != null) ? 
-                    (PrescalerBox.SelectedValue as Preset).HasConfigDialog() : false;
+                ConfigButton.Enabled = (PrescalerBox.SelectedValue as Preset != null) &&
+                                       (PrescalerBox.SelectedValue as Preset).HasConfigDialog();
             }
 
             private void ConfigButton_Click(object sender, EventArgs e)
             {
-                (PrescalerBox.SelectedValue as Preset).ShowConfigDialog(Owner);
+                ((Preset) PrescalerBox.SelectedValue).ShowConfigDialog(Owner);
             }
         }
 

@@ -16,9 +16,9 @@
 // 
 using System.IO;
 using System.Windows.Forms;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Lut3D
     {

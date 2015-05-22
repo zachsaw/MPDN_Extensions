@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Mpdn.Extensions.Framework;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.NNedi3.Filters
     {

@@ -15,11 +15,11 @@
 // License along with this library.
 // 
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+using Mpdn.Extensions.Framework;
+using Mpdn.RenderScript;
+using Mpdn.RenderScript.Scaler;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.Deband
     {
@@ -38,7 +38,7 @@ namespace Mpdn.RenderScript
 
             public override IFilter CreateFilter(IFilter input)
             {
-                var bilinear = new Scaler.HwBilinear();
+                var bilinear = new HwBilinear();
              
                 int bits = 8;
                 switch (Renderer.InputFormat)

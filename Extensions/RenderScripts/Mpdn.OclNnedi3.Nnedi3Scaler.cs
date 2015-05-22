@@ -16,10 +16,12 @@
 // 
 using System;
 using System.Collections.Generic;
+using Mpdn.Extensions.Framework;
 using Mpdn.OpenCl;
+using Mpdn.RenderScript;
 using SharpDX;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.OclNNedi3
     {

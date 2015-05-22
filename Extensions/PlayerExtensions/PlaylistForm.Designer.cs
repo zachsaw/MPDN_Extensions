@@ -16,7 +16,7 @@
 // 
 using System.Windows.Forms;
 
-namespace Mpdn.PlayerExtensions.Playlist
+namespace Mpdn.Extensions.PlayerExtensions.Playlist
 {
     partial class PlaylistForm
     {
@@ -41,19 +41,19 @@ namespace Mpdn.PlayerExtensions.Playlist
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.buttonAdd = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonDel = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonAdd = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonDel = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.buttonLeft = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonRight = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSortAscending = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSortDescending = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
-            this.PlayButton = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonLeft = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonRight = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonSortAscending = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonSortDescending = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.PlayButton = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.buttonNew = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonOpen = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSave = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSettings = new Mpdn.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonNew = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonOpen = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonSave = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonSettings = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.openPlaylistDialog = new System.Windows.Forms.OpenFileDialog();

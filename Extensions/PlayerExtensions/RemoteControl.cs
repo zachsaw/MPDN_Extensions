@@ -27,9 +27,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 using Timer = System.Timers.Timer;
 
-namespace Mpdn.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public class AcmPlug : PlayerExtension<RemoteControlSettings, RemoteControlConfig>
     {
@@ -389,7 +390,7 @@ namespace Mpdn.PlayerExtensions
         private void ClientAuth(string msgValue, Guid clientGuid)
         {
             WriteToSpesificClient("AuthCode|" + msgValue, clientGuid.ToString());
-            if (MessageBox.Show("Allow Remote Connection for " + msgValue, "Remote Authentication", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (MessageBox.Show(PlayerControl.VideoPanel, "Allow Remote Connection for " + msgValue, "Remote Authentication", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 DisplayTextMessage("Remote Connected");
                 WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());

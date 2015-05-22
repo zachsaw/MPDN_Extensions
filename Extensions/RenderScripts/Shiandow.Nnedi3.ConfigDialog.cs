@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using Mpdn.Config;
-using Mpdn.RenderScript.Shiandow.NNedi3.Filters;
+using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3.Filters;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.NNedi3
     {

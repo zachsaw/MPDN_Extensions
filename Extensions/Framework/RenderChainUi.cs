@@ -15,12 +15,13 @@
 // License along with this library.
 // 
 using System;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
+using Mpdn.RenderScript;
 using YAXLib;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
-    public interface IRenderChainUi : IRenderScriptUi
+    public interface IRenderChainUi : IRenderScriptUi, IDisposable
     {
         RenderChain Chain { get; }
         string Category { get; }
@@ -90,13 +91,23 @@ namespace Mpdn.RenderScript
             get { return Settings; }
         }
 
-        public override void Destroy()
+        #endregion Implementation
+
+        ~RenderChainUi()
         {
-            base.Destroy(); // Saves settings
-            DisposeHelper.Dispose(Settings);
+            Dispose(false);
         }
 
-        #endregion Implementation
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public virtual void Dispose(bool disposing)
+        {
+            DisposeHelper.Dispose(Settings);
+        }
     }
 
     public static class RenderChainExtensions

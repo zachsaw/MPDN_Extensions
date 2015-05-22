@@ -16,12 +16,15 @@
 // 
 using System;
 using System.Collections.Generic;
-using Mpdn.RenderScript.Mpdn.Presets;
-using Mpdn.RenderScript.Shiandow.Nedi;
-using Mpdn.RenderScript.Shiandow.NNedi3;
-using OpenCLNNedi3 = Mpdn.RenderScript.Mpdn.OclNNedi3;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
+using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
+using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3;
+using Mpdn.RenderScript;
+using Mpdn.RenderScript.Scaler;
+using OpenCLNNedi3 = Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
@@ -113,8 +116,8 @@ namespace Mpdn.RenderScript
 
                 NoIntermediates = false;
                 FirstPassOnly = false;
-                upscaler = new Scaler.Jinc(ScalerTaps.Four, false);
-                downscaler = new Scaler.Bilinear();
+                upscaler = new Jinc(ScalerTaps.Four, false);
+                downscaler = new Bilinear();
             }
 
             public override IFilter CreateFilter(IFilter input)
@@ -176,7 +179,7 @@ namespace Mpdn.RenderScript
                 for (int i = 1; i <= Passes; i++)
                 {
                     IFilter res, diff;
-                    bool useBilinear = (upscaler is Scaler.Bilinear) || (FirstPassOnly && !(i == 1));
+                    bool useBilinear = (upscaler is Bilinear) || (FirstPassOnly && !(i == 1));
 
                     if (i != 1)
                     {
