@@ -115,8 +115,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (Script == null)
                     return;
 
-                DisposeHelper.Dispose(Chain);
-                Script.Dispose();
+                Chain.OnRenderScriptDisposed();
             }
 
             #endregion
