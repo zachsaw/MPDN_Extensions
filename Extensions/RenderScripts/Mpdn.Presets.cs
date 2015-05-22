@@ -112,9 +112,8 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 if (disposing && Script != null)
                 {
-                    DisposeHelper.Dispose(Chain);
+                    Chain.Dispose();
                 }
-                Script = null;
                 base.Dispose(disposing);
             }
 
