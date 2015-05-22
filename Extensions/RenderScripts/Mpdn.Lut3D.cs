@@ -87,11 +87,11 @@ namespace Mpdn.Extensions.RenderScripts
                 return new ShaderFilter(shader, input, new TextureSourceFilter<ISourceTexture3D>(m_Texture3D));
             }
 
-            protected override void Dispose(bool disposing)
+            public override void OnRenderScriptDisposed()
             {
                 DiscardTextures();
 
-                base.Dispose(disposing);
+                base.OnRenderScriptDisposed();
             }
 
             private void DiscardTextures()

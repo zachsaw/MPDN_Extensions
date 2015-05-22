@@ -45,7 +45,7 @@ namespace Mpdn.Extensions.Framework
 
         protected virtual void Dispose(bool disposing)
         {
-            DisposeHelper.Dispose(ref Chain);
+            Chain.OnRenderScriptDisposed();
         }
 
         public ScriptInterfaceDescriptor Descriptor

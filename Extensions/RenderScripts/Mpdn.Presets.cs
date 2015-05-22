@@ -37,7 +37,6 @@ namespace Mpdn.Extensions.RenderScripts
 
             private string m_Name;
             private IRenderChainUi m_Script;
-            private bool m_Disposed;
 
             [YAXAttributeForClass]
             public string Name
@@ -109,14 +108,9 @@ namespace Mpdn.Extensions.RenderScripts
                 return Script != null ? Chain.CreateSafeFilter(input) : input;
             }
 
-            protected override void Dispose(bool disposing)
+            public override void OnRenderScriptDisposed()
             {
-                base.Dispose(disposing);
-
-                if (m_Disposed)
-                    return;
-
-                m_Disposed = true;
+                base.OnRenderScriptDisposed();
 
                 if (Script == null)
                     return;
@@ -150,8 +144,6 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class PresetCollection : RenderChain, INameable
         {
-            private bool m_Disposed;
-
             #region Settings
 
             public List<Preset> Options { get; set; }
@@ -177,21 +169,16 @@ namespace Mpdn.Extensions.RenderScripts
                 throw new NotImplementedException();
             }
 
-            protected override void Dispose(bool disposing)
+            public override void OnRenderScriptDisposed()
             {
-                base.Dispose(disposing);
-
-                if (m_Disposed)
-                    return;
-
-                m_Disposed = true;
+                base.OnRenderScriptDisposed();
 
                 if (Options == null)
                     return;
 
                 foreach (var option in Options)
                 {
-                    option.Dispose();
+                    option.OnRenderScriptDisposed();
                 }
             }
         }
@@ -239,10 +226,10 @@ namespace Mpdn.Extensions.RenderScripts
                 return SelectedOption != null ? SelectedOption.CreateSafeFilter(input) : input;
             }
 
-            protected override void Dispose(bool disposing)
+            public override void OnRenderScriptDisposed()
             {
-                base.Dispose(disposing);
                 DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
+                base.OnRenderScriptDisposed();
             }
 
             #region Hotkey Handling
