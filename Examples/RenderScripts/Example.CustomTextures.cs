@@ -42,11 +42,11 @@ namespace Mpdn.Extensions.RenderScripts
                     new TextureSourceFilter<ISourceTexture>(m_Texture2));
             }
 
-            public override void OnRenderScriptDisposed()
+            public override void Reset()
             {
                 DiscardTextures();
 
-                base.OnRenderScriptDisposed();
+                base.Reset();
             }
 
             private void DiscardTextures()

@@ -108,14 +108,14 @@ namespace Mpdn.Extensions.RenderScripts
                 return Script != null ? Chain.CreateSafeFilter(input) : input;
             }
 
-            public override void OnRenderScriptDisposed()
+            public override void Reset()
             {
-                base.OnRenderScriptDisposed();
+                base.Reset();
 
                 if (Script == null)
                     return;
 
-                Chain.OnRenderScriptDisposed();
+                Chain.Reset();
             }
 
             #endregion
@@ -168,16 +168,16 @@ namespace Mpdn.Extensions.RenderScripts
                 throw new NotImplementedException();
             }
 
-            public override void OnRenderScriptDisposed()
+            public override void Reset()
             {
-                base.OnRenderScriptDisposed();
+                base.Reset();
 
                 if (Options == null)
                     return;
 
                 foreach (var option in Options)
                 {
-                    option.OnRenderScriptDisposed();
+                    option.Reset();
                 }
             }
         }
@@ -225,10 +225,10 @@ namespace Mpdn.Extensions.RenderScripts
                 return SelectedOption != null ? SelectedOption.CreateSafeFilter(input) : input;
             }
 
-            public override void OnRenderScriptDisposed()
+            public override void Reset()
             {
                 DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
-                base.OnRenderScriptDisposed();
+                base.Reset();
             }
 
             #region Hotkey Handling

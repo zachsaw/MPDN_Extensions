@@ -137,7 +137,7 @@ namespace Mpdn.Extensions.Framework
         /// <summary>
         /// Dispose any unmanaged resource that shouldn't be retained when user selects a new render script
         /// </summary>
-        public virtual void OnRenderScriptDisposed()
+        public virtual void Reset()
         {
             DisposeHelper.Dispose(ref m_TextFilter);
         }
