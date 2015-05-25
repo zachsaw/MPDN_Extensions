@@ -25,6 +25,11 @@ namespace Mpdn.Extensions.Framework
 {
     public abstract class RenderChain
     {
+        protected RenderChain()
+        {
+            ShaderCache.Load();
+        }
+
         public abstract IFilter CreateFilter(IFilter input);
 
         #region Operators
