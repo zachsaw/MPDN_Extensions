@@ -28,12 +28,14 @@ namespace Mpdn.Extensions.RenderScripts
             public int maxbitdepth { get; set; }
             public float margin { get; set; }
             public float power { get; set; }
+            public bool grain { get; set; }
 
             public Deband()
             {
                 maxbitdepth = 8;
                 margin = 0.0f;
                 power = 0.5f;
+                grain = true;
             }
 
             public override IFilter CreateFilter(IFilter input)
@@ -67,10 +69,10 @@ namespace Mpdn.Extensions.RenderScripts
                 float[] Consts = new[] {
                     (1 << bits) - 1, 
                     power,
-                    margin                    
+                    margin
                 };
 
-                var Deband = CompileShader("Deband.hlsl")
+                var Deband = CompileShader("Deband.hlsl", macroDefinitions: !grain ? "SkipDithering=1" : "")
                     .Configure(arguments: Consts, perTextureLinearSampling: new[] { true, false });
                 /*var Subtract = CompileShader("Subtract.hlsl")
                     .Configure(perTextureLinearSampling: new[] { false, true }, format: TextureFormat.Float16);
@@ -81,15 +83,17 @@ namespace Mpdn.Extensions.RenderScripts
                 var inputsize = yuv.OutputSize;
 
                 var deband = yuv;
-                double phi = 0.5 * Math.Sqrt(5) + 0.5; // Use irrational factor to prevent blocking.
-                for (int i = 8; i >= 0; i--)
+                double factor = 2.0;// 0.5 * Math.Sqrt(5) + 0.5;
+
+                int max = (int)Math.Floor(Math.Log(Math.Min(inputsize.Width, inputsize.Height) / 3.0, factor));
+                for (int i = max; i >= 0; i--)
                 {
-                    double factor = Math.Pow(phi, i);
-                    var size = new TextureSize((int)Math.Round(inputsize.Width / factor), (int)Math.Round(inputsize.Height / factor));
+                    double scale = Math.Pow(factor, i);
+                    var size = new TextureSize((int)Math.Round(inputsize.Width / scale), (int)Math.Round(inputsize.Height / scale));
                     if (size.Width == 0 || size.Height == 0) continue;
                     if (i == 0) size = inputsize;
 
-                    deband = new ShaderFilter( Deband.Configure(transform: s => size), yuv, deband);
+                    deband = new ShaderFilter(Deband.Configure(transform: s => size), yuv, deband);
                 }
 
                 return deband.ConvertToRgb();

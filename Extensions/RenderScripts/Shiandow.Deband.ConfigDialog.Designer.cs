@@ -56,6 +56,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.label6 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.PowerSetter = new System.Windows.Forms.NumericUpDown();
+            this.GrainBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitdepthSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ThresholdSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PowerSetter)).BeginInit();
@@ -66,7 +67,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(86, 96);
+            this.ButtonOK.Location = new System.Drawing.Point(79, 114);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 3;
@@ -78,7 +79,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(167, 96);
+            this.ButtonCancel.Location = new System.Drawing.Point(160, 114);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 4;
@@ -202,13 +203,24 @@ namespace Mpdn.Extensions.RenderScripts
             0,
             0});
             // 
+            // GrainBox
+            // 
+            this.GrainBox.AutoSize = true;
+            this.GrainBox.Location = new System.Drawing.Point(153, 91);
+            this.GrainBox.Name = "GrainBox";
+            this.GrainBox.Size = new System.Drawing.Size(71, 17);
+            this.GrainBox.TabIndex = 18;
+            this.GrainBox.Text = "Add grain";
+            this.GrainBox.UseVisualStyleBackColor = true;
+            // 
             // DebandConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(254, 131);
+            this.ClientSize = new System.Drawing.Size(247, 149);
+            this.Controls.Add(this.GrainBox);
             this.Controls.Add(this.PowerSetter);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -247,6 +259,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Label label6;
             private System.Windows.Forms.Label label4;
             private System.Windows.Forms.NumericUpDown PowerSetter;
+            private System.Windows.Forms.CheckBox GrainBox;
 
         }
     }
