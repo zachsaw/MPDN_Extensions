@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Controls;
+
 namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
@@ -55,7 +59,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.PrescalerBox = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.ConfigButton = new System.Windows.Forms.Button();
-            this.HotkeyBox = new System.Windows.Forms.TextBox();
+            this.HotkeyBox = new Framework.Controls.HotkeyBox();
             this.label7 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.AntiRingingSetter = new System.Windows.Forms.NumericUpDown();
@@ -189,8 +193,12 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             // HotkeyBox
             // 
+            this.HotkeyBox.AcceptsReturn = true;
+            this.HotkeyBox.AcceptsTab = true;
+            this.HotkeyBox.BackColor = System.Drawing.SystemColors.Window;
             this.HotkeyBox.Location = new System.Drawing.Point(81, 39);
             this.HotkeyBox.Name = "HotkeyBox";
+            this.HotkeyBox.ReadOnly = true;
             this.HotkeyBox.Size = new System.Drawing.Size(215, 20);
             this.HotkeyBox.TabIndex = 1;
             // 
@@ -396,7 +404,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.ComboBox PrescalerBox;
             private System.Windows.Forms.Label label6;
             private System.Windows.Forms.Button ConfigButton;
-            private System.Windows.Forms.TextBox HotkeyBox;
+            private HotkeyBox HotkeyBox;
             private System.Windows.Forms.Label label7;
             private System.Windows.Forms.Label label4;
             private System.Windows.Forms.NumericUpDown AntiRingingSetter;

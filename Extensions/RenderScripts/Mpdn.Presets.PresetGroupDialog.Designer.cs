@@ -50,7 +50,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ScriptBox = new System.Windows.Forms.ComboBox();
             this.ScriptLabel = new System.Windows.Forms.Label();
             this.HotkeyLabel = new System.Windows.Forms.Label();
-            this.HotkeyBox = new System.Windows.Forms.TextBox();
+            this.HotkeyBox = new Framework.Controls.HotkeyBox();
             this.buttonConfigure = new System.Windows.Forms.Button();
             this.buttonAdv = new System.Windows.Forms.Button();
             this.DescriptionLabelLabel = new System.Windows.Forms.Label();
@@ -64,7 +64,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonCancel.Location = new System.Drawing.Point(326, 96);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
-            this.buttonCancel.TabIndex = 8;
+            this.buttonCancel.TabIndex = 1;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
             // 
@@ -75,7 +75,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonOk.Location = new System.Drawing.Point(245, 96);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
-            this.buttonOk.TabIndex = 7;
+            this.buttonOk.TabIndex = 0;
             this.buttonOk.Text = "OK";
             this.buttonOk.UseVisualStyleBackColor = true;
             // 
@@ -89,7 +89,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ScriptBox.Location = new System.Drawing.Point(99, 14);
             this.ScriptBox.Name = "ScriptBox";
             this.ScriptBox.Size = new System.Drawing.Size(221, 21);
-            this.ScriptBox.TabIndex = 9;
+            this.ScriptBox.TabIndex = 2;
             this.ScriptBox.SelectedIndexChanged += new System.EventHandler(this.ScriptBox_SelectedIndexChanged);
             // 
             // ScriptLabel
@@ -112,12 +112,16 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             // HotkeyBox
             // 
+            this.HotkeyBox.AcceptsReturn = true;
+            this.HotkeyBox.AcceptsTab = true;
             this.HotkeyBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.HotkeyBox.BackColor = System.Drawing.SystemColors.Window;
             this.HotkeyBox.Location = new System.Drawing.Point(99, 67);
             this.HotkeyBox.Name = "HotkeyBox";
+            this.HotkeyBox.ReadOnly = true;
             this.HotkeyBox.Size = new System.Drawing.Size(302, 20);
-            this.HotkeyBox.TabIndex = 12;
+            this.HotkeyBox.TabIndex = 5;
             // 
             // buttonConfigure
             // 
@@ -125,7 +129,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonConfigure.Location = new System.Drawing.Point(326, 12);
             this.buttonConfigure.Name = "buttonConfigure";
             this.buttonConfigure.Size = new System.Drawing.Size(75, 23);
-            this.buttonConfigure.TabIndex = 13;
+            this.buttonConfigure.TabIndex = 3;
             this.buttonConfigure.Text = "Configure";
             this.buttonConfigure.UseVisualStyleBackColor = true;
             this.buttonConfigure.Click += new System.EventHandler(this.buttonConfigure_Click);
@@ -136,7 +140,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonAdv.Location = new System.Drawing.Point(18, 96);
             this.buttonAdv.Name = "buttonAdv";
             this.buttonAdv.Size = new System.Drawing.Size(75, 23);
-            this.buttonAdv.TabIndex = 14;
+            this.buttonAdv.TabIndex = 6;
             this.buttonAdv.Text = "Modify List";
             this.buttonAdv.UseVisualStyleBackColor = true;
             this.buttonAdv.Click += new System.EventHandler(this.buttonAdv_Click);
@@ -158,7 +162,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.DescriptionLabel.Margin = new System.Windows.Forms.Padding(3);
             this.DescriptionLabel.Name = "DescriptionLabel";
             this.DescriptionLabel.Size = new System.Drawing.Size(302, 21);
-            this.DescriptionLabel.TabIndex = 16;
+            this.DescriptionLabel.TabIndex = 4;
             this.DescriptionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // PresetGroupDialog
@@ -199,7 +203,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.ComboBox ScriptBox;
             private System.Windows.Forms.Label ScriptLabel;
             private System.Windows.Forms.Label HotkeyLabel;
-            private System.Windows.Forms.TextBox HotkeyBox;
+            private Framework.Controls.HotkeyBox HotkeyBox;
             private System.Windows.Forms.Button buttonConfigure;
             private System.Windows.Forms.Button buttonAdv;
             private System.Windows.Forms.Label DescriptionLabelLabel;
