@@ -17,9 +17,9 @@
 #include "NEDI-Common.hlsl"
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	//Define window and directions
-	float2 dir[4] = {{-1,-1},{1,1},{-1,1},{1,-1}};
-	float4x2 wind[4] = {{{0,0},{1,1},{0,1},{1,0}},{{-1,0},{2,1},{0,2},{1,-1}},{{0,-1},{1,2},{-1,1},{2,0}},{{-1,-1},{2,2},{-1,2},{2,-1}}};
+    //Define window and directions
+    float2 dir[4] = {{-1,-1},{1,1},{-1,1},{1,-1}};
+    float4x2 wind[4] = {{{0,0},{1,1},{0,1},{1,0}},{{-1,0},{2,1},{0,2},{1,-1}},{{0,-1},{1,2},{-1,1},{2,0}},{{-1,-1},{2,2},{-1,2},{2,-1}}};
 
-	return NediProcess(tex, dir, wind);
+    return NediProcess(tex, dir, wind);
 }

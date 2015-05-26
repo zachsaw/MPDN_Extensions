@@ -55,7 +55,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static readonly string OSDlSub = "http://www.opensubtitles.org/isdb/dl.php?id={0}&ticket={1}";
         private readonly string PlayerId;
-		private readonly string UserAgent;
+        private readonly string UserAgent;
         private readonly WebClient WebClient = new WebClient();
         private string LastTicket;
         private string MediaFilename;

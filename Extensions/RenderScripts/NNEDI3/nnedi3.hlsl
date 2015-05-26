@@ -54,25 +54,25 @@ cbuffer size0 : register(b1)
 
 cbuffer weights1 : register(b2)
 {
-	float4 w1[nns][WT];
+    float4 w1[nns][WT];
 }
 
 cbuffer weights2 : register(b3)
 {
-	float4 w2[nns][WT];
+    float4 w2[nns][WT];
 }
 
 cbuffer weights3 : register(b4)
 {
-	float2 w[nns];
+    float2 w[nns];
 }
 
 SamplerState ss;
 
 struct PS_IN
 {
-	float4 Position   : SV_POSITION;
-	float2 Texture    : TEXCOORD0;
+    float4 Position   : SV_POSITION;
+    float2 Texture    : TEXCOORD0;
 };
 
 /* Handle Input */
@@ -81,38 +81,38 @@ struct PS_IN
 /* Main code */
 float4 main( PS_IN In ) : SV_TARGET
 {
-	float2 tex = In.Texture;
+    float2 tex = In.Texture;
 
     float4 t[WT];
     
-	float sum = 0;
-	float sumsq = 0;
-	[unroll] for (int i = 0; i<WT; i++)
+    float sum = 0;
+    float sumsq = 0;
+    [unroll] for (int i = 0; i<WT; i++)
 #ifdef VECTOR_DOT
-	{
-		[unroll] for (int j = 0; j<HT; j++)
-			t[i][j] = Get(i-3, j-1);
-		float4 pix = t[i];
-        sum += dot(pix, 1);
-		sumsq += dot(pix, pix);
-	}
-#else
-	[unroll] for (int j = 0; j<HT; j++)
     {
-		float pix = t[i][j] = Get(i-3, j-1);
+        [unroll] for (int j = 0; j<HT; j++)
+            t[i][j] = Get(i-3, j-1);
+        float4 pix = t[i];
+        sum += dot(pix, 1);
+        sumsq += dot(pix, pix);
+    }
+#else
+    [unroll] for (int j = 0; j<HT; j++)
+    {
+        float pix = t[i][j] = Get(i-3, j-1);
         sum += pix;
-		sumsq += pix*pix;
-	}
+        sumsq += pix*pix;
+    }
 #endif
     
-	float4 mstd = 0;
-	mstd[0] = sum / 32.0;
-	mstd[1] = sumsq / 32.0 - mstd[0] * mstd[0];
-	mstd[1] = (mstd[1] <= 1.19209290e-07) ? 0.0 : sqrt(mstd[1]);
-	mstd[2] = (mstd[1] > 0) ? (1.0 / mstd[1]) : 0.0;
+    float4 mstd = 0;
+    mstd[0] = sum / 32.0;
+    mstd[1] = sumsq / 32.0 - mstd[0] * mstd[0];
+    mstd[1] = (mstd[1] <= 1.19209290e-07) ? 0.0 : sqrt(mstd[1]);
+    mstd[2] = (mstd[1] > 0) ? (1.0 / mstd[1]) : 0.0;
 
-	float vsum = 0;
-	float wsum = 0;
+    float vsum = 0;
+    float wsum = 0;
 #ifdef UNROLLED
     [unroll]
 #else
@@ -120,7 +120,7 @@ float4 main( PS_IN In ) : SV_TARGET
 #endif
     for (int n = 0; n<nns; n++)
     {
-		float2 sum = 0;
+        float2 sum = 0;
 #ifdef LOOP_INNER
         [loop] [fastopt]
 #else
@@ -141,19 +141,19 @@ float4 main( PS_IN In ) : SV_TARGET
             }
 #endif
         }
-		sum[0] = sum[0]*mstd[2] + w[n][0];
-		sum[1] = sum[1]*mstd[2] + w[n][1];
+        sum[0] = sum[0]*mstd[2] + w[n][0];
+        sum[1] = sum[1]*mstd[2] + w[n][1];
 #ifdef EXTRA_CHECKS
-		sum[0] = exp(clamp(sum[0], -80.0, 80.0));
+        sum[0] = exp(clamp(sum[0], -80.0, 80.0));
 #else
         sum[0] = exp(sum[0]);
 #endif
-		vsum += sum[0]*(sum[1]/(1+abs(sum[1])));
-		wsum += sum[0];
-	}
+        vsum += sum[0]*(sum[1]/(1+abs(sum[1])));
+        wsum += sum[0];
+    }
 
 #ifdef EXTRA_CHECKS
-	return float4(saturate(mstd[0] + (wsum > 1e-10 ? (5*vsum/wsum)*mstd[1] : 0.0)), 1, 1, 1);
+    return float4(saturate(mstd[0] + (wsum > 1e-10 ? (5*vsum/wsum)*mstd[1] : 0.0)), 1, 1, 1);
 #else
     return float4(saturate(mstd[0] + (5*vsum/wsum)*mstd[1]), 1, 1, 1);
 #endif

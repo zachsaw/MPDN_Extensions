@@ -24,10 +24,10 @@ float4 args0 : register(c2);
 #define norm(x) (rsqrt(rsqrt(dot(x*x,x*x))))
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
-	float4 c1 = tex2D(s1, tex);
-	
-	c0.rgb -= clamp(c1.xyz, -0.5/acuity, 0.5/acuity );
+    float4 c0 = tex2D(s0, tex);
+    float4 c1 = tex2D(s1, tex);
+    
+    c0.rgb -= clamp(c1.xyz, -0.5/acuity, 0.5/acuity );
 
-	return c0;
+    return c0;
 }

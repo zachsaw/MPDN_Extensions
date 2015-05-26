@@ -78,8 +78,8 @@ return colorInput; //return the pixel
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = BorderPass(c0, tex);
-	return c0;
+    c0 = BorderPass(c0, tex);
+    return c0;
 }

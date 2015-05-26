@@ -27,13 +27,13 @@ float4 VibrancePass( float4 colorInput )
   
   #define Vibrance_coeff float3(Vibrance_RGB_balance * Vibrance)
 
-	float4 color = colorInput; //original input color
+    float4 color = colorInput; //original input color
   float3 lumCoeff = float3(0.212656, 0.715158, 0.072186);  //Values to calculate luma with
 
-	float luma = dot(lumCoeff, color.rgb); //calculate luma (grey)
+    float luma = dot(lumCoeff, color.rgb); //calculate luma (grey)
 
-	float max_color = max(colorInput.r, max(colorInput.g,colorInput.b)); //Find the strongest color
-	float min_color = min(colorInput.r, min(colorInput.g,colorInput.b)); //Find the weakest color
+    float max_color = max(colorInput.r, max(colorInput.g,colorInput.b)); //Find the strongest color
+    float min_color = min(colorInput.r, min(colorInput.g,colorInput.b)); //Find the weakest color
 
   float color_saturation = max_color - min_color; //The difference between the two is the saturation
 
@@ -44,16 +44,16 @@ float4 VibrancePass( float4 colorInput )
 
   //color.rgb = lerp(luma, color.rgb, 1.0 + (1.0-pow(color_saturation, 1.0 - (1.0-Vibrance))) ); //pow version
 
-	return color; //return the result
-	//return color_saturation.xxxx; //Visualize the saturation
+    return color; //return the result
+    //return color_saturation.xxxx; //Visualize the saturation
 }
 
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = VibrancePass(c0);
+    c0 = VibrancePass(c0);
 
-	return c0;
+    return c0;
 }

@@ -56,31 +56,31 @@
 
 float4 TechnicolorPass( float4 colorInput )
 {
-	float3 tcol = colorInput.rgb;
-	
+    float3 tcol = colorInput.rgb;
+    
   float2 rednegative_mul   = tcol.rg * (1.0 / (redNegativeAmount * TechniPower));
-	float2 greennegative_mul = tcol.rg * (1.0 / (greenNegativeAmount * TechniPower));
-	float2 bluenegative_mul  = tcol.rb * (1.0 / (blueNegativeAmount * TechniPower));
-	
+    float2 greennegative_mul = tcol.rg * (1.0 / (greenNegativeAmount * TechniPower));
+    float2 bluenegative_mul  = tcol.rb * (1.0 / (blueNegativeAmount * TechniPower));
+    
   float rednegative   = dot( redorangefilter, rednegative_mul );
-	float greennegative = dot( greenfilter, greennegative_mul );
-	float bluenegative  = dot( magentafilter2, bluenegative_mul );
-	
-	float3 redoutput   = rednegative.rrr + cyanfilter;
-	float3 greenoutput = greennegative.rrr + magentafilter;
-	float3 blueoutput  = bluenegative.rrr + yellowfilter;
-	
-	float3 result = redoutput * greenoutput * blueoutput;
-	colorInput.rgb = lerp(tcol, result, TechniAmount);
-	return colorInput;
+    float greennegative = dot( greenfilter, greennegative_mul );
+    float bluenegative  = dot( magentafilter2, bluenegative_mul );
+    
+    float3 redoutput   = rednegative.rrr + cyanfilter;
+    float3 greenoutput = greennegative.rrr + magentafilter;
+    float3 blueoutput  = bluenegative.rrr + yellowfilter;
+    
+    float3 result = redoutput * greenoutput * blueoutput;
+    colorInput.rgb = lerp(tcol, result, TechniAmount);
+    return colorInput;
 }
 
 
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = TechnicolorPass(c0);
-	return c0;
+    c0 = TechnicolorPass(c0);
+    return c0;
 }

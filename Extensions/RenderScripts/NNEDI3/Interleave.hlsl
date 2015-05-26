@@ -15,10 +15,10 @@ float4 size1 : register(c3);
 #define dxdy1 (size1.zw)
 
 float4 main(float2 tex : TEXCOORD0) : COLOR{
-	float par = frac(tex.x*p0.x / 2.0).x;
+    float par = frac(tex.x*p0.x / 2.0).x;
 
-	//Fix size mismatch.
-	float2 pos = floor(tex*p0.xy / float2(2.0, 1.0));
+    //Fix size mismatch.
+    float2 pos = floor(tex*p0.xy / float2(2.0, 1.0));
     float2 p = (pos.yx + 0.5)*dxdy0; // Assumes size is the same for s0 and s1
 
     float r0 = tex2D(s0, p).x;

@@ -63,8 +63,8 @@ float4 ExplosionPass( float4 colorInput, float2 tex )
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = ExplosionPass(c0, tex);
-	return c0;
+    c0 = ExplosionPass(c0, tex);
+    return c0;
 }

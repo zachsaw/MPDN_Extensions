@@ -48,7 +48,7 @@ float4 MonochromePass( float4 colorInput )
 {
   //calculate monochrome
   colorInput.rgb = dot(Monochrome_conversion_values, colorInput.rgb);
-	
+    
   //Return the result
   return saturate(colorInput);
 }
@@ -57,8 +57,8 @@ float4 MonochromePass( float4 colorInput )
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = MonochromePass(c0);
-	return c0;
+    c0 = MonochromePass(c0);
+    return c0;
 }

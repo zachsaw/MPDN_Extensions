@@ -28,8 +28,8 @@ float2 p1 :  register(c1);
 
 // -- Main code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
-	float u = tex2D(sU, tex)[0];
-	float v = tex2D(sV, tex)[0];
+    float u = tex2D(sU, tex)[0];
+    float v = tex2D(sV, tex)[0];
 
-	return float4(0, u, v, 1);
+    return float4(0, u, v, 1);
 }

@@ -72,59 +72,59 @@ static float3x3 XYZ =
 
 float4 DPXPass(float4 InputColor){
 
-	float DPXContrast = 0.1;
+    float DPXContrast = 0.1;
 
-	float DPXGamma = 1.0;
+    float DPXGamma = 1.0;
 
-	float RedCurve = Red;
-	float GreenCurve = Green;
-	float BlueCurve = Blue;
-	
-	float3 RGB_Curve = float3(Red,Green,Blue);
-	float3 RGB_C = float3(RedC,GreenC,BlueC);
+    float RedCurve = Red;
+    float GreenCurve = Green;
+    float BlueCurve = Blue;
+    
+    float3 RGB_Curve = float3(Red,Green,Blue);
+    float3 RGB_C = float3(RedC,GreenC,BlueC);
 
-	float3 B = InputColor.rgb;
-	//float3 Bn = B; // I used InputColor.rgb instead.
+    float3 B = InputColor.rgb;
+    //float3 Bn = B; // I used InputColor.rgb instead.
 
-	B = pow(B, 1.0/DPXGamma);
+    B = pow(B, 1.0/DPXGamma);
 
   B = B * (1.0 - DPXContrast) + (0.5 * DPXContrast);
 
 
     //B = (1.0 /(1.0 + exp(- RGB_Curve * (B - RGB_C))) - (1.0 / (1.0 + exp(RGB_Curve / 2.0))))/(1.0 - 2.0 * (1.0 / (1.0 + exp(RGB_Curve / 2.0))));
-	
-    float3 Btemp = (1.0 / (1.0 + exp(RGB_Curve / 2.0)));	  
-	  B = ((1.0 / (1.0 + exp(-RGB_Curve * (B - RGB_C)))) / (-2.0 * Btemp + 1.0)) + (-Btemp / (-2.0 * Btemp + 1.0));
+    
+    float3 Btemp = (1.0 / (1.0 + exp(RGB_Curve / 2.0)));      
+      B = ((1.0 / (1.0 + exp(-RGB_Curve * (B - RGB_C)))) / (-2.0 * Btemp + 1.0)) + (-Btemp / (-2.0 * Btemp + 1.0));
 
 
      //TODO use faster code for conversion between RGB/HSV  -  see http://www.chilliant.com/rgb2hsv.html
-	   float value = max(max(B.r, B.g), B.b);
-	   float3 color = B / value;
-	
-	   color = pow(color, 1.0/ColorGamma);
-	
-	   float3 c0 = color * value;
+       float value = max(max(B.r, B.g), B.b);
+       float3 color = B / value;
+    
+       color = pow(color, 1.0/ColorGamma);
+    
+       float3 c0 = color * value;
 
-	   c0 = mul(XYZ, c0);
+       c0 = mul(XYZ, c0);
 
-	   float luma = dot(c0, float3(0.30, 0.59, 0.11)); //Use BT 709 instead?
+       float luma = dot(c0, float3(0.30, 0.59, 0.11)); //Use BT 709 instead?
 
- 	   //float3 chroma = c0 - luma;
-	   //c0 = chroma * DPXSaturation + luma;
-	   c0 = (1.0 - DPXSaturation) * luma + DPXSaturation * c0;
-	   
-	   c0 = mul(RGB, c0);
-	
-	InputColor.rgb = lerp(InputColor.rgb, c0, Blend);
+        //float3 chroma = c0 - luma;
+       //c0 = chroma * DPXSaturation + luma;
+       c0 = (1.0 - DPXSaturation) * luma + DPXSaturation * c0;
+       
+       c0 = mul(RGB, c0);
+    
+    InputColor.rgb = lerp(InputColor.rgb, c0, Blend);
 
-	return InputColor;
+    return InputColor;
 }
 
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = DPXPass(c0);
-	return c0;
+    c0 = DPXPass(c0);
+    return c0;
 }

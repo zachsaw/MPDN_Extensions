@@ -44,27 +44,27 @@ float4 args0 : register(c3);
 #define EWA 1
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float2 Avg = 0;
-	float W = 0;
+    float2 Avg = 0;
+    float W = 0;
 
-	float2 offset = frac(tex*ChromaSize) - ChromaOffset;
+    float2 offset = frac(tex*ChromaSize) - ChromaOffset;
 
-	float2 pos = tex + floor(offset)*float2(px,py);
-	offset -= floor(offset);
+    float2 pos = tex + floor(offset)*float2(px,py);
+    offset -= floor(offset);
 
-	for (int X = -taps+1; X<=taps; X++) 
-	for (int Y = -taps+1; Y<=taps; Y++) {
-		int2 XY = {X,Y};
-		#if EWA == 0
-			float2 w = Weight(XY-offset);
-			Avg += GetUV(X,Y)*w.x*w.y;
-			W += w.x*w.y;
-		#elif EWA == 1
-			float w = Weight(length(XY-offset));
-			Avg += GetUV(X,Y)*w;
-			W += w;
-		#endif
-	}
+    for (int X = -taps+1; X<=taps; X++) 
+    for (int Y = -taps+1; Y<=taps; Y++) {
+        int2 XY = {X,Y};
+        #if EWA == 0
+            float2 w = Weight(XY-offset);
+            Avg += GetUV(X,Y)*w.x*w.y;
+            W += w.x*w.y;
+        #elif EWA == 1
+            float w = Weight(length(XY-offset));
+            Avg += GetUV(X,Y)*w;
+            W += w;
+        #endif
+    }
 
-	return float4(GetY, Avg/W, 1);
+    return float4(GetY, Avg/W, 1);
 }

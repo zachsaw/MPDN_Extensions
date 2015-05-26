@@ -166,7 +166,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void AddScripts(IEnumerable<IRenderChainUi> renderScripts, int index = -1) 
             {
-				AddPresets(renderScripts.Select(script => script.MakeNewPreset()), index);
+                AddPresets(renderScripts.Select(script => script.MakeNewPreset()), index);
             }
 
             private void AddScript(IRenderChainUi renderScript, int index = -1)

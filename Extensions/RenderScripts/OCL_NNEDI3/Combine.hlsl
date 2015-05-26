@@ -18,5 +18,5 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     float y = tex2D(s0, tex).x;
     float2 uv = tex2D(s1, tex).yz;
     
-	return float4(y, uv, 1);
+    return float4(y, uv, 1);
 }

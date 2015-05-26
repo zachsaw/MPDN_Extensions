@@ -69,76 +69,76 @@ float XOR( float xor_A, float xor_B )
 float4 VignettePass( float4 colorInput, float2 tex )
 {
 
-	#if VignetteType == 1
-		//Set the center
-		float2 tc = tex - VignetteCenter;
+    #if VignetteType == 1
+        //Set the center
+        float2 tc = tex - VignetteCenter;
 
-		//Adjust the ratio
-		tc *= float2((pixel.y / pixel.x),VignetteRatio);
+        //Adjust the ratio
+        tc *= float2((pixel.y / pixel.x),VignetteRatio);
 
-		//Calculate the distance
-		tc /= VignetteRadius;
-		float v = dot(tc,tc);
+        //Calculate the distance
+        tc /= VignetteRadius;
+        float v = dot(tc,tc);
 
-		//Apply the vignette
-		colorInput.rgb *= (1.0 + pow(v, VignetteSlope * 0.5) * VignetteAmount); //pow - multiply
-	#endif
+        //Apply the vignette
+        colorInput.rgb *= (1.0 + pow(v, VignetteSlope * 0.5) * VignetteAmount); //pow - multiply
+    #endif
 
-	#if VignetteType == 2 // New round (-x*x+x) + (-y*y+y) method.
+    #if VignetteType == 2 // New round (-x*x+x) + (-y*y+y) method.
     
         tex = -tex * tex + tex;
-		colorInput.rgb = saturate(( (pixel.y / pixel.x)*(pixel.y / pixel.x) * VignetteRatio * tex.x + tex.y) * 4.0) * colorInput.rgb;
+        colorInput.rgb = saturate(( (pixel.y / pixel.x)*(pixel.y / pixel.x) * VignetteRatio * tex.x + tex.y) * 4.0) * colorInput.rgb;
   #endif
 
-	#if VignetteType == 3 // New (-x*x+x) * (-y*y+y) TV style method.
+    #if VignetteType == 3 // New (-x*x+x) * (-y*y+y) TV style method.
 
         tex = -tex * tex + tex;
-		colorInput.rgb = saturate(tex.x * tex.y * 100.0) * colorInput.rgb;
-	#endif
-		
-	#if VignetteType == 4
-		tex = abs(tex - 0.5);
-		//tex = abs(0.5 - tex); //same result
-		float tc = dot(float4(-tex.x ,-tex.x ,tex.x , tex.y) , float4(tex.y, tex.y ,1.0 ,1.0 ) ); //XOR
+        colorInput.rgb = saturate(tex.x * tex.y * 100.0) * colorInput.rgb;
+    #endif
+        
+    #if VignetteType == 4
+        tex = abs(tex - 0.5);
+        //tex = abs(0.5 - tex); //same result
+        float tc = dot(float4(-tex.x ,-tex.x ,tex.x , tex.y) , float4(tex.y, tex.y ,1.0 ,1.0 ) ); //XOR
 
-		tc = saturate(tc -0.495);
-		colorInput.rgb *= (pow((1.0 - tc * 200),4)+0.25); //or maybe abs(tc*100-1) (-(tc*100)-1)
+        tc = saturate(tc -0.495);
+        colorInput.rgb *= (pow((1.0 - tc * 200),4)+0.25); //or maybe abs(tc*100-1) (-(tc*100)-1)
   #endif
   
-	#if VignetteType == 5
-		tex = abs(tex - 0.5);
-		//tex = abs(0.5 - tex); //same result
-		float tc = dot(float4(-tex.x ,-tex.x ,tex.x , tex.y) , float4(tex.y, tex.y ,1.0 ,1.0 ) ); //XOR
+    #if VignetteType == 5
+        tex = abs(tex - 0.5);
+        //tex = abs(0.5 - tex); //same result
+        float tc = dot(float4(-tex.x ,-tex.x ,tex.x , tex.y) , float4(tex.y, tex.y ,1.0 ,1.0 ) ); //XOR
 
-		tc = saturate(tc -0.495)-0.0002;
-		colorInput.rgb *= (pow((1.0 - tc * 200),4)+0.0); //or maybe abs(tc*100-1) (-(tc*100)-1)
+        tc = saturate(tc -0.495)-0.0002;
+        colorInput.rgb *= (pow((1.0 - tc * 200),4)+0.0); //or maybe abs(tc*100-1) (-(tc*100)-1)
   #endif
 
-	#if VignetteType == 6 //MAD version of 2
-		tex = abs(tex - 0.5);
-		//tex = abs(0.5 - tex); //same result
-		float tc = tex.x * (-2.0 * tex.y + 1.0) + tex.y; //XOR
+    #if VignetteType == 6 //MAD version of 2
+        tex = abs(tex - 0.5);
+        //tex = abs(0.5 - tex); //same result
+        float tc = tex.x * (-2.0 * tex.y + 1.0) + tex.y; //XOR
 
-		tc = saturate(tc -0.495);
-		colorInput.rgb *= (pow((-tc * 200 + 1.0),4)+0.25); //or maybe abs(tc*100-1) (-(tc*100)-1)
-		//colorInput.rgb *= (pow(((tc*200.0)-1.0),4)); //or maybe abs(tc*100-1) (-(tc*100)-1)
+        tc = saturate(tc -0.495);
+        colorInput.rgb *= (pow((-tc * 200 + 1.0),4)+0.25); //or maybe abs(tc*100-1) (-(tc*100)-1)
+        //colorInput.rgb *= (pow(((tc*200.0)-1.0),4)); //or maybe abs(tc*100-1) (-(tc*100)-1)
   #endif
 
   #if VignetteType == 7 // New round (-x*x+x) * (-y*y+y) method.
     
-	  //tex.y /= float2((pixel.y / pixel.x),VignetteRatio);
+      //tex.y /= float2((pixel.y / pixel.x),VignetteRatio);
     float tex_xy = dot( float4(tex,tex) , float4(-tex,1.0,1.0) ); //dot is actually slower
-		colorInput.rgb = saturate(tex_xy * 4.0) * colorInput.rgb;
-	#endif
+        colorInput.rgb = saturate(tex_xy * 4.0) * colorInput.rgb;
+    #endif
 
-	return colorInput;
+    return colorInput;
 }
 
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = VignettePass(c0, tex);
-	return c0;
+    c0 = VignettePass(c0, tex);
+    return c0;
 }
