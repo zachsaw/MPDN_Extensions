@@ -33,6 +33,7 @@ namespace Mpdn.Extensions.RenderScripts
                 MaxBitdepthSetter.Value = (Decimal)Settings.maxbitdepth;
                 ThresholdSetter.Value = (Decimal)Settings.margin;
                 PowerSetter.Value = (Decimal)Settings.power;
+                GrainBox.Checked = Settings.grain;
 
                 UpdateGui();
             }
@@ -42,6 +43,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Settings.maxbitdepth = (int)MaxBitdepthSetter.Value;
                 Settings.margin = (float)ThresholdSetter.Value;
                 Settings.power = (float)PowerSetter.Value;
+                Settings.grain = GrainBox.Checked;
             }
 
             private void ValueChanged(object sender, EventArgs e)
