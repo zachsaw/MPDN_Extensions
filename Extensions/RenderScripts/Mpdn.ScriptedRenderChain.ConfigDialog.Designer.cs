@@ -49,7 +49,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.textBoxScript = new System.Windows.Forms.TextBox();
+            this.textBoxScript = new Mpdn.ScriptedRenderChain.AvalonEditHost();
             this.SuspendLayout();
             // 
             // buttonCancel
@@ -85,19 +85,13 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             // textBoxScript
             // 
-            this.textBoxScript.AcceptsReturn = true;
-            this.textBoxScript.AcceptsTab = true;
             this.textBoxScript.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxScript.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxScript.Location = new System.Drawing.Point(12, 32);
-            this.textBoxScript.Multiline = true;
+            this.textBoxScript.Location = new System.Drawing.Point(15, 30);
             this.textBoxScript.Name = "textBoxScript";
-            this.textBoxScript.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBoxScript.Size = new System.Drawing.Size(767, 429);
-            this.textBoxScript.TabIndex = 0;
-            this.textBoxScript.WordWrap = false;
+            this.textBoxScript.Size = new System.Drawing.Size(764, 433);
+            this.textBoxScript.TabIndex = 1008;
             // 
             // ScriptedRenderChainConfigDialog
             // 
@@ -125,7 +119,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button buttonCancel;
             private System.Windows.Forms.Button buttonOk;
             private System.Windows.Forms.Label label1;
-            private System.Windows.Forms.TextBox textBoxScript;
+            private AvalonEditHost textBoxScript;
 
         }
     }

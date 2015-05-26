@@ -36,7 +36,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var file = Settings.ScriptFileName;
                 if (File.Exists(file))
                 {
-                    textBoxScript.Text = File.ReadAllText(file);
+                    textBoxScript.Editor.Text = File.ReadAllText(file);
                 }
                 else
                 {
@@ -44,11 +44,8 @@ namespace Mpdn.Extensions.RenderScripts
                     {
                         MessageBox.Show(this, string.Format("Script file '{0}' not found. Default loaded.", file), "Error");
                     }
-                    textBoxScript.Text = Helpers.DefaultScript;
+                    textBoxScript.Editor.Text = Helpers.DefaultScript;
                 }
-
-                textBoxScript.SelectionStart = 0;
-                textBoxScript.SelectionLength = 0;
             }
 
             protected override void SaveSettings()
