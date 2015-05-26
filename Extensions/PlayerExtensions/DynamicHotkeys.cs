@@ -24,30 +24,31 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class DynamicHotkeys : PlayerExtension
     {
-        protected static IList<Verb> m_Verbs = new List<Verb>();
-        protected static Action Reload;
+        private static IList<Verb> s_Verbs = new List<Verb>();
+        private static Action s_Reload;
 
         public static void RegisterHotkey(Guid guid, string hotkey, Action action)
         {
             Keys keys;
             if (TryDecodeKeyString(hotkey, out keys))
             {
-                m_Verbs.Add(new Verb(Category.Window, "Dynamic Hotkeys", guid.ToString(), hotkey, "", action));
-                Reload();
+                s_Verbs.Add(new Verb(Category.Window, "Dynamic Hotkeys", guid.ToString(), hotkey, "", action));
+                s_Reload();
             }
         }
 
         public static void RemoveHotkey(Guid guid)
         {
-            m_Verbs = m_Verbs.Where(v => v.Caption != guid.ToString()).ToList();
+            s_Verbs = s_Verbs.Where(v => v.Caption != guid.ToString()).ToList();
+            s_Reload();
         }
 
         public DynamicHotkeys()
         {
-            Reload = LoadVerbs;
+            s_Reload = LoadVerbs;
         }
 
-        public override IList<Verb> Verbs { get { return m_Verbs; } }
+        public override IList<Verb> Verbs { get { return s_Verbs; } }
 
         public override ExtensionUiDescriptor Descriptor
         {

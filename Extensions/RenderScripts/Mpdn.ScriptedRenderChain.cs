@@ -37,9 +37,10 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private readonly ScriptEngine m_Engine = new JScriptEngine(WindowsScriptEngineFlags.EnableDebugging);
             private readonly HashSet<string> m_FilterTypeNames = new HashSet<string>();
             private readonly HashSet<string> m_EnumTypeNames = new HashSet<string>();
+
+            private ScriptEngine m_Engine;
             private string m_RsFile;
             private string m_RsFileName;
             private DateTime m_LastModified = DateTime.MinValue;
@@ -67,18 +68,32 @@ namespace Mpdn.Extensions.RenderScripts
                     }
                 }
 
-                m_Engine.AllowReflection = true;
-                m_Engine.AddHostObject("__$xhost", new InternalHostFunctions());
-                m_Engine.AddHostObject("host", new Host());
-                m_Engine.AddHostObject("gpu", Renderer.Dx9GpuInfo.Details);
-                m_Engine.AddHostType("Debug", typeof(Debug));
+                m_ScriptParser = new ScriptParser(m_FilterTypeNames);
+            }
 
-                AddEnumTypes(Assembly.GetAssembly(typeof(IRenderScript)));
+            private void InitScriptEngine()
+            {
+                m_Engine = new JScriptEngine(WindowsScriptEngineFlags.EnableDebugging) {AllowReflection = true};
+                m_Engine.AddHostType("Debug", typeof (Debug));
+
+                AddEnumTypes(Assembly.GetAssembly(typeof (IRenderScript)));
                 var asm = Assembly.GetExecutingAssembly();
                 AddRenderScriptTypes(asm);
                 AddEnumTypes(asm);
+            }
 
-                m_ScriptParser = new ScriptParser(m_FilterTypeNames);
+            public override void Initialize()
+            {
+                InitScriptEngine();
+                base.Initialize();
+            }
+
+            public override void Reset()
+            {
+                DisposeHelper.Dispose(ref m_Engine);
+                m_FilterTypeNames.Clear();
+                m_EnumTypeNames.Clear();
+                base.Reset();
             }
 
             private void CreateDefaultScriptFile()
@@ -125,7 +140,7 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     m_Engine.CollectGarbage(true);
                     var clip = new Clip(this, input);
-                    m_Engine.Script["input"] = clip;
+                    AssignScriptObjects(clip);
                     m_Engine.Execute("RenderScript", true, BuildScript(ScriptFileName));
                     return clip.Filter;
                 }
@@ -136,6 +151,15 @@ namespace Mpdn.Extensions.RenderScripts
                         string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
                         m_RsFileName, string.IsNullOrEmpty(message) ? e.ErrorDetails : message));
                 }
+            }
+
+            private void AssignScriptObjects(Clip clip)
+            {
+                m_Engine.Script["input"] = clip;
+                m_Engine.Script["Script"] = new Script();
+                m_Engine.Script["Gpu"] = Renderer.Dx9GpuInfo.Details;
+                m_Engine.Script["__$xhost"] = new InternalHostFunctions();
+                m_Engine.Script["Host"] = new Host();
             }
 
             private string BuildScript(string scriptRs)

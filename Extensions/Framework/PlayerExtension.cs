@@ -56,10 +56,11 @@ namespace Mpdn.Extensions.Framework
 
         protected void LoadVerbs()
         {
+            m_Actions.Clear();
             foreach (var verb in Verbs)
             {
                 var shortcut = DecodeKeyString(verb.ShortcutDisplayStr);
-                m_Actions.Remove(shortcut); //Prevent duplicates FIFO.
+                m_Actions.Remove(shortcut); // Prevent duplicates FIFO.
                 m_Actions.Add(shortcut, verb.Action);
             }
         }

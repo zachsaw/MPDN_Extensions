@@ -137,7 +137,14 @@ namespace Mpdn.Extensions.Framework
 
         #endregion
 
-        #region Resource Disposal Methods
+        #region Resource Management Methods
+
+        /// <summary>
+        /// Called when user activates a render script
+        /// </summary>
+        public virtual void Initialize()
+        {
+        }
 
         /// <summary>
         /// Dispose any unmanaged resource that shouldn't be retained when user selects a new render script

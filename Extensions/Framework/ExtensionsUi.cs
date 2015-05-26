@@ -80,7 +80,12 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
-        public abstract class ExtensionUi<TExtensionClass, TSettings, TDialog> : IExtensionUi
+        public interface IConfigLoadable
+        {
+            void LoadConfig();
+        }
+
+        public abstract class ExtensionUi<TExtensionClass, TSettings, TDialog> : IExtensionUi, IConfigLoadable
             where TSettings : class, new()
             where TDialog : IScriptConfigDialog<TSettings>, new()
         {
@@ -109,6 +114,11 @@ namespace Mpdn.Extensions.Framework
                 set { ScriptConfig = new Config(value); }
             }
 
+            public void LoadConfig()
+            {
+                ScriptConfig = new Config(ConfigFileName);
+            }
+
             public bool HasConfigDialog()
             {
                 return !(typeof (TDialog).IsAssignableFrom(typeof (ScriptConfigDialog<TSettings>)));
@@ -116,7 +126,7 @@ namespace Mpdn.Extensions.Framework
 
             public virtual void Initialize()
             {
-                ScriptConfig = new Config(ConfigFileName);
+                LoadConfig();
             }
 
             public virtual void Destroy()

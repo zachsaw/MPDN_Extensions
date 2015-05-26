@@ -143,6 +143,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
+                DisposeHelper.Dispose(ref m_Buffer);
+
                 if (!Renderer.IsOpenClAvail)
                     return sourceFilter; // OpenCL is not available; fallback
 
@@ -203,7 +205,7 @@ namespace Mpdn.Extensions.RenderScripts
                     return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("600C4E21-8C25-41E5-AD15-E58B86E2BA3B"),
-                        Name = "NNEDI3",
+                        Name = "OpenCL NNEDI3",
                         Description = "OpenCL NNEDI3 image doubler",
                         Copyright = "Adapted by Zachs for MPDN"
                     };

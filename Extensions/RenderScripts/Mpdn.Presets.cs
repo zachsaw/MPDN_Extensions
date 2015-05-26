@@ -108,6 +108,16 @@ namespace Mpdn.Extensions.RenderScripts
                 return Script != null ? Chain.CreateSafeFilter(input) : input;
             }
 
+            public override void Initialize()
+            {
+                base.Initialize();
+
+                if (Script == null)
+                    return;
+
+                Chain.Initialize();
+            }
+
             public override void Reset()
             {
                 base.Reset();
@@ -168,6 +178,19 @@ namespace Mpdn.Extensions.RenderScripts
                 throw new NotImplementedException();
             }
 
+            public override void Initialize()
+            {
+                base.Initialize();
+
+                if (Options == null)
+                    return;
+
+                foreach (var option in Options)
+                {
+                    option.Initialize();
+                }
+            }
+
             public override void Reset()
             {
                 base.Reset();
@@ -202,7 +225,6 @@ namespace Mpdn.Extensions.RenderScripts
                 set
                 {
                     m_Hotkey = value ?? "";
-                    RegisterHotkey();
                 }
             }
 
@@ -210,6 +232,25 @@ namespace Mpdn.Extensions.RenderScripts
             public Preset SelectedOption
             {
                 get { return Options.ElementAtOrDefault(SelectedIndex); }
+            }
+
+            [YAXDontSerialize]
+            public string ScriptName
+            {
+                get
+                {
+                    var preset = SelectedOption;
+                    return preset == null ? string.Empty : preset.Name;
+                }
+                set
+                {
+                    var index = Options.FindIndex(p => p.Name == value);
+                    if (index < 0)
+                    {
+                        throw new KeyNotFoundException(string.Format("ScriptName '{0}' is not found", value));
+                    }
+                    SelectedIndex = index;
+                }
             }
 
             #endregion
@@ -223,6 +264,12 @@ namespace Mpdn.Extensions.RenderScripts
             public override IFilter CreateFilter(IFilter input)
             {
                 return SelectedOption != null ? SelectedOption.CreateSafeFilter(input) : input;
+            }
+
+            public override void Initialize()
+            {
+                RegisterHotkey();
+                base.Initialize();
             }
 
             public override void Reset()
@@ -245,10 +292,14 @@ namespace Mpdn.Extensions.RenderScripts
             private void IncrementSelection()
             {
                 if (Options.Count > 0)
+                {
                     SelectedIndex = (SelectedIndex + 1)%Options.Count;
+                }
 
                 if (SelectedOption != null)
+                {
                     PlayerControl.ShowOsdText(Name + ": " + SelectedOption.Name);
+                }
 
                 PlayerControl.SetRenderScript(PlayerControl.ActiveRenderScriptGuid);
             }

@@ -15,11 +15,14 @@
 // License along with this library.
 // 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Config;
 using Mpdn.RenderScript;
 using SharpDX;
 using Point = System.Drawing.Point;
@@ -107,6 +110,44 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
 
+        public class Script
+        {
+            private static IEnumerable<IRenderChainUi> s_RenderScripts;
+
+            public dynamic Load(string name)
+            {
+                var chainUi = GetRenderScripts().FirstOrDefault(script => script.Descriptor.Name == name);
+                if (chainUi == null)
+                {
+                    throw new ArgumentException(string.Format("script.Load() error: Script '{0}' not found", name));
+                }
+
+                ((IConfigLoadable) chainUi).LoadConfig();
+                return chainUi.Chain;
+            }
+
+            public dynamic LoadByClassName(string className)
+            {
+                var chainUi = GetRenderScripts().FirstOrDefault(script => script.Chain.GetType().Name == className);
+                if (chainUi == null)
+                {
+                    throw new ArgumentException(
+                        string.Format("script.Load() error: Script with class name '{0}' not found", className));
+                }
+
+                ((IConfigLoadable) chainUi).LoadConfig();
+                return chainUi.Chain;
+            }
+
+            private static IEnumerable<IRenderChainUi> GetRenderScripts()
+            {
+                return s_RenderScripts ??
+                       (s_RenderScripts = PlayerControl.RenderScripts
+                           .Where(script => script is IRenderChainUi && script is IConfigLoadable)
+                           .Select(x => (x as IRenderChainUi).CreateNew()));
+            }
+        }
+
         public class Clip
         {
             private readonly RenderChain m_Chain;
@@ -191,6 +232,11 @@ namespace Mpdn.Extensions.RenderScripts
                 }
                 Filter += filter;
                 return this;
+            }
+
+            public Clip Apply(RenderChain filter)
+            {
+                return Add(filter);
             }
         }
 

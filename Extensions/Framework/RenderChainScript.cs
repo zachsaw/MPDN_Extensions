@@ -30,6 +30,7 @@ namespace Mpdn.Extensions.Framework
         public RenderChainScript(RenderChain chain)
         {
             Chain = chain;
+            Chain.Initialize();
         }
 
         ~RenderChainScript()
