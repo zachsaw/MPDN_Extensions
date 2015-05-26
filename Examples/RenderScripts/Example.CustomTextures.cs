@@ -36,10 +36,16 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter sourceFilter)
             {
-                CreateTextures();
                 var shader = CompileShader("CustomTextures.hlsl");
                 return new ShaderFilter(shader, sourceFilter, new TextureSourceFilter<ISourceTexture>(m_Texture1),
                     new TextureSourceFilter<ISourceTexture>(m_Texture2));
+            }
+
+            public override void Initialize()
+            {
+                CreateTextures();
+
+                base.Initialize();
             }
 
             public override void Reset()
