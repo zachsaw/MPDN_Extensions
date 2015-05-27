@@ -14,16 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-//css_reference Microsoft.CSharp;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using Microsoft.ClearScript;
-using Microsoft.ClearScript.Windows;
 using Mpdn.Extensions.Framework;
-using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -37,15 +30,11 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private readonly HashSet<string> m_FilterTypeNames = new HashSet<string>();
-            private readonly HashSet<string> m_EnumTypeNames = new HashSet<string>();
-
-            private ScriptEngine m_Engine;
+            private MpdnScriptEngine m_Engine;
+            private ScriptParser m_ScriptParser;
             private string m_RsFile;
             private string m_RsFileName;
             private DateTime m_LastModified = DateTime.MinValue;
-
-            private readonly ScriptParser m_ScriptParser;
 
             protected override string ShaderPath
             {
@@ -63,31 +52,18 @@ namespace Mpdn.Extensions.RenderScripts
                     }
                 }
 
-                m_ScriptParser = new ScriptParser(m_FilterTypeNames);
-            }
-
-            private void InitScriptEngine()
-            {
-                m_Engine = new JScriptEngine(WindowsScriptEngineFlags.EnableDebugging) {AllowReflection = true};
-                m_Engine.AddHostType("Debug", typeof (Debug));
-
-                AddEnumTypes(Assembly.GetAssembly(typeof (IRenderScript)));
-                var asm = Assembly.GetExecutingAssembly();
-                AddRenderScriptTypes(asm);
-                AddEnumTypes(asm);
             }
 
             public override void Initialize()
             {
-                InitScriptEngine();
+                m_Engine = new MpdnScriptEngine();
+                m_ScriptParser = new ScriptParser(m_Engine.FilterTypeNames);
                 base.Initialize();
             }
 
             public override void Reset()
             {
                 DisposeHelper.Dispose(ref m_Engine);
-                m_FilterTypeNames.Clear();
-                m_EnumTypeNames.Clear();
                 base.Reset();
             }
 
@@ -96,65 +72,9 @@ namespace Mpdn.Extensions.RenderScripts
                 File.WriteAllText(ScriptFileName, Helpers.DefaultScript);
             }
 
-            private void AddEnumTypes(Assembly asm)
-            {
-                var enumTypes = asm.GetTypes().Where(t => t.IsEnum && t.IsPublic);
-                foreach (var t in enumTypes)
-                {
-                    if (m_EnumTypeNames.Contains(t.Name))
-                    {
-                        throw new Exception(string.Format("Conflicting enum types detected: {0}", t.Name));
-                    }
-                    m_Engine.AddHostType(t.Name, t);
-                    m_EnumTypeNames.Add(t.Name);
-                }
-            }
-
-            private void AddRenderScriptTypes(Assembly asm)
-            {
-                var filterTypes =
-                    asm.GetTypes()
-                        .Where(
-                            t =>
-                                t.IsSubclassOf(typeof (RenderChain)) && t.IsPublic && !t.IsAbstract &&
-                                t.GetConstructor(Type.EmptyTypes) != null);
-                foreach (var t in filterTypes)
-                {
-                    if (m_FilterTypeNames.Contains(t.Name))
-                    {
-                        throw new Exception(string.Format("Conflicting render script types detected: {0}", t.Name));
-                    }
-                    m_Engine.AddHostType(t.Name, t);
-                    m_FilterTypeNames.Add(t.Name);
-                }
-            }
-
             public override IFilter CreateFilter(IFilter input)
             {
-                try
-                {
-                    m_Engine.CollectGarbage(true);
-                    var clip = new Clip(this, input);
-                    AssignScriptObjects(clip);
-                    m_Engine.Execute("RenderScript", true, BuildScript(ScriptFileName));
-                    return clip.Filter;
-                }
-                catch (ScriptEngineException e)
-                {
-                    var message = m_Engine.GetStackTrace();
-                    throw new ScriptEngineException(
-                        string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
-                        m_RsFileName, string.IsNullOrEmpty(message) ? e.ErrorDetails : message));
-                }
-            }
-
-            private void AssignScriptObjects(Clip clip)
-            {
-                m_Engine.Script["input"] = clip;
-                m_Engine.Script["Script"] = new Script();
-                m_Engine.Script["Gpu"] = Renderer.Dx9GpuInfo.Details;
-                m_Engine.Script["__$xhost"] = new InternalHostFunctions();
-                m_Engine.Script["Host"] = new Host();
+                return m_Engine.Execute(this, input, BuildScript(ScriptFileName), ScriptFileName);
             }
 
             private string BuildScript(string scriptRs)
