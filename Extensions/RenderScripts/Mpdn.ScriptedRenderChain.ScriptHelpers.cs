@@ -252,6 +252,11 @@ namespace Mpdn.Extensions.RenderScripts
                 return self.Substring(startIndex, length);
             }
 
+            public static string DefaultScriptFileName
+            {
+                get { return Path.Combine(PathHelper.GetDirectoryName(PlayerControl.ConfigRootPath), "DefaultScript.rs"); }
+            }
+
             public static string DefaultScript
             {
                 get

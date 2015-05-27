@@ -52,16 +52,11 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "ScriptedRenderChain"; }
             }
 
-            private static string DefaultScriptFileName
-            {
-                get { return Path.Combine(PathHelper.GetDirectoryName(PlayerControl.ConfigRootPath), "DefaultScript.rs"); }
-            }
-
             public ScriptedRenderChain()
             {
                 if (string.IsNullOrWhiteSpace(ScriptFileName))
                 {
-                    ScriptFileName = DefaultScriptFileName;
+                    ScriptFileName = Helpers.DefaultScriptFileName;
                     if (!File.Exists(ScriptFileName))
                     {
                         CreateDefaultScriptFile();

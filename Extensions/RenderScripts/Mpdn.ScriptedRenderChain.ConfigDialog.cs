@@ -17,6 +17,8 @@
 using System.IO;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.Controls;
+using Mpdn.Extensions.PlayerExtensions;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -28,29 +30,55 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 InitializeComponent();
 
-                Icon = PlayerControl.ApplicationIcon;
+                openFileDialog.Filter = "RenderScript files|*.rs|All files|*.*";
             }
 
             protected override void LoadSettings()
             {
-                var file = Settings.ScriptFileName;
-                if (File.Exists(file))
-                {
-                    textBoxScript.Editor.Text = File.ReadAllText(file);
-                }
-                else
-                {
-                    if (!string.IsNullOrWhiteSpace(file))
-                    {
-                        MessageBox.Show(this, string.Format("Script file '{0}' not found. Default loaded.", file), "Error");
-                    }
-                    textBoxScript.Editor.Text = Helpers.DefaultScript;
-                }
+                textBoxScript.Text = Settings.ScriptFileName;
             }
 
             protected override void SaveSettings()
             {
-                File.WriteAllText(Settings.ScriptFileName, textBoxScript.Text);
+                Settings.ScriptFileName = textBoxScript.Text;
+            }
+
+            private void EditClick(object sender, System.EventArgs e)
+            {
+                var file = textBoxScript.Text;
+                if (!EnsureFileExists(file)) 
+                    return;
+
+                using (new HourGlass())
+                {
+                    var editor = new ScriptedRenderChainScriptEditorDialog();
+                    editor.LoadFile(file);
+                    editor.ShowDialog(this);
+                }
+            }
+
+            private bool EnsureFileExists(string file)
+            {
+                if (!File.Exists(file))
+                {
+                    if (MessageBox.Show(this, string.Format("Script file '{0}' not found.\r\nCreate a new file?", file),
+                        "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                        return false;
+
+                    File.WriteAllText(file, Helpers.DefaultScript);
+                }
+                return true;
+            }
+
+            private void SelectFileClick(object sender, System.EventArgs e)
+            {
+                openFileDialog.FileName = textBoxScript.Text;
+                openFileDialog.InitialDirectory = MpdnPath.GetDirectoryName(openFileDialog.FileName);
+                if (openFileDialog.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                textBoxScript.Text = openFileDialog.FileName;
+                EnsureFileExists(textBoxScript.Text);
             }
         }
 

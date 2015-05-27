@@ -20,20 +20,13 @@
 //css_reference WindowsBase;
 //css_reference System.Xaml;
 
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Design.Serialization;
-using System.Drawing;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Xml;
 using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 
