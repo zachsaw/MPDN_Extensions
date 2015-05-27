@@ -137,6 +137,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ScriptedRenderChainConfigDialog";
+            this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Scripted Render Chain Config";
