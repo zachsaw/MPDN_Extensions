@@ -149,6 +149,7 @@ namespace Mpdn.Extensions.RenderScripts
                         ? listViewChain.Items.Add(string.Empty)
                         : listViewChain.Items.Insert(index++, string.Empty);
 
+                    preset.Name = GetUnique(preset.Name);
                     item.SubItems.Add(preset.Name);
                     item.SubItems.Add(preset.Description);
                     item.Tag = preset;
@@ -409,7 +410,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (listViewChain.SelectedItems.Count > 0)
                 {
                     var item = listViewChain.SelectedItems[0];
-                    var preset = item.Tag as Preset;
+                    var preset = (Preset) item.Tag;
                     var chain = preset.Chain as PresetCollection;
 
                     buttonConfigure.Enabled = preset.HasConfigDialog();
@@ -520,7 +521,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (listViewChain.SelectedItems.Count > 0)
                 {
                     var item = listViewChain.SelectedItems[0];
-                    Preset preset = (Preset)item.Tag;
+                    var preset = (Preset)item.Tag;
 
                     preset.Name = NameBox.Text;
                     UpdateItemText(item);
@@ -533,6 +534,51 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     e.IsInputKey = true;
                 }
+            }
+
+            private void NameLeave(object sender, EventArgs e)
+            {
+                var name = NameBox.Text.Trim();
+                if (name == string.Empty)
+                {
+                    name = "Unnamed";
+                    if (listViewChain.SelectedItems.Count > 0)
+                    {
+                        var item = listViewChain.SelectedItems[0];
+                        var preset = (Preset) item.Tag;
+                        if (preset.Script != null)
+                        {
+                            name = preset.Script.Descriptor.Name;
+                        }
+                    }
+                }
+                NameBox.Text = GetUnique(name, false);
+            }
+
+            private string GetUnique(string name, bool includeSelected = true)
+            {
+                var i = 1;
+                var result = name;
+                var presets = GatherPresets(listViewChain.Items).Where(p => p != null);
+                if (!includeSelected)
+                {
+                    presets = presets.Where(p =>
+                    {
+                        if (listViewChain.SelectedItems.Count > 0)
+                        {
+                            var item = listViewChain.SelectedItems[0];
+                            var preset = (Preset) item.Tag;
+                            return !ReferenceEquals(p, preset);
+                        }
+                        return true;
+                    });
+                }
+                var presetArray = presets.ToArray();
+                while (presetArray.Any(p => String.Equals(p.Name, result, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    result = string.Format("{0} {1}", name, i++);
+                }
+                return result;
             }
 
             private void NameKeyDown(object sender, KeyEventArgs e)
@@ -631,9 +677,9 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void AddSubItems(ToolStripMenuItem menuitem, Preset preset)
             {
-                menuitem.DropDownItemClicked -= menuConfigureItemClicked;
+                menuitem.DropDownItemClicked -= MenuConfigureItemClicked;
                 menuitem.DropDownItems.Clear();
-                menuitem.DropDownItemClicked += menuConfigureItemClicked;
+                menuitem.DropDownItemClicked += MenuConfigureItemClicked;
                 var presetCollection = preset.Chain as PresetCollection;
                 if (presetCollection != null)
                 {
@@ -648,7 +694,7 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            private void menuConfigureItemClicked(object sender, ToolStripItemClickedEventArgs e)
+            private void MenuConfigureItemClicked(object sender, ToolStripItemClickedEventArgs e)
             {
                 var preset = (Preset)e.ClickedItem.Tag;
                 if (preset.HasConfigDialog()
@@ -658,7 +704,6 @@ namespace Mpdn.Extensions.RenderScripts
             }
 
             #endregion
-
         }
 
         public class PresetDialogBase : ScriptConfigDialog<PresetCollection>

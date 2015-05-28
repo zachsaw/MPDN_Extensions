@@ -36,11 +36,6 @@ namespace Mpdn.Extensions.RenderScripts
             private string m_RsFileName;
             private DateTime m_LastModified = DateTime.MinValue;
 
-            protected override string ShaderPath
-            {
-                get { return "ScriptedRenderChain"; }
-            }
-
             public ScriptedRenderChain()
             {
                 if (string.IsNullOrWhiteSpace(ScriptFileName))
@@ -97,7 +92,7 @@ namespace Mpdn.Extensions.RenderScripts
         {
             public override string Category
             {
-                get { return "Hidden"; } // Change to something else to make it visible in MPDN
+                get { return "Meta"; }
             }
 
             public override ExtensionUiDescriptor Descriptor

@@ -219,7 +219,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.menuGroup,
             this.menuUngroup});
             this.menuChain.Name = "contextMenuStrip1";
-            this.menuChain.Size = new System.Drawing.Size(165, 170);
+            this.menuChain.Size = new System.Drawing.Size(165, 148);
             this.menuChain.Opening += new System.ComponentModel.CancelEventHandler(this.MenuChainOpening);
             // 
             // menuConfigure
@@ -227,7 +227,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.menuConfigure.Name = "menuConfigure";
             this.menuConfigure.Size = new System.Drawing.Size(164, 22);
             this.menuConfigure.Text = "Configure...";
-            this.menuConfigure.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.menuConfigureItemClicked);
+            this.menuConfigure.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuConfigureItemClicked);
             this.menuConfigure.Click += new System.EventHandler(this.ButtonConfigureClick);
             // 
             // toolStripSeparator1
@@ -442,6 +442,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.NameBox.TabIndex = 10;
             this.NameBox.TextChanged += new System.EventHandler(this.NameChanged);
             this.NameBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NameKeyDown);
+            this.NameBox.Leave += new System.EventHandler(this.NameLeave);
             this.NameBox.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.NamePreviewKeyDown);
             // 
             // PresetDialog
