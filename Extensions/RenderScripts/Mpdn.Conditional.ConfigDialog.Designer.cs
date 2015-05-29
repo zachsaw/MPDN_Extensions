@@ -54,13 +54,14 @@ namespace Mpdn.Extensions.RenderScripts
             this.label2 = new System.Windows.Forms.Label();
             this.comboBoxPreset = new System.Windows.Forms.ComboBox();
             this.configButton = new System.Windows.Forms.Button();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(280, 89);
+            this.buttonCancel.Location = new System.Drawing.Point(280, 92);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1002;
@@ -71,7 +72,7 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(199, 89);
+            this.buttonOk.Location = new System.Drawing.Point(199, 92);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 1001;
@@ -105,7 +106,7 @@ namespace Mpdn.Extensions.RenderScripts
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 48);
+            this.label2.Location = new System.Drawing.Point(12, 60);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(58, 13);
             this.label2.TabIndex = 1008;
@@ -116,21 +117,32 @@ namespace Mpdn.Extensions.RenderScripts
             this.comboBoxPreset.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxPreset.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxPreset.FormattingEnabled = true;
-            this.comboBoxPreset.Location = new System.Drawing.Point(76, 45);
+            this.comboBoxPreset.Location = new System.Drawing.Point(76, 57);
             this.comboBoxPreset.Name = "comboBoxPreset";
             this.comboBoxPreset.Size = new System.Drawing.Size(186, 21);
-            this.comboBoxPreset.TabIndex = 1;
+            this.comboBoxPreset.TabIndex = 2;
             this.comboBoxPreset.SelectedIndexChanged += new System.EventHandler(this.PresetSelectedIndexChanged);
             // 
             // configButton
             // 
-            this.configButton.Location = new System.Drawing.Point(268, 43);
+            this.configButton.Location = new System.Drawing.Point(268, 55);
             this.configButton.Name = "configButton";
             this.configButton.Size = new System.Drawing.Size(75, 23);
-            this.configButton.TabIndex = 2;
+            this.configButton.TabIndex = 3;
             this.configButton.Text = "Configure";
             this.configButton.UseVisualStyleBackColor = true;
             this.configButton.Click += new System.EventHandler(this.ConfigButtonClick);
+            // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(28, 39);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(184, 13);
+            this.linkLabel1.TabIndex = 1;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "How to write a conditional statement?";
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkClicked);
             // 
             // ConditionalConfigDialog
             // 
@@ -138,7 +150,8 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(367, 124);
+            this.ClientSize = new System.Drawing.Size(367, 127);
+            this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.configButton);
             this.Controls.Add(this.comboBoxPreset);
             this.Controls.Add(this.label2);
@@ -170,6 +183,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Label label2;
             private System.Windows.Forms.ComboBox comboBoxPreset;
             private System.Windows.Forms.Button configButton;
+            private System.Windows.Forms.LinkLabel linkLabel1;
 
         }
     }

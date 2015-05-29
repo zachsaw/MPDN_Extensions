@@ -15,6 +15,7 @@
 // License along with this library.
 // 
 using System;
+using System.Diagnostics;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
@@ -119,6 +120,11 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 var preset = (Preset) comboBoxPreset.SelectedItem;
                 configButton.Enabled = preset != null && preset.Script.HasConfigDialog();
+            }
+
+            private void LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+            {
+                Process.Start("https://github.com/zachsaw/MPDN_Extensions/wiki/The-Conditional-Render-Script");
             }
         }
 
