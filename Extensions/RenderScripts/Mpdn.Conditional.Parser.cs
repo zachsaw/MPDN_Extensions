@@ -44,7 +44,16 @@ namespace Mpdn.Extensions.RenderScripts
                     var id = matchCtors.Value.Trim();
                     if (!IsKeyword(id))
                     {
-                        lastPos = matchCtors.Index;
+                        string op;
+                        if (!IsOperator(id, out op))
+                        {
+                            lastPos = matchCtors.Index;
+                        }
+                        else
+                        {
+                            result.Append(op);
+                            lastPos = matchCtors.Index + matchCtors.Value.Length;
+                        }
                     }
                     else
                     {
@@ -60,6 +69,22 @@ namespace Mpdn.Extensions.RenderScripts
                 result.Append(input.SubstringIdx(lastPos, input.Length));
 
                 return result.ToString();
+            }
+
+            private static bool IsOperator(string word, out string replacement)
+            {
+                replacement = word;
+                switch (word)
+                {
+                    case "and":
+                        replacement = "&&";
+                        return true;
+                    case "or":
+                        replacement = "||";
+                        return true;
+                    default:
+                        return false;
+                }
             }
 
             private static bool IsKeyword(string word)
