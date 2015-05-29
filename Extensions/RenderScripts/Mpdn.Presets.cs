@@ -130,6 +130,11 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
+            public override string ToString()
+            {
+                return Name;
+            }
+
             public static Preset Make<T>(string name = null)
                 where T : IRenderChainUi, new()
             {
@@ -259,6 +264,16 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 SelectedIndex = 0;
                 m_HotkeyGuid = Guid.NewGuid();
+            }
+
+            public Preset GetPreset(Guid guid)
+            {
+                return Options.FirstOrDefault(o => o.Guid == guid);
+            }
+
+            public int GetPresetIndex(Guid guid)
+            {
+                return Options.FindIndex(o => o.Guid == guid);
             }
 
             public override IFilter CreateFilter(IFilter input)

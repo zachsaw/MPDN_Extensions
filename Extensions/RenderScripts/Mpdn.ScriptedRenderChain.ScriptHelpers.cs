@@ -37,6 +37,14 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 Trace.WriteLine(text.ToString());
             }
+
+            public static void Assert(bool condition)
+            {
+                if (condition)
+                    return;
+
+                throw new Exception("Assertion failed in script");
+            }
         }
 
         public class InternalHostFunctions
@@ -122,7 +130,7 @@ namespace Mpdn.Extensions.RenderScripts
                     throw new ArgumentException(string.Format("script.Load() error: Script '{0}' not found", name));
                 }
 
-                ((IConfigLoadable) chainUi).LoadConfig();
+                ((IPersistentConfig) chainUi).Load();
                 return chainUi.Chain;
             }
 
@@ -135,7 +143,7 @@ namespace Mpdn.Extensions.RenderScripts
                         string.Format("script.Load() error: Script with class name '{0}' not found", className));
                 }
 
-                ((IConfigLoadable) chainUi).LoadConfig();
+                ((IPersistentConfig) chainUi).Load();
                 return chainUi.Chain;
             }
 
@@ -143,12 +151,46 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 return s_RenderScripts ??
                        (s_RenderScripts = PlayerControl.RenderScripts
-                           .Where(script => script is IRenderChainUi && script is IConfigLoadable)
-                           .Select(x => (x as IRenderChainUi).CreateNew()));
+                           .Where(script => script is IRenderChainUi && script is IPersistentConfig)
+                           .Select(x => (x as IRenderChainUi).CreateNew())).ToArray();
             }
         }
 
-        public class Clip
+        public interface IClip
+        {
+            string FileName { get; }
+            bool Interlaced { get; }
+            bool NeedsUpscaling { get; }
+            bool NeedsDownscaling { get; }
+            Size TargetSize { get; }
+            Size SourceSize { get; }
+            Size LumaSize { get; }
+            Size ChromaSize { get; }
+            Vector2 ChromaOffset { get; }
+            Point AspectRatio { get; }
+            YuvColorimetric Colorimetric { get; }
+            FrameBufferInputFormat InputFormat { get; }
+            double FrameRateHz { get; }
+        }
+
+        public class MockClip : IClip
+        {
+            public string FileName { get { return "C:\\MyVideoFolder\\AnotherSubFolder\\MyVideoFile.mkv"; }}
+            public bool Interlaced { get { return true; } }
+            public bool NeedsUpscaling { get { return true; } }
+            public bool NeedsDownscaling { get { return true; } }
+            public Size TargetSize { get { return new Size(1920, 1080);} }
+            public Size SourceSize { get{return new Size(320, 180);} }
+            public Size LumaSize { get { return new Size(320, 180);} }
+            public Size ChromaSize { get {return new Size(160, 90);} }
+            public Vector2 ChromaOffset { get {return Vector2.Zero;} }
+            public Point AspectRatio { get {return new Point(16, 9);} }
+            public YuvColorimetric Colorimetric { get{return YuvColorimetric.ItuBt601;} }
+            public FrameBufferInputFormat InputFormat { get {return FrameBufferInputFormat.Nv12;} }
+            public double FrameRateHz { get { return 24/1.001; } }
+        }
+
+        public class Clip : IClip
         {
             private readonly RenderChain m_Chain;
             public IFilter Filter { get; private set; }

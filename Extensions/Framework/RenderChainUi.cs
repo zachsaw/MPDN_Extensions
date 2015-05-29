@@ -112,7 +112,7 @@ namespace Mpdn.Extensions.Framework
 
     public static class RenderChainExtensions
     {
-        public static IRenderChainUi CreateNew(this IRenderChainUi scriptUi)
+        public static IRenderChainUi CreateNew(this IRenderChainUi scriptUi, bool loadConfig = false)
         {
             var constructor = scriptUi.GetType().GetConstructor(Type.EmptyTypes);
             if (constructor == null)
@@ -121,6 +121,10 @@ namespace Mpdn.Extensions.Framework
             }
 
             var renderScript = (IRenderChainUi)constructor.Invoke(new object[0]);
+            if (loadConfig)
+            {
+                ((IPersistentConfig) renderScript).Load();
+            }
             return renderScript;
         }
     }

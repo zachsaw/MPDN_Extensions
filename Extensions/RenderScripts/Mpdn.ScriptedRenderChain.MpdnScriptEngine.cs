@@ -72,10 +72,11 @@ namespace Mpdn.Extensions.RenderScripts
                 try
                 {
                     m_Engine.CollectGarbage(true);
-                    var clip = new Clip(chain, input);
+                    var mock = (chain == null || input == null);
+                    var clip = mock ? (IClip) new MockClip() : new Clip(chain, input);
                     AssignScriptObjects(clip);
                     m_Engine.Execute("RenderScript", true, code);
-                    return clip.Filter;
+                    return mock ? null : ((Clip) clip).Filter;
                 }
                 catch (ScriptEngineException e)
                 {
@@ -119,7 +120,7 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            private void AssignScriptObjects(Clip clip)
+            private void AssignScriptObjects(IClip clip)
             {
                 m_Engine.Script["input"] = clip;
                 m_Engine.Script["Script"] = new Script();
