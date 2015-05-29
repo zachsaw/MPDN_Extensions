@@ -36,6 +36,22 @@ Follow these simple steps:
 
 1. Create a class library
 1. Add all the DLLs in MPDN's root folder as assembly references to your project
+1. Add all the DLLs that are included with MPDN_Extensions
+1. Additionally, add the following assembly references as well if they aren't already added
+    * Microsoft.CSharp
+    * PresentationCore
+    * PresentationFramework
+    * System
+    * System.Core
+    * System.Data
+    * System.Data.DataSetExtensions
+    * System.Drawing
+    * System.Windows.Forms
+    * System.Xaml
+    * System.Xml
+    * System.Xml.Linq
+    * WindowsBase
+    * WindowsFormsIntegration
 1. Copy the resource files in the Sources folder to Extensions folder
     * e.g. PlaylistForm.resx should be placed in the same folder as PlaylistForm.cs
 1. Add all the files from the Extensions folder of this repository to your project
