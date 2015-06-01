@@ -85,10 +85,15 @@ namespace Mpdn.Extensions.RenderScripts
                     {
                         engine.Execute(null, null, CreateJsCode(Parser.BuildCondition(condition)), "Conditional");
                     }
-                    catch (Exception ex)
+                    catch (MpdnScriptEngineException ex)
                     {
                         error = ex.Message;
                         return false;
+                    }
+                    catch (Exception)
+                    {
+                        // ignore general exceptions for mock clip
+                        return true;
                     }
                     return true;
                 }

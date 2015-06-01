@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.Windows;
 using Mpdn.Extensions.Framework;
@@ -81,7 +82,7 @@ namespace Mpdn.Extensions.RenderScripts
                 catch (ScriptEngineException e)
                 {
                     var message = m_Engine.GetStackTrace();
-                    throw new ScriptEngineException(
+                    throw new MpdnScriptEngineException(
                         string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
                         filename, string.IsNullOrEmpty(message) ? e.ErrorDetails : message));
                 }
@@ -94,7 +95,7 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     if (EnumTypeNames.Contains(t.Name))
                     {
-                        throw new Exception(string.Format("Conflicting enum types detected: {0}", t.Name));
+                        throw new MpdnScriptEngineException(string.Format("Conflicting enum types detected: {0}", t.Name));
                     }
                     m_Engine.AddHostType(t.Name, t);
                     EnumTypeNames.Add(t.Name);
@@ -113,7 +114,7 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     if (FilterTypeNames.Contains(t.Name))
                     {
-                        throw new Exception(string.Format("Conflicting render script types detected: {0}", t.Name));
+                        throw new MpdnScriptEngineException(string.Format("Conflicting render script types detected: {0}", t.Name));
                     }
                     m_Engine.AddHostType(t.Name, t);
                     FilterTypeNames.Add(t.Name);
@@ -127,6 +128,25 @@ namespace Mpdn.Extensions.RenderScripts
                 m_Engine.Script["Gpu"] = Renderer.Dx9GpuInfo.Details;
                 m_Engine.Script["__$xhost"] = new InternalHostFunctions();
                 m_Engine.Script["Host"] = new Host();
+            }
+        }
+
+        public class MpdnScriptEngineException : Exception
+        {
+            public MpdnScriptEngineException()
+            {
+            }
+
+            public MpdnScriptEngineException(string message) : base(message)
+            {
+            }
+
+            public MpdnScriptEngineException(string message, Exception innerException) : base(message, innerException)
+            {
+            }
+
+            protected MpdnScriptEngineException(SerializationInfo info, StreamingContext context) : base(info, context)
+            {
             }
         }
     }

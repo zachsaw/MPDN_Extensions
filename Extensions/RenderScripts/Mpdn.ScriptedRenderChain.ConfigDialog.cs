@@ -18,7 +18,6 @@ using System.IO;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.Controls;
-using Mpdn.Extensions.PlayerExtensions;
 
 namespace Mpdn.Extensions.RenderScripts
 {
