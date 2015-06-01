@@ -36,7 +36,7 @@ Follow these simple steps:
 
 1. Copy any compatible version of MPDN (any edition is fine) into the `Sources\Solution\MPDN` folder.
     * The VS solution runs `Sources\Solution\MPDN\MediaPlayerDotNet.exe` when you start a debug session.
-1. Open Mpdn.Extensions.sln
+1. Open `Sources\Solution\Mpdn.Extensions.sln`
 1. Rebuild Mpdn.Extensions
     * Make sure you do this before opening any of the files in the IDE
 1. Hit F5 to run MPDN which will load the extensions for debugging
