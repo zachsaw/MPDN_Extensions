@@ -43,5 +43,5 @@ Follow these simple steps:
 
 You can set breakpoints and step through your code just as you normally would. Intellisense should work too.
 
-##Notes:
-When you add a new item in via solution explorer, the files will be added in the solutions folder. This needs to be manually corrected by first moving the files into the corresponding `\Extensions\...` folder, and then have them added back in to the project via "Add Existing | Add Link".
+####Quick Note about Adding a New Item
+Whenever you add a new item (e.g. a new form) via the IDE, the files will be added in the solutions folder. This needs to be manually corrected by first moving the files into the corresponding `\Extensions\...` folder, and then have them added back into the project via "Add Existing | Add Link".
