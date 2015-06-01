@@ -313,31 +313,6 @@
   <ItemGroup>
     <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
     <None Include="Extensions\RenderScripts\NNEDI3\BuildShaders.bat" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_128_A.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_128_B.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_128_C.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_128_D.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_128_E.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_16_A.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_16_B.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_16_C.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_16_D.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_16_E.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_256_A.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_256_B.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_256_C.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_256_D.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_256_E.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_32_A.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_32_B.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_32_C.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_32_D.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_32_E.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_64_A.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_64_B.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_64_C.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_64_D.cso" />
-    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_64_E.cso" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
   </ItemGroup>
   <ItemGroup>
