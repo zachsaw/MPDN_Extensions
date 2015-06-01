@@ -39,6 +39,6 @@ Follow these simple steps:
 1. Open Mpdn.Extensions.sln
 1. Rebuild Mpdn.Extensions
     * Make sure you do this before opening any of the files in the IDE
-1. You're all set! This allows your IDE to run MPDN which in turn loads your class library (Extension plugin) when you start a debug session
+1. Hit F5 to run MPDN which will load the extensions for debugging
 
 You can set breakpoints and step through your code just as you normally would. Intellisense should work too.
