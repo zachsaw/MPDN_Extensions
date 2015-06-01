@@ -30,33 +30,15 @@ If you also want to try out the example scripts, extract the two folders under E
 Developing / Debugging Extensions
 ---------------------------------
 
-The easiest way to develop or debug extensions is to use Microsoft Visual Studio or similar IDEs.
+The easiest way to develop or debug extensions is to use Microsoft Visual Studio 2013 or later.
 
 Follow these simple steps:
 
-1. Create a class library
-1. Add all the DLLs in MPDN's root folder as assembly references to your project
-1. Add all the DLLs that are included with MPDN_Extensions
-1. Additionally, add the following assembly references as well if they aren't already added
-    * Microsoft.CSharp
-    * PresentationCore
-    * PresentationFramework
-    * System
-    * System.Core
-    * System.Data
-    * System.Data.DataSetExtensions
-    * System.Drawing
-    * System.Windows.Forms
-    * System.Xaml
-    * System.Xml
-    * System.Xml.Linq
-    * WindowsBase
-    * WindowsFormsIntegration
-1. Copy the resource files in the Sources folder to Extensions folder
-    * e.g. PlaylistForm.resx should be placed in the same folder as PlaylistForm.cs
-1. Add all the files from the Extensions folder of this repository to your project
-1. Set your class library's output folder to MPDN's Extensions folder
-1. Set the program to debug your class library to MediaPlayerDotNet.exe
+1. Copy any compatible version of MPDN (any edition is fine) into the `Sources\Solution\MPDN` folder.
+    * The VS solution runs `Sources\Solution\MPDN\MediaPlayerDotNet.exe` when you start a debug session.
+1. Open Mpdn.Extensions.sln
+1. Rebuild Mpdn.Extensions
+    * Make sure you do this before opening any of the files in the IDE
 1. You're all set! This allows your IDE to run MPDN which in turn loads your class library (Extension plugin) when you start a debug session
 
 You can set breakpoints and step through your code just as you normally would. Intellisense should work too.

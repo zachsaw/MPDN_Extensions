@@ -5,6 +5,8 @@
 *.suo
 *.user
 *.sln.docstates
+Extensions/PlayerExtensions/*.resx
+Extensions/RenderScripts/*.resx
 
 # Build results
 [Dd]ebug/

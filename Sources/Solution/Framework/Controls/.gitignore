@@ -1,0 +1,6 @@
+# Note: never add your cs files here. Add them in the \Extensions\ folder instead and 
+# add to Mpdn.Extensions.csproj via Add Link.
+# Ignore all files in this directory
+*
+# Except this file
+!.gitignore
