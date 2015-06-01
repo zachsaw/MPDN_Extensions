@@ -45,3 +45,6 @@ You can set breakpoints and step through your code just as you normally would. I
 
 ####Quick Note about Adding a New Item
 Whenever you add a new item (e.g. a new form) via the IDE, the files will be added in the solutions folder. This needs to be manually corrected by first moving the files into the corresponding `\Extensions\...` folder, and then have them added back into the project via "Add Existing | Add Link".
+
+####Always Validate before Releasing your Extensions
+`Sources\Solution\Validate Release.bat` sets up MPDN with your extensions to simulate production condition. Always run `Validate Release.bat` and test your extensions in this mode before releasing them on GitHub.
