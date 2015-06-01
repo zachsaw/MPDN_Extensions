@@ -35,17 +35,17 @@ The easiest way to develop or debug extensions is to use Microsoft Visual Studio
 
 Follow these simple steps:
 
-1. Copy any compatible version of MPDN (any edition is fine) into the `Sources\Solution\MPDN` folder.
-    * The VS solution runs `Sources\Solution\MPDN\MediaPlayerDotNet.exe` when you start a debug session.
-1. Open `Sources\Solution\Mpdn.Extensions.sln`
+1. Copy any compatible version of MPDN (any edition is fine) into the `MPDN` folder.
+    * The VS solution runs `MPDN\MediaPlayerDotNet.exe` when you start a debug session.
+1. Open `Mpdn.Extensions.sln`
 1. Rebuild the solution
     * Make sure you do this before opening any of the files in the IDE
 1. Hit F5 to run MPDN which will load the extensions for debugging
 
 You can set breakpoints and step through your code just as you normally would. Intellisense should work too.
 
-####Quick Note about Adding a New Item
-Whenever you add a new item (e.g. a new form) via the IDE, the files will be added in the solutions folder. This needs to be manually corrected by first moving the files into the corresponding `\Extensions\...` folder, and then have them added back into the project via "Add Existing | Add Link".
+####Quick Note about .resx Files
+Avoid deploying managed resource files (.resx) when possible. If you must deploy them, make sure they go into the `Resources` folder and their filenames match the controls that reference them. For example, `PlaylistForm.resx` is renamed to `Resources\Mpdn.Extensions.PlayerExtensions.Playlist.PlaylistForm.resx` for deployment.
 
 ####Always Validate before Releasing your Extensions
-`Sources\Solution\Validate Release.bat` sets up MPDN with your extensions to simulate production condition. Always run `Validate Release.bat` and test your extensions in this mode before releasing them on GitHub.
+`Validate Release.bat` sets up MPDN with your extensions to simulate production condition. Always test your extensions in this mode before releasing them on GitHub.

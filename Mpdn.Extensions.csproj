@@ -1,0 +1,370 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8BE0ACD3-F161-42FE-A3D6-51D463469A22}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Mpdn.Extensions</RootNamespace>
+    <AssemblyName>Mpdn.Extensions</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>$(MSBuildProjectDirectory)\MPDN\</OutputPath>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(OutputPath)MediaPlayerDotNet.exe</StartProgram>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>$(MSBuildProjectDirectory)\MPDN\</OutputPath>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(OutputPath)MediaPlayerDotNet.exe</StartProgram>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ClearScript">
+      <HintPath>Extensions\RenderScripts\ClearScript.dll</HintPath>
+    </Reference>
+    <Reference Include="DirectShowLib-2005">
+      <HintPath>MPDN\DirectShowLib-2005.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit">
+      <HintPath>Extensions\RenderScripts\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
+    <Reference Include="MediaInfoDotNet">
+      <HintPath>MPDN\MediaInfoDotNet.dll</HintPath>
+    </Reference>
+    <Reference Include="Mpdn.Definitions">
+      <HintPath>MPDN\Mpdn.Definitions.dll</HintPath>
+    </Reference>
+    <Reference Include="Mpdn.RenderScript">
+      <HintPath>MPDN\Mpdn.RenderScript.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="SharpDX">
+      <HintPath>MPDN\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D9">
+      <HintPath>MPDN\SharpDX.Direct3D9.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="YAXLib">
+      <HintPath>MPDN\YAXLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Examples\RenderScripts\Example.Basic.cs" />
+    <Compile Include="Examples\RenderScripts\Example.CustomTextures.cs" />
+    <Compile Include="Examples\RenderScripts\Example.DirectCompute.cs" />
+    <Compile Include="Examples\RenderScripts\Example.FrameRateHalver.cs" />
+    <Compile Include="Examples\RenderScripts\Example.Lut3D.cs" />
+    <Compile Include="Examples\RenderScripts\Example.OpenCl.cs" />
+    <Compile Include="Examples\RenderScripts\Example.Sm5.cs" />
+    <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
+    <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />
+    <Compile Include="Extensions\CustomLinearScalers\SincBlackman.cs" />
+    <Compile Include="Extensions\CustomLinearScalers\SincCosine.cs" />
+    <Compile Include="Extensions\CustomLinearScalers\SincHamming.cs" />
+    <Compile Include="Extensions\CustomLinearScalers\SincHann.cs" />
+    <Compile Include="Extensions\Framework\Controls\HotkeyBox.cs" />
+    <Compile Include="Extensions\Framework\Controls\HourGlass.cs" />
+    <Compile Include="Extensions\Framework\ExtensionsUi.cs" />
+    <Compile Include="Extensions\Framework\Filter.cs" />
+    <Compile Include="Extensions\Framework\Filter.Shaders.cs" />
+    <Compile Include="Extensions\Framework\Filter.Sources.cs" />
+    <Compile Include="Extensions\Framework\Filter.Text.cs" />
+    <Compile Include="Extensions\Framework\Filter.Utilities.cs" />
+    <Compile Include="Extensions\Framework\Helpers.cs" />
+    <Compile Include="Extensions\Framework\PlayerExtension.cs" />
+    <Compile Include="Extensions\Framework\RenderChain.cs" />
+    <Compile Include="Extensions\Framework\RenderChainScript.cs" />
+    <Compile Include="Extensions\Framework\RenderChainUi.cs" />
+    <Compile Include="Extensions\Framework\RenderScript.cs" />
+    <Compile Include="Extensions\Framework\ShaderCache.cs" />
+    <Compile Include="Extensions\Framework\Textures.cs" />
+    <Compile Include="Extensions\PlayerExtensions\DisplayChanger.ConfigDialog.cs" />
+    <Compile Include="Extensions\PlayerExtensions\DisplayChanger.ConfigDialog.Designer.cs">
+      <DependentUpon>DisplayChanger.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\DisplayChanger.cs" />
+    <Compile Include="Extensions\PlayerExtensions\DisplayChanger.NativeMethods.cs" />
+    <Compile Include="Extensions\PlayerExtensions\DynamicHotkeys.cs" />
+    <Compile Include="Extensions\PlayerExtensions\FullScreenTextPainter.cs" />
+    <Compile Include="Extensions\PlayerExtensions\GoToTime.cs" />
+    <Compile Include="Extensions\PlayerExtensions\GoToTimeForm.cs" />
+    <Compile Include="Extensions\PlayerExtensions\GoToTimeForm.Designer.cs">
+      <DependentUpon>GoToTimeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\KeyBindings.cs" />
+    <Compile Include="Extensions\PlayerExtensions\MouseControl.ConfigDialog.cs" />
+    <Compile Include="Extensions\PlayerExtensions\MouseControl.ConfigDialog.Designer.cs">
+      <DependentUpon>MouseControl.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\MouseControl.cs" />
+    <Compile Include="Extensions\PlayerExtensions\Navigation.cs" />
+    <Compile Include="Extensions\PlayerExtensions\OpenSubtitles.ConfigDialog.cs" />
+    <Compile Include="Extensions\PlayerExtensions\OpenSubtitles.ConfigDialog.designer.cs">
+      <DependentUpon>OpenSubtitles.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\OpenSubtitles.Downloader.cs" />
+    <Compile Include="Extensions\PlayerExtensions\OpenSubtitles.PlayerExtension.cs" />
+    <Compile Include="Extensions\PlayerExtensions\OpenSubtitles.Subtitles.Form.cs" />
+    <Compile Include="Extensions\PlayerExtensions\OpenSubtitles.Subtitles.Form.Designer.cs">
+      <DependentUpon>OpenSubtitles.Subtitles.Form.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\Playlist.cs" />
+    <Compile Include="Extensions\PlayerExtensions\PlaylistConfigDialog.cs" />
+    <Compile Include="Extensions\PlayerExtensions\PlaylistConfigDialog.Designer.cs">
+      <DependentUpon>PlaylistConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\PlaylistForm.cs" />
+    <Compile Include="Extensions\PlayerExtensions\PlaylistForm.Designer.cs">
+      <DependentUpon>PlaylistForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\RemoteClients.cs" />
+    <Compile Include="Extensions\PlayerExtensions\RemoteClients.Designer.cs">
+      <DependentUpon>RemoteClients.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\RemoteControl.cs" />
+    <Compile Include="Extensions\PlayerExtensions\RemoteControlConfig.cs" />
+    <Compile Include="Extensions\PlayerExtensions\RemoteControlConfig.Designer.cs">
+      <DependentUpon>RemoteControlConfig.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\RemoteControl_AuthHandler.cs" />
+    <Compile Include="Extensions\PlayerExtensions\RendererControl.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ConfigDialog.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ConfigDialog.designer.cs">
+      <DependentUpon>UpdateChecker.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.PlayerExtension.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.Designer.cs">
+      <DependentUpon>UpdateChecker.UpdateAvailable.Form.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\ViewMediaInfo.cs" />
+    <Compile Include="Extensions\PlayerExtensions\ViewMediaInfoForm.cs" />
+    <Compile Include="Extensions\PlayerExtensions\ViewMediaInfoForm.Designer.cs">
+      <DependentUpon>ViewMediaInfoForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\AvalonEditHost.cs" />
+    <Compile Include="Extensions\RenderScripts\Custom.MyRenderScript.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.Conditional.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.Parser.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.ImageProcessor.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.ImageProcessor.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.ImageProcessor.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.ImageProcessor.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Lut3D.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Lut3D.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.Lut3D.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.Lut3D.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.OclNnedi3.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Scaler.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Weights.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.Presets.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.PresetGroupDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.PresetGroupDialog.Designer.cs">
+      <DependentUpon>Mpdn.Presets.PresetGroupDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.Resizer.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Resizer.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.Resizer.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.Resizer.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.ScriptedRenderChain.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.MpdnScriptEngine.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptEditorDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptEditorDialog.Designer.cs">
+      <DependentUpon>Mpdn.ScriptedRenderChain.ScriptEditorDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptHelpers.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptParser.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ChromaScaler.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ConfigDialog.Designer.cs">
+      <DependentUpon>Shiandow.Chroma.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.Deband.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Deband.ConfigDialog.Designer.cs">
+      <DependentUpon>Shiandow.Deband.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.Deband.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Nedi.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Nedi.ConfigDialog.Designer.cs">
+      <DependentUpon>Shiandow.Nedi.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.Nedi.NediScaler.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.ConfigDialog.Designer.cs">
+      <DependentUpon>Shiandow.Nnedi3.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Filters.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Scaler.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.SuperChromaRes.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.SuperChromaRes.ConfigDialog.Designer.cs">
+      <DependentUpon>Shiandow.SuperChromaRes.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.SuperChromaRes.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.ConfigDialog.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.ConfigDialog.Designer.cs">
+      <DependentUpon>Shiandow.SuperRes.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Examples\RenderScripts\Examples\BlueTintDirectCompute.hlsl" />
+    <Content Include="Examples\RenderScripts\Examples\BlueTintSm3.hlsl" />
+    <Content Include="Examples\RenderScripts\Examples\BlueTintSm5.hlsl" />
+    <Content Include="Examples\RenderScripts\Examples\CustomTextures.hlsl" />
+    <Content Include="Examples\RenderScripts\Examples\Lut3D.hlsl" />
+    <Content Include="Extensions\RenderScripts\ChromaScaler\Chroma.hlsl" />
+    <Content Include="Extensions\RenderScripts\Common\ColourProcessing.hlsl" />
+    <Content Include="Extensions\RenderScripts\Common\GammaToLab.hlsl" />
+    <Content Include="Extensions\RenderScripts\Common\GammaToLinear.hlsl" />
+    <Content Include="Extensions\RenderScripts\Common\LabToGamma.hlsl" />
+    <Content Include="Extensions\RenderScripts\Common\LabToLinear.hlsl" />
+    <Content Include="Extensions\RenderScripts\Common\LinearToGamma.hlsl" />
+    <Content Include="Extensions\RenderScripts\Common\LinearToLab.hlsl" />
+    <Content Include="Extensions\RenderScripts\Deband\Deband.hlsl" />
+    <Content Include="Extensions\RenderScripts\Deband\Subtract.hlsl" />
+    <Content Include="Extensions\RenderScripts\Deband\SubtractLimited.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\ConvertToGammaLight.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\ConvertToLinearLight.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Bloom.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Border.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Cartoon.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Curves.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\DPX.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Explosion.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\HDR.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Levels.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\LiftGammaGain.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\LumaSharpen.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Monochrome.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Sepia.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Technicolor.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Tonemap.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Vibrance.hlsl" />
+    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Vignette.hlsl" />
+    <Content Include="Extensions\RenderScripts\Lut3D\Lut3D.hlsl" />
+    <Content Include="Extensions\RenderScripts\NEDI\NEDI-Common.hlsl" />
+    <Content Include="Extensions\RenderScripts\NEDI\NEDI-HInterleave.hlsl" />
+    <Content Include="Extensions\RenderScripts\NEDI\NEDI-I.hlsl" />
+    <Content Include="Extensions\RenderScripts\NEDI\NEDI-II.hlsl" />
+    <Content Include="Extensions\RenderScripts\NEDI\NEDI-VInterleave.hlsl" />
+    <Content Include="Extensions\RenderScripts\NNEDI3\Combine.hlsl" />
+    <Content Include="Extensions\RenderScripts\NNEDI3\Interleave.hlsl" />
+    <Content Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
+    <Content Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
+    <Content Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
+    <Content Include="Extensions\RenderScripts\SuperRes\Diff.hlsl" />
+    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyChroma.hlsl" />
+    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyLuma.hlsl" />
+    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\Diff.hlsl" />
+    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\MergeChroma.hlsl" />
+    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperRes.hlsl" />
+    <Content Include="Extensions\RenderScripts\SuperRes\SuperRes.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
+    <None Include="Extensions\RenderScripts\NNEDI3\BuildShaders.bat" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_128_A.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_128_B.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_128_C.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_128_D.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_128_E.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_16_A.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_16_B.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_16_C.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_16_D.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_16_E.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_256_A.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_256_B.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_256_C.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_256_D.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_256_E.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_32_A.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_32_B.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_32_C.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_32_D.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_32_E.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_64_A.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_64_B.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_64_C.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_64_D.cso" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3_64_E.cso" />
+    <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
+      <DependentUpon>PlaylistForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>rmdir /s /q "$(ProjectDir)MPDN\Extensions"
+mkdir "$(ProjectDir)MPDN\Extensions\RenderScripts"
+xcopy /y /e "$(SolutionDir)Sources\*.resx" "$(SolutionDir)Extensions\"
+</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>copy /y "$(TargetDir)$(TargetName).dll" "$(ProjectDir)MPDN\Extensions"
+copy /y "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)MPDN\Extensions"
+echo .cs\ &gt; excludedfiles.txt
+xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Extensions\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
+xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Examples\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
+del excludedfiles.txt</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

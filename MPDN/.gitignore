@@ -1,0 +1,5 @@
+# Note: Placeholder for MPDN
+# Ignore all files in this directory
+*
+# Except this file
+!.gitignore
