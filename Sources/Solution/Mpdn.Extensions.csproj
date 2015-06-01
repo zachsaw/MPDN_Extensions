@@ -39,13 +39,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClearScript">
-      <HintPath>RenderScripts\ClearScript.dll</HintPath>
+      <HintPath>..\..\Extensions\RenderScripts\ClearScript.dll</HintPath>
     </Reference>
     <Reference Include="DirectShowLib-2005">
       <HintPath>MPDN\DirectShowLib-2005.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.AvalonEdit">
-      <HintPath>RenderScripts\ICSharpCode.AvalonEdit.dll</HintPath>
+      <HintPath>..\..\Extensions\RenderScripts\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
     <Reference Include="MediaInfoDotNet">
       <HintPath>MPDN\MediaInfoDotNet.dll</HintPath>
