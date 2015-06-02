@@ -45,12 +45,18 @@ namespace Mpdn.Extensions.RenderScripts
                 int bits = 8;
                 switch (Renderer.InputFormat)
                 {
-                    case FrameBufferInputFormat.P010: bits = 10; break;
-                    case FrameBufferInputFormat.Y410: bits = 10; break;
-                    case FrameBufferInputFormat.P016: bits = 16; break;
-                    case FrameBufferInputFormat.Y416: bits = 16; break;
-                    case FrameBufferInputFormat.Rgb24: return input;
-                    case FrameBufferInputFormat.Rgb32: return input;
+                    case FrameBufferInputFormat.P010: 
+                    case FrameBufferInputFormat.Y410: 
+                        bits = 10;
+                        break;
+                    case FrameBufferInputFormat.P016: 
+                    case FrameBufferInputFormat.Y416: 
+                        bits = 16;
+                        break;
+                    case FrameBufferInputFormat.Rgb24:
+                    case FrameBufferInputFormat.Rgb32:
+                    case FrameBufferInputFormat.Rgb48:
+                        return input;
                 }
                 if (bits > maxbitdepth) return input;
 
