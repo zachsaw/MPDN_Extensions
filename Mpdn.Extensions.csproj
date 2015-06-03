@@ -50,8 +50,8 @@
     <Reference Include="MediaInfoDotNet">
       <HintPath>MPDN\MediaInfoDotNet.dll</HintPath>
     </Reference>
-    <Reference Include="Mpdn.Definitions">
-      <HintPath>MPDN\Mpdn.Definitions.dll</HintPath>
+    <Reference Include="Mpdn.Core">
+      <HintPath>MPDN\Mpdn.Core.dll</HintPath>
     </Reference>
     <Reference Include="Mpdn.RenderScript">
       <HintPath>MPDN\Mpdn.RenderScript.dll</HintPath>

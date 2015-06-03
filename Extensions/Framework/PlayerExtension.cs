@@ -60,6 +60,9 @@ namespace Mpdn.Extensions.Framework
             foreach (var verb in Verbs)
             {
                 var shortcut = DecodeKeyString(verb.ShortcutDisplayStr);
+                if (shortcut == Keys.None)
+                    continue;
+
                 m_Actions.Remove(shortcut); // Prevent duplicates FIFO.
                 m_Actions.Add(shortcut, verb.Action);
             }
@@ -88,7 +91,7 @@ namespace Mpdn.Extensions.Framework
             if (TryDecodeKeyString(keyString, out keys))
                 return keys;
 
-            throw new ArgumentException("Can't convert string to keys.");
+            return Keys.None;
         }
 
         private static String DecodeKeyWord(String keyWord)
