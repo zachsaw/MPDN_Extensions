@@ -192,7 +192,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 form.AddFiles(files);
             }
-            else
+            else if (files != null)
             {
                 if (files.Length > 1)
                 {
