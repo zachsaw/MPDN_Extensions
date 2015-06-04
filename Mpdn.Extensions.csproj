@@ -385,17 +385,8 @@
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Extensions\Framework\Controls\ScriptEditorDialog.resx">
-      <DependentUpon>ScriptEditorDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Extensions\RenderScripts\Mpdn.Conditional.ConfigDialog.resx">
-      <DependentUpon>Mpdn.Conditional.ConfigDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Extensions\RenderScripts\Mpdn.ImageProcessor.ConfigDialog.resx">
-      <DependentUpon>Mpdn.ImageProcessor.ConfigDialog.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
