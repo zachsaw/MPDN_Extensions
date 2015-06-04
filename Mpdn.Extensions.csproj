@@ -265,7 +265,7 @@
       <DependentUpon>Mpdn.ScriptedRenderChain.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.cs" />
-    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.MpdnScriptEngine.cs" />
+    <Compile Include="Extensions\Framework\ScriptEngine.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptEditorDialog.cs">
       <SubType>Form</SubType>
     </Compile>
