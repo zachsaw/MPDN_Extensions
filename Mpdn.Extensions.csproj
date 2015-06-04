@@ -101,10 +101,23 @@
     <Compile Include="Extensions\Framework\Config\IScriptSettings.cs" />
     <Compile Include="Extensions\Framework\Config\ScriptSettings.cs" />
     <Compile Include="Extensions\Framework\Config\ScriptSettingsBase.cs" />
+    <Compile Include="Extensions\Framework\Controls\AvalonEditHost.cs" />
     <Compile Include="Extensions\Framework\Controls\HotkeyBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Extensions\Framework\Controls\HourGlass.cs" />
+    <Compile Include="Extensions\Framework\Controls\RenderChainList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Extensions\Framework\Controls\RenderChainList.Designer.cs">
+      <DependentUpon>RenderChainList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.Designer.cs">
+      <DependentUpon>ScriptEditorDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\Framework\ExtensionsUi.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -120,6 +133,7 @@
     <Compile Include="Extensions\Framework\RenderChainScript.cs" />
     <Compile Include="Extensions\Framework\RenderChainUi.cs" />
     <Compile Include="Extensions\Framework\RenderScript.cs" />
+    <Compile Include="Extensions\Framework\ScriptEngine.cs" />
     <Compile Include="Extensions\Framework\ScriptEngineUtilities.cs" />
     <Compile Include="Extensions\Framework\ShaderCache.cs" />
     <Compile Include="Extensions\Framework\Textures.cs" />
@@ -211,7 +225,6 @@
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfoForm.Designer.cs">
       <DependentUpon>ViewMediaInfoForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\Framework\Controls\AvalonEditHost.cs" />
     <Compile Include="Extensions\RenderScripts\Custom.MyRenderScript.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.ConfigDialog.cs">
       <SubType>Form</SubType>
@@ -243,14 +256,12 @@
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Weights.cs" />
+    <Compile Include="Extensions\Framework\Presets.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.Designer.cs">
+    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.designer.cs">
       <DependentUpon>Mpdn.Presets.ConfigDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.cs">
-      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.Presets.PresetGroupDialog.cs">
       <SubType>Form</SubType>
@@ -272,15 +283,11 @@
       <DependentUpon>Mpdn.ScriptedRenderChain.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.cs" />
-    <Compile Include="Extensions\Framework\ScriptEngine.cs" />
-    <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.Designer.cs">
-      <DependentUpon>ScriptEditorDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptHelpers.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptParser.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ChromaScaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ConfigDialog.cs">
       <SubType>Form</SubType>
