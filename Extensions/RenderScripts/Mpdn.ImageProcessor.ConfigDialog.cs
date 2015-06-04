@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -33,14 +32,6 @@ namespace Mpdn.Extensions.RenderScripts
             public ImageProcessorConfigDialog()
             {
                 InitializeComponent();
-
-                var descs = EnumHelpers.GetDescriptions<ImageProcessorUsage>();
-                foreach (var desc in descs)
-                {
-                    comboBoxUsage.Items.Add(desc);
-                }
-
-                comboBoxUsage.SelectedIndex = 0;
             }
 
             protected override void LoadSettings()
@@ -53,14 +44,11 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     listBox.SelectedIndex = 0;
                 }
-
-                comboBoxUsage.SelectedIndex = (int) Settings.ImageProcessorUsage;
             }
 
             protected override void SaveSettings()
             {
                 Settings.ShaderFileNames = listBox.Items.Cast<string>().ToArray();
-                Settings.ImageProcessorUsage = (ImageProcessorUsage)comboBoxUsage.SelectedIndex;
             }
 
             private void ButtonAddClick(object sender, EventArgs e)

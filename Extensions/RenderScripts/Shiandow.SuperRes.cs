@@ -17,12 +17,12 @@
 using System;
 using System.Collections.Generic;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
 using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
 using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
 using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
-using OpenCLNNedi3 = Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -108,7 +108,7 @@ namespace Mpdn.Extensions.RenderScripts
                         AntiAliasing = 0.25f,
                         AntiRinging = 0.0f,
                         Softness = 0.25f,
-                        Script = new OpenCLNNedi3.OclNNedi3Scaler {Settings = new OpenCLNNedi3.OclNNedi3 {ForceCentered = true}}
+                        Script = new OclNNedi3Scaler {Settings = new OclNNedi3 {ForceCentered = true}}
                     }
                 };
 

@@ -14,14 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System.IO;
 using System.Windows.Forms;
-using Mpdn.Extensions.Framework.Controls;
 
-namespace Mpdn.Extensions.RenderScripts
+namespace Mpdn.Extensions.Framework.Controls
 {
-    namespace Mpdn.ScriptedRenderChain
-    {
         public partial class ScriptedRenderChainScriptEditorDialog : Form
         {
             private bool m_Changed;
@@ -96,5 +94,4 @@ namespace Mpdn.Extensions.RenderScripts
                 HourGlass.Enabled = false;
             }
         }
-    }
 }

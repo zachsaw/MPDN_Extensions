@@ -71,20 +71,47 @@ namespace Mpdn.Extensions.Framework
         {
             try
             {
-                m_Engine.CollectGarbage(true);
-                var mock = (chain == null || input == null);
-                var clip = mock ? (IClip) new MockClip() : new Clip(chain, input);
-                AssignScriptObjects(clip);
+                var clip = ResetEngine(chain, input);
                 m_Engine.Execute("RenderScript", true, code);
-                return mock ? null : ((Clip) clip).Filter;
+                return clip == null ? null : ((Clip) clip).Filter;
             }
             catch (ScriptEngineException e)
             {
-                var message = m_Engine.GetStackTrace();
-                throw new MpdnScriptEngineException(
-                    string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
-                        filename, string.IsNullOrEmpty(message) ? e.ErrorDetails : message));
+                ThrowScriptEngineException(filename, e);
             }
+            return null;
+        }
+
+        public bool Evaluate(RenderChain chain, IFilter input, string code, string filename = "")
+        {
+            try
+            {
+                ResetEngine(chain, input);
+                dynamic result = m_Engine.Evaluate("RenderScript", true, code);
+                return result is bool ? result : false;
+            }
+            catch (ScriptEngineException e)
+            {
+                ThrowScriptEngineException(filename, e);
+            }
+            return false;
+        }
+
+        private void ThrowScriptEngineException(string filename, ScriptEngineException e)
+        {
+            var message = m_Engine.GetStackTrace();
+            throw new MpdnScriptEngineException(
+                string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
+                    filename, string.IsNullOrEmpty(message) ? e.ErrorDetails : message));
+        }
+
+        private IClip ResetEngine(RenderChain chain, IFilter input)
+        {
+            m_Engine.CollectGarbage(true);
+            var mock = (chain == null || input == null);
+            var clip = mock ? (IClip) new MockClip() : new Clip(chain, input);
+            AssignScriptObjects(clip);
+            return mock ? null : clip;
         }
 
         private void AddEnumTypes(Assembly asm)

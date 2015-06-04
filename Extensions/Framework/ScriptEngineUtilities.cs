@@ -281,12 +281,6 @@ namespace Mpdn.Extensions.Framework
                 Filter = input;
             }
 
-            public Clip Add()
-            {
-                Filter += m_Chain;
-                return this;
-            }
-
             public Clip Add(RenderChain filter)
             {
                 if (filter == null)

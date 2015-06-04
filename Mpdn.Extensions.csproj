@@ -211,7 +211,7 @@
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfoForm.Designer.cs">
       <DependentUpon>ViewMediaInfoForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\RenderScripts\AvalonEditHost.cs" />
+    <Compile Include="Extensions\Framework\Controls\AvalonEditHost.cs" />
     <Compile Include="Extensions\RenderScripts\Custom.MyRenderScript.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.ConfigDialog.cs">
       <SubType>Form</SubType>
@@ -273,11 +273,11 @@
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.cs" />
     <Compile Include="Extensions\Framework\ScriptEngine.cs" />
-    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptEditorDialog.cs">
+    <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptEditorDialog.Designer.cs">
-      <DependentUpon>Mpdn.ScriptedRenderChain.ScriptEditorDialog.cs</DependentUpon>
+    <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.Designer.cs">
+      <DependentUpon>ScriptEditorDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptHelpers.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptParser.cs" />
@@ -387,6 +387,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Extensions\RenderScripts\Mpdn.Conditional.ConfigDialog.resx">
+      <DependentUpon>Mpdn.Conditional.ConfigDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Extensions\RenderScripts\Mpdn.ImageProcessor.ConfigDialog.resx">
+      <DependentUpon>Mpdn.ImageProcessor.ConfigDialog.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
