@@ -93,7 +93,7 @@ namespace Mpdn.Extensions.Framework
 
             #region Implementation
 
-            private Config ScriptConfig { get; set; }
+            private IScriptSettings<TSettings> ScriptConfig { get; set; }
 
             public TSettings Settings
             {
@@ -101,12 +101,12 @@ namespace Mpdn.Extensions.Framework
                 {
                     if (ScriptConfig == null)
                     {
-                        ScriptConfig = new Config(new TSettings());
+                        ScriptConfig = new MemConfig<TSettings>();
                     }
 
                     return ScriptConfig.Config;
                 }
-                set { ScriptConfig = new Config(value); }
+                set { ScriptConfig = new MemConfig<TSettings>(value); }
             }
 
             public bool HasConfigDialog()
@@ -116,7 +116,7 @@ namespace Mpdn.Extensions.Framework
 
             public virtual void Initialize()
             {
-                ScriptConfig = new Config(ConfigFileName);
+                ScriptConfig = new PersistentConfig<TExtensionClass, TSettings>(ConfigFileName);
             }
 
             public virtual void Destroy()
@@ -130,31 +130,6 @@ namespace Mpdn.Extensions.Framework
                 {
                     dialog.Setup(ScriptConfig.Config);
                     return dialog.ShowDialog(owner) == DialogResult.OK;
-                }
-            }
-
-            #endregion
-
-            #region ScriptSettings Class
-
-            public class Config : ScriptSettingsBase<TExtensionClass, TSettings>
-            {
-                private readonly string m_ConfigName;
-
-                public Config(string configName)
-                {
-                    m_ConfigName = configName;
-                    Load();
-                }
-
-                public Config(TSettings settings)
-                    : base(settings)
-                {
-                }
-
-                protected override string ScriptConfigFileName
-                {
-                    get { return string.Format("{0}.config", m_ConfigName); }
                 }
             }
 

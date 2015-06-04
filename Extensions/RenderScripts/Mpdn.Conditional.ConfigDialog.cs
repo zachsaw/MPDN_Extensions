@@ -39,7 +39,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 conditionBox.Text = Settings.Condition;
 
-//                m_ScriptGroupScript = new ScriptGroupScript().CreateNew(true);
+                m_ScriptGroupScript = new ScriptGroupScript().CreateNew();
                 var presetGroup = (PresetGroup) m_ScriptGroupScript.Chain;
                 foreach (var option in presetGroup.Options)
                 {
