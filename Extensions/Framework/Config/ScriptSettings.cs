@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Config
 {
     public sealed class PersistentConfig<TExtensionClass, TSettings> : ScriptSettingsBase<TSettings>
         where TSettings : class, new()

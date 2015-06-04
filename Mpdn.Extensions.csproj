@@ -95,8 +95,12 @@
     <Compile Include="Extensions\CustomLinearScalers\SincCosine.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHamming.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHann.cs" />
-    <Compile Include="Extensions\Framework\ConfigProviderBase.cs" />
-    <Compile Include="Extensions\Framework\ConfigProviders.cs" />
+    <Compile Include="Extensions\Framework\Config\ConfigProviderBase.cs" />
+    <Compile Include="Extensions\Framework\Config\ConfigProviders.cs" />
+    <Compile Include="Extensions\Framework\Config\IConfigProvider.cs" />
+    <Compile Include="Extensions\Framework\Config\IScriptSettings.cs" />
+    <Compile Include="Extensions\Framework\Config\ScriptSettings.cs" />
+    <Compile Include="Extensions\Framework\Config\ScriptSettingsBase.cs" />
     <Compile Include="Extensions\Framework\Controls\HotkeyBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -111,16 +115,12 @@
     <Compile Include="Extensions\Framework\Filter.Utilities.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
     <Compile Include="Extensions\Framework\IClip.cs" />
-    <Compile Include="Extensions\Framework\IConfigProvider.cs" />
-    <Compile Include="Extensions\Framework\IScriptSettings.cs" />
     <Compile Include="Extensions\Framework\PlayerExtension.cs" />
     <Compile Include="Extensions\Framework\RenderChain.cs" />
     <Compile Include="Extensions\Framework\RenderChainScript.cs" />
     <Compile Include="Extensions\Framework\RenderChainUi.cs" />
     <Compile Include="Extensions\Framework\RenderScript.cs" />
     <Compile Include="Extensions\Framework\ScriptEngineUtilities.cs" />
-    <Compile Include="Extensions\Framework\ScriptSettings.cs" />
-    <Compile Include="Extensions\Framework\ScriptSettingsBase.cs" />
     <Compile Include="Extensions\Framework\ShaderCache.cs" />
     <Compile Include="Extensions\Framework\Textures.cs" />
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.ConfigDialog.cs">

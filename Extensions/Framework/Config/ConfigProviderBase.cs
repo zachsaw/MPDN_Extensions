@@ -18,7 +18,7 @@
 using System;
 using YAXLib;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Config
 {
     public abstract class ConfigProviderBase<T> : IConfigProvider<T>
         where T : class, new()

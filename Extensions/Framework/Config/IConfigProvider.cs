@@ -14,17 +14,19 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Config
 {
-    public interface IScriptSettings<out TSettings> where TSettings : class, new()
+    public interface IConfigProvider<T>
+        where T : class, new()
     {
-        TSettings Config { get; }
-        Exception LastException { get; }
-        bool Load();
-        bool Save();
-        bool LoadFromString(string input);
-        bool SaveToString(out string output);
+        T Configuration { get; set; }
+
+        bool Load(out Exception loadException);
+        bool Save(out Exception saveException);
+        bool LoadFromString(string input, out Exception loadException);
+        bool SaveToString(out string output, out Exception saveException);
     }
 }

@@ -19,7 +19,7 @@ using System;
 using System.IO;
 using YAXLib;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Config
 {
     public class PersistentConfigProvider<T> : ConfigProviderBase<T>
         where T : class, new()

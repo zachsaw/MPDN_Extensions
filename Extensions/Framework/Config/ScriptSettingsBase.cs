@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Diagnostics;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Config
 {
     public abstract class ScriptSettingsBase<TSettings> : IScriptSettings<TSettings> where TSettings : class, new()
     {
