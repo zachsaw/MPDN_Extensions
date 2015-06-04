@@ -18,7 +18,7 @@
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Mpdn.Extensions.RenderScripts.Mpdn.ScriptedRenderChain;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.RenderScripts
 {

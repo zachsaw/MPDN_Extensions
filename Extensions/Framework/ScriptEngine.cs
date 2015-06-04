@@ -22,7 +22,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.Windows;
-using Mpdn.Extensions.RenderScripts.Mpdn.ScriptedRenderChain;
+using Mpdn.Extensions.Framework.ScriptEngineUtilities;
 using Mpdn.RenderScript;
 using ClearScriptEngine = Microsoft.ClearScript.ScriptEngine;
 

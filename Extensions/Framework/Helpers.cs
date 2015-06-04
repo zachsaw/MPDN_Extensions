@@ -102,4 +102,17 @@ namespace Mpdn.Extensions.Framework
             }
         }
     }
+
+    public static class StringHelpers
+    {
+        public static string SubstringIdx(this string self, int startIndex, int endIndex)
+        {
+            var length = endIndex - startIndex;
+            if (length < 0)
+            {
+                length = 0;
+            }
+            return self.Substring(startIndex, length);
+        }
+    }
 }
