@@ -15,6 +15,7 @@
 // License along with this library.
 // 
 
+//css_reference System.Xml.Linq
 using System;
 using YAXLib;
 
