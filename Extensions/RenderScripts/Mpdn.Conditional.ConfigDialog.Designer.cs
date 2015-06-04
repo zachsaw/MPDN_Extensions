@@ -123,7 +123,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.comboBoxPreset.Location = new System.Drawing.Point(44, 61);
             this.comboBoxPreset.Name = "comboBoxPreset";
             this.comboBoxPreset.Size = new System.Drawing.Size(218, 21);
-            this.comboBoxPreset.TabIndex = 2;
+            this.comboBoxPreset.TabIndex = 1;
             this.comboBoxPreset.SelectedIndexChanged += new System.EventHandler(this.PresetSelectedIndexChanged);
             // 
             // configButton
@@ -131,7 +131,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.configButton.Location = new System.Drawing.Point(268, 59);
             this.configButton.Name = "configButton";
             this.configButton.Size = new System.Drawing.Size(75, 23);
-            this.configButton.TabIndex = 3;
+            this.configButton.TabIndex = 2;
             this.configButton.Text = "Configure";
             this.configButton.UseVisualStyleBackColor = true;
             this.configButton.Click += new System.EventHandler(this.ConfigButtonClick);
@@ -143,7 +143,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.linkLabel1.Location = new System.Drawing.Point(311, 9);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(193, 13);
-            this.linkLabel1.TabIndex = 1;
+            this.linkLabel1.TabIndex = 10000;
             this.linkLabel1.TabStop = true;
             this.linkLabel1.Text = "How do I write a conditional statement?";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkClicked);
