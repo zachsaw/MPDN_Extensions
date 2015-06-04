@@ -16,6 +16,7 @@
 // 
 using System;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.RenderScripts
