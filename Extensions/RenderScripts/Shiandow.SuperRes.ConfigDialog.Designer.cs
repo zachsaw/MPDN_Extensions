@@ -15,7 +15,6 @@
 // License along with this library.
 // 
 
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
 
 namespace Mpdn.Extensions.RenderScripts

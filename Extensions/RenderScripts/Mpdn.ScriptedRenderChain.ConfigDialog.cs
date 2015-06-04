@@ -16,6 +16,7 @@
 // 
 using System.IO;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.Controls;
 
@@ -72,7 +73,7 @@ namespace Mpdn.Extensions.RenderScripts
             private void SelectFileClick(object sender, System.EventArgs e)
             {
                 openFileDialog.FileName = textBoxScript.Text;
-                openFileDialog.InitialDirectory = MpdnPath.GetDirectoryName(openFileDialog.FileName);
+                openFileDialog.InitialDirectory = PathHelper.GetDirectoryName(openFileDialog.FileName);
                 if (openFileDialog.ShowDialog(this) != DialogResult.OK)
                     return;
 

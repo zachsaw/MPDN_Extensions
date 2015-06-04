@@ -71,6 +71,7 @@
     <Reference Include="System.Xaml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
     <Reference Include="WindowsFormsIntegration" />
     <Reference Include="YAXLib">
@@ -112,6 +113,7 @@
     <Compile Include="Extensions\Framework\RenderChainScript.cs" />
     <Compile Include="Extensions\Framework\RenderChainUi.cs" />
     <Compile Include="Extensions\Framework\RenderScript.cs" />
+    <Compile Include="Extensions\Framework\ScriptSettingsBase.cs" />
     <Compile Include="Extensions\Framework\ShaderCache.cs" />
     <Compile Include="Extensions\Framework\Textures.cs" />
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.ConfigDialog.cs">

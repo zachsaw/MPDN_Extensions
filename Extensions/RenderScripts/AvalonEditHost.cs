@@ -28,6 +28,7 @@ using System.Windows;
 using System.Xml;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Highlighting;
+using Mpdn.Extensions.Framework;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -65,7 +66,7 @@ namespace Mpdn.Extensions.RenderScripts
                     return;
 
                 var asm = Assembly.GetAssembly(typeof (TextEditor));
-                var path = MpdnPath.GetDirectoryName(asm.Location);
+                var path = PathHelper.GetDirectoryName(asm.Location);
                 var xshd = Path.Combine(path, "JavaScript-Mode.xshd");
 
                 using (var stream = File.OpenRead(xshd))

@@ -148,7 +148,7 @@ namespace Mpdn.Extensions.Framework
                         m_CachePath = Path.Combine(AppPath.GetUserDataDir("ShaderCache"),
                             string.Format("{0}.{1}", Guid.NewGuid(), "cso"));
                     } while (File.Exists(m_CachePath));
-                    Directory.CreateDirectory(MpdnPath.GetDirectoryName(m_CachePath));
+                    Directory.CreateDirectory(PathHelper.GetDirectoryName(m_CachePath));
                     File.WriteAllBytes(m_CachePath, shader.ObjectByteCode);
                 }
             }

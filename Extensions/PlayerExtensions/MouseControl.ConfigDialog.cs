@@ -15,7 +15,6 @@
 // License along with this library.
 // 
 using Mpdn.Extensions.Framework.Config;
-using Mpdn.Extensions.PlayerExtensions;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
