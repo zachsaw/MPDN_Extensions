@@ -55,7 +55,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private string GetScript()
             {
-                var scriptGroupScript = new ScriptGroupScript().CreateNew(true);
+                var scriptGroupScript = new ScriptGroupScript().CreateNew();
                 var presetGroup = (PresetGroup) scriptGroupScript.Chain;
 
                 var preset = presetGroup.GetPreset(Preset);
@@ -94,7 +94,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 if (!string.IsNullOrWhiteSpace(Settings.Condition) && Settings.Preset != Guid.Empty)
                 {
-                    var scriptGroupScript = new ScriptGroupScript().CreateNew(true);
+                    var scriptGroupScript = new ScriptGroupScript().CreateNew();
                     var presetGroup = (PresetGroup) scriptGroupScript.Chain;
                     var preset = presetGroup.GetPreset(Settings.Preset);
                     if (preset != null)

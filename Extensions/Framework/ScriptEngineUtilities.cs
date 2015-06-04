@@ -113,7 +113,6 @@ namespace Mpdn.Extensions.Framework
                     throw new ArgumentException(string.Format("script.Load() error: Script '{0}' not found", name));
                 }
 
-                ((IPersistentConfig) chainUi).Load();
                 return chainUi.Chain;
             }
 
@@ -126,7 +125,6 @@ namespace Mpdn.Extensions.Framework
                         string.Format("script.Load() error: Script with class name '{0}' not found", className));
                 }
 
-                ((IPersistentConfig) chainUi).Load();
                 return chainUi.Chain;
             }
 
@@ -134,8 +132,8 @@ namespace Mpdn.Extensions.Framework
             {
                 return s_RenderScripts ??
                        (s_RenderScripts = PlayerControl.RenderScripts
-                           .Where(script => script is IRenderChainUi && script is IPersistentConfig)
-                           .Select(x => (x as IRenderChainUi).CreateNew())).ToArray();
+                           .Where(script => script is IRenderChainUi)
+                           .Select(x => (x as IRenderChainUi))).ToArray();
             }
         }
 

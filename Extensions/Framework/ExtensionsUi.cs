@@ -80,13 +80,7 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
-        public interface IPersistentConfig
-        {
-            void Load();
-            void Save();
-        }
-
-        public abstract class ExtensionUi<TExtensionClass, TSettings, TDialog> : IExtensionUi, IPersistentConfig
+        public abstract class ExtensionUi<TExtensionClass, TSettings, TDialog> : IExtensionUi
             where TSettings : class, new()
             where TDialog : IScriptConfigDialog<TSettings>, new()
         {
@@ -96,8 +90,6 @@ namespace Mpdn.Extensions.Framework
             }
 
             public abstract ExtensionUiDescriptor Descriptor { get; }
-
-            public bool Persistent { get; private set; }
 
             #region Implementation
 
@@ -117,47 +109,27 @@ namespace Mpdn.Extensions.Framework
                 set { ScriptConfig = new Config(value); }
             }
 
-            public void Load()
-            {
-                Persistent = true;
-                ScriptConfig = new Config(ConfigFileName);
-            }
-
-            public void Save()
-            {
-                ScriptConfig.Save();
-            }
-
             public bool HasConfigDialog()
             {
-                return !(typeof (TDialog).IsAssignableFrom(typeof (ScriptConfigDialog<TSettings>)));
+                return !(typeof(TDialog).IsAssignableFrom(typeof(ScriptConfigDialog<TSettings>)));
             }
 
             public virtual void Initialize()
             {
-                Load();
+                ScriptConfig = new Config(ConfigFileName);
             }
 
             public virtual void Destroy()
             {
-                Save();
+                ScriptConfig.Save();
             }
 
             public virtual bool ShowConfigDialog(IWin32Window owner)
             {
                 using (var dialog = new TDialog())
                 {
-                    if (Persistent)
-                    {
-                        Load();
-                    }
                     dialog.Setup(ScriptConfig.Config);
-                    if (dialog.ShowDialog(owner) == DialogResult.OK)
-                    {
-                        Save();
-                        return true;
-                    }
-                    return false;
+                    return dialog.ShowDialog(owner) == DialogResult.OK;
                 }
             }
 

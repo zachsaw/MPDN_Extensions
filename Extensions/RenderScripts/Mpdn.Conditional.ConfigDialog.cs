@@ -39,7 +39,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 conditionBox.Text = Settings.Condition;
 
-                m_ScriptGroupScript = new ScriptGroupScript().CreateNew(true);
+//                m_ScriptGroupScript = new ScriptGroupScript().CreateNew(true);
                 var presetGroup = (PresetGroup) m_ScriptGroupScript.Chain;
                 foreach (var option in presetGroup.Options)
                 {
@@ -105,14 +105,14 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void ConfigButtonClick(object sender, EventArgs e)
             {
-                var preset = (Preset) comboBoxPreset.SelectedItem;
-                if (preset != null && preset.Script.HasConfigDialog())
-                {
-                    if (preset.Script.ShowConfigDialog(this))
-                    {
-                        ((IPersistentConfig) m_ScriptGroupScript).Save();
-                    }
-                }
+//                var preset = (Preset) comboBoxPreset.SelectedItem;
+//                if (preset != null && preset.Script.HasConfigDialog())
+//                {
+//                    if (preset.Script.ShowConfigDialog(this))
+//                    {
+//                        ((IPersistentConfig) m_ScriptGroupScript).Save();
+//                    }
+//                }
             }
 
             private void PresetSelectedIndexChanged(object sender, EventArgs e)
