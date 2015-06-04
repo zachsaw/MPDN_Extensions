@@ -21,7 +21,6 @@ using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
-using Mpdn.Extensions.RenderScripts.Mpdn.ScriptedRenderChain;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -79,7 +78,7 @@ namespace Mpdn.Extensions.RenderScripts
             private static bool ValidateSyntax(string condition, out string error)
             {
                 error = string.Empty;
-                using (var engine = new MpdnScriptEngine())
+                using (var engine = new ScriptEngine())
                 {
                     try
                     {

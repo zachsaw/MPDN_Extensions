@@ -17,7 +17,6 @@
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
-using Mpdn.Extensions.RenderScripts.Mpdn.ScriptedRenderChain;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -32,11 +31,11 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private MpdnScriptEngine m_Engine;
+            private ScriptEngine m_Engine;
 
             public override void Initialize()
             {
-                m_Engine = new MpdnScriptEngine();
+                m_Engine = new ScriptEngine();
                 base.Initialize();
             }
 
