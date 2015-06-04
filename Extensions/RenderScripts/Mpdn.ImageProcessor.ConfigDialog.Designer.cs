@@ -56,18 +56,17 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonUp = new System.Windows.Forms.Button();
             this.buttonDown = new System.Windows.Forms.Button();
             this.buttonClear = new System.Windows.Forms.Button();
-            this.comboBoxUsage = new System.Windows.Forms.ComboBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.buttonEdit = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(297, 269);
+            this.buttonCancel.Location = new System.Drawing.Point(297, 272);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
-            this.buttonCancel.TabIndex = 7;
+            this.buttonCancel.TabIndex = 1007;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
             // 
@@ -75,17 +74,17 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(216, 269);
+            this.buttonOk.Location = new System.Drawing.Point(216, 272);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
-            this.buttonOk.TabIndex = 6;
+            this.buttonOk.TabIndex = 1006;
             this.buttonOk.Text = "OK";
             this.buttonOk.UseVisualStyleBackColor = true;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 10);
+            this.label1.Location = new System.Drawing.Point(12, 15);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(71, 13);
             this.label1.TabIndex = 1006;
@@ -100,9 +99,10 @@ namespace Mpdn.Extensions.RenderScripts
             this.listBox.IntegralHeight = false;
             this.listBox.Location = new System.Drawing.Point(13, 33);
             this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(357, 191);
+            this.listBox.Size = new System.Drawing.Size(357, 233);
             this.listBox.TabIndex = 0;
             this.listBox.SelectedIndexChanged += new System.EventHandler(this.ListBoxSelectedIndexChanged);
+            this.listBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ListBoxMouseDoubleClick);
             // 
             // buttonAdd
             // 
@@ -111,7 +111,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonAdd.Location = new System.Drawing.Point(230, 10);
             this.buttonAdd.Name = "buttonAdd";
             this.buttonAdd.Size = new System.Drawing.Size(25, 23);
-            this.buttonAdd.TabIndex = 1;
+            this.buttonAdd.TabIndex = 2;
             this.buttonAdd.Text = "+";
             this.buttonAdd.UseVisualStyleBackColor = true;
             this.buttonAdd.Click += new System.EventHandler(this.ButtonAddClick);
@@ -124,7 +124,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonRemove.Location = new System.Drawing.Point(254, 10);
             this.buttonRemove.Name = "buttonRemove";
             this.buttonRemove.Size = new System.Drawing.Size(25, 23);
-            this.buttonRemove.TabIndex = 2;
+            this.buttonRemove.TabIndex = 3;
             this.buttonRemove.Text = "-";
             this.buttonRemove.UseVisualStyleBackColor = true;
             this.buttonRemove.Click += new System.EventHandler(this.ButtonRemoveClick);
@@ -145,7 +145,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonUp.Location = new System.Drawing.Point(321, 10);
             this.buttonUp.Name = "buttonUp";
             this.buttonUp.Size = new System.Drawing.Size(25, 23);
-            this.buttonUp.TabIndex = 4;
+            this.buttonUp.TabIndex = 5;
             this.buttonUp.Text = "▲";
             this.buttonUp.UseVisualStyleBackColor = true;
             this.buttonUp.Click += new System.EventHandler(this.ButtonUpClick);
@@ -158,7 +158,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonDown.Location = new System.Drawing.Point(345, 10);
             this.buttonDown.Name = "buttonDown";
             this.buttonDown.Size = new System.Drawing.Size(25, 23);
-            this.buttonDown.TabIndex = 5;
+            this.buttonDown.TabIndex = 6;
             this.buttonDown.Text = "▼";
             this.buttonDown.UseVisualStyleBackColor = true;
             this.buttonDown.Click += new System.EventHandler(this.ButtonDownClick);
@@ -170,30 +170,21 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonClear.Location = new System.Drawing.Point(288, 10);
             this.buttonClear.Name = "buttonClear";
             this.buttonClear.Size = new System.Drawing.Size(25, 23);
-            this.buttonClear.TabIndex = 3;
+            this.buttonClear.TabIndex = 4;
             this.buttonClear.Text = "c";
             this.buttonClear.UseVisualStyleBackColor = true;
             this.buttonClear.Click += new System.EventHandler(this.ButtonClearClick);
             // 
-            // comboBoxUsage
+            // buttonEdit
             // 
-            this.comboBoxUsage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.comboBoxUsage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxUsage.FormattingEnabled = true;
-            this.comboBoxUsage.Location = new System.Drawing.Point(124, 230);
-            this.comboBoxUsage.Name = "comboBoxUsage";
-            this.comboBoxUsage.Size = new System.Drawing.Size(155, 21);
-            this.comboBoxUsage.TabIndex = 1007;
-            // 
-            // label2
-            // 
-            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 233);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(106, 13);
-            this.label2.TabIndex = 1008;
-            this.label2.Text = "Use image processor";
+            this.buttonEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonEdit.Location = new System.Drawing.Point(15, 272);
+            this.buttonEdit.Name = "buttonEdit";
+            this.buttonEdit.Size = new System.Drawing.Size(75, 23);
+            this.buttonEdit.TabIndex = 1;
+            this.buttonEdit.Text = "Edit...";
+            this.buttonEdit.UseVisualStyleBackColor = true;
+            this.buttonEdit.Click += new System.EventHandler(this.ButtonEditClick);
             // 
             // ImageProcessorConfigDialog
             // 
@@ -201,9 +192,8 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(384, 304);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.comboBoxUsage);
+            this.ClientSize = new System.Drawing.Size(384, 307);
+            this.Controls.Add(this.buttonEdit);
             this.Controls.Add(this.buttonClear);
             this.Controls.Add(this.buttonDown);
             this.Controls.Add(this.buttonUp);
@@ -238,8 +228,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button buttonUp;
             private System.Windows.Forms.Button buttonDown;
             private System.Windows.Forms.Button buttonClear;
-            private System.Windows.Forms.ComboBox comboBoxUsage;
-            private System.Windows.Forms.Label label2;
+            private System.Windows.Forms.Button buttonEdit;
 
         }
     }

@@ -80,13 +80,7 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
-        public interface IPersistentConfig
-        {
-            void Load();
-            void Save();
-        }
-
-        public abstract class ExtensionUi<TExtensionClass, TSettings, TDialog> : IExtensionUi, IPersistentConfig
+        public abstract class ExtensionUi<TExtensionClass, TSettings, TDialog> : IExtensionUi
             where TSettings : class, new()
             where TDialog : IScriptConfigDialog<TSettings>, new()
         {
@@ -97,11 +91,9 @@ namespace Mpdn.Extensions.Framework
 
             public abstract ExtensionUiDescriptor Descriptor { get; }
 
-            public bool Persistent { get; private set; }
-
             #region Implementation
 
-            private Config ScriptConfig { get; set; }
+            private IScriptSettings<TSettings> ScriptConfig { get; set; }
 
             public TSettings Settings
             {
@@ -109,80 +101,35 @@ namespace Mpdn.Extensions.Framework
                 {
                     if (ScriptConfig == null)
                     {
-                        ScriptConfig = new Config(new TSettings());
+                        ScriptConfig = new MemConfig<TSettings>();
                     }
 
                     return ScriptConfig.Config;
                 }
-                set { ScriptConfig = new Config(value); }
-            }
-
-            public void Load()
-            {
-                Persistent = true;
-                ScriptConfig = new Config(ConfigFileName);
-            }
-
-            public void Save()
-            {
-                ScriptConfig.Save();
+                set { ScriptConfig = new MemConfig<TSettings>(value); }
             }
 
             public bool HasConfigDialog()
             {
-                return !(typeof (TDialog).IsAssignableFrom(typeof (ScriptConfigDialog<TSettings>)));
+                return !(typeof(TDialog).IsAssignableFrom(typeof(ScriptConfigDialog<TSettings>)));
             }
 
             public virtual void Initialize()
             {
-                Load();
+                ScriptConfig = new PersistentConfig<TExtensionClass, TSettings>(ConfigFileName);
             }
 
             public virtual void Destroy()
             {
-                Save();
+                ScriptConfig.Save();
             }
 
             public virtual bool ShowConfigDialog(IWin32Window owner)
             {
                 using (var dialog = new TDialog())
                 {
-                    if (Persistent)
-                    {
-                        Load();
-                    }
                     dialog.Setup(ScriptConfig.Config);
-                    if (dialog.ShowDialog(owner) == DialogResult.OK)
-                    {
-                        Save();
-                        return true;
-                    }
-                    return false;
-                }
-            }
-
-            #endregion
-
-            #region ScriptSettings Class
-
-            public class Config : ScriptSettingsBase<TExtensionClass, TSettings>
-            {
-                private readonly string m_ConfigName;
-
-                public Config(string configName)
-                {
-                    m_ConfigName = configName;
-                    Load();
-                }
-
-                public Config(TSettings settings)
-                    : base(settings)
-                {
-                }
-
-                protected override string ScriptConfigFileName
-                {
-                    get { return string.Format("{0}.config", m_ConfigName); }
+                    return dialog.ShowDialog(owner) == DialogResult.OK;
                 }
             }
 

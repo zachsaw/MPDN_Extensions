@@ -95,6 +95,12 @@
     <Compile Include="Extensions\CustomLinearScalers\SincCosine.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHamming.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHann.cs" />
+    <Compile Include="Extensions\Framework\Config\ConfigProviderBase.cs" />
+    <Compile Include="Extensions\Framework\Config\ConfigProviders.cs" />
+    <Compile Include="Extensions\Framework\Config\IConfigProvider.cs" />
+    <Compile Include="Extensions\Framework\Config\IScriptSettings.cs" />
+    <Compile Include="Extensions\Framework\Config\ScriptSettings.cs" />
+    <Compile Include="Extensions\Framework\Config\ScriptSettingsBase.cs" />
     <Compile Include="Extensions\Framework\Controls\HotkeyBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -108,12 +114,13 @@
     <Compile Include="Extensions\Framework\Filter.Text.cs" />
     <Compile Include="Extensions\Framework\Filter.Utilities.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
+    <Compile Include="Extensions\Framework\IClip.cs" />
     <Compile Include="Extensions\Framework\PlayerExtension.cs" />
     <Compile Include="Extensions\Framework\RenderChain.cs" />
     <Compile Include="Extensions\Framework\RenderChainScript.cs" />
     <Compile Include="Extensions\Framework\RenderChainUi.cs" />
     <Compile Include="Extensions\Framework\RenderScript.cs" />
-    <Compile Include="Extensions\Framework\ScriptSettingsBase.cs" />
+    <Compile Include="Extensions\Framework\ScriptEngineUtilities.cs" />
     <Compile Include="Extensions\Framework\ShaderCache.cs" />
     <Compile Include="Extensions\Framework\Textures.cs" />
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.ConfigDialog.cs">
@@ -204,7 +211,7 @@
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfoForm.Designer.cs">
       <DependentUpon>ViewMediaInfoForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\RenderScripts\AvalonEditHost.cs" />
+    <Compile Include="Extensions\Framework\Controls\AvalonEditHost.cs" />
     <Compile Include="Extensions\RenderScripts\Custom.MyRenderScript.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.ConfigDialog.cs">
       <SubType>Form</SubType>
@@ -265,12 +272,12 @@
       <DependentUpon>Mpdn.ScriptedRenderChain.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.cs" />
-    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.MpdnScriptEngine.cs" />
-    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptEditorDialog.cs">
+    <Compile Include="Extensions\Framework\ScriptEngine.cs" />
+    <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptEditorDialog.Designer.cs">
-      <DependentUpon>Mpdn.ScriptedRenderChain.ScriptEditorDialog.cs</DependentUpon>
+    <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.Designer.cs">
+      <DependentUpon>ScriptEditorDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptHelpers.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptParser.cs" />

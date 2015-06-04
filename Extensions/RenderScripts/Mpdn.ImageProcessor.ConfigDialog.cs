@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.Controls;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -33,14 +33,7 @@ namespace Mpdn.Extensions.RenderScripts
             public ImageProcessorConfigDialog()
             {
                 InitializeComponent();
-
-                var descs = EnumHelpers.GetDescriptions<ImageProcessorUsage>();
-                foreach (var desc in descs)
-                {
-                    comboBoxUsage.Items.Add(desc);
-                }
-
-                comboBoxUsage.SelectedIndex = 0;
+                UpdateButtons();
             }
 
             protected override void LoadSettings()
@@ -53,14 +46,11 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     listBox.SelectedIndex = 0;
                 }
-
-                comboBoxUsage.SelectedIndex = (int) Settings.ImageProcessorUsage;
             }
 
             protected override void SaveSettings()
             {
                 Settings.ShaderFileNames = listBox.Items.Cast<string>().ToArray();
-                Settings.ImageProcessorUsage = (ImageProcessorUsage)comboBoxUsage.SelectedIndex;
             }
 
             private void ButtonAddClick(object sender, EventArgs e)
@@ -131,10 +121,42 @@ namespace Mpdn.Extensions.RenderScripts
                 var index = listBox.SelectedIndex;
                 var count = listBox.Items.Count;
 
+                buttonEdit.Enabled = index >= 0;
                 buttonRemove.Enabled = index >= 0;
                 buttonUp.Enabled = index > 0;
                 buttonDown.Enabled = index >= 0 && index < count - 1;
                 buttonClear.Enabled = count > 0;
+            }
+
+            private void ButtonEditClick(object sender, EventArgs e)
+            {
+                EditSelectedFile();
+            }
+
+            private void EditSelectedFile()
+            {
+                var file = Path.Combine(m_ShaderPath, (string) listBox.SelectedItem);
+                if (!File.Exists(file))
+                {
+                    MessageBox.Show(this, string.Format("File not found '{0}'", file), "Error", MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+
+                using (new HourGlass())
+                {
+                    var editor = new ScriptedRenderChainScriptEditorDialog();
+                    editor.LoadFile(file);
+                    editor.ShowDialog(this);
+                }
+            }
+
+            private void ListBoxMouseDoubleClick(object sender, MouseEventArgs e)
+            {
+                if (!buttonEdit.Enabled)
+                    return;
+
+                EditSelectedFile();
             }
 
             private static string GetRelativePath(string rootPath, string filename)

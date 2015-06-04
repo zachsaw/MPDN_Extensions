@@ -17,7 +17,6 @@
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
-using Mpdn.Extensions.RenderScripts.Mpdn.ScriptedRenderChain;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -25,18 +24,20 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Conditional : RenderChain
         {
+            private const string RESULT_VAR = "__$result";
+
             #region Settings
 
             public string Condition { get; set; }
-            public Guid Preset { get; set; }
+            public Preset Preset { get; set; }
 
             #endregion
 
-            private MpdnScriptEngine m_Engine;
+            private ScriptEngine m_Engine;
 
             public override void Initialize()
             {
-                m_Engine = new MpdnScriptEngine();
+                m_Engine = new ScriptEngine();
                 base.Initialize();
             }
 
@@ -48,25 +49,19 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                if (string.IsNullOrWhiteSpace(Condition) || Preset == Guid.Empty)
+                if (string.IsNullOrWhiteSpace(Condition) || Preset == null)
                     return input;
 
-                return m_Engine.Execute(this, input, GetScript(), "Conditional");
+                if (m_Engine.Evaluate(this, input, GetScript(), GetType().Name))
+                {
+                    return input + Preset;
+                }
+                return input;
             }
 
             private string GetScript()
             {
-                var scriptGroupScript = new ScriptGroupScript().CreateNew(true);
-                var presetGroup = (PresetGroup) scriptGroupScript.Chain;
-
-                var preset = presetGroup.GetPreset(Preset);
-                if (preset == null)
-                {
-                    throw new Exception("Preset is not found!");
-                }
-                return string.Format(
-                    "if ({0}) {{ var s = Script.LoadByClassName(\"PresetGroup\"); s.ScriptName = \"{1}\"; input.Add(s); }}",
-                    Parser.BuildCondition(Condition), preset.Name);
+                return string.Format("var {0} = {1}; {0}", RESULT_VAR, Parser.BuildCondition(Condition));
             }
         }
 
@@ -93,17 +88,13 @@ namespace Mpdn.Extensions.RenderScripts
 
             private string GetDescription()
             {
-                if (!string.IsNullOrWhiteSpace(Settings.Condition) && Settings.Preset != Guid.Empty)
+                var preset = Settings.Preset;
+                if (!string.IsNullOrWhiteSpace(Settings.Condition) && preset != null)
                 {
-                    var scriptGroupScript = new ScriptGroupScript().CreateNew(true);
-                    var presetGroup = (PresetGroup) scriptGroupScript.Chain;
-                    var preset = presetGroup.GetPreset(Settings.Preset);
-                    if (preset != null)
-                    {
-                        return string.Format("If {0}, use preset '{1}'", Settings.Condition.Trim(), preset.Name);
-                    }
+                    return string.Format("If {0}, use '{1}' ({2})", Settings.Condition.Trim(), preset.Name,
+                        preset.Description);
                 }
-                return "Conditionally activates a preset";
+                return "Conditionally activates a render script";
             }
         }
     }

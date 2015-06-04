@@ -16,12 +16,13 @@
 // 
 using System;
 using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
-using Mpdn.Extensions.RenderScripts.Mpdn.ScriptedRenderChain;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -29,35 +30,63 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public partial class ConditionalConfigDialog : ConditionalConfigDialogBase
         {
-            private IRenderChainUi m_ScriptGroupScript;
+            private class BoxItem
+            {
+                public Preset Preset { get; private set; }
+
+                public BoxItem(Preset preset)
+                {
+                    Preset = preset;
+                }
+
+                public override string ToString()
+                {
+                    return Preset.Name;
+                }
+            }
 
             public ConditionalConfigDialog()
             {
                 InitializeComponent();
+
+                MinimumSize = new Size(Width, Height);
+                MaximumSize = new Size(int.MaxValue, Height);
             }
 
             protected override void LoadSettings()
             {
                 conditionBox.Text = Settings.Condition;
 
-                m_ScriptGroupScript = new ScriptGroupScript().CreateNew(true);
-                var presetGroup = (PresetGroup) m_ScriptGroupScript.Chain;
-                foreach (var option in presetGroup.Options)
+                var renderScripts = PlayerControl.RenderScripts
+                    .Where(script => script is IRenderChainUi)
+                    .Select(x => (x as IRenderChainUi).CreateNew())
+                    .Concat(new[] {RenderChainUi.Identity}).ToList();
+                foreach (var s in renderScripts)
                 {
-                    comboBoxPreset.Items.Add(option);
+                    if (s.Category.ToLowerInvariant() == "hidden")
+                        continue;
+
+                    comboBoxPreset.Items.Add(new BoxItem(s.ToPreset()));
                 }
-                comboBoxPreset.SelectedIndex = presetGroup.GetPresetIndex(Settings.Preset);
+                if (Settings.Preset != null && Settings.Preset.Script != null)
+                {
+                    var guid = Settings.Preset.Script.Descriptor.Guid;
+                    comboBoxPreset.SelectedIndex = renderScripts.FindIndex(ui => ui.Descriptor.Guid == guid);
+                    var index = comboBoxPreset.SelectedIndex;
+                    if (index >= 0)
+                    {
+                        comboBoxPreset.Items[index] = new BoxItem(Settings.Preset);
+                    }
+                }
 
                 UpdateControls();
             }
 
             protected override void SaveSettings()
             {
-                var presetGroup = (PresetGroup) m_ScriptGroupScript.Chain;
                 Settings.Condition = conditionBox.Text;
-                Settings.Preset = comboBoxPreset.SelectedIndex < 0
-                    ? Guid.Empty
-                    : presetGroup.Options[comboBoxPreset.SelectedIndex].Guid;
+                var item = (BoxItem) comboBoxPreset.SelectedItem;
+                Settings.Preset = item == null ? null : item.Preset;
             }
 
             private void DialogClosing(object sender, FormClosingEventArgs e)
@@ -79,7 +108,7 @@ namespace Mpdn.Extensions.RenderScripts
             private static bool ValidateSyntax(string condition, out string error)
             {
                 error = string.Empty;
-                using (var engine = new MpdnScriptEngine())
+                using (var engine = new ScriptEngine())
                 {
                     try
                     {
@@ -106,13 +135,13 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void ConfigButtonClick(object sender, EventArgs e)
             {
-                var preset = (Preset) comboBoxPreset.SelectedItem;
-                if (preset != null && preset.Script.HasConfigDialog())
+                var item = (BoxItem) comboBoxPreset.SelectedItem;
+                if (item == null || !item.Preset.HasConfigDialog()) 
+                    return;
+
+                if (item.Preset.ShowConfigDialog(this))
                 {
-                    if (preset.Script.ShowConfigDialog(this))
-                    {
-                        ((IPersistentConfig) m_ScriptGroupScript).Save();
-                    }
+                    UpdateControls();
                 }
             }
 
@@ -123,8 +152,15 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void UpdateControls()
             {
-                var preset = (Preset) comboBoxPreset.SelectedItem;
-                configButton.Enabled = preset != null && preset.Script.HasConfigDialog();
+                var item = (BoxItem) comboBoxPreset.SelectedItem;
+                if (item == null)
+                {
+                    configButton.Enabled = false;
+                    labelDesc.Text = string.Empty;
+                    return;
+                }
+                configButton.Enabled = item.Preset.HasConfigDialog();
+                labelDesc.Text = item.Preset.Description;
             }
 
             private void LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

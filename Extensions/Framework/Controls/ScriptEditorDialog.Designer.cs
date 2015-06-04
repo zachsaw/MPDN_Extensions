@@ -14,38 +14,37 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-namespace Mpdn.Extensions.RenderScripts
+
+namespace Mpdn.Extensions.Framework.Controls
 {
-    namespace Mpdn.ScriptedRenderChain
+    partial class ScriptedRenderChainScriptEditorDialog
     {
-        partial class ScriptedRenderChainScriptEditorDialog
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
         {
-            /// <summary>
-            /// Required designer variable.
-            /// </summary>
-            private System.ComponentModel.IContainer components = null;
-
-            /// <summary>
-            /// Clean up any resources being used.
-            /// </summary>
-            /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-            protected override void Dispose(bool disposing)
+            if (disposing && (components != null))
             {
-                if (disposing && (components != null))
-                {
-                    components.Dispose();
-                }
-                base.Dispose(disposing);
+                components.Dispose();
             }
+            base.Dispose(disposing);
+        }
 
-            #region Windows Form Designer generated code
+        #region Windows Form Designer generated code
 
-            /// <summary>
-            /// Required method for Designer support - do not modify
-            /// the contents of this method with the code editor.
-            /// </summary>
-            private void InitializeComponent()
-            {
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,7 +52,9 @@ namespace Mpdn.Extensions.RenderScripts
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.textBoxScript = new Mpdn.ScriptedRenderChain.AvalonEditHost();
+            this.textBoxScript = new Mpdn.Extensions.Framework.Controls.AvalonEditHost();
+            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuShowFolder = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -61,6 +62,7 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.viewToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -121,6 +123,21 @@ namespace Mpdn.Extensions.RenderScripts
             this.textBoxScript.Size = new System.Drawing.Size(791, 487);
             this.textBoxScript.TabIndex = 0;
             // 
+            // viewToolStripMenuItem
+            // 
+            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuShowFolder});
+            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.viewToolStripMenuItem.Text = "&View";
+            // 
+            // menuShowFolder
+            // 
+            this.menuShowFolder.Name = "menuShowFolder";
+            this.menuShowFolder.Size = new System.Drawing.Size(161, 22);
+            this.menuShowFolder.Text = "&Show in Folder...";
+            this.menuShowFolder.Click += new System.EventHandler(this.MenuShowFolderClick);
+            // 
             // ScriptedRenderChainScriptEditorDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -140,19 +157,20 @@ namespace Mpdn.Extensions.RenderScripts
             this.ResumeLayout(false);
             this.PerformLayout();
 
-            }
-
-            #endregion
-
-            private AvalonEditHost textBoxScript;
-            private System.Windows.Forms.MenuStrip menuStrip1;
-            private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-            private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
-            private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
-            private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-            private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
-            private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
-
         }
+
+        #endregion
+
+        private AvalonEditHost textBoxScript;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem menuShowFolder;
+
     }
 }

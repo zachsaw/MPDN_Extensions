@@ -112,7 +112,7 @@ namespace Mpdn.Extensions.Framework
 
     public static class RenderChainExtensions
     {
-        public static IRenderChainUi CreateNew(this IRenderChainUi scriptUi, bool loadConfig = false)
+        public static IRenderChainUi CreateNew(this IRenderChainUi scriptUi)
         {
             var constructor = scriptUi.GetType().GetConstructor(Type.EmptyTypes);
             if (constructor == null)
@@ -120,12 +120,7 @@ namespace Mpdn.Extensions.Framework
                 throw new EntryPointNotFoundException("RenderChainUi must implement parameter-less constructor");
             }
 
-            var renderScript = (IRenderChainUi)constructor.Invoke(new object[0]);
-            if (loadConfig)
-            {
-                ((IPersistentConfig) renderScript).Load();
-            }
-            return renderScript;
+            return (IRenderChainUi)constructor.Invoke(new object[0]);
         }
     }
 }
