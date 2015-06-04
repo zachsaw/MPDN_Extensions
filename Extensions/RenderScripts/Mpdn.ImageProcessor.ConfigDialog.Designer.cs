@@ -56,7 +56,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonUp = new System.Windows.Forms.Button();
             this.buttonDown = new System.Windows.Forms.Button();
             this.buttonClear = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.buttonEdit = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // buttonCancel
@@ -102,6 +102,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.listBox.Size = new System.Drawing.Size(357, 233);
             this.listBox.TabIndex = 0;
             this.listBox.SelectedIndexChanged += new System.EventHandler(this.ListBoxSelectedIndexChanged);
+            this.listBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ListBoxMouseDoubleClick);
             // 
             // buttonAdd
             // 
@@ -174,16 +175,16 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonClear.UseVisualStyleBackColor = true;
             this.buttonClear.Click += new System.EventHandler(this.ButtonClearClick);
             // 
-            // button1
+            // buttonEdit
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.button1.Location = new System.Drawing.Point(15, 272);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Edit";
-            this.button1.UseVisualStyleBackColor = true;
+            this.buttonEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonEdit.Location = new System.Drawing.Point(15, 272);
+            this.buttonEdit.Name = "buttonEdit";
+            this.buttonEdit.Size = new System.Drawing.Size(75, 23);
+            this.buttonEdit.TabIndex = 1;
+            this.buttonEdit.Text = "Edit...";
+            this.buttonEdit.UseVisualStyleBackColor = true;
+            this.buttonEdit.Click += new System.EventHandler(this.ButtonEditClick);
             // 
             // ImageProcessorConfigDialog
             // 
@@ -192,7 +193,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(384, 307);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.buttonEdit);
             this.Controls.Add(this.buttonClear);
             this.Controls.Add(this.buttonDown);
             this.Controls.Add(this.buttonUp);
@@ -227,7 +228,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button buttonUp;
             private System.Windows.Forms.Button buttonDown;
             private System.Windows.Forms.Button buttonClear;
-            private System.Windows.Forms.Button button1;
+            private System.Windows.Forms.Button buttonEdit;
 
         }
     }
