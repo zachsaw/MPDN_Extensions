@@ -29,7 +29,7 @@ namespace Mpdn.Extensions.Framework
         where TSettings : class, new()
     { }
 
-    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<Framework.Config.Internal.PlayerExtensions, TSettings, TDialog>, IPlayerExtension
+    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<Config.Internal.PlayerExtensions, TSettings, TDialog>, IPlayerExtension
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
@@ -79,7 +79,7 @@ namespace Mpdn.Extensions.Framework
 
         protected static bool TryDecodeKeyString(String keyString, out Keys keys)
         {
-            var keyWords = Regex.Split(keyString, @"\W+");
+            var keyWords = Regex.Split(keyString ?? "", @"\W+");
             keyString = String.Join(", ", keyWords.Select(DecodeKeyWord).ToArray());
 
             return (Enum.TryParse(keyString, true, out keys));

@@ -45,7 +45,7 @@ namespace Mpdn.Extensions.Framework
                 m_Name = value;
                 if (Script != null && Chain is INameable)
                 {
-                    (Chain as INameable).Name = value;
+                    ((INameable) Chain).Name = value;
                 }
             }
         }
@@ -61,7 +61,7 @@ namespace Mpdn.Extensions.Framework
                 m_Script = value;
                 if (Script != null && Chain is INameable)
                 {
-                    (Chain as INameable).Name = Name;
+                    ((INameable) Chain).Name = Name;
                 }
             }
         }

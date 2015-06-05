@@ -18,7 +18,6 @@ using System;
 using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
-using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -26,7 +25,7 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public partial class SuperResConfigDialog : SuperResConfigDialogBase
         {
-            protected int? selectedIndex = null;
+            protected int? selectedIndex;
 
             protected SuperResPreset selectedPreset
             {
@@ -57,7 +56,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (option == null)
                     return;
 
-                PassesSetter.Value = (Decimal)option.Passes;
+                PassesSetter.Value = option.Passes;
                 StrengthSetter.Value = (Decimal)option.Strength;
                 SharpnessSetter.Value = (Decimal)option.Sharpness;
                 AntiAliasingSetter.Value = (Decimal)option.AntiAliasing;
@@ -96,8 +95,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void UpdateGui()
             {
-                ConfigButton.Enabled = (PrescalerBox.SelectedValue as Preset != null) &&
-                                       (PrescalerBox.SelectedValue as Preset).HasConfigDialog();
+                var preset = PrescalerBox.SelectedValue as Preset;
+                ConfigButton.Enabled = (preset != null) && preset.HasConfigDialog();
             }
 
             private void ConfigButton_Click(object sender, EventArgs e)

@@ -109,12 +109,12 @@ namespace Mpdn.Extensions.Framework
         {
             if (texture is ITexture2D)
             {
-                var t = texture as ITexture2D;
+                var t = (ITexture2D) texture;
                 return new TextureSize(t.Width, t.Height);
             }
             if (texture is ITexture3D)
             {
-                var t = texture as ITexture3D;
+                var t = (ITexture3D) texture;
                 return new TextureSize(t.Width, t.Height, t.Depth);
             }
             throw new ArgumentException("Invalid texture type");

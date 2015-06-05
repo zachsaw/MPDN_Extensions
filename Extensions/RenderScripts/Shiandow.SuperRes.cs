@@ -58,7 +58,8 @@ namespace Mpdn.Extensions.RenderScripts
             public override bool AllowRegrouping { get { return false; } }
 
             public Func<TextureSize> TargetSize; // Not saved
-            private IScaler downscaler, upscaler;
+            private readonly IScaler downscaler;
+            private readonly IScaler upscaler;
 
             public SuperRes()
             {
@@ -127,13 +128,14 @@ namespace Mpdn.Extensions.RenderScripts
 
             public IFilter CreateFilter(IFilter original, IFilter initial)
             {
-                IFilter lab, linear, result = initial;
+                IFilter lab;
+                IFilter result = initial;
 
                 // Load Settings
                 var settings = (SuperResPreset)SelectedOption;
-                var Passes = settings.Passes;
-                var Strength = settings.Strength;
-                var Sharpness = settings.Sharpness;
+                var passes = settings.Passes;
+                var strength = settings.Strength;
+                var sharpness = settings.Sharpness;
                 var AntiAliasing = settings.AntiAliasing;
                 var AntiRinging = settings.AntiRinging;
                 var Softness = settings.Softness;
@@ -148,9 +150,9 @@ namespace Mpdn.Extensions.RenderScripts
                 var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions:
                         (AntiRinging  == 0 ? "SkipAntiRinging = 1;" : "") +
                         (AntiAliasing == 0 ? "SkipAntiAliasing = 1;" : "") +
-                        (Sharpness == 0 ? "SkipSharpening = 1;" : "") +
+                        (sharpness == 0 ? "SkipSharpening = 1;" : "") +
                         (Softness  == 0 ? "SkipSoftening = 1;" : "")
-                    ).Configure(arguments: new[] { Strength, Sharpness, AntiAliasing, AntiRinging, Softness });
+                    ).Configure(arguments: new[] { strength, sharpness, AntiAliasing, AntiRinging, Softness });
 
                 var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
                 var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
@@ -164,7 +166,7 @@ namespace Mpdn.Extensions.RenderScripts
                     return original;
 
                 // Initial scaling
-                currentSize = CalculateSize(currentSize, targetSize, 1, Passes);
+                currentSize = CalculateSize(currentSize, targetSize, 1, passes);
                 if (initial != original)
                 {
                     original = new ShaderFilter(GammaToLab, original);
@@ -176,16 +178,16 @@ namespace Mpdn.Extensions.RenderScripts
                     lab = new ResizeFilter(original, currentSize);
                 }
 
-                for (int i = 1; i <= Passes; i++)
+                for (int i = 1; i <= passes; i++)
                 {
-                    IFilter res, diff;
-                    bool useBilinear = (upscaler is Bilinear) || (FirstPassOnly && !(i == 1));
+                    IFilter res, diff, linear;
+                    bool useBilinear = (upscaler is Bilinear) || (FirstPassOnly && i != 1);
 
                     if (i != 1)
                     {
                         // Calculate size
-                        if (i == Passes || NoIntermediates) currentSize = targetSize;
-                        else currentSize = CalculateSize(currentSize, targetSize, i, Passes);
+                        if (i == passes || NoIntermediates) currentSize = targetSize;
+                        else currentSize = CalculateSize(currentSize, targetSize, i, passes);
 
                         // Resize
                         lab = new ResizeFilter(lab, currentSize, upscaler, downscaler);
@@ -210,24 +212,24 @@ namespace Mpdn.Extensions.RenderScripts
                 return result;
             }
 
-            private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k, int Passes)
+            private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k, int passes)
             {            
                 double w, h;
-                var MaxScale = 2.25;
-                var MinScale = Math.Sqrt(MaxScale);
+                var maxScale = 2.25;
+                var minScale = Math.Sqrt(maxScale);
                 
                 int minW = sizeA.Width; int minH = sizeA.Height;
                 int maxW = sizeB.Width; int maxH = sizeB.Height;
 
-                int maxSteps = (int)Math.Floor  (Math.Log((double)(maxH * maxW) / (double)(minH * minW)) / (2 * Math.Log(MinScale)));
-                int minSteps = (int)Math.Ceiling(Math.Log((double)(maxH * maxW) / (double)(minH * minW)) / (2 * Math.Log(MaxScale)));
-                int steps = Math.Max(Math.Max(1,minSteps), Math.Min(maxSteps, Passes - (k - 1)));
+                int maxSteps = (int)Math.Floor  (Math.Log(maxH * maxW / (double)(minH * minW)) / (2 * Math.Log(minScale)));
+                int minSteps = (int)Math.Ceiling(Math.Log(maxH * maxW / (double)(minH * minW)) / (2 * Math.Log(maxScale)));
+                int steps = Math.Max(Math.Max(1,minSteps), Math.Min(maxSteps, passes - (k - 1)));
                 
-                w = minW * Math.Pow((double)maxW / (double)minW, (double)Math.Min(k, steps) / (double)steps);
-                h = minW * Math.Pow((double)maxH / (double)minH, (double)Math.Min(k, steps) / (double)steps);
+                w = minW * Math.Pow(maxW / (double)minW, Math.Min(k, steps) / (double)steps);
+                h = minW * Math.Pow(maxH / (double)minH, Math.Min(k, steps) / (double)steps);
 
                 return new TextureSize(Math.Max(minW, Math.Min(maxW, (int)Math.Round(w))),
-                                Math.Max(minH, Math.Min(maxH, (int)Math.Round(h))));
+                                       Math.Max(minH, Math.Min(maxH, (int)Math.Round(h))));
             }
         }
 

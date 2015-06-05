@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.RenderScript;
-using Mpdn.RenderScript.Scaler;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -40,8 +40,6 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                var bilinear = new HwBilinear();
-             
                 int bits = 8;
                 switch (Renderer.InputFormat)
                 {
@@ -60,26 +58,14 @@ namespace Mpdn.Extensions.RenderScripts
                 }
                 if (bits > maxbitdepth) return input;
 
-                float[] YuvConsts = new float[2];
-                switch (Renderer.Colorimetric)
-                {
-                    case YuvColorimetric.Auto: break;
-                    case YuvColorimetric.FullRangePc601: YuvConsts = new[] { 0.114f, 0.299f, 0.0f }; break;
-                    case YuvColorimetric.FullRangePc709: YuvConsts = new[] { 0.0722f, 0.2126f, 0.0f }; break;
-                    case YuvColorimetric.FullRangePc2020: YuvConsts = new[] { 0.0593f, 0.2627f, 0.0f }; break;
-                    case YuvColorimetric.ItuBt601: YuvConsts = new[] { 0.114f, 0.299f, 1.0f }; break;
-                    case YuvColorimetric.ItuBt709: YuvConsts = new[] { 0.0722f, 0.2126f, 1.0f }; break;
-                    case YuvColorimetric.ItuBt2020: YuvConsts = new[] { 0.0593f, 0.2627f, 1.0f }; break;
-                }
-
-                float[] Consts = new[] {
+                float[] consts = {
                     (1 << bits) - 1, 
                     power,
                     margin
                 };
 
                 var Deband = CompileShader("Deband.hlsl", macroDefinitions: !grain ? "SkipDithering=1" : "")
-                    .Configure(arguments: Consts, perTextureLinearSampling: new[] { true, false });
+                    .Configure(arguments: consts, perTextureLinearSampling: new[] { true, false });
                 /*var Subtract = CompileShader("Subtract.hlsl")
                     .Configure(perTextureLinearSampling: new[] { false, true }, format: TextureFormat.Float16);
                 var SubtractLimited = CompileShader("SubtractLimited.hlsl")
@@ -127,7 +113,7 @@ namespace Mpdn.Extensions.RenderScripts
                         Guid = new Guid("EE3B46F7-00BB-4299-9B3F-058BCC3F591C"),
                         Name = "Deband",
                         Description = "Removes banding",
-                        Copyright = "Deband by Shiandow",
+                        Copyright = "Deband by Shiandow"
                     };
                 }
             }

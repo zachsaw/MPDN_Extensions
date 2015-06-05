@@ -35,8 +35,6 @@ namespace Mpdn.Extensions.Framework
             private static Dictionary<string, ShaderWithDateTime> s_CompiledShaders =
                 new Dictionary<string, ShaderWithDateTime>();
 
-            public static bool Modified { get; private set; }
-
             public static string ShaderCacheRoot
             {
                 get { return AppPath.GetUserDataDir("ShaderCache"); }
@@ -93,7 +91,6 @@ namespace Mpdn.Extensions.Framework
                     DisposeHelper.Dispose(result.Shader);
                     File.Delete(result.CachePath);
                     s_CompiledShaders.Remove(key);
-                    Modified = true;
                 }
 
                 T shader;
@@ -108,7 +105,6 @@ namespace Mpdn.Extensions.Framework
                 }
 
                 s_CompiledShaders.Add(key, new ShaderWithDateTime(shader, lastMod, loadFunc != null));
-                Modified = true;
                 return shader;
             }
 
@@ -160,7 +156,6 @@ namespace Mpdn.Extensions.Framework
                     var bf = new BinaryFormatter();
                     bf.Serialize(fs, s_CompiledShaders);
                 }
-                Modified = false;
             }
 
             public static void Load(string path)
@@ -177,7 +172,6 @@ namespace Mpdn.Extensions.Framework
                 {
                     // Ignore errors if we can't load
                 }
-                Modified = false;
             }
         }
 

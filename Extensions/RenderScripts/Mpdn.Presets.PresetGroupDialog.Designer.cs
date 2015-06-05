@@ -61,7 +61,7 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(326, 96);
+            this.buttonCancel.Location = new System.Drawing.Point(299, 100);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1;
@@ -72,7 +72,7 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(245, 96);
+            this.buttonOk.Location = new System.Drawing.Point(218, 100);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 0;
@@ -88,7 +88,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ScriptBox.FormattingEnabled = true;
             this.ScriptBox.Location = new System.Drawing.Point(99, 14);
             this.ScriptBox.Name = "ScriptBox";
-            this.ScriptBox.Size = new System.Drawing.Size(221, 21);
+            this.ScriptBox.Size = new System.Drawing.Size(194, 21);
             this.ScriptBox.TabIndex = 2;
             this.ScriptBox.SelectedIndexChanged += new System.EventHandler(this.ScriptBox_SelectedIndexChanged);
             // 
@@ -120,13 +120,13 @@ namespace Mpdn.Extensions.RenderScripts
             this.HotkeyBox.Location = new System.Drawing.Point(99, 67);
             this.HotkeyBox.Name = "HotkeyBox";
             this.HotkeyBox.ReadOnly = true;
-            this.HotkeyBox.Size = new System.Drawing.Size(302, 20);
+            this.HotkeyBox.Size = new System.Drawing.Size(275, 20);
             this.HotkeyBox.TabIndex = 5;
             // 
             // buttonConfigure
             // 
             this.buttonConfigure.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonConfigure.Location = new System.Drawing.Point(326, 12);
+            this.buttonConfigure.Location = new System.Drawing.Point(299, 12);
             this.buttonConfigure.Name = "buttonConfigure";
             this.buttonConfigure.Size = new System.Drawing.Size(75, 23);
             this.buttonConfigure.TabIndex = 3;
@@ -137,7 +137,7 @@ namespace Mpdn.Extensions.RenderScripts
             // buttonAdv
             // 
             this.buttonAdv.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonAdv.Location = new System.Drawing.Point(18, 96);
+            this.buttonAdv.Location = new System.Drawing.Point(18, 100);
             this.buttonAdv.Name = "buttonAdv";
             this.buttonAdv.Size = new System.Drawing.Size(75, 23);
             this.buttonAdv.TabIndex = 6;
@@ -161,7 +161,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.DescriptionLabel.Location = new System.Drawing.Point(99, 40);
             this.DescriptionLabel.Margin = new System.Windows.Forms.Padding(3);
             this.DescriptionLabel.Name = "DescriptionLabel";
-            this.DescriptionLabel.Size = new System.Drawing.Size(302, 21);
+            this.DescriptionLabel.Size = new System.Drawing.Size(275, 21);
             this.DescriptionLabel.TabIndex = 4;
             this.DescriptionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -171,7 +171,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(419, 137);
+            this.ClientSize = new System.Drawing.Size(392, 141);
             this.Controls.Add(this.DescriptionLabel);
             this.Controls.Add(this.DescriptionLabelLabel);
             this.Controls.Add(this.buttonAdv);
@@ -208,6 +208,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button buttonAdv;
             private System.Windows.Forms.Label DescriptionLabelLabel;
             private System.Windows.Forms.Label DescriptionLabel;
+            private Framework.Controls.RenderChainList renderChainList1;
         }
     }
 }  

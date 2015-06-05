@@ -40,7 +40,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private IScaler upscaler, downscaler;
+            private readonly IScaler upscaler, downscaler;
 
             public SuperChromaRes()
             {
@@ -73,16 +73,16 @@ namespace Mpdn.Extensions.RenderScripts
                 var uInput = new USourceFilter();
                 var vInput = new VSourceFilter();
 
-                float[] YuvConsts = new float[0];
+                float[] yuvConsts = new float[0];
                 switch (Renderer.Colorimetric)
                 {
                     case YuvColorimetric.Auto : return input;
-                    case YuvColorimetric.FullRangePc601: YuvConsts = new[] { 0.114f, 0.299f, 0.0f}; break;
-                    case YuvColorimetric.FullRangePc709: YuvConsts = new[] { 0.0722f, 0.2126f, 0.0f }; break;
-                    case YuvColorimetric.FullRangePc2020: YuvConsts = new[] { 0.0593f, 0.2627f, 0.0f }; break;
-                    case YuvColorimetric.ItuBt601: YuvConsts = new[] { 0.114f, 0.299f, 1.0f }; break;
-                    case YuvColorimetric.ItuBt709: YuvConsts = new[] { 0.0722f, 0.2126f, 1.0f }; break;
-                    case YuvColorimetric.ItuBt2020: YuvConsts = new[] { 0.0593f, 0.2627f, 1.0f }; break;
+                    case YuvColorimetric.FullRangePc601: yuvConsts = new[] { 0.114f, 0.299f, 0.0f}; break;
+                    case YuvColorimetric.FullRangePc709: yuvConsts = new[] { 0.0722f, 0.2126f, 0.0f }; break;
+                    case YuvColorimetric.FullRangePc2020: yuvConsts = new[] { 0.0593f, 0.2627f, 0.0f }; break;
+                    case YuvColorimetric.ItuBt601: yuvConsts = new[] { 0.114f, 0.299f, 1.0f }; break;
+                    case YuvColorimetric.ItuBt709: yuvConsts = new[] { 0.0722f, 0.2126f, 1.0f }; break;
+                    case YuvColorimetric.ItuBt2020: yuvConsts = new[] { 0.0593f, 0.2627f, 1.0f }; break;
                 }
 
                 // Skip if downscaling
@@ -92,20 +92,20 @@ namespace Mpdn.Extensions.RenderScripts
                 Vector2 offset = Renderer.ChromaOffset;
                 Vector2 adjointOffset = -offset * targetSize / chromaSize;
 
-                var Consts = new[] { Strength, Sharpness   , AntiAliasing, AntiRinging,  
-                                     Softness, YuvConsts[0], YuvConsts[1], 0.0f,
+                var consts = new[] { Strength, Sharpness   , AntiAliasing, AntiRinging,  
+                                     Softness, yuvConsts[0], yuvConsts[1], 0.0f,
                                      offset.X, offset.Y };
 
                 var CopyLuma = CompileShader("CopyLuma.hlsl");
                 var CopyChroma = CompileShader("CopyChroma.hlsl");
                 var MergeChroma = CompileShader("MergeChroma.hlsl").Configure( format: TextureFormat.Float16 );
-                var Diff = CompileShader("Diff.hlsl").Configure(arguments: YuvConsts, format: TextureFormat.Float16);
+                var Diff = CompileShader("Diff.hlsl").Configure(arguments: yuvConsts, format: TextureFormat.Float16);
                 var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions:
                         (AntiRinging == 0 ? "SkipAntiRinging = 1;" : "") +
                         (AntiAliasing == 0 ? "SkipAntiAliasing = 1;" : "") +
                         (Sharpness == 0 ? "SkipSharpening = 1;" : "") +
                         (Softness  == 0 ? "SkipSoftening = 1;" : "")
-                        ).Configure(arguments: Consts);
+                        ).Configure(arguments: consts);
 
                 var GammaToLab = CompileShader("../../Common/GammaToLab.hlsl");
                 var LabToGamma = CompileShader("../../Common/LabToGamma.hlsl");

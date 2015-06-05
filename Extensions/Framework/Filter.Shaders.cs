@@ -28,11 +28,11 @@ namespace Mpdn.Extensions.Framework
     public class ShaderFilterSettings<T>
     {
         public T Shader;
-        public bool LinearSampling = false;
+        public bool LinearSampling;
         public bool[] PerTextureLinearSampling = new bool[0];
         public TransformFunc Transform = (s => s);
         public TextureFormat Format = Renderer.RenderQuality.GetTextureFormat();
-        public int SizeIndex = 0;
+        public int SizeIndex;
         public float[] Args = new float[0];
 
         public ShaderFilterSettings(T shader)
@@ -162,7 +162,7 @@ namespace Mpdn.Extensions.Framework
             var i = 0;
             foreach (var input in inputs)
             {
-                if (input as ITexture2D != null)
+                if (input is ITexture2D)
                 {
                     var tex = (ITexture2D) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
@@ -217,7 +217,7 @@ namespace Mpdn.Extensions.Framework
             var i = 0;
             foreach (var input in inputs)
             {
-                if (input as ITexture2D != null)
+                if (input is ITexture2D)
                 {
                     var tex = (ITexture2D) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
@@ -324,7 +324,7 @@ namespace Mpdn.Extensions.Framework
             var i = 1;
             foreach (var input in inputs)
             {
-                if (input as ITexture2D != null)
+                if (input is ITexture2D)
                 {
                     var tex = (ITexture2D) input;
                     Shader.SetInputTextureArg(i, tex, false);

@@ -59,23 +59,8 @@ namespace Mpdn.Extensions.Framework
         public readonly bool OutputLimitedRange;
         public readonly bool OutputLimitChroma;
 
-        public RgbFilter(IFilter inputFilter)
-            : this(inputFilter, null, null)
-        {
-        }
-
         public RgbFilter(IFilter inputFilter, bool limitedRange)
             : this(inputFilter, null, limitedRange)
-        {
-        }
-
-        public RgbFilter(IFilter inputFilter, YuvColorimetric colorimetric)
-            : this(inputFilter, colorimetric, null)
-        {
-        }
-
-        public RgbFilter(IFilter inputFilter, YuvColorimetric colorimetric, bool limitedRange)
-            : this(inputFilter, colorimetric, limitedRange, null)
         {
         }
 
@@ -107,26 +92,16 @@ namespace Mpdn.Extensions.Framework
         public readonly YuvColorimetric Colorimetric;
         public readonly bool OutputLimitedRange;
 
-        public YuvFilter(IFilter inputFilter)
-            : this(inputFilter, Renderer.Colorimetric, Renderer.OutputLimitedRange)
-        {
-        }
-
         public YuvFilter(IFilter inputFilter, bool limitedRange)
-            : this(inputFilter, Renderer.Colorimetric, limitedRange)
+            : this(inputFilter, null, limitedRange)
         {
         }
 
-        public YuvFilter(IFilter inputFilter, YuvColorimetric colorimetric)
-            : this(inputFilter, colorimetric, Renderer.OutputLimitedRange)
-        {
-        }
-
-        public YuvFilter(IFilter inputFilter, YuvColorimetric colorimetric, bool limitedRange)
+        public YuvFilter(IFilter inputFilter, YuvColorimetric? colorimetric = null, bool? limitedRange = null)
             : base(inputFilter)
         {
-            Colorimetric = colorimetric;
-            OutputLimitedRange = limitedRange;
+            Colorimetric = colorimetric ?? Renderer.Colorimetric;
+            OutputLimitedRange = limitedRange ?? Renderer.OutputLimitedRange;
         }
 
         protected override IFilter<ITexture2D> Optimize()
