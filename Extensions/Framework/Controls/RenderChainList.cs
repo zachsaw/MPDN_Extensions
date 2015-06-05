@@ -19,10 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.Framework.Controls
 {
@@ -139,9 +136,9 @@ namespace Mpdn.Extensions.Framework.Controls
             return scripts.ToList();
         }
 
-        protected void LoadPresets(IEnumerable<Preset> Source)
+        protected void LoadPresets(IEnumerable<Preset> source)
         {
-            AddPresets(Source);
+            AddPresets(source);
             listViewChain.SelectedIndices.Clear();
 
             ResizeLists();
@@ -468,7 +465,7 @@ namespace Mpdn.Extensions.Framework.Controls
             ResizeLists();
         }
 
-        private void DialogResizeEnd(object sender, EventArgs e)
+        private void RenderChainListSizeChanged(object sender, EventArgs e)
         {
             ResizeLists();
         }
@@ -669,7 +666,7 @@ namespace Mpdn.Extensions.Framework.Controls
 
         #region Configure Menu
 
-        private void MenuChainOpening(object sender, System.ComponentModel.CancelEventArgs e)
+        private void MenuChainOpening(object sender, CancelEventArgs e)
         {
             var menuitem = (ToolStripMenuItem)menuChain.Items
                 .Find("menuConfigure", false).First();

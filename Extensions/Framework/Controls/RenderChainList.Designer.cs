@@ -37,6 +37,15 @@
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.menuChain = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.menuConfigure = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuRemove = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuClear = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuSelectAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuUngroup = new System.Windows.Forms.ToolStripMenuItem();
             this.buttonConfigure = new System.Windows.Forms.Button();
             this.NameLable = new System.Windows.Forms.Label();
             this.NameBox = new System.Windows.Forms.TextBox();
@@ -47,25 +56,16 @@
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.buttonAdd = new System.Windows.Forms.Button();
-            this.labelCopyright = new System.Windows.Forms.Label();
-            this.menuChain = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.menuConfigure = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuRemove = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuClear = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuSelectAll = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuGroup = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuUngroup = new System.Windows.Forms.ToolStripMenuItem();
             this.menuAvail = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuAdd = new System.Windows.Forms.ToolStripMenuItem();
+            this.buttonAdd = new System.Windows.Forms.Button();
+            this.labelCopyright = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
             this.splitContainer.Panel2.SuspendLayout();
             this.splitContainer.SuspendLayout();
-            this.panelReorder.SuspendLayout();
             this.menuChain.SuspendLayout();
+            this.panelReorder.SuspendLayout();
             this.menuAvail.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -98,6 +98,7 @@
             this.splitContainer.Size = new System.Drawing.Size(871, 548);
             this.splitContainer.SplitterDistance = 431;
             this.splitContainer.TabIndex = 10;
+            this.splitContainer.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitterMoved);
             // 
             // splitter1
             // 
@@ -172,6 +173,76 @@
             this.columnHeader6.Text = "Description";
             this.columnHeader6.Width = 271;
             // 
+            // menuChain
+            // 
+            this.menuChain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuConfigure,
+            this.toolStripSeparator1,
+            this.menuRemove,
+            this.menuClear,
+            this.menuSelectAll,
+            this.toolStripSeparator2,
+            this.menuGroup,
+            this.menuUngroup});
+            this.menuChain.Name = "contextMenuStrip1";
+            this.menuChain.Size = new System.Drawing.Size(165, 148);
+            this.menuChain.Opening += new System.ComponentModel.CancelEventHandler(this.MenuChainOpening);
+            // 
+            // menuConfigure
+            // 
+            this.menuConfigure.Name = "menuConfigure";
+            this.menuConfigure.Size = new System.Drawing.Size(164, 22);
+            this.menuConfigure.Text = "Configure...";
+            this.menuConfigure.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuConfigureItemClicked);
+            this.menuConfigure.Click += new System.EventHandler(this.ButtonConfigureClick);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(161, 6);
+            // 
+            // menuRemove
+            // 
+            this.menuRemove.Name = "menuRemove";
+            this.menuRemove.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.menuRemove.Size = new System.Drawing.Size(164, 22);
+            this.menuRemove.Text = "Remove";
+            this.menuRemove.Click += new System.EventHandler(this.ButtonMinusClick);
+            // 
+            // menuClear
+            // 
+            this.menuClear.Name = "menuClear";
+            this.menuClear.Size = new System.Drawing.Size(164, 22);
+            this.menuClear.Text = "Clear";
+            this.menuClear.Click += new System.EventHandler(this.ButtonClearClick);
+            // 
+            // menuSelectAll
+            // 
+            this.menuSelectAll.Name = "menuSelectAll";
+            this.menuSelectAll.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
+            this.menuSelectAll.Size = new System.Drawing.Size(164, 22);
+            this.menuSelectAll.Text = "Select All";
+            this.menuSelectAll.Click += new System.EventHandler(this.SelectAll);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(161, 6);
+            // 
+            // menuGroup
+            // 
+            this.menuGroup.Name = "menuGroup";
+            this.menuGroup.Size = new System.Drawing.Size(164, 22);
+            this.menuGroup.Text = "Group";
+            this.menuGroup.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuGroupItemClicked);
+            // 
+            // menuUngroup
+            // 
+            this.menuUngroup.Name = "menuUngroup";
+            this.menuUngroup.Size = new System.Drawing.Size(164, 22);
+            this.menuUngroup.Text = "Ungroup";
+            this.menuUngroup.Click += new System.EventHandler(this.MenuUngroupClicked);
+            // 
             // buttonConfigure
             // 
             this.buttonConfigure.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -202,6 +273,7 @@
             this.NameBox.Name = "NameBox";
             this.NameBox.Size = new System.Drawing.Size(183, 20);
             this.NameBox.TabIndex = 10;
+            this.NameBox.TextChanged += new System.EventHandler(this.NameChanged);
             this.NameBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NameKeyDown);
             this.NameBox.Leave += new System.EventHandler(this.NameLeave);
             this.NameBox.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.NamePreviewKeyDown);
@@ -289,6 +361,20 @@
             this.columnHeader2.Text = "Description";
             this.columnHeader2.Width = 271;
             // 
+            // menuAvail
+            // 
+            this.menuAvail.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuAdd});
+            this.menuAvail.Name = "contextMenuStrip2";
+            this.menuAvail.Size = new System.Drawing.Size(97, 26);
+            // 
+            // menuAdd
+            // 
+            this.menuAdd.Name = "menuAdd";
+            this.menuAdd.Size = new System.Drawing.Size(96, 22);
+            this.menuAdd.Text = "Add";
+            this.menuAdd.Click += new System.EventHandler(this.ButtonAddClick);
+            // 
             // buttonAdd
             // 
             this.buttonAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -311,89 +397,6 @@
             this.labelCopyright.TabIndex = 2;
             this.labelCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // menuChain
-            // 
-            this.menuChain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuConfigure,
-            this.toolStripSeparator1,
-            this.menuRemove,
-            this.menuClear,
-            this.menuSelectAll,
-            this.toolStripSeparator2,
-            this.menuGroup,
-            this.menuUngroup});
-            this.menuChain.Name = "contextMenuStrip1";
-            this.menuChain.Size = new System.Drawing.Size(165, 148);
-            // 
-            // menuConfigure
-            // 
-            this.menuConfigure.Name = "menuConfigure";
-            this.menuConfigure.Size = new System.Drawing.Size(164, 22);
-            this.menuConfigure.Text = "Configure...";
-            this.menuConfigure.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuConfigureItemClicked);
-            this.menuConfigure.Click += new System.EventHandler(this.ButtonConfigureClick);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(161, 6);
-            // 
-            // menuRemove
-            // 
-            this.menuRemove.Name = "menuRemove";
-            this.menuRemove.ShortcutKeys = System.Windows.Forms.Keys.Delete;
-            this.menuRemove.Size = new System.Drawing.Size(164, 22);
-            this.menuRemove.Text = "Remove";
-            this.menuRemove.Click += new System.EventHandler(this.ButtonMinusClick);
-            // 
-            // menuClear
-            // 
-            this.menuClear.Name = "menuClear";
-            this.menuClear.Size = new System.Drawing.Size(164, 22);
-            this.menuClear.Text = "Clear";
-            this.menuClear.Click += new System.EventHandler(this.ButtonClearClick);
-            // 
-            // menuSelectAll
-            // 
-            this.menuSelectAll.Name = "menuSelectAll";
-            this.menuSelectAll.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
-            this.menuSelectAll.Size = new System.Drawing.Size(164, 22);
-            this.menuSelectAll.Text = "Select All";
-            this.menuSelectAll.Click += new System.EventHandler(this.SelectAll);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(161, 6);
-            // 
-            // menuGroup
-            // 
-            this.menuGroup.Name = "menuGroup";
-            this.menuGroup.Size = new System.Drawing.Size(164, 22);
-            this.menuGroup.Text = "Group";
-            this.menuGroup.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuGroupItemClicked);
-            // 
-            // menuUngroup
-            // 
-            this.menuUngroup.Name = "menuUngroup";
-            this.menuUngroup.Size = new System.Drawing.Size(164, 22);
-            this.menuUngroup.Text = "Ungroup";
-            this.menuUngroup.Click += new System.EventHandler(this.MenuUngroupClicked);
-            // 
-            // menuAvail
-            // 
-            this.menuAvail.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuAdd});
-            this.menuAvail.Name = "contextMenuStrip2";
-            this.menuAvail.Size = new System.Drawing.Size(97, 26);
-            // 
-            // menuAdd
-            // 
-            this.menuAdd.Name = "menuAdd";
-            this.menuAdd.Size = new System.Drawing.Size(152, 22);
-            this.menuAdd.Text = "Add";
-            this.menuAdd.Click += new System.EventHandler(this.ButtonAddClick);
-            // 
             // RenderChainList
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -402,13 +405,14 @@
             this.Name = "RenderChainList";
             this.Size = new System.Drawing.Size(877, 551);
             this.Load += new System.EventHandler(this.OnLoad);
+            this.SizeChanged += new System.EventHandler(this.RenderChainListSizeChanged);
             this.splitContainer.Panel1.ResumeLayout(false);
             this.splitContainer.Panel1.PerformLayout();
             this.splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).EndInit();
             this.splitContainer.ResumeLayout(false);
-            this.panelReorder.ResumeLayout(false);
             this.menuChain.ResumeLayout(false);
+            this.panelReorder.ResumeLayout(false);
             this.menuAvail.ResumeLayout(false);
             this.ResumeLayout(false);
 
