@@ -20,7 +20,7 @@ using System.Drawing;
 using Mpdn.RenderScript;
 using SharpDX;
 
-namespace Mpdn.Extensions.Framework.Filter
+namespace Mpdn.Extensions.Framework.RenderChain
 {
     public struct TextureSize
     {

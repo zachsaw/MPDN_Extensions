@@ -16,7 +16,6 @@
 
 using System;
 using System.Linq;
-using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
 
 namespace Mpdn.Extensions.RenderScripts

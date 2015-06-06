@@ -18,7 +18,6 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 

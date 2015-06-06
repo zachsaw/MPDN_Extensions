@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Mpdn.Extensions.Framework.Filter;
 using YAXLib;
 
 namespace Mpdn.Extensions.Framework.RenderChain

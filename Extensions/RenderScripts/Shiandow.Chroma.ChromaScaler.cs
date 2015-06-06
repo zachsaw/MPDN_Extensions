@@ -16,7 +16,6 @@
 
 using System;
 using System.ComponentModel;
-using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;

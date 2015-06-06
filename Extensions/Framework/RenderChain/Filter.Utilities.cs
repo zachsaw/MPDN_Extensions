@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Mpdn.RenderScript;
 using SharpDX;
-using IBaseFilter = Mpdn.Extensions.Framework.Filter.IFilter<Mpdn.IBaseTexture>;
+using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.Extensions.Framework.Filter
+namespace Mpdn.Extensions.Framework.RenderChain
 {
     public abstract class BasicFilter : Filter
     {

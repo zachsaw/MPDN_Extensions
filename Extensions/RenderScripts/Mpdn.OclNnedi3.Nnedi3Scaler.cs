@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
