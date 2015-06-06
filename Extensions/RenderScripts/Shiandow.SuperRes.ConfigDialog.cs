@@ -13,11 +13,11 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.Linq;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.RenderChain;
 
 namespace Mpdn.Extensions.RenderScripts
 {

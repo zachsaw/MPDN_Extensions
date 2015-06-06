@@ -13,7 +13,7 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -24,7 +24,7 @@ using SharpDX;
 using Color = System.Drawing.Color;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Filter
 {
     public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter, IDisposable
     {

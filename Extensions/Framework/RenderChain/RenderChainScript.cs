@@ -13,19 +13,20 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.Drawing;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class RenderChainScript : IRenderScript, IDisposable
     {
         private SourceFilter m_SourceFilter;
         private IFilter<ITexture2D> m_Filter;
 
-        protected RenderChain Chain;
+        protected readonly RenderChain Chain;
 
         public RenderChainScript(RenderChain chain)
         {

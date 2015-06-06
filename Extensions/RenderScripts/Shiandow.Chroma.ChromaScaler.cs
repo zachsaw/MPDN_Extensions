@@ -13,10 +13,11 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.ComponentModel;
-using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Filter;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;

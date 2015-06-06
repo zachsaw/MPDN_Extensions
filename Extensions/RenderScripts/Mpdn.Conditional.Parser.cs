@@ -19,6 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Scripting;
 
 namespace Mpdn.Extensions.RenderScripts
 {

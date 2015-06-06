@@ -1,16 +1,33 @@
-﻿using System;
+﻿// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.Filter;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
 using Point = System.Drawing.Point;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Scripting
 {
     namespace ScriptEngineUtilities
     {
@@ -207,7 +224,7 @@ namespace Mpdn.Extensions.Framework
 
         public class Clip : IClip
         {
-            private readonly RenderChain m_Chain;
+            private readonly RenderChain.RenderChain m_Chain;
             public IFilter Filter { get; private set; }
 
             public string FileName
@@ -275,13 +292,13 @@ namespace Mpdn.Extensions.Framework
                 get { return Renderer.FrameRateHz; }
             }
 
-            public Clip(RenderChain chain, IFilter input)
+            public Clip(RenderChain.RenderChain chain, IFilter input)
             {
                 m_Chain = chain;
                 Filter = input;
             }
 
-            public Clip Add(RenderChain filter)
+            public Clip Add(RenderChain.RenderChain filter)
             {
                 if (filter == null)
                 {
@@ -291,7 +308,7 @@ namespace Mpdn.Extensions.Framework
                 return this;
             }
 
-            public Clip Apply(RenderChain filter)
+            public Clip Apply(RenderChain.RenderChain filter)
             {
                 return Add(filter);
             }

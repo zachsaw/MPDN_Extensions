@@ -14,15 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
-using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.PlayerExtensions;
+using Mpdn.Extensions.Framework.Filter;
 using YAXLib;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.RenderChain
 {
     public interface INameable
     {
@@ -77,7 +76,7 @@ namespace Mpdn.Extensions.Framework
         }
 
         [YAXDontSerialize]
-        public RenderChain Chain
+        public Framework.RenderChain.RenderChain Chain
         {
             get { return Script.Chain; }
         }

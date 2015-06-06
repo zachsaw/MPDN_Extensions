@@ -13,11 +13,11 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.RenderScripts
 {

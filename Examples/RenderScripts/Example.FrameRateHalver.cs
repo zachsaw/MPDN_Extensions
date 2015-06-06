@@ -15,7 +15,8 @@
 // License along with this library.
 // 
 using System;
-using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Filter;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts

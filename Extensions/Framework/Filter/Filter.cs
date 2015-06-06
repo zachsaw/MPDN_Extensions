@@ -13,24 +13,22 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.RenderScript;
-using TransformFunc = System.Func<Mpdn.Extensions.Framework.TextureSize, Mpdn.Extensions.Framework.TextureSize>;
-using IBaseFilter = Mpdn.Extensions.Framework.IFilter<Mpdn.IBaseTexture>;
+using TransformFunc = System.Func<Mpdn.Extensions.Framework.Filter.TextureSize, Mpdn.Extensions.Framework.Filter.TextureSize>;
+using IBaseFilter = Mpdn.Extensions.Framework.Filter.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Filter
 {
     public interface IFilter<out TTexture>
         where TTexture : class, IBaseTexture
     {
-        IBaseFilter[] InputFilters { get; }
         TTexture OutputTexture { get; }
         TextureSize OutputSize { get; }
         TextureFormat OutputFormat { get; }
-        int FilterIndex { get; }
         int LastDependentIndex { get; }
         void Render();
         void Reset();
@@ -65,22 +63,22 @@ namespace Mpdn.Extensions.Framework
 
         #region IFilter Implementation
 
-        protected bool Updated { get; set; }
-        protected bool Initialized { get; set; }
-        protected IFilter<ITexture2D> CompilationResult { get; set; }
+        private bool Updated { get; set; }
+        private bool Initialized { get; set; }
+        private int FilterIndex { get; set; }
 
-        public IBaseFilter[] InputFilters { get; private set; }
-        public ITexture2D OutputTexture { get { return OutputTarget; } }
+        protected IFilter<ITexture2D> CompilationResult { get; set; }
         protected ITargetTexture OutputTarget { get; private set; }
 
-        public abstract TextureSize OutputSize { get; }
+        public IBaseFilter[] InputFilters { get; private set; }
 
+        public ITexture2D OutputTexture { get { return OutputTarget; } }
+        public abstract TextureSize OutputSize { get; }
         public virtual TextureFormat OutputFormat
         {
             get { return Renderer.RenderQuality.GetTextureFormat(); }
         }
-
-        public int FilterIndex { get; private set; }
+        
         public int LastDependentIndex { get; private set; }
 
         public void Initialize(int time = 1)

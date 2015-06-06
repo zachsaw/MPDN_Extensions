@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -13,14 +13,15 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
-using System.Drawing;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.RenderChain;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -662,7 +663,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #region Configure Menu
 
-            private void MenuChainOpening(object sender, System.ComponentModel.CancelEventArgs e)
+            private void MenuChainOpening(object sender, CancelEventArgs e)
             {
                 var menuitem = (ToolStripMenuItem)menuChain.Items
                     .Find("menuConfigure", false).First();

@@ -13,16 +13,16 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.Controls;
-using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.Scripting;
 
 namespace Mpdn.Extensions.RenderScripts
 {

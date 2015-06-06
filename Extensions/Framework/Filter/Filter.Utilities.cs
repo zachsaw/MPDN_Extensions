@@ -13,15 +13,15 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.RenderScript;
 using SharpDX;
-using IBaseFilter = Mpdn.Extensions.Framework.IFilter<Mpdn.IBaseTexture>;
+using IBaseFilter = Mpdn.Extensions.Framework.Filter.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Filter
 {
     public abstract class BasicFilter : Filter
     {

@@ -13,17 +13,17 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 using SharpDX;
-using TransformFunc = System.Func<Mpdn.Extensions.Framework.TextureSize, Mpdn.Extensions.Framework.TextureSize>;
-using IBaseFilter = Mpdn.Extensions.Framework.IFilter<Mpdn.IBaseTexture>;
+using TransformFunc = System.Func<Mpdn.Extensions.Framework.Filter.TextureSize, Mpdn.Extensions.Framework.Filter.TextureSize>;
+using IBaseFilter = Mpdn.Extensions.Framework.Filter.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Filter
 {
     public class ShaderFilterSettings<T>
     {
