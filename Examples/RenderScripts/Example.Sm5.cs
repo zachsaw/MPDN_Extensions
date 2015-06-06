@@ -13,9 +13,10 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
-using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Filter;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.Resizer;
 using Mpdn.RenderScript;
 

@@ -13,23 +13,15 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Mpdn.RenderScript;
 using SharpDX;
-using ITexture3D = Mpdn.ISourceTexture3D;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Filter
 {
-    public interface ITextureCache
-    {
-        ITargetTexture GetTexture(TextureSize textureSize, TextureFormat textureFormat);
-        void PutTexture(ITargetTexture texture);
-        void PutTempTexture(ITargetTexture texture);
-    }
-
     public struct TextureSize
     {
         public readonly int Width;

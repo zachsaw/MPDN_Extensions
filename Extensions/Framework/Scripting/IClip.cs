@@ -19,7 +19,7 @@ using System.Drawing;
 using SharpDX;
 using Point = System.Drawing.Point;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Scripting
 {
     public interface IClip
     {

@@ -97,6 +97,9 @@
     <Compile Include="Extensions\CustomLinearScalers\SincHann.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviderBase.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviders.cs" />
+    <Compile Include="Extensions\Framework\Config\ExtensionsUi.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Extensions\Framework\Config\IConfigProvider.cs" />
     <Compile Include="Extensions\Framework\Config\IScriptSettings.cs" />
     <Compile Include="Extensions\Framework\Config\ScriptSettings.cs" />
@@ -118,25 +121,22 @@
     <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.Designer.cs">
       <DependentUpon>ScriptEditorDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\Framework\ExtensionsUi.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Extensions\Framework\Filter.cs" />
-    <Compile Include="Extensions\Framework\Filter.Shaders.cs" />
-    <Compile Include="Extensions\Framework\Filter.Sources.cs" />
-    <Compile Include="Extensions\Framework\Filter.Text.cs" />
-    <Compile Include="Extensions\Framework\Filter.Utilities.cs" />
+    <Compile Include="Extensions\Framework\Filter\Filter.cs" />
+    <Compile Include="Extensions\Framework\Filter\Filter.Shaders.cs" />
+    <Compile Include="Extensions\Framework\Filter\Filter.Sources.cs" />
+    <Compile Include="Extensions\Framework\Filter\Filter.Text.cs" />
+    <Compile Include="Extensions\Framework\Filter\Filter.Utilities.cs" />
+    <Compile Include="Extensions\Framework\Filter\Textures.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
-    <Compile Include="Extensions\Framework\IClip.cs" />
     <Compile Include="Extensions\Framework\PlayerExtension.cs" />
-    <Compile Include="Extensions\Framework\RenderChain.cs" />
-    <Compile Include="Extensions\Framework\RenderChainScript.cs" />
-    <Compile Include="Extensions\Framework\RenderChainUi.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\RenderChain.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\RenderChainScript.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\RenderChainUi.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\ShaderCache.cs" />
     <Compile Include="Extensions\Framework\RenderScript.cs" />
-    <Compile Include="Extensions\Framework\ScriptEngine.cs" />
-    <Compile Include="Extensions\Framework\ScriptEngineUtilities.cs" />
-    <Compile Include="Extensions\Framework\ShaderCache.cs" />
-    <Compile Include="Extensions\Framework\Textures.cs" />
+    <Compile Include="Extensions\Framework\Scripting\IClip.cs" />
+    <Compile Include="Extensions\Framework\Scripting\ScriptEngine.cs" />
+    <Compile Include="Extensions\Framework\Scripting\ScriptEngineUtilities.cs" />
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -256,7 +256,7 @@
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Weights.cs" />
-    <Compile Include="Extensions\Framework\Presets.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\Presets.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>

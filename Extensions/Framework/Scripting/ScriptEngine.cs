@@ -15,6 +15,7 @@
 // License along with this library.
 // 
 //css_reference Microsoft.CSharp;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,11 +23,12 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.Windows;
-using Mpdn.Extensions.Framework.ScriptEngineUtilities;
+using Mpdn.Extensions.Framework.Filter;
+using Mpdn.Extensions.Framework.Scripting.ScriptEngineUtilities;
 using Mpdn.RenderScript;
 using ClearScriptEngine = Microsoft.ClearScript.ScriptEngine;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.Scripting
 {
     public class ScriptEngine : IDisposable
     {
@@ -67,7 +69,7 @@ namespace Mpdn.Extensions.Framework
             DisposeHelper.Dispose(ref m_Engine);
         }
 
-        public IFilter Execute(RenderChain chain, IFilter input, string code, string filename = "")
+        public IFilter Execute(RenderChain.RenderChain chain, IFilter input, string code, string filename = "")
         {
             try
             {
@@ -82,7 +84,7 @@ namespace Mpdn.Extensions.Framework
             return null;
         }
 
-        public bool Evaluate(RenderChain chain, IFilter input, string code, string filename = "")
+        public bool Evaluate(RenderChain.RenderChain chain, IFilter input, string code, string filename = "")
         {
             try
             {
@@ -105,7 +107,7 @@ namespace Mpdn.Extensions.Framework
                     filename, string.IsNullOrEmpty(message) ? e.ErrorDetails : message));
         }
 
-        private IClip ResetEngine(RenderChain chain, IFilter input)
+        private IClip ResetEngine(RenderChain.RenderChain chain, IFilter input)
         {
             m_Engine.CollectGarbage(true);
             var mock = (chain == null || input == null);
@@ -134,7 +136,7 @@ namespace Mpdn.Extensions.Framework
                 asm.GetTypes()
                     .Where(
                         t =>
-                            t.IsSubclassOf(typeof (RenderChain)) && t.IsPublic && !t.IsAbstract &&
+                            t.IsSubclassOf(typeof (RenderChain.RenderChain)) && t.IsPublic && !t.IsAbstract &&
                             t.GetConstructor(Type.EmptyTypes) != null);
             foreach (var t in filterTypes)
             {

@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -18,7 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Filter;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.PlayerExtensions;
 using YAXLib;
 

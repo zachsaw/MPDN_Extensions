@@ -13,13 +13,13 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.RenderScript;
 using YAXLib;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.RenderChain
 {
     public interface IRenderChainUi : IRenderScriptUi, IDisposable
     {

@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework.RenderChain;
 
 namespace Mpdn.Extensions.Framework.Controls
 {

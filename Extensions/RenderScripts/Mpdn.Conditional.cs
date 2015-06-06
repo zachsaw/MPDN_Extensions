@@ -16,7 +16,9 @@
 // 
 using System;
 using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
+using Mpdn.Extensions.Framework.Filter;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.Scripting;
 
 namespace Mpdn.Extensions.RenderScripts
 {

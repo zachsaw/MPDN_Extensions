@@ -14,14 +14,16 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.RenderChain
 {
     public abstract class RenderChain
     {

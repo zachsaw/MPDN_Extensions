@@ -14,14 +14,15 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 
-namespace Mpdn.Extensions.Framework
+namespace Mpdn.Extensions.Framework.RenderChain
 {
     public static class ShaderCache
     {

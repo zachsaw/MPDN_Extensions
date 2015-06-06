@@ -13,10 +13,11 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.Collections.Generic;
-using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Filter;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
 using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
 using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
@@ -41,13 +42,6 @@ namespace Mpdn.Extensions.RenderScripts
         public class SuperRes : PresetGroup
         {
             #region Settings
-
-            public enum SuperResDoubler
-            {
-                None,
-                NEDI,
-                NNEDI3
-            };
 
             public bool NoIntermediates { get; set; }
 
