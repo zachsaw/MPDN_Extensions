@@ -24,7 +24,7 @@ using SharpDX;
 using Color = System.Drawing.Color;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace Mpdn.Extensions.Framework.Filter
+namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter, IDisposable
     {

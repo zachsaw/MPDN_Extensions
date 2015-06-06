@@ -20,10 +20,10 @@ using System.Linq;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 using SharpDX;
-using TransformFunc = System.Func<Mpdn.Extensions.Framework.Filter.TextureSize, Mpdn.Extensions.Framework.Filter.TextureSize>;
-using IBaseFilter = Mpdn.Extensions.Framework.Filter.IFilter<Mpdn.IBaseTexture>;
+using TransformFunc = System.Func<Mpdn.Extensions.Framework.RenderChain.TextureSize, Mpdn.Extensions.Framework.RenderChain.TextureSize>;
+using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.Extensions.Framework.Filter
+namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class ShaderFilterSettings<T>
     {

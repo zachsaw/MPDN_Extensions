@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
 using Mpdn.Extensions.RenderScripts.Mpdn.Presets;

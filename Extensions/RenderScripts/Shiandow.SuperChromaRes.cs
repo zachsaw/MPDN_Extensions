@@ -15,7 +15,6 @@
 // License along with this library.
 
 using System;
-using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;

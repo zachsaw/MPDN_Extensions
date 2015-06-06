@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Mpdn.Extensions.Framework.Filter;
+using Mpdn.Extensions.Framework.RenderChain;
 
 namespace Mpdn.Extensions.RenderScripts
 {
