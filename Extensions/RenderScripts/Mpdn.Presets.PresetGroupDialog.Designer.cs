@@ -208,7 +208,6 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button buttonAdv;
             private System.Windows.Forms.Label DescriptionLabelLabel;
             private System.Windows.Forms.Label DescriptionLabel;
-            private Framework.Controls.RenderChainList renderChainList1;
         }
     }
 }  
