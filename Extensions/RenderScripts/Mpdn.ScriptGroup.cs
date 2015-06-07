@@ -34,7 +34,12 @@ namespace Mpdn.Extensions.RenderScripts
             public string Hotkey
             {
                 get { return m_Hotkey; }
-                set { m_Hotkey = value ?? ""; }
+                set
+                {
+                    DeregisterHotkey();
+                    m_Hotkey = value ?? "";
+                    RegisterHotkey();
+                }
             }
 
             [YAXDontSerialize]
@@ -93,7 +98,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override void Reset()
             {
-                DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
+                DeregisterHotkey();
                 base.Reset();
             }
 
@@ -106,6 +111,11 @@ namespace Mpdn.Extensions.RenderScripts
             private void RegisterHotkey()
             {
                 DynamicHotkeys.RegisterHotkey(m_HotkeyGuid, Hotkey, IncrementSelection);
+            }
+
+            private void DeregisterHotkey()
+            {
+                DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
             }
 
             private void IncrementSelection()
