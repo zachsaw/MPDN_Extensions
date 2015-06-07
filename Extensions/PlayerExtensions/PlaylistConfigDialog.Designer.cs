@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+﻿using System.Windows.Forms;
+
 namespace Mpdn.Extensions.PlayerExtensions
 {
     partial class PlaylistConfigDialog
@@ -45,106 +47,306 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.cb_autoplay = new System.Windows.Forms.CheckBox();
+            this.cb_addToPlaylistOnFileOpen = new System.Windows.Forms.CheckBox();
             this.cb_showPlaylistOnStartup = new System.Windows.Forms.CheckBox();
-            this.cb_addFileToPlaylistOnOpen = new System.Windows.Forms.CheckBox();
-            this.cb_rememberLastPlayedFile = new System.Windows.Forms.CheckBox();
-            this.cb_rememberWindowBounds = new System.Windows.Forms.CheckBox();
+            this.cb_rememberPlaylist = new System.Windows.Forms.CheckBox();
+            this.cb_rememberWindowPosition = new System.Windows.Forms.CheckBox();
             this.btn_save = new System.Windows.Forms.Button();
             this.btn_cancel = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.cb_afterPlaybackOpt = new System.Windows.Forms.ComboBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.cb_whenFileIsAdded = new System.Windows.Forms.CheckBox();
+            this.cb_whenPlaylistFileIsOpened = new System.Windows.Forms.CheckBox();
+            this.cb_onStartup = new System.Windows.Forms.CheckBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.cb_lockWindowSize = new System.Windows.Forms.CheckBox();
+            this.cb_snapAndScaleWithPlayer = new System.Windows.Forms.CheckBox();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.cb_rememberColumns = new System.Windows.Forms.CheckBox();
+            this.cb_rememberWindowSize = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.groupBox4.SuspendLayout();
+            this.groupBox3.SuspendLayout();
+            this.panel1.SuspendLayout();
+            this.groupBox5.SuspendLayout();
+            this.groupBox6.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.cb_autoplay);
-            this.groupBox1.Controls.Add(this.cb_showPlaylistOnStartup);
-            this.groupBox1.Controls.Add(this.cb_addFileToPlaylistOnOpen);
-            this.groupBox1.Controls.Add(this.cb_rememberLastPlayedFile);
-            this.groupBox1.Controls.Add(this.cb_rememberWindowBounds);
-            this.groupBox1.Location = new System.Drawing.Point(11, 11);
+            this.groupBox1.Controls.Add(this.cb_addToPlaylistOnFileOpen);
+            this.groupBox1.Location = new System.Drawing.Point(7, 51);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(205, 138);
-            this.groupBox1.TabIndex = 0;
+            this.groupBox1.Size = new System.Drawing.Size(205, 37);
+            this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Settings";
+            this.groupBox1.Text = "General";
             // 
-            // cb_autoplay
+            // cb_addToPlaylistOnFileOpen
             // 
-            this.cb_autoplay.AutoSize = true;
-            this.cb_autoplay.Location = new System.Drawing.Point(7, 42);
-            this.cb_autoplay.Name = "cb_autoplay";
-            this.cb_autoplay.Size = new System.Drawing.Size(67, 17);
-            this.cb_autoplay.TabIndex = 4;
-            this.cb_autoplay.Text = "Autoplay";
-            this.cb_autoplay.UseVisualStyleBackColor = true;
+            this.cb_addToPlaylistOnFileOpen.AutoSize = true;
+            this.cb_addToPlaylistOnFileOpen.Location = new System.Drawing.Point(7, 16);
+            this.cb_addToPlaylistOnFileOpen.Name = "cb_addToPlaylistOnFileOpen";
+            this.cb_addToPlaylistOnFileOpen.Size = new System.Drawing.Size(149, 17);
+            this.cb_addToPlaylistOnFileOpen.TabIndex = 3;
+            this.cb_addToPlaylistOnFileOpen.Text = "Add to playlist on file open";
+            this.cb_addToPlaylistOnFileOpen.UseVisualStyleBackColor = true;
             // 
             // cb_showPlaylistOnStartup
             // 
             this.cb_showPlaylistOnStartup.AutoSize = true;
-            this.cb_showPlaylistOnStartup.Location = new System.Drawing.Point(7, 19);
+            this.cb_showPlaylistOnStartup.Location = new System.Drawing.Point(7, 57);
             this.cb_showPlaylistOnStartup.Name = "cb_showPlaylistOnStartup";
             this.cb_showPlaylistOnStartup.Size = new System.Drawing.Size(137, 17);
-            this.cb_showPlaylistOnStartup.TabIndex = 3;
+            this.cb_showPlaylistOnStartup.TabIndex = 1;
             this.cb_showPlaylistOnStartup.Text = "Show playlist on startup";
             this.cb_showPlaylistOnStartup.UseVisualStyleBackColor = true;
             // 
-            // cb_addFileToPlaylistOnOpen
+            // cb_rememberPlaylist
             // 
-            this.cb_addFileToPlaylistOnOpen.AutoSize = true;
-            this.cb_addFileToPlaylistOnOpen.Location = new System.Drawing.Point(7, 111);
-            this.cb_addFileToPlaylistOnOpen.Name = "cb_addFileToPlaylistOnOpen";
-            this.cb_addFileToPlaylistOnOpen.Size = new System.Drawing.Size(153, 17);
-            this.cb_addFileToPlaylistOnOpen.TabIndex = 2;
-            this.cb_addFileToPlaylistOnOpen.Text = "On file open, add to playlist";
-            this.cb_addFileToPlaylistOnOpen.UseVisualStyleBackColor = true;
+            this.cb_rememberPlaylist.AutoSize = true;
+            this.cb_rememberPlaylist.Location = new System.Drawing.Point(7, 35);
+            this.cb_rememberPlaylist.Name = "cb_rememberPlaylist";
+            this.cb_rememberPlaylist.Size = new System.Drawing.Size(111, 17);
+            this.cb_rememberPlaylist.TabIndex = 5;
+            this.cb_rememberPlaylist.Text = "Remember playlist";
+            this.cb_rememberPlaylist.UseVisualStyleBackColor = true;
             // 
-            // cb_rememberLastPlayedFile
+            // cb_rememberWindowPosition
             // 
-            this.cb_rememberLastPlayedFile.AutoSize = true;
-            this.cb_rememberLastPlayedFile.Location = new System.Drawing.Point(7, 88);
-            this.cb_rememberLastPlayedFile.Name = "cb_rememberLastPlayedFile";
-            this.cb_rememberLastPlayedFile.Size = new System.Drawing.Size(170, 17);
-            this.cb_rememberLastPlayedFile.TabIndex = 1;
-            this.cb_rememberLastPlayedFile.Text = "Remember previous played file";
-            this.cb_rememberLastPlayedFile.UseVisualStyleBackColor = true;
-            // 
-            // cb_rememberWindowBounds
-            // 
-            this.cb_rememberWindowBounds.AutoSize = true;
-            this.cb_rememberWindowBounds.Location = new System.Drawing.Point(7, 65);
-            this.cb_rememberWindowBounds.Name = "cb_rememberWindowBounds";
-            this.cb_rememberWindowBounds.Size = new System.Drawing.Size(192, 17);
-            this.cb_rememberWindowBounds.TabIndex = 0;
-            this.cb_rememberWindowBounds.Text = "Remember playlist size and position";
-            this.cb_rememberWindowBounds.UseVisualStyleBackColor = true;
+            this.cb_rememberWindowPosition.AutoSize = true;
+            this.cb_rememberWindowPosition.Location = new System.Drawing.Point(7, 54);
+            this.cb_rememberWindowPosition.Name = "cb_rememberWindowPosition";
+            this.cb_rememberWindowPosition.Size = new System.Drawing.Size(155, 17);
+            this.cb_rememberWindowPosition.TabIndex = 6;
+            this.cb_rememberWindowPosition.Text = "Remember window position";
+            this.cb_rememberWindowPosition.UseVisualStyleBackColor = true;
             // 
             // btn_save
             // 
+            this.btn_save.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_save.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btn_save.Location = new System.Drawing.Point(60, 155);
+            this.btn_save.Location = new System.Drawing.Point(298, 250);
             this.btn_save.Name = "btn_save";
             this.btn_save.Size = new System.Drawing.Size(75, 23);
-            this.btn_save.TabIndex = 1;
+            this.btn_save.TabIndex = 15;
             this.btn_save.Text = "Save";
-            this.btn_save.UseVisualStyleBackColor = true;
+            this.btn_save.UseVisualStyleBackColor = false;
             // 
             // btn_cancel
             // 
+            this.btn_cancel.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btn_cancel.Location = new System.Drawing.Point(141, 155);
+            this.btn_cancel.Location = new System.Drawing.Point(375, 250);
             this.btn_cancel.Name = "btn_cancel";
             this.btn_cancel.Size = new System.Drawing.Size(75, 23);
-            this.btn_cancel.TabIndex = 2;
+            this.btn_cancel.TabIndex = 16;
             this.btn_cancel.Text = "Cancel";
-            this.btn_cancel.UseVisualStyleBackColor = true;
+            this.btn_cancel.UseVisualStyleBackColor = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.label1.Location = new System.Drawing.Point(10, 3);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(65, 20);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "Playlist";
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.groupBox4);
+            this.groupBox2.Controls.Add(this.groupBox3);
+            this.groupBox2.Location = new System.Drawing.Point(226, 51);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(224, 152);
+            this.groupBox2.TabIndex = 8;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Playback";
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.cb_afterPlaybackOpt);
+            this.groupBox4.Location = new System.Drawing.Point(6, 100);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(212, 45);
+            this.groupBox4.TabIndex = 13;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "After playback";
+            // 
+            // cb_afterPlaybackOpt
+            // 
+            this.cb_afterPlaybackOpt.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_afterPlaybackOpt.FormattingEnabled = true;
+            this.cb_afterPlaybackOpt.Items.AddRange(new object[] {
+            "Do nothing",
+            "Play next file in folder",
+            "Close player"});
+            this.cb_afterPlaybackOpt.Location = new System.Drawing.Point(6, 17);
+            this.cb_afterPlaybackOpt.Name = "cb_afterPlaybackOpt";
+            this.cb_afterPlaybackOpt.Size = new System.Drawing.Size(200, 21);
+            this.cb_afterPlaybackOpt.TabIndex = 14;
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.cb_whenFileIsAdded);
+            this.groupBox3.Controls.Add(this.cb_whenPlaylistFileIsOpened);
+            this.groupBox3.Controls.Add(this.cb_onStartup);
+            this.groupBox3.Location = new System.Drawing.Point(6, 18);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(212, 79);
+            this.groupBox3.TabIndex = 9;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Begin playback";
+            // 
+            // cb_whenFileIsAdded
+            // 
+            this.cb_whenFileIsAdded.AutoSize = true;
+            this.cb_whenFileIsAdded.Location = new System.Drawing.Point(6, 38);
+            this.cb_whenFileIsAdded.Name = "cb_whenFileIsAdded";
+            this.cb_whenFileIsAdded.Size = new System.Drawing.Size(114, 17);
+            this.cb_whenFileIsAdded.TabIndex = 11;
+            this.cb_whenFileIsAdded.Text = "When file is added";
+            this.cb_whenFileIsAdded.UseVisualStyleBackColor = true;
+            // 
+            // cb_whenPlaylistFileIsOpened
+            // 
+            this.cb_whenPlaylistFileIsOpened.AutoSize = true;
+            this.cb_whenPlaylistFileIsOpened.Location = new System.Drawing.Point(6, 57);
+            this.cb_whenPlaylistFileIsOpened.Name = "cb_whenPlaylistFileIsOpened";
+            this.cb_whenPlaylistFileIsOpened.Size = new System.Drawing.Size(154, 17);
+            this.cb_whenPlaylistFileIsOpened.TabIndex = 12;
+            this.cb_whenPlaylistFileIsOpened.Text = "When playlist file is opened";
+            this.cb_whenPlaylistFileIsOpened.UseVisualStyleBackColor = true;
+            // 
+            // cb_onStartup
+            // 
+            this.cb_onStartup.AutoSize = true;
+            this.cb_onStartup.Location = new System.Drawing.Point(6, 19);
+            this.cb_onStartup.Name = "cb_onStartup";
+            this.cb_onStartup.Size = new System.Drawing.Size(75, 17);
+            this.cb_onStartup.TabIndex = 10;
+            this.cb_onStartup.Text = "On startup";
+            this.cb_onStartup.UseVisualStyleBackColor = true;
+            // 
+            // panel1
+            // 
+            this.panel1.BackColor = System.Drawing.SystemColors.InactiveBorder;
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.panel1.Controls.Add(this.label3);
+            this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.label2);
+            this.panel1.Location = new System.Drawing.Point(-9, -2);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(475, 47);
+            this.panel1.TabIndex = 7;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.ForeColor = System.Drawing.SystemColors.ActiveCaption;
+            this.label3.Location = new System.Drawing.Point(302, 25);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(160, 13);
+            this.label3.TabIndex = 6;
+            this.label3.Text = "Thanks to Zach, ryrynz, mrcorbo";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.label2.Location = new System.Drawing.Point(11, 25);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(167, 13);
+            this.label2.TabIndex = 5;
+            this.label2.Text = "Playlist with advanced capabilities";
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.cb_lockWindowSize);
+            this.groupBox5.Controls.Add(this.cb_snapAndScaleWithPlayer);
+            this.groupBox5.Controls.Add(this.cb_showPlaylistOnStartup);
+            this.groupBox5.Location = new System.Drawing.Point(7, 194);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(205, 79);
+            this.groupBox5.TabIndex = 0;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "Interface";
+            // 
+            // cb_lockWindowSize
+            // 
+            this.cb_lockWindowSize.AutoSize = true;
+            this.cb_lockWindowSize.Location = new System.Drawing.Point(7, 18);
+            this.cb_lockWindowSize.Name = "cb_lockWindowSize";
+            this.cb_lockWindowSize.Size = new System.Drawing.Size(110, 17);
+            this.cb_lockWindowSize.TabIndex = 3;
+            this.cb_lockWindowSize.Text = "Lock window size";
+            this.cb_lockWindowSize.UseVisualStyleBackColor = true;
+            // 
+            // cb_snapAndScaleWithPlayer
+            // 
+            this.cb_snapAndScaleWithPlayer.AutoSize = true;
+            this.cb_snapAndScaleWithPlayer.Location = new System.Drawing.Point(7, 38);
+            this.cb_snapAndScaleWithPlayer.Name = "cb_snapAndScaleWithPlayer";
+            this.cb_snapAndScaleWithPlayer.Size = new System.Drawing.Size(153, 17);
+            this.cb_snapAndScaleWithPlayer.TabIndex = 2;
+            this.cb_snapAndScaleWithPlayer.Text = "Snap and scale with player";
+            this.cb_snapAndScaleWithPlayer.UseVisualStyleBackColor = true;
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.cb_rememberColumns);
+            this.groupBox6.Controls.Add(this.cb_rememberWindowSize);
+            this.groupBox6.Controls.Add(this.cb_rememberPlaylist);
+            this.groupBox6.Controls.Add(this.cb_rememberWindowPosition);
+            this.groupBox6.Location = new System.Drawing.Point(7, 94);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(205, 94);
+            this.groupBox6.TabIndex = 4;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "History";
+            // 
+            // cb_rememberColumns
+            // 
+            this.cb_rememberColumns.AutoSize = true;
+            this.cb_rememberColumns.Location = new System.Drawing.Point(7, 16);
+            this.cb_rememberColumns.Name = "cb_rememberColumns";
+            this.cb_rememberColumns.Size = new System.Drawing.Size(119, 17);
+            this.cb_rememberColumns.TabIndex = 8;
+            this.cb_rememberColumns.Text = "Remember columns";
+            this.cb_rememberColumns.UseVisualStyleBackColor = true;
+            // 
+            // cb_rememberWindowSize
+            // 
+            this.cb_rememberWindowSize.AutoSize = true;
+            this.cb_rememberWindowSize.Location = new System.Drawing.Point(7, 72);
+            this.cb_rememberWindowSize.Name = "cb_rememberWindowSize";
+            this.cb_rememberWindowSize.Size = new System.Drawing.Size(137, 17);
+            this.cb_rememberWindowSize.TabIndex = 7;
+            this.cb_rememberWindowSize.Text = "Remember window size";
+            this.cb_rememberWindowSize.UseVisualStyleBackColor = true;
             // 
             // PlaylistConfigDialog
             // 
             this.AcceptButton = this.btn_save;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(228, 185);
+            this.BackColor = System.Drawing.SystemColors.Window;
+            this.ClientSize = new System.Drawing.Size(456, 280);
+            this.Controls.Add(this.groupBox6);
+            this.Controls.Add(this.groupBox5);
+            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.btn_cancel);
             this.Controls.Add(this.btn_save);
             this.Controls.Add(this.groupBox1);
@@ -158,6 +360,16 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.Text = "Playlist Configuration";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -165,12 +377,28 @@ namespace Mpdn.Extensions.PlayerExtensions
         #endregion
 
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.CheckBox cb_rememberWindowBounds;
-        private System.Windows.Forms.CheckBox cb_addFileToPlaylistOnOpen;
-        private System.Windows.Forms.CheckBox cb_rememberLastPlayedFile;
+        private System.Windows.Forms.CheckBox cb_rememberWindowPosition;
+        private System.Windows.Forms.CheckBox cb_addToPlaylistOnFileOpen;
+        private System.Windows.Forms.CheckBox cb_rememberPlaylist;
         private System.Windows.Forms.Button btn_save;
         private System.Windows.Forms.Button btn_cancel;
-        private System.Windows.Forms.CheckBox cb_autoplay;
         private System.Windows.Forms.CheckBox cb_showPlaylistOnStartup;
+        private System.Windows.Forms.Label label1;
+        private GroupBox groupBox2;
+        private Panel panel1;
+        private Label label3;
+        private Label label2;
+        private GroupBox groupBox4;
+        private ComboBox cb_afterPlaybackOpt;
+        private GroupBox groupBox3;
+        private GroupBox groupBox5;
+        private GroupBox groupBox6;
+        private CheckBox cb_whenFileIsAdded;
+        private CheckBox cb_whenPlaylistFileIsOpened;
+        private CheckBox cb_onStartup;
+        private CheckBox cb_rememberWindowSize;
+        private CheckBox cb_snapAndScaleWithPlayer;
+        private CheckBox cb_rememberColumns;
+        private CheckBox cb_lockWindowSize;
     }
 }
