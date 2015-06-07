@@ -281,11 +281,17 @@
     <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.designer.cs">
       <DependentUpon>Mpdn.Presets.ConfigDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.PresetGroupDialog.cs">
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.PresetGroupDialog.Designer.cs">
-      <DependentUpon>Mpdn.Presets.PresetGroupDialog.cs</DependentUpon>
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.ScriptChain.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptGroup.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptGroup.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.ScriptGroup.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.Resizer.ConfigDialog.cs">
       <SubType>Form</SubType>
@@ -303,9 +309,8 @@
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptHelpers.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptParser.cs" />
-    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptGroup.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ChromaScaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ConfigDialog.cs">
       <SubType>Form</SubType>

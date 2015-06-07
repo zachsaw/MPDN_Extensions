@@ -33,7 +33,7 @@ namespace Mpdn.Extensions.Framework.Controls
         #region Save / Load
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)] 
-        public IEnumerable<Preset> PresetList
+        public List<Preset> PresetList
         {
             get
             {
@@ -46,7 +46,7 @@ namespace Mpdn.Extensions.Framework.Controls
         }
 
         private int m_SelectedIndex = -1;
-        protected int SelectedIndex
+        public int SelectedIndex
         {
             get { return m_SelectedIndex; }
             set

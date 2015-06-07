@@ -25,7 +25,7 @@ using Mpdn.Extensions.Framework.RenderChain;
 
 namespace Mpdn.Extensions.RenderScripts
 {
-    namespace Mpdn.Presets
+    namespace Mpdn.ScriptGroup
     {
         public partial class PresetDialog : PresetDialogBase
         {

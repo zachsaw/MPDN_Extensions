@@ -71,10 +71,9 @@
             // 
             // splitContainer
             // 
-            this.splitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitContainer.Location = new System.Drawing.Point(3, 3);
+            this.splitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer.Margin = new System.Windows.Forms.Padding(0);
             this.splitContainer.Name = "splitContainer";
             // 
             // splitContainer.Panel1
@@ -95,8 +94,8 @@
             this.splitContainer.Panel2.Controls.Add(this.buttonAdd);
             this.splitContainer.Panel2.Controls.Add(this.labelCopyright);
             this.splitContainer.Panel2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.splitContainer.Size = new System.Drawing.Size(871, 548);
-            this.splitContainer.SplitterDistance = 431;
+            this.splitContainer.Size = new System.Drawing.Size(877, 551);
+            this.splitContainer.SplitterDistance = 433;
             this.splitContainer.TabIndex = 10;
             this.splitContainer.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitterMoved);
             // 
@@ -104,7 +103,7 @@
             // 
             this.splitter1.Location = new System.Drawing.Point(0, 0);
             this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(3, 548);
+            this.splitter1.Size = new System.Drawing.Size(3, 551);
             this.splitter1.TabIndex = 7;
             this.splitter1.TabStop = false;
             // 
@@ -112,7 +111,7 @@
             // 
             this.buttonMinus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonMinus.Enabled = false;
-            this.buttonMinus.Location = new System.Drawing.Point(401, 521);
+            this.buttonMinus.Location = new System.Drawing.Point(403, 524);
             this.buttonMinus.Name = "buttonMinus";
             this.buttonMinus.Size = new System.Drawing.Size(27, 24);
             this.buttonMinus.TabIndex = 2;
@@ -124,7 +123,7 @@
             // 
             this.buttonClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonClear.Enabled = false;
-            this.buttonClear.Location = new System.Drawing.Point(368, 521);
+            this.buttonClear.Location = new System.Drawing.Point(370, 524);
             this.buttonClear.Name = "buttonClear";
             this.buttonClear.Size = new System.Drawing.Size(27, 24);
             this.buttonClear.TabIndex = 3;
@@ -147,7 +146,7 @@
             this.listViewChain.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewChain.Location = new System.Drawing.Point(3, 3);
             this.listViewChain.Name = "listViewChain";
-            this.listViewChain.Size = new System.Drawing.Size(425, 512);
+            this.listViewChain.Size = new System.Drawing.Size(427, 515);
             this.listViewChain.TabIndex = 4;
             this.listViewChain.UseCompatibleStateImageBehavior = false;
             this.listViewChain.View = System.Windows.Forms.View.Details;
@@ -247,7 +246,7 @@
             // 
             this.buttonConfigure.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonConfigure.Enabled = false;
-            this.buttonConfigure.Location = new System.Drawing.Point(3, 521);
+            this.buttonConfigure.Location = new System.Drawing.Point(3, 524);
             this.buttonConfigure.Name = "buttonConfigure";
             this.buttonConfigure.Size = new System.Drawing.Size(75, 23);
             this.buttonConfigure.TabIndex = 5;
@@ -259,7 +258,7 @@
             // 
             this.NameLable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.NameLable.AutoSize = true;
-            this.NameLable.Location = new System.Drawing.Point(138, 527);
+            this.NameLable.Location = new System.Drawing.Point(138, 530);
             this.NameLable.Name = "NameLable";
             this.NameLable.Size = new System.Drawing.Size(35, 13);
             this.NameLable.TabIndex = 11;
@@ -269,9 +268,9 @@
             // 
             this.NameBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.NameBox.Location = new System.Drawing.Point(179, 523);
+            this.NameBox.Location = new System.Drawing.Point(179, 526);
             this.NameBox.Name = "NameBox";
-            this.NameBox.Size = new System.Drawing.Size(183, 20);
+            this.NameBox.Size = new System.Drawing.Size(185, 20);
             this.NameBox.TabIndex = 10;
             this.NameBox.TextChanged += new System.EventHandler(this.NameChanged);
             this.NameBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NameKeyDown);
@@ -283,7 +282,7 @@
             this.panelReorder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.panelReorder.Controls.Add(this.buttonUp);
             this.panelReorder.Controls.Add(this.buttonDown);
-            this.panelReorder.Location = new System.Drawing.Point(84, 521);
+            this.panelReorder.Location = new System.Drawing.Point(84, 524);
             this.panelReorder.Name = "panelReorder";
             this.panelReorder.Size = new System.Drawing.Size(48, 24);
             this.panelReorder.TabIndex = 6;
@@ -335,7 +334,7 @@
             this.listViewAvail.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewAvail.Location = new System.Drawing.Point(3, 3);
             this.listViewAvail.Name = "listViewAvail";
-            this.listViewAvail.Size = new System.Drawing.Size(430, 512);
+            this.listViewAvail.Size = new System.Drawing.Size(434, 515);
             this.listViewAvail.TabIndex = 0;
             this.listViewAvail.UseCompatibleStateImageBehavior = false;
             this.listViewAvail.View = System.Windows.Forms.View.Details;
@@ -379,7 +378,7 @@
             // 
             this.buttonAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonAdd.Enabled = false;
-            this.buttonAdd.Location = new System.Drawing.Point(3, 521);
+            this.buttonAdd.Location = new System.Drawing.Point(3, 524);
             this.buttonAdd.Name = "buttonAdd";
             this.buttonAdd.Size = new System.Drawing.Size(27, 24);
             this.buttonAdd.TabIndex = 1;
@@ -391,9 +390,9 @@
             // 
             this.labelCopyright.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelCopyright.Location = new System.Drawing.Point(36, 520);
+            this.labelCopyright.Location = new System.Drawing.Point(36, 523);
             this.labelCopyright.Name = "labelCopyright";
-            this.labelCopyright.Size = new System.Drawing.Size(397, 24);
+            this.labelCopyright.Size = new System.Drawing.Size(401, 24);
             this.labelCopyright.TabIndex = 2;
             this.labelCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
