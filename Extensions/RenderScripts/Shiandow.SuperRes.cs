@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
-using Mpdn.Extensions.RenderScripts.Mpdn.Presets;
-using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
-using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3;
+using Mpdn.Extensions.RenderScripts.Mpdn.ScriptChain;
+using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
 
@@ -38,7 +37,7 @@ namespace Mpdn.Extensions.RenderScripts
             public float Softness { get; set; }
         }
 
-        public class SuperRes : PresetGroup
+        public class SuperRes : ScriptGroup
         {
             #region Settings
 
@@ -51,8 +50,8 @@ namespace Mpdn.Extensions.RenderScripts
             public override bool AllowRegrouping { get { return false; } }
 
             public Func<TextureSize> TargetSize; // Not saved
-            private readonly IScaler downscaler;
-            private readonly IScaler upscaler;
+            private readonly IScaler m_Downscaler;
+            private readonly IScaler m_Upscaler;
 
             public SuperRes()
             {
@@ -80,7 +79,7 @@ namespace Mpdn.Extensions.RenderScripts
                         AntiAliasing = 0.25f,
                         AntiRinging = 0.0f,
                         Softness = 0.25f,
-                        Script = new NediScaler {Settings = new Nedi.Nedi {ForceCentered = true}}
+                        Script = new Nedi.NediScaler {Settings = new Nedi.Nedi {ForceCentered = true}}
                     },
                     new SuperResPreset
                     {
@@ -91,7 +90,7 @@ namespace Mpdn.Extensions.RenderScripts
                         AntiAliasing = 0.25f,
                         AntiRinging = 0.0f,
                         Softness = 0.25f,
-                        Script = new NNedi3Scaler {Settings = new NNedi3.NNedi3 {ForceCentered = true}}
+                        Script = new NNedi3.NNedi3Scaler {Settings = new NNedi3.NNedi3 {ForceCentered = true}}
                     },
                     new SuperResPreset
                     {
@@ -110,8 +109,8 @@ namespace Mpdn.Extensions.RenderScripts
 
                 NoIntermediates = false;
                 FirstPassOnly = false;
-                upscaler = new Jinc(ScalerTaps.Four, false);
-                downscaler = new Bilinear();
+                m_Upscaler = new Jinc(ScalerTaps.Four, false);
+                m_Downscaler = new Bilinear();
             }
 
             public override IFilter CreateFilter(IFilter input)
@@ -174,7 +173,7 @@ namespace Mpdn.Extensions.RenderScripts
                 for (int i = 1; i <= passes; i++)
                 {
                     IFilter res, diff, linear;
-                    bool useBilinear = (upscaler is Bilinear) || (FirstPassOnly && i != 1);
+                    bool useBilinear = (m_Upscaler is Bilinear) || (FirstPassOnly && i != 1);
 
                     if (i != 1)
                     {
@@ -183,17 +182,17 @@ namespace Mpdn.Extensions.RenderScripts
                         else currentSize = CalculateSize(currentSize, targetSize, i, passes);
 
                         // Resize
-                        lab = new ResizeFilter(lab, currentSize, upscaler, downscaler);
+                        lab = new ResizeFilter(lab, currentSize, m_Upscaler, m_Downscaler);
                     }
 
                     // Downscale and Subtract
                     linear = new ShaderFilter(LabToLinear, lab);
-                    res = new ResizeFilter(linear, inputSize, upscaler, downscaler); // Downscale result
+                    res = new ResizeFilter(linear, inputSize, m_Upscaler, m_Downscaler); // Downscale result
                     diff = new ShaderFilter(Diff, res, original);                    // Compare with original
 
                     // Scale difference back
                     if (!useBilinear)
-                        diff = new ResizeFilter(diff, currentSize, upscaler, downscaler);
+                        diff = new ResizeFilter(diff, currentSize, m_Upscaler, m_Downscaler);
                     
                     // Update result
                     lab = new ShaderFilter(
