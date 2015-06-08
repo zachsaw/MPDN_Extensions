@@ -35,11 +35,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PlaylistForm));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.buttonAdd = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonDel = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
@@ -50,6 +50,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonSortAscending = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSortDescending = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonShuffle = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonRestore = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.PlayButton = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSaveDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonNewDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
@@ -57,13 +58,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonSaveEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonLeftDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonRightDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.buttonLeftEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.buttonRightEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonDelDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonDelEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonShuffleEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonShuffleDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonRestoreEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonRestoreDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSortDescendingDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSortDescendingEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSortAscendingEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
@@ -130,6 +133,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonSortAscending,
             this.buttonSortDescending,
             this.buttonShuffle,
+            this.buttonRestore,
             this.PlayButton,
             this.buttonSaveDisabled,
             this.buttonNewDisabled,
@@ -137,13 +141,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonSaveEnabled,
             this.buttonLeftDisabled,
             this.buttonRightDisabled,
-            this.toolStripStatusLabel1,
             this.buttonLeftEnabled,
+            this.toolStripStatusLabel1,
             this.buttonRightEnabled,
             this.buttonDelDisabled,
             this.buttonDelEnabled,
             this.buttonShuffleEnabled,
             this.buttonShuffleDisabled,
+            this.buttonRestoreEnabled,
+            this.buttonRestoreDisabled,
             this.buttonSortDescendingDisabled,
             this.buttonSortDescendingEnabled,
             this.buttonSortAscendingEnabled,
@@ -253,6 +259,17 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonShuffle.ToolTipText = "Shuffle playlist";
             this.buttonShuffle.Click += new System.EventHandler(this.ButtonShuffleClick);
             // 
+            // buttonRestore
+            // 
+            this.buttonRestore.AutoSize = false;
+            this.buttonRestore.BackColor = System.Drawing.Color.Transparent;
+            this.buttonRestore.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRestore.BackgroundImage")));
+            this.buttonRestore.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.buttonRestore.Name = "buttonRestore";
+            this.buttonRestore.Size = new System.Drawing.Size(24, 25);
+            this.buttonRestore.ToolTipText = "Restore playlist";
+            this.buttonRestore.Click += new System.EventHandler(this.ButtonRestoreClick);
+            // 
             // PlayButton
             // 
             this.PlayButton.BackColor = System.Drawing.Color.Transparent;
@@ -320,12 +337,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonRightDisabled.Size = new System.Drawing.Size(24, 25);
             this.buttonRightDisabled.Visible = false;
             // 
-            // toolStripStatusLabel1
-            // 
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(472, 22);
-            this.toolStripStatusLabel1.Spring = true;
-            // 
             // buttonLeftEnabled
             // 
             this.buttonLeftEnabled.AutoSize = false;
@@ -336,6 +347,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonLeftEnabled.Size = new System.Drawing.Size(24, 25);
             this.buttonLeftEnabled.ToolTipText = "Previous";
             this.buttonLeftEnabled.Visible = false;
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(448, 22);
+            this.toolStripStatusLabel1.Spring = true;
             // 
             // buttonRightEnabled
             // 
@@ -389,6 +406,28 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonShuffleDisabled.Size = new System.Drawing.Size(24, 25);
             this.buttonShuffleDisabled.ToolTipText = "Shuffle playlist";
             this.buttonShuffleDisabled.Visible = false;
+            // 
+            // buttonRestoreEnabled
+            // 
+            this.buttonRestoreEnabled.AutoSize = false;
+            this.buttonRestoreEnabled.BackColor = System.Drawing.Color.Transparent;
+            this.buttonRestoreEnabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRestoreEnabled.BackgroundImage")));
+            this.buttonRestoreEnabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.buttonRestoreEnabled.Name = "buttonRestoreEnabled";
+            this.buttonRestoreEnabled.Size = new System.Drawing.Size(24, 25);
+            this.buttonRestoreEnabled.ToolTipText = "Restore playlist";
+            this.buttonRestoreEnabled.Visible = false;
+            // 
+            // buttonRestoreDisabled
+            // 
+            this.buttonRestoreDisabled.AutoSize = false;
+            this.buttonRestoreDisabled.BackColor = System.Drawing.Color.Transparent;
+            this.buttonRestoreDisabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRestoreDisabled.BackgroundImage")));
+            this.buttonRestoreDisabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.buttonRestoreDisabled.Name = "buttonRestoreDisabled";
+            this.buttonRestoreDisabled.Size = new System.Drawing.Size(24, 25);
+            this.buttonRestoreDisabled.ToolTipText = "Restore playlist";
+            this.buttonRestoreDisabled.Visible = false;
             // 
             // buttonSortDescendingDisabled
             // 
@@ -511,8 +550,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.AllowUserToAddRows = false;
             this.dgv_PlayList.AllowUserToDeleteRows = false;
             this.dgv_PlayList.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(248)))), ((int)(((byte)(248)))));
-            this.dgv_PlayList.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle11.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(248)))), ((int)(((byte)(248)))));
+            this.dgv_PlayList.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle11;
             this.dgv_PlayList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -528,14 +567,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.Title,
             this.SkipChapters,
             this.EndChapter});
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.SkyBlue;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_PlayList.DefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle15.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle15.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle15.SelectionBackColor = System.Drawing.Color.SkyBlue;
+            dataGridViewCellStyle15.SelectionForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle15.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_PlayList.DefaultCellStyle = dataGridViewCellStyle15;
             this.dgv_PlayList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
             this.dgv_PlayList.GridColor = System.Drawing.SystemColors.Window;
             this.dgv_PlayList.Location = new System.Drawing.Point(0, 0);
@@ -556,9 +595,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // Playing
             // 
             this.Playing.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.NullValue = "null";
-            this.Playing.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle12.NullValue = "null";
+            this.Playing.DefaultCellStyle = dataGridViewCellStyle12;
             this.Playing.FillWeight = 1F;
             this.Playing.HeaderText = "";
             this.Playing.MinimumWidth = 24;
@@ -614,8 +653,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // SkipChapters
             // 
             this.SkipChapters.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle3.NullValue = null;
-            this.SkipChapters.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle13.NullValue = null;
+            this.SkipChapters.DefaultCellStyle = dataGridViewCellStyle13;
             this.SkipChapters.FillWeight = 25F;
             this.SkipChapters.HeaderText = "Skip Chapters";
             this.SkipChapters.MinimumWidth = 50;
@@ -626,8 +665,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // EndChapter
             // 
             this.EndChapter.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle4.NullValue = null;
-            this.EndChapter.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle14.NullValue = null;
+            this.EndChapter.DefaultCellStyle = dataGridViewCellStyle14;
             this.EndChapter.FillWeight = 25F;
             this.EndChapter.HeaderText = "End Chapter";
             this.EndChapter.MaxInputLength = 2;
@@ -943,5 +982,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private DataGridViewTextBoxColumn Title;
         private DataGridViewTextBoxColumn SkipChapters;
         private DataGridViewTextBoxColumn EndChapter;
+        private ButtonStripItem buttonRestoreEnabled;
+        private ButtonStripItem buttonRestoreDisabled;
+        private ButtonStripItem buttonRestore;
     }
 }

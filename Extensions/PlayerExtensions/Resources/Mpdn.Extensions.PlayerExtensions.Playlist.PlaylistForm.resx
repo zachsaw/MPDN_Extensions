@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing">
+    <value>17, 17</value>
+  </data>
   <data name="buttonAdd.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAedJREFUOE9j
@@ -538,34 +538,82 @@
         rTd9Cf9+9KR8AxfYNKf5nBBBAAAAAElFTkSuQmCC
 </value>
   </data>
-  <metadata name="timer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  <data name="timer.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>133, 17</value>
-  </metadata>
-  <metadata name="openFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  </data>
+  <data name="openFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>213, 17</value>
-  </metadata>
+  </data>
   <data name="openFileDialog.Filter" xml:space="preserve">
     <value>Media files (all types) (*.avi; *.mp4; *.mkv; ...) |*.avi; *.mpg; *.mpeg; *.mpe; *.m1v; *.m2v; *.mpv2; *.mp2v; *.pva; *.evo; *.m2p; *.ts; *.tp; *.trp; *.m2t; *.m2ts; *.mts; *.rec; *.vob; *.mkv; *.webm; *.mp4; *.m4v; *.mp4v; *.mpv4; *.hdmov; *.mov; *.3gp; *.3gpp; *.3g2; *.3gp2; *.flv; *.f4v; *.ogm; *.ogv; *.rm; *.ram; *.rpm; *.rmm; *.rt; *.rp; *.smi; *.smil; *.wmv; *.wmp; *.wm; *.asf; *.smk; *.bik; *.fli; *.flc; *.flic; *.dsm; *.dsv; *.dsa; *.dss; *.ivf; *.swf; *.divx; *.rmvb; *.amv; *.ac3; *.dts; *.aif; *.aifc; *.aiff; *.alac; *.amr; *.ape; *.apl; *.au; *.snd; *.cda; *.flac; *.m4a; *.m4b; *.aac; *.mid; *.midi; *.rmi; *.mka; *.mp3; *.mpa; *.mp2; *.m1a; *.m2a; *.mpc; *.ofr; *.ofs; *.ogg; *.oga; *.opus; *.ra; *.tta; *.wav; *.wma; *.wv; *.aob; *.mlp; *.asx; *.m3u; *.m3u8; *.wvx; *.wax; *.wmx; *.bdmv|All files (*.*)|*.*</value>
   </data>
-  <metadata name="openPlaylistDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  <data name="openPlaylistDialog.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>346, 17</value>
-  </metadata>
-  <metadata name="savePlaylistDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  </data>
+  <data name="savePlaylistDialog.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>499, 17</value>
-  </metadata>
-  <metadata name="Number.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Number.UserAddedColumn" type="System.Boolean, mscorlib">
     <value>True</value>
-  </metadata>
-  <metadata name="FullPath.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  </data>
+  <data name="FullPath.UserAddedColumn" type="System.Boolean, mscorlib">
     <value>True</value>
-  </metadata>
-  <metadata name="CurrentDirectory.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  </data>
+  <data name="CurrentDirectory.UserAddedColumn" type="System.Boolean, mscorlib">
     <value>True</value>
-  </metadata>
-  <metadata name="dgv_PlaylistContextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  </data>
+  <data name="dgv_PlaylistContextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>651, 17</value>
-  </metadata>
-  <metadata name="dgv_PlaylistColumnContextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  </data>
+  <data name="dgv_PlaylistColumnContextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>832, 17</value>
-  </metadata>
+  </data>
+  <data name="buttonRestore.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAe
+        wQAAHsEBw2lUUwAAAAd0SU1FB98GCAsyMdWzYr8AAAJVSURBVDhPdZNLaxphFIbnH9SlP8D/kr3aQFel
+        2fWySilICumihIT+hbrohYYuQggxmHgb76MzY8ToGNto1PFaq3gXpWn7ds6XmSRCc+CB4TvvOe/5LsP9
+        L8rl8oN8Pm/TcBCKothoTU/fH0qxZM6cZT+pqorRaITFYoH5fI5+vw+tAZR83qVcFM26fDkCuW8WzUml
+        oul0ivF4jMlkwqBvajgcDpHL5XqhXMGil12HK1Mwa6P2qJhERjE1IowmlKNpMplM4zB9fjtJSslHaFTD
+        0Sj+WLvCxgXw5juwXgDelYHZbIZutws+ITpZcShbMNH+7haS6GwKbJWA7UvgfUND/YsnO2482paMreAk
+        rZi4kJiy0Vh33T3t39jM/cLW+RXeanyt/VnKDwYDVKtVHAuSleOTsoMW6ZAMwY429mtphk15ho3kFC+j
+        twdKkGGr1cJRTHRwfkF0UHGn04F9v4JVVwuvYv0b1uN9PA/38PjgkuXInbTNZhOuSMLB+WIJW7vdBjHR
+        TpqaPPU08cLXYjzz/8Cau4GHB+qNO2lLpRJcYcHKRU8zJu3+0Wg02FjE6l4Ja4cVBjkTk+mEOdfrdaaV
+        ZRmeZNrEbkIQZTcljAaE9YvCGq18yGJXbrO1Wq3GoFs78fPX10jhEVJmQRAGdLIkYOJ6DSvOU+xKbeZI
+        BpSrVCrgeV49isrLT3o/LFkikchP2huJDOi/oMb0XSwWEQgE1L2QtPyUjfDFJbM3wH+Ox+PsoVABQd+x
+        WAzHHq/Tq2l0+f0hiqIpGAzaNRw6dlrT03eC4/4BPPC3koR8V9YAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="buttonRestoreDisabled.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAAHsIAAB7CAW7QdT4AAAHlSURBVDhPdVNJagJREO0bxGUf
+        wBNF9yroQkUUHGgVnOcJR5zaMc4uAzlAbiJkFYQcoVLv2226xRQ8/NSv9+r9qlZ6FuPx+KXX69kYCtDt
+        dm3Iadf/x2AwkNvt9no6ndJut6Pz+Uyn04k2mw2xALHQe7/fl7Vyc9TrdSsXXEA6HA603+/Fr36GIMA1
+        10ajYdVot6hUKjJbvYKMIiP5UQRu2OVXuVz+c8KJT1h9JLVaLcrlclQoFCidThOT6Hg80nq9xlkVZLZj
+        wfuMRBQtl0sqlUoCzWZTwOl0ktvt1p9C7NwiVatVG2wZBYbD4b1zPp+nTqdjut9ut4RB8/2rxFYUJKGq
+        F8AqLGcyGUqlUpRMJk0CaLhYLCCuSGxRAXm1WpHP56NAIECJROKOeDxOsVhM5AF0R+18PodLRSoWizao
+        AZg0RMLhMEWjUYFIJEKhUIj8fr+p+2g0gsAr9m/BQGazmbgAvF4vBYNBAb0zyOiMOoCHj6daxCZqtdqH
+        UQDweDxCyOVyEQ9a5FRVFcDWstnsbY0InoPMRT+YLAr0YofDIch6V+QmkwmGd+ENmD9pVrSy0DfehiId
+        EAVw1tZ7Qa1GMwec8OUbfyDiQwEBwFlbrcpDf/5nMgYGyxbtDEWDHTnt2hCS9AvxhROuTaHUFgAAAABJ
+        RU5ErkJggg==
+</value>
+  </data>
+  <data name="buttonRestoreEnabled.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAe
+        wQAAHsEBw2lUUwAAAAd0SU1FB98GCAsyMdWzYr8AAAJVSURBVDhPdZNLaxphFIbnH9SlP8D/kr3aQFel
+        2fWySilICumihIT+hbrohYYuQggxmHgb76MzY8ToGNto1PFaq3gXpWn7ds6XmSRCc+CB4TvvOe/5LsP9
+        L8rl8oN8Pm/TcBCKothoTU/fH0qxZM6cZT+pqorRaITFYoH5fI5+vw+tAZR83qVcFM26fDkCuW8WzUml
+        oul0ivF4jMlkwqBvajgcDpHL5XqhXMGil12HK1Mwa6P2qJhERjE1IowmlKNpMplM4zB9fjtJSslHaFTD
+        0Sj+WLvCxgXw5juwXgDelYHZbIZutws+ITpZcShbMNH+7haS6GwKbJWA7UvgfUND/YsnO2482paMreAk
+        rZi4kJiy0Vh33T3t39jM/cLW+RXeanyt/VnKDwYDVKtVHAuSleOTsoMW6ZAMwY429mtphk15ho3kFC+j
+        twdKkGGr1cJRTHRwfkF0UHGn04F9v4JVVwuvYv0b1uN9PA/38PjgkuXInbTNZhOuSMLB+WIJW7vdBjHR
+        TpqaPPU08cLXYjzz/8Cau4GHB+qNO2lLpRJcYcHKRU8zJu3+0Wg02FjE6l4Ja4cVBjkTk+mEOdfrdaaV
+        ZRmeZNrEbkIQZTcljAaE9YvCGq18yGJXbrO1Wq3GoFs78fPX10jhEVJmQRAGdLIkYOJ6DSvOU+xKbeZI
+        BpSrVCrgeV49isrLT3o/LFkikchP2huJDOi/oMb0XSwWEQgE1L2QtPyUjfDFJbM3wH+Ox+PsoVABQd+x
+        WAzHHq/Tq2l0+f0hiqIpGAzaNRw6dlrT03eC4/4BPPC3koR8V9YAAAAASUVORK5CYII=
+</value>
+  </data>
 </root>

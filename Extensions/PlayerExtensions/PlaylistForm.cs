@@ -557,25 +557,28 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void SetLocation(Control owner)
         {
-            if (RememberWindowPosition)
-            {
-                if (!firstShow) return;
-                if (SnapAndScaleWithPlayer) return;
-                Location = WindowPosition;
-                firstShow = false;
-            }
+            int borderWidth = SystemInformation.SizingBorderWidth;
+
+            if (RememberWindowPosition) { Location = WindowPosition; }
             else
             {
-                playListUi.SnapPlayer();
+                if (LockWindowSize)
+                {
+                    Left = PlayerControl.Form.Right + borderWidth;
+                    Top = PlayerControl.Form.Top + borderWidth;
+
+                }
+                else
+                {
+                    Left = PlayerControl.Form.Right;
+                    Top = PlayerControl.Form.Top;
+                }
             }
-            if (RememberWindowSize)
-            {
-                Size = WindowSize;
-            }
+            if (RememberWindowSize) { Size = WindowSize; }
             else
             {
                 if (!firstShow) return;
-                
+
                 var mpdnRememberBounds = PlayerControl.PlayerSettings.GeneralSettings.RememberWindowSizePos;
                 var mpdnBounds = PlayerControl.PlayerSettings.GeneralSettings.WindowBounds;
 
@@ -589,20 +592,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (LockWindowSize)
                 {
-                    int borderWidth = SystemInformation.SizingBorderWidth;
-                    Left = PlayerControl.Form.Right + borderWidth;
-                    Top = PlayerControl.Form.Top + borderWidth;
                     Width = Width - borderWidth;
                     Height = PlayerControl.Form.Height - (borderWidth * 2);
                 }
                 else
                 {
-                    Left = PlayerControl.Form.Right;
-                    Top = PlayerControl.Form.Top;
                     Height = PlayerControl.Form.Height;
                 }
+
                 firstShow = false;
             }
+
+            if (SnapAndScaleWithPlayer) { playListUi.SnapPlayer(); }
         }
 
         private void TimerTick(object sender, EventArgs e)
@@ -880,6 +881,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 buttonSortAscending.Enabled = true;
                 buttonSortDescending.Enabled = true;
                 buttonShuffle.Enabled = true;
+                buttonRestore.Enabled = true;
                 nextItemToolStripMenuItem.Enabled = true;
                 previousItemToolStripMenuItem.Enabled = true;
                 sortToolStripMenuItem.Enabled = true;
@@ -889,6 +891,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 buttonLeft.BackgroundImage = buttonLeftEnabled.BackgroundImage;
                 buttonRight.BackgroundImage = buttonRightEnabled.BackgroundImage;
                 buttonShuffle.BackgroundImage = buttonShuffleEnabled.BackgroundImage;
+                buttonRestore.BackgroundImage = buttonRestoreEnabled.BackgroundImage;
                 buttonSortAscending.BackgroundImage = buttonSortAscendingEnabled.BackgroundImage;
                 buttonSortDescending.BackgroundImage = buttonSortDescendingEnabled.BackgroundImage;
             }
@@ -899,6 +902,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 buttonSortAscending.Enabled = false;
                 buttonSortDescending.Enabled = false;
                 buttonShuffle.Enabled = false;
+                buttonRestore.Enabled = false;
                 nextItemToolStripMenuItem.Enabled = false;
                 previousItemToolStripMenuItem.Enabled = false;
                 sortToolStripMenuItem.Enabled = false;
@@ -908,6 +912,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 buttonLeft.BackgroundImage = buttonLeftDisabled.BackgroundImage;
                 buttonRight.BackgroundImage = buttonRightDisabled.BackgroundImage;
                 buttonShuffle.BackgroundImage = buttonShuffleDisabled.BackgroundImage;
+                buttonRestore.BackgroundImage = buttonRestoreDisabled.BackgroundImage;
                 buttonSortAscending.BackgroundImage = buttonSortAscendingDisabled.BackgroundImage;
                 buttonSortDescending.BackgroundImage = buttonSortDescendingDisabled.BackgroundImage;
             }
