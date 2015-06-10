@@ -33,7 +33,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             cb_onStartup.Checked = Settings.BeginPlaybackOnStartup;
             cb_whenFileIsAdded.Checked = Settings.BeginPlaybackWhenFileIsAdded;
             cb_whenPlaylistFileIsOpened.Checked = Settings.BeginPlaybackWhenPlaylistFileIsOpened;
+            cb_followMpdnWindow.Checked = Settings.FollowMpdnWindow;
             cb_snapAndScaleWithPlayer.Checked = Settings.SnapAndScaleWithPlayer;
+            cb_keepSnapped.Checked = Settings.KeepSnapped;
             cb_rememberColumns.Checked = Settings.RememberColumns;
             cb_rememberWindowPosition.Checked = Settings.RememberWindowPosition;
             cb_rememberWindowSize.Checked = Settings.RememberWindowSize;
@@ -49,7 +51,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.BeginPlaybackOnStartup = cb_onStartup.Checked;
             Settings.BeginPlaybackWhenFileIsAdded = cb_whenFileIsAdded.Checked;
             Settings.BeginPlaybackWhenPlaylistFileIsOpened = cb_whenPlaylistFileIsOpened.Checked;
+            Settings.FollowMpdnWindow = cb_followMpdnWindow.Checked;
             Settings.SnapAndScaleWithPlayer = cb_snapAndScaleWithPlayer.Checked;
+            Settings.KeepSnapped = cb_keepSnapped.Checked;
             Settings.RememberColumns = cb_rememberColumns.Checked;
             Settings.RememberWindowPosition = cb_rememberWindowPosition.Checked;
             Settings.RememberWindowSize = cb_rememberWindowSize.Checked;

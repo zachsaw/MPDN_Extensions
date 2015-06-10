@@ -65,6 +65,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public bool RememberWindowPosition { get; set; }
         public bool RememberWindowSize { get; set; }
         public bool SnapAndScaleWithPlayer { get; set; }
+        public bool KeepSnapped { get; set; }
         public bool LockWindowSize { get; set; }
         public bool BeginPlaybackOnStartup { get; set; }
         public bool BeginPlaybackWhenFileIsAdded { get; set; }
@@ -122,6 +123,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             this.playListUi = playListUi;
             Icon = PlayerControl.ApplicationIcon;
+            DoubleBuffered = true;
 
             Load += PlaylistForm_Load;
             Shown += PlaylistForm_Shown;
@@ -1247,11 +1249,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (ascending)
             {
-                Playlist = Playlist.OrderBy(i => i.FilePath, new NaturalSortComparer()).ToList();
+                Playlist = Playlist.OrderBy(f => Path.GetDirectoryName(f.FilePath), new NaturalSortComparer())
+                .ThenBy(f => f.FilePath.Count(c => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar)).ToList();
             }
             else
             {
-                Playlist = Playlist.OrderByDescending(i => i.FilePath, new NaturalSortComparer()).ToList();
+                Playlist = Playlist.OrderByDescending(f => Path.GetDirectoryName(f.FilePath), new NaturalSortComparer())
+                .ThenBy(f => f.FilePath.Count(c => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar)).ToList();
             }
 
             PopulatePlaylist();
@@ -1566,6 +1570,23 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     e.Handled = true;
                 }
             }
+        }
+
+        protected override void WndProc(ref Message message)
+        {
+            const int WM_SYSCOMMAND = 0x0112;
+            const int SC_MOVE = 0xF010;
+
+            switch (message.Msg)
+            {
+                case WM_SYSCOMMAND:
+                    int command = message.WParam.ToInt32() & 0xfff0;
+                    if (KeepSnapped && command == SC_MOVE)
+                        return;
+                    break;
+            }
+
+            base.WndProc(ref message);
         }
 
         private void UpdateColumns(object sender, EventArgs e)
