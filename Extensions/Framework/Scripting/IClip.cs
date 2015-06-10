@@ -35,6 +35,7 @@ namespace Mpdn.Extensions.Framework.Scripting
         Point AspectRatio { get; }
         YuvColorimetric Colorimetric { get; }
         FrameBufferInputFormat InputFormat { get; }
+        int SourceBitDepth { get; }
         double FrameRateHz { get; }
     }
 }
