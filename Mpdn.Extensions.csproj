@@ -78,9 +78,7 @@
       <HintPath>MPDN\YAXLib.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Compile Include="Examples\RenderScripts\Example.Basic.cs" />
     <Compile Include="Examples\RenderScripts\Example.CustomTextures.cs" />
@@ -331,6 +329,7 @@
       <DependentUpon>Shiandow.SuperRes.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Examples\RenderScripts\Examples\BlueTintDirectCompute.hlsl" />
