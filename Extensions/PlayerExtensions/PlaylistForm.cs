@@ -507,7 +507,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (!BeginPlaybackWhenFileIsAdded) return;
 
-            currentPlayIndex = Playlist.Count > 0 ? Playlist.Count - 1 : 0;
+            currentPlayIndex = 0;
             OpenMedia();
         }
         
