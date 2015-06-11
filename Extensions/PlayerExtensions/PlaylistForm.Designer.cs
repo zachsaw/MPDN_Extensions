@@ -80,6 +80,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.openPlaylistDialog = new System.Windows.Forms.OpenFileDialog();
             this.savePlaylistDialog = new System.Windows.Forms.SaveFileDialog();
             this.dgv_PlayList = new System.Windows.Forms.DataGridView();
+            this.Playing = new System.Windows.Forms.DataGridViewImageColumn();
+            this.Number = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.FullPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.CurrentDirectory = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Title = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.SkipChapters = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.EndChapter = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dgv_PlaylistContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.playFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -106,13 +113,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.directoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.skipChaptersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.endChapterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.Playing = new System.Windows.Forms.DataGridViewImageColumn();
-            this.Number = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.FullPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.CurrentDirectory = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Title = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.SkipChapters = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.EndChapter = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_PlayList)).BeginInit();
             this.dgv_PlaylistContextMenu.SuspendLayout();
@@ -592,6 +592,88 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.TabIndex = 1;
             this.dgv_PlayList.TabStop = false;
             // 
+            // Playing
+            // 
+            this.Playing.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.NullValue = "null";
+            this.Playing.DefaultCellStyle = dataGridViewCellStyle2;
+            this.Playing.FillWeight = 1F;
+            this.Playing.HeaderText = "";
+            this.Playing.MinimumWidth = 24;
+            this.Playing.Name = "Playing";
+            this.Playing.ReadOnly = true;
+            this.Playing.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.Playing.Width = 24;
+            // 
+            // Number
+            // 
+            this.Number.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.Number.FillWeight = 1F;
+            this.Number.HeaderText = "#";
+            this.Number.MinimumWidth = 30;
+            this.Number.Name = "Number";
+            this.Number.ReadOnly = true;
+            this.Number.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.Number.Width = 30;
+            // 
+            // FullPath
+            // 
+            this.FullPath.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.FullPath.FillWeight = 40F;
+            this.FullPath.HeaderText = "Full Path";
+            this.FullPath.MinimumWidth = 60;
+            this.FullPath.Name = "FullPath";
+            this.FullPath.ReadOnly = true;
+            this.FullPath.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.FullPath.Width = 150;
+            // 
+            // CurrentDirectory
+            // 
+            this.CurrentDirectory.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.CurrentDirectory.FillWeight = 45F;
+            this.CurrentDirectory.HeaderText = "Directory";
+            this.CurrentDirectory.MinimumWidth = 60;
+            this.CurrentDirectory.Name = "CurrentDirectory";
+            this.CurrentDirectory.ReadOnly = true;
+            this.CurrentDirectory.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.CurrentDirectory.Visible = false;
+            // 
+            // Title
+            // 
+            this.Title.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.Title.FillWeight = 50F;
+            this.Title.HeaderText = "Title";
+            this.Title.MinimumWidth = 60;
+            this.Title.Name = "Title";
+            this.Title.ReadOnly = true;
+            this.Title.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.Title.Width = 380;
+            // 
+            // SkipChapters
+            // 
+            this.SkipChapters.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle3.NullValue = null;
+            this.SkipChapters.DefaultCellStyle = dataGridViewCellStyle3;
+            this.SkipChapters.FillWeight = 1F;
+            this.SkipChapters.HeaderText = "Skip Chapters";
+            this.SkipChapters.MinimumWidth = 50;
+            this.SkipChapters.Name = "SkipChapters";
+            this.SkipChapters.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.SkipChapters.Width = 110;
+            // 
+            // EndChapter
+            // 
+            this.EndChapter.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle4.NullValue = null;
+            this.EndChapter.DefaultCellStyle = dataGridViewCellStyle4;
+            this.EndChapter.FillWeight = 1F;
+            this.EndChapter.HeaderText = "End Chapter";
+            this.EndChapter.MaxInputLength = 2;
+            this.EndChapter.MinimumWidth = 50;
+            this.EndChapter.Name = "EndChapter";
+            this.EndChapter.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
             // dgv_PlaylistContextMenu
             // 
             this.dgv_PlaylistContextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -802,88 +884,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.endChapterToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.endChapterToolStripMenuItem.Text = "End Chapter";
             this.endChapterToolStripMenuItem.Click += new System.EventHandler(this.UpdateColumns);
-            // 
-            // Playing
-            // 
-            this.Playing.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.NullValue = "null";
-            this.Playing.DefaultCellStyle = dataGridViewCellStyle2;
-            this.Playing.FillWeight = 1F;
-            this.Playing.HeaderText = "";
-            this.Playing.MinimumWidth = 24;
-            this.Playing.Name = "Playing";
-            this.Playing.ReadOnly = true;
-            this.Playing.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.Playing.Width = 24;
-            // 
-            // Number
-            // 
-            this.Number.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.Number.FillWeight = 1F;
-            this.Number.HeaderText = "#";
-            this.Number.MinimumWidth = 30;
-            this.Number.Name = "Number";
-            this.Number.ReadOnly = true;
-            this.Number.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.Number.Width = 30;
-            // 
-            // FullPath
-            // 
-            this.FullPath.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.FullPath.FillWeight = 40F;
-            this.FullPath.HeaderText = "Full Path";
-            this.FullPath.MinimumWidth = 60;
-            this.FullPath.Name = "FullPath";
-            this.FullPath.ReadOnly = true;
-            this.FullPath.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.FullPath.Width = 150;
-            // 
-            // CurrentDirectory
-            // 
-            this.CurrentDirectory.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.CurrentDirectory.FillWeight = 45F;
-            this.CurrentDirectory.HeaderText = "Directory";
-            this.CurrentDirectory.MinimumWidth = 60;
-            this.CurrentDirectory.Name = "CurrentDirectory";
-            this.CurrentDirectory.ReadOnly = true;
-            this.CurrentDirectory.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.CurrentDirectory.Visible = false;
-            // 
-            // Title
-            // 
-            this.Title.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.Title.FillWeight = 50F;
-            this.Title.HeaderText = "Title";
-            this.Title.MinimumWidth = 60;
-            this.Title.Name = "Title";
-            this.Title.ReadOnly = true;
-            this.Title.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.Title.Width = 380;
-            // 
-            // SkipChapters
-            // 
-            this.SkipChapters.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle3.NullValue = null;
-            this.SkipChapters.DefaultCellStyle = dataGridViewCellStyle3;
-            this.SkipChapters.FillWeight = 1F;
-            this.SkipChapters.HeaderText = "Skip Chapters";
-            this.SkipChapters.MinimumWidth = 50;
-            this.SkipChapters.Name = "SkipChapters";
-            this.SkipChapters.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.SkipChapters.Width = 110;
-            // 
-            // EndChapter
-            // 
-            this.EndChapter.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle4.NullValue = null;
-            this.EndChapter.DefaultCellStyle = dataGridViewCellStyle4;
-            this.EndChapter.FillWeight = 1F;
-            this.EndChapter.HeaderText = "End Chapter";
-            this.EndChapter.MaxInputLength = 2;
-            this.EndChapter.MinimumWidth = 50;
-            this.EndChapter.Name = "EndChapter";
-            this.EndChapter.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // PlaylistForm
             // 

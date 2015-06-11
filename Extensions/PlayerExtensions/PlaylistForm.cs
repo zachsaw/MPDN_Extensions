@@ -841,11 +841,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (mediaFiles.Count > 0)
                 {
-                    AddFiles(mediaFiles.OrderBy(f => f, new NaturalSortComparer()).ToArray());
+                    AddFiles(mediaFiles.Where(file => openFileDialog.Filter.Contains(Path.GetExtension(file.ToLower()))).OrderBy(f => f, new NaturalSortComparer()).Where(f => Path.GetExtension(f).Length > 0).ToArray());
                 }
 
                 var actualFiles =
                       files.Where(file => !Directory.Exists(file))
+                          .Where(f => Path.GetExtension(f).Length > 0)
                           .Where(file => openFileDialog.Filter.Contains(Path.GetExtension(file.ToLower())))
                           .OrderBy(f => f, new NaturalSortComparer());
                 AddFiles(actualFiles.ToArray());
@@ -1253,13 +1254,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (ascending)
             {
-                Playlist = Playlist.OrderBy(f => Path.GetDirectoryName(f.FilePath), new NaturalSortComparer())
-                .ThenBy(f => f.FilePath.Count(c => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar)).ToList();
+                //doesn't seem to work
+                //Playlist = Playlist.OrderBy(f => Path.GetDirectoryName(f.FilePath).Substring(4, Path.GetDirectoryName(f.FilePath).IndexOf(Path.DirectorySeparatorChar)), new NaturalSortComparer()).ToList();
+                Playlist = Playlist.OrderBy(f => f.FilePath, new NaturalSortComparer()).ToList();
             }
             else
             {
-                Playlist = Playlist.OrderByDescending(f => Path.GetDirectoryName(f.FilePath), new NaturalSortComparer())
-                .ThenBy(f => f.FilePath.Count(c => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar)).ToList();
+                //doesn't seem to work
+                //Playlist = Playlist.OrderByDescending(f => Path.GetDirectoryName(f.FilePath).Substring(4, Path.GetDirectoryName(f.FilePath).IndexOf(Path.DirectorySeparatorChar)), new NaturalSortComparer()).ToList();
+                Playlist = Playlist.OrderByDescending(f => f.FilePath, new NaturalSortComparer()).ToList();
             }
 
             PopulatePlaylist();

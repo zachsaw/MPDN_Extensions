@@ -428,18 +428,23 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (!resizing)
             {
-                if (Settings.LockWindowSize) form.Height = mpdnForm.Height - (borderWidth * 2);
-                else form.Height = mpdnForm.Height;
+                if (Settings.ScaleWithPlayer)
+                {
+                    if (Settings.LockWindowSize) form.Height = mpdnForm.Height - (borderWidth * 2);
+                    else form.Height = mpdnForm.Height;
+                }
             }
             else
             {
-                if (!Settings.ScaleWithPlayer) return;
-                if (Settings.LockWindowSize)
+                if (Settings.ScaleWithPlayer)
                 {
-                    form.Width = mpdnForm.Width;
-                    form.Height = mpdnForm.Height - (borderWidth * 2);
+                    if (Settings.LockWindowSize)
+                    {
+                        form.Width = mpdnForm.Width;
+                        form.Height = mpdnForm.Height - (borderWidth * 2);
+                    }
+                    else form.Size = mpdnForm.Size;
                 }
-                else form.Size = mpdnForm.Size;
             }
 
             if (Settings.LockWindowSize)
@@ -618,10 +623,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             string[] filter = form.openFileDialog.Filter.Split('|');
             string[] extensions = filter[1].Replace(";","").Replace(" ", "").Split('*');
+
             var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.AllDirectories)
-                .OrderBy(f => Path.GetDirectoryName(f), new PlayerExtensions.Playlist.NaturalSortComparer())
-                .ThenBy(f => f.Count(c => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar))
-                .Where(file => extensions.Contains(Path.GetExtension(file.ToLower())));
+                .OrderBy(f => Path.GetDirectoryName(f).Substring(4, Path.GetDirectoryName(f).IndexOf(Path.DirectorySeparatorChar)), new NaturalSortComparer())
+                .Where(file => Path.GetExtension(file).Length > 0).Where(file => extensions.Contains(Path.GetExtension(file.ToLower())));
             return files;
         }
 
@@ -633,6 +638,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnDragDrop(object sender, PlayerControlEventArgs<DragEventArgs> e)
         {
+            string[] filter = form.openFileDialog.Filter.Split('|');
+            string[] extensions = filter[1].Replace(";", "").Replace(" ", "").Split('*');
+
             var files = (string[])e.InputArgs.Data.GetData(DataFormats.FileDrop);
 
             if (files.Length == 1)
@@ -644,7 +652,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     var media = GetMediaFiles(filename);
                     form.CloseMedia();
                     form.ClearPlaylist();
-                    form.AddFiles(media.ToArray());
+                    form.AddFiles(media.Where(file => extensions.Contains(Path.GetExtension(file.ToLower()))).OrderBy(f => f, new NaturalSortComparer()).Where(f => Path.GetExtension(f).Length > 0).ToArray());
                     form.SetPlaylistIndex(0);
                     return;
                 }
@@ -654,12 +662,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     return;
                 }
 
+                if (Path.GetExtension(filename).Length < 1 || !extensions.Contains(Path.GetExtension(filename))) return;
+
                 form.ActiveFile(filename);
                 form.SetPlaylistIndex(0);
             }
             else
             {
-                form.AddFiles(files);
+                form.AddFiles(files.Where(file => extensions.Contains(Path.GetExtension(file.ToLower()))).OrderBy(f => f, new NaturalSortComparer()).Where(f => Path.GetExtension(f).Length > 0).ToArray());
                 form.SetPlaylistIndex(0);
             }
 
