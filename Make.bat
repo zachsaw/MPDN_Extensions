@@ -33,6 +33,8 @@ echo .cs\ > excludedfiles.txt
 xcopy /y /e /exclude:excludedfiles.txt "Extensions\RenderScripts\*.*" "Release\Extensions\RenderScripts\" 1>nul 2>nul
 del excludedfiles.txt
 
+xcopy /y /e "Extensions\Libs\*.*" "Release\Extensions\Libs\" 1>nul 2>nul
+
 echo Zipping up...
 Echo.
 cd "Release"
