@@ -64,7 +64,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public Size WindowSize { get; set; }
         public bool RememberWindowPosition { get; set; }
         public bool RememberWindowSize { get; set; }
-        public bool SnapAndScaleWithPlayer { get; set; }
+        public bool SnapWithPlayer { get; set; }
         public bool KeepSnapped { get; set; }
         public bool LockWindowSize { get; set; }
         public bool BeginPlaybackOnStartup { get; set; }
@@ -561,7 +561,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             int borderWidth = SystemInformation.SizingBorderWidth;
 
-            if (RememberWindowPosition) { Location = WindowPosition; }
+            if (RememberWindowPosition) 
+            { 
+                if (!firstShow) return; 
+                Location = WindowPosition;
+            }
             else
             {
                 if (LockWindowSize)
@@ -605,7 +609,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 firstShow = false;
             }
 
-            if (SnapAndScaleWithPlayer) { playListUi.SnapPlayer(); }
+            if (SnapWithPlayer) { playListUi.SnapPlayer(); }
         }
 
         private void TimerTick(object sender, EventArgs e)

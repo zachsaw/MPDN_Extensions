@@ -65,13 +65,13 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.cb_followMpdnWindow = new System.Windows.Forms.CheckBox();
+            this.cb_keepSnapped = new System.Windows.Forms.CheckBox();
+            this.cb_scaleWithPlayer = new System.Windows.Forms.CheckBox();
             this.cb_lockWindowSize = new System.Windows.Forms.CheckBox();
-            this.cb_snapAndScaleWithPlayer = new System.Windows.Forms.CheckBox();
+            this.cb_snapWithPlayer = new System.Windows.Forms.CheckBox();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.cb_rememberColumns = new System.Windows.Forms.CheckBox();
             this.cb_rememberWindowSize = new System.Windows.Forms.CheckBox();
-            this.cb_keepSnapped = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -104,7 +104,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // cb_showPlaylistOnStartup
             // 
             this.cb_showPlaylistOnStartup.AutoSize = true;
-            this.cb_showPlaylistOnStartup.Location = new System.Drawing.Point(7, 96);
+            this.cb_showPlaylistOnStartup.Location = new System.Drawing.Point(7, 73);
             this.cb_showPlaylistOnStartup.Name = "cb_showPlaylistOnStartup";
             this.cb_showPlaylistOnStartup.Size = new System.Drawing.Size(137, 17);
             this.cb_showPlaylistOnStartup.TabIndex = 1;
@@ -276,48 +276,58 @@ namespace Mpdn.Extensions.PlayerExtensions
             // groupBox5
             // 
             this.groupBox5.Controls.Add(this.cb_keepSnapped);
-            this.groupBox5.Controls.Add(this.cb_followMpdnWindow);
+            this.groupBox5.Controls.Add(this.cb_scaleWithPlayer);
             this.groupBox5.Controls.Add(this.cb_lockWindowSize);
-            this.groupBox5.Controls.Add(this.cb_snapAndScaleWithPlayer);
+            this.groupBox5.Controls.Add(this.cb_snapWithPlayer);
             this.groupBox5.Controls.Add(this.cb_showPlaylistOnStartup);
             this.groupBox5.Location = new System.Drawing.Point(7, 194);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(205, 119);
+            this.groupBox5.Size = new System.Drawing.Size(205, 115);
             this.groupBox5.TabIndex = 0;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Interface";
             // 
-            // cb_followMpdnWindow
+            // cb_keepSnapped
             // 
-            this.cb_followMpdnWindow.AutoSize = true;
-            this.cb_followMpdnWindow.Location = new System.Drawing.Point(7, 16);
-            this.cb_followMpdnWindow.Name = "cb_followMpdnWindow";
-            this.cb_followMpdnWindow.Size = new System.Drawing.Size(130, 17);
-            this.cb_followMpdnWindow.TabIndex = 4;
-            this.cb_followMpdnWindow.Text = "Follow MPDN window";
-            this.cb_followMpdnWindow.UseVisualStyleBackColor = true;
+            this.cb_keepSnapped.AutoSize = true;
+            this.cb_keepSnapped.Location = new System.Drawing.Point(7, 16);
+            this.cb_keepSnapped.Name = "cb_keepSnapped";
+            this.cb_keepSnapped.Size = new System.Drawing.Size(95, 17);
+            this.cb_keepSnapped.TabIndex = 5;
+            this.cb_keepSnapped.Text = "Keep snapped";
+            this.cb_keepSnapped.UseVisualStyleBackColor = true;
+            // 
+            // cb_scaleWithPlayer
+            // 
+            this.cb_scaleWithPlayer.AutoSize = true;
+            this.cb_scaleWithPlayer.Location = new System.Drawing.Point(7, 54);
+            this.cb_scaleWithPlayer.Name = "cb_scaleWithPlayer";
+            this.cb_scaleWithPlayer.Size = new System.Drawing.Size(106, 17);
+            this.cb_scaleWithPlayer.TabIndex = 4;
+            this.cb_scaleWithPlayer.Text = "Scale with player";
+            this.cb_scaleWithPlayer.UseVisualStyleBackColor = true;
             // 
             // cb_lockWindowSize
             // 
             this.cb_lockWindowSize.AutoSize = true;
-            this.cb_lockWindowSize.Location = new System.Drawing.Point(7, 57);
+            this.cb_lockWindowSize.Location = new System.Drawing.Point(7, 35);
             this.cb_lockWindowSize.Name = "cb_lockWindowSize";
             this.cb_lockWindowSize.Size = new System.Drawing.Size(110, 17);
             this.cb_lockWindowSize.TabIndex = 3;
             this.cb_lockWindowSize.Text = "Lock window size";
             this.cb_lockWindowSize.UseVisualStyleBackColor = true;
             // 
-            // cb_snapAndScaleWithPlayer
+            // cb_snapWithPlayer
             // 
-            this.cb_snapAndScaleWithPlayer.AutoSize = true;
-            this.cb_snapAndScaleWithPlayer.Checked = true;
-            this.cb_snapAndScaleWithPlayer.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cb_snapAndScaleWithPlayer.Location = new System.Drawing.Point(7, 77);
-            this.cb_snapAndScaleWithPlayer.Name = "cb_snapAndScaleWithPlayer";
-            this.cb_snapAndScaleWithPlayer.Size = new System.Drawing.Size(153, 17);
-            this.cb_snapAndScaleWithPlayer.TabIndex = 2;
-            this.cb_snapAndScaleWithPlayer.Text = "Snap and scale with player";
-            this.cb_snapAndScaleWithPlayer.UseVisualStyleBackColor = true;
+            this.cb_snapWithPlayer.AutoSize = true;
+            this.cb_snapWithPlayer.Checked = true;
+            this.cb_snapWithPlayer.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cb_snapWithPlayer.Location = new System.Drawing.Point(7, 92);
+            this.cb_snapWithPlayer.Name = "cb_snapWithPlayer";
+            this.cb_snapWithPlayer.Size = new System.Drawing.Size(104, 17);
+            this.cb_snapWithPlayer.TabIndex = 2;
+            this.cb_snapWithPlayer.Text = "Snap with player";
+            this.cb_snapWithPlayer.UseVisualStyleBackColor = true;
             // 
             // groupBox6
             // 
@@ -351,16 +361,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_rememberWindowSize.TabIndex = 7;
             this.cb_rememberWindowSize.Text = "Remember window size";
             this.cb_rememberWindowSize.UseVisualStyleBackColor = true;
-            // 
-            // cb_keepSnapped
-            // 
-            this.cb_keepSnapped.AutoSize = true;
-            this.cb_keepSnapped.Location = new System.Drawing.Point(7, 36);
-            this.cb_keepSnapped.Name = "cb_keepSnapped";
-            this.cb_keepSnapped.Size = new System.Drawing.Size(95, 17);
-            this.cb_keepSnapped.TabIndex = 5;
-            this.cb_keepSnapped.Text = "Keep snapped";
-            this.cb_keepSnapped.UseVisualStyleBackColor = true;
             // 
             // PlaylistConfigDialog
             // 
@@ -423,10 +423,10 @@ namespace Mpdn.Extensions.PlayerExtensions
         private CheckBox cb_whenPlaylistFileIsOpened;
         private CheckBox cb_onStartup;
         private CheckBox cb_rememberWindowSize;
-        private CheckBox cb_snapAndScaleWithPlayer;
+        private CheckBox cb_snapWithPlayer;
         private CheckBox cb_rememberColumns;
         private CheckBox cb_lockWindowSize;
-        private CheckBox cb_followMpdnWindow;
+        private CheckBox cb_scaleWithPlayer;
         private CheckBox cb_keepSnapped;
     }
 }

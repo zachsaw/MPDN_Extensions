@@ -100,9 +100,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 SetFormToFixed();
             }
 
-            if (Settings.SnapAndScaleWithPlayer)
+            if (Settings.SnapWithPlayer)
             {
-                form.SnapAndScaleWithPlayer = Settings.SnapAndScaleWithPlayer;
+                form.SnapWithPlayer = Settings.SnapWithPlayer;
                 SnapPlayer();
             }
 
@@ -188,11 +188,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (Settings.LockWindowSize) SetFormToFixed();
             else SetFormToSizable();
-            if (Settings.SnapAndScaleWithPlayer) SnapPlayer();
+            if (Settings.SnapWithPlayer) SnapPlayer();
 
             form.RememberWindowPosition = Settings.RememberWindowPosition;
             form.RememberWindowSize = Settings.RememberWindowSize;
-            form.SnapAndScaleWithPlayer = Settings.SnapAndScaleWithPlayer;
+            form.SnapWithPlayer = Settings.SnapWithPlayer;
             form.KeepSnapped = Settings.KeepSnapped;
             form.LockWindowSize = Settings.LockWindowSize;
             form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
@@ -360,7 +360,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 if (CursorIsOnResizeAnchor()) return;
                 moving = true;
-                if (Settings.FollowMpdnWindow || Settings.SnapAndScaleWithPlayer)
+                if (Settings.SnapWithPlayer)
                 {
                     form.Left = formStartLocation.X + mpdnForm.Location.X - mpdnStartLocation.X;
                     form.Top = formStartLocation.Y + mpdnForm.Location.Y - mpdnStartLocation.Y;
@@ -373,7 +373,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             Screen scn = Screen.FromPoint(mpdnForm.Location);
 
-            if (Settings.SnapAndScaleWithPlayer) SnapPlayer();
+            if (Settings.SnapWithPlayer) SnapPlayer();
 
             if (mpdnForm.WindowState == FormWindowState.Minimized)
             {
@@ -433,6 +433,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             else
             {
+                if (!Settings.ScaleWithPlayer) return;
                 if (Settings.LockWindowSize)
                 {
                     form.Width = mpdnForm.Width;
@@ -688,10 +689,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public bool BeginPlaybackWhenFileIsAdded { get; set; }
         public bool BeginPlaybackWhenPlaylistFileIsOpened { get; set; }
         public bool AddToPlaylistOnFileOpen { get; set; }
-        public bool FollowMpdnWindow { get; set; }
         public bool RememberWindowSize { get; set; }
         public bool RememberWindowPosition { get; set; }
-        public bool SnapAndScaleWithPlayer { get; set; }
+        public bool SnapWithPlayer { get; set; }
+        public bool ScaleWithPlayer { get; set; }
         public bool KeepSnapped { get; set; }
         public bool RememberPlaylist { get; set; }
         public Point WindowPosition { get; set; }
@@ -709,8 +710,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             BeginPlaybackWhenFileIsAdded = false;
             BeginPlaybackWhenPlaylistFileIsOpened = false;
             AddToPlaylistOnFileOpen = false;
-            FollowMpdnWindow = false;
-            SnapAndScaleWithPlayer = true;
+            SnapWithPlayer = true;
             KeepSnapped = false;
             RememberColumns = false;
             RememberWindowPosition = false;
