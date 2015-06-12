@@ -1,17 +1,19 @@
-; ****************************************************************************
-; * Copyright (C) 2002-2010 OpenVPN Technologies, Inc.                       *
-; * Copyright (C)      2012 Alon Bar-Lev <alon.barlev@gmail.com>             *
-; * Modified for MediaPlayerDotNet by                                        *
-; * Copyright (C)      2015 Antoine Aflalo <antoine@aaflalo.me>              *
-; * Copyright (C)      2015 Zach Saw <zach.saw@gmail.com>                    *
-; * Modified for MPDN Extensions by                                          *
-; * Copyright (C)      2015 Zach Saw <zach.saw@gmail.com>                    *
-; *  This program is free software; you can redistribute it and/or modify    *
-; *  it under the terms of the GNU General Public License version 2          *
-; *  as published by the Free Software Foundation.                           *
-; ****************************************************************************
-
-; MPDN install script for Windows, using NSIS
+; This file is a part of MPDN Extensions.
+; https://github.com/zachsaw/MPDN_Extensions
+;
+; This library is free software; you can redistribute it and/or
+; modify it under the terms of the GNU Lesser General Public
+; License as published by the Free Software Foundation; either
+; version 3.0 of the License, or (at your option) any later version.
+; 
+; This library is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+; Lesser General Public License for more details.
+; 
+; You should have received a copy of the GNU Lesser General Public
+; License along with this library.
+; 
 
 SetCompressor lzma
 
@@ -31,18 +33,8 @@ SetCompressor lzma
 
 ; Read the command-line parameters
 !insertmacro GetParameters
-!insertmacro GetOptions
 
-; Move Files and folder
-; Used to move the Extensions
-!include 'FileFunc.nsh'
-!insertmacro Locate
- 
-Var /GLOBAL switch_overwrite
-
-; Windows version check
-!include WinVer.nsh
-
+!getdllversion "TEMP\Extensions\Mpdn.Extensions.dll" VERSION_
 
 ;--------------------------------
 ;Configuration
@@ -50,10 +42,10 @@ Var /GLOBAL switch_overwrite
 ;General
 
 ; Package name as shown in the installer GUI
-Name "${PROJECT_NAME} v${VERSION}"
+Name "${PROJECT_NAME} v${VERSION_1}.${VERSION_2}.${VERSION_3}"
 
 ; Installer filename
-OutFile "${PROJECT_NAME}_v${VERSION}_Installer.exe"
+OutFile "${PROJECT_NAME}_v${VERSION_1}.${VERSION_2}.${VERSION_3}_Installer.exe"
 
 ShowInstDetails show
 ShowUninstDetails show
@@ -62,9 +54,9 @@ ShowUninstDetails show
 ;Modern UI Configuration
 
 ; Compile-time constants which we'll need during install
-!define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of ${PROJECT_NAME} v${VERSION}."
+!define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of ${PROJECT_NAME} v${VERSION_1}.${VERSION_2}.${VERSION_3}."
 
-!define MUI_COMPONENTSPAGE_TEXT_TOP "Select the components to install/upgrade.  Stop any MPDN processes.  All DLLs are installed locally."
+!define MUI_COMPONENTSPAGE_TEXT_TOP "Select the components to install/upgrade.  Stop any MPDN processes.$\r$\n*** WARNING ***  Existing extensions will be removed and replaced!"
 
 !define MUI_COMPONENTSPAGE_SMALLDESC
 
@@ -88,16 +80,8 @@ Var /GLOBAL mpdn64_root
 ;--------------------------------
 ;Language Strings
 
-LangString DESC_SecMPDNExtensions32 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for MPDN x86."
-LangString DESC_SecMPDNExtensions64 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for MPDN x64."
-
-;--------------------------------
-;Reserve Files
-  
-;Things that need to be extracted on first (keep these lines before any File command!)
-;Only useful for BZIP2 compression
-
-;ReserveFile "install-whirl.bmp"
+LangString DESC_SecMPDNExtensions32 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for MPDN 32-bit Edition."
+LangString DESC_SecMPDNExtensions64 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for MPDN 64-bit Edition."
 
 ;--------------------------------
 ;Macros
@@ -115,22 +99,14 @@ LangString DESC_SecMPDNExtensions64 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for
 	${EndIf}
 !macroend
 
-!macro WriteRegStringIfUndef ROOT SUBKEY KEY VALUE
-	Push $R0
-	ReadRegStr $R0 "${ROOT}" "${SUBKEY}" "${KEY}"
-	${If} $R0 == ""
-		WriteRegStr "${ROOT}" "${SUBKEY}" "${KEY}" '${VALUE}'
-	${EndIf}
-	Pop $R0
-!macroend
+!macro InstallExtensions path
+    RMDir /r "${path}\Extensions"
+    
+	SetOverwrite on
 
-!macro DelRegKeyIfUnchanged ROOT SUBKEY VALUE
-	Push $R0
-	ReadRegStr $R0 "${ROOT}" "${SUBKEY}" ""
-	${If} $R0 == '${VALUE}'
-		DeleteRegKey "${ROOT}" "${SUBKEY}"
-	${EndIf}
-	Pop $R0
+	SetOutPath "${path}"
+	
+	File /r "TEMP\*.*"
 !macroend
 
 ;--------------------
@@ -139,8 +115,8 @@ LangString DESC_SecMPDNExtensions64 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for
 Section -pre
 	${nsProcess::FindProcess} "MediaPlayerDotNet.exe" $R0
 	${If} $R0 == 0
-		MessageBox MB_YESNO|MB_ICONEXCLAMATION "To perform the specified operation, ${PROJECT_NAME} needs to be closed.$\r$\n$\r$\nClose it now?" /SD IDYES IDNO guiEndNo
-		DetailPrint "Closing ${PROJECT_NAME}..."
+		MessageBox MB_YESNO|MB_ICONEXCLAMATION "To perform the specified operation, MPDN needs to be closed.$\r$\n$\r$\nClose it now?" /SD IDYES IDNO guiEndNo
+		DetailPrint "Closing MPDN..."
 		Goto guiEndYes
 	${Else}
 		Goto mpdnNotRunning
@@ -166,30 +142,15 @@ Section -pre
 
 SectionEnd
 
+Section /o "Extensions for MPDN x86" SecMPDNExtensions32
 
-Section /o "MPDN Extensions for MPDN x86" SecMPDNExtensions32
-
-    RMDir /r "$mpdn32_root\Extensions"
-    CreateDirectory "$mpdn32_root\Extensions"
-    
-	SetOverwrite on
-
-	SetOutPath "$mpdn32_root\Extensions"
-	
-	File /r "TEMP\*.*"
+    !insertmacro InstallExtensions "$mpdn32_root"
     
 SectionEnd
 
-Section /o "MPDN Extensions for MPDN x64" SecMPDNExtensions64
+Section /o "Extensions for MPDN x64" SecMPDNExtensions64
 
-    RMDir /r "$mpdn64_root\Extensions"
-    CreateDirectory "$mpdn64_root\Extensions"
-    
-	SetOverwrite on
-
-	SetOutPath "$mpdn64_root\Extensions"
-	
-	File /r "TEMP\*.*"
+    !insertmacro InstallExtensions "$mpdn64_root"
     
 SectionEnd
 
@@ -207,7 +168,6 @@ Function .onInit
 	StrCmp $R0 0 +3
 		MessageBox MB_OK "The installer is already running."
 		Abort
-	StrCpy $switch_overwrite 0
     
     ${GetParameters} $R0
 	ClearErrors
@@ -222,27 +182,26 @@ Function .onInit
 		SetRegView 64
     ${EndIf}
     
-    ReadRegStr $R0 HKLM "SOFTWARE\${PROJECT_NAME}_x86" ""
+    ReadRegStr $R0 HKLM "SOFTWARE\${MPDN_REGNAME}_x86" ""
     StrCpy $mpdn32_root "$R0"
-    ReadRegStr $R0 HKLM "SOFTWARE\${PROJECT_NAME}_x64" ""
+    ReadRegStr $R0 HKLM "SOFTWARE\${MPDN_REGNAME}_x64" ""
     StrCpy $mpdn64_root "$R0"
-    
-    StrCpy $R0 $mpdn32_root
-    MessageBox MB_OK "$R0"
-    
-    StrCpy $R0 $mpdn64_root
-    MessageBox MB_OK "$R0"
 
-    StrCmp $mpdn32 "" 0 check64
-        MessageBox MB_OK $mpdn32
+    StrCpy $R0 "$mpdn32_root"
+    StrCpy $R1 "$mpdn64_root"
+    
+    StrCmp $R0 "" 0 check64
         SectionSetText ${SecMPDNExtensions32} ""
         !insertmacro UnselectSection ${SecMPDNExtensions32}
 check64:
-    StrCmp $mpdn64 "" 0 done
-        MessageBox MB_OK $mpdn64
+    StrCmp $R1 "" 0 done
         SectionSetText ${SecMPDNExtensions64} ""
         !insertmacro UnselectSection ${SecMPDNExtensions64}
 done:
+
+	StrCmp "$R0$R1" "" 0 +3
+		MessageBox MB_OK "Unable to find any installations of MPDN.$\r$\n$\r$\nPlease install MPDN first!"
+		Abort
 
 FunctionEnd
 

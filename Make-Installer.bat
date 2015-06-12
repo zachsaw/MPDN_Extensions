@@ -1,10 +1,5 @@
 @echo off
 setlocal
-set releaseVer=%1
-if "%releaseVer%"=="" (
-  echo Error: Please specify version: Make-Installer <version> ^^^(e.g. Make-Installer 1.6.2^^^)
-  goto Quit
-)
 cd "%~dp0"
 if not exist "Release\Mpdn.Extensions.zip" (
   echo Error: Mpdn.Extensions.zip is not found - run Make.bat first!
@@ -28,7 +23,7 @@ rmdir /s /q Temp 1>nul 2>nul
 %zipper% x "Release\Mpdn.Extensions.zip" -oTemp *.* -r 1>nul 2>nul
 if not "%ERRORLEVEL%"=="0" echo error: extraction failed & goto Quit
 
-%makensis% "/DPROJECT_NAME=MPDN-Extensions" "/DVERSION=%releaseVer%" /V1 Installer.nsi
+%makensis% "/DPROJECT_NAME=MPDN-Extensions" "/DMPDN_REGNAME=MediaPlayerDotNet" /V1 Installer.nsi
 if not "%ERRORLEVEL%"=="0" echo error: makensis failed & goto Quit
 
 rmdir /s /q Temp 1>nul 2>nul
