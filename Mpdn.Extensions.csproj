@@ -401,7 +401,7 @@
 mkdir "$(ProjectDir)MPDN\Extensions\RenderScripts"
 xcopy /y /e "$(SolutionDir)Extensions\*.resx" "$(SolutionDir)Sources\"
 xcopy /y /e "$(SolutionDir)Sources\*.resx" "$(SolutionDir)Extensions\"
-"$(ProjectDir)GenerateAssemblyInfo.bat" 0.0.0.0 &gt; $(ProjectDir)Properties\AssemblyInfo.cs</PreBuildEvent>
+</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>copy /y "$(TargetDir)$(TargetName).dll" "$(ProjectDir)MPDN\Extensions"
