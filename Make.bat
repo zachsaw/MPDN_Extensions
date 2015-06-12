@@ -18,12 +18,6 @@ mkdir Release 1>nul 2>nul
 
 set buildPlatform=Release
 
-set zipper="%ProgramFiles%\7-zip\7z.exe"
-if not exist %zipper% (
-  echo Error: 7-zip (native version^) is not installed
-  goto Quit
-)
-
 for /D %%D in (%SYSTEMROOT%\Microsoft.NET\Framework\v4*) do set msbuildexe=%%D\MSBuild.exe
 if not defined msbuildexe echo error: can't find MSBuild.exe & goto Quit
 if not exist "%msbuildexe%" echo error: %msbuildexe%: not found & goto Quit
@@ -48,7 +42,7 @@ xcopy /y /e "Extensions\Libs\*.*" "Release\Extensions\Libs\" 1>nul 2>nul
 echo Zipping up...
 Echo.
 cd "Release"
-%zipper% a -r -tzip -mm=lzma -mx9 "%~dp0Release\Mpdn.Extensions.zip" * > NUL
+"%~dp0kzip" /r "%~dp0Release\Mpdn.Extensions.zip" *.* > NUL
 rmdir /q /s Extensions 1>nul 2>nul
 
 Echo Completed successfully.
