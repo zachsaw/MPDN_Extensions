@@ -30,9 +30,10 @@ if not exist "%msbuildexe%" echo error: %msbuildexe%: not found & goto Quit
 
 Echo Making MPDN Extensions...
 Echo.
+mkdir Properties
 call GenerateAssemblyInfo.bat %releaseVersion% > Properties\AssemblyInfo.cs
 %msbuildexe% Mpdn.Extensions.sln /m /p:Configuration=%buildPlatform% /v:q /t:rebuild
-del Properties\AssemblyInfo.cs
+rmdir /q /s Properties
 Echo.
 
 if not "%ERRORLEVEL%"=="0" echo error: build failed & goto Quit
@@ -45,14 +46,19 @@ del excludedfiles.txt
 
 xcopy /y /e "Extensions\Libs\*.*" "Release\Extensions\Libs\" 1>nul 2>nul
 
-echo Zipping up...
+echo Zipping release...
 Echo.
 cd "Release"
-%zipper% a -r -tzip -mm=lzma -mx9 "%~dp0Release\Mpdn.Extensions.zip" * > NUL
+%zipper% a -r -tzip -mx9 "%~dp0Release\Mpdn.Extensions.zip" * > NUL
 rmdir /q /s Extensions 1>nul 2>nul
 
-Echo Completed successfully.
-start .
+cd "%~dp0"
+call Make-Installer.bat
+if not "%ERRORLEVEL%"=="0" echo error: make installer failed & goto Quit
+
+echo.
+Echo All operations completed successfully.
+start Release
 
 :Quit
 Echo.

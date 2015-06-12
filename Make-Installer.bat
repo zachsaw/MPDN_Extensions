@@ -30,9 +30,10 @@ rmdir /s /q Temp 1>nul 2>nul
 
 move MPDN-Extensions_v*_Installer.exe Release\ 1>nul 2>nul
 
-echo Done.
-echo.
-pause
+goto Done
 
 :Quit
 
+exit /b 1
+
+:Done
