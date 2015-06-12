@@ -7,13 +7,13 @@ if not exist "Release\Mpdn.Extensions.zip" (
 )
 set zipper="%ProgramFiles%\7-zip\7z.exe"
 if not exist %zipper% (
-  echo Error: 7-zip ^^^(native version^^^) is not installed
+  echo Error: 7-zip (native version^) is not installed
   goto Quit
 )
 IF "%PROCESSOR_ARCHITECTURE%"=="x86" (set progfiles86=C:\Program Files) else (set progfiles86=C:\Program Files ^(x86^))
 set makensis="%progfiles86%\NSIS\Bin\makensis.exe"
 if not exist %makensis% (
-  echo Error: NSIS is not installed ^^^(NSIS v3.0b1^^^)
+  echo Error: NSIS is not installed (NSIS v3.0b1^)
   goto Quit
 )
 

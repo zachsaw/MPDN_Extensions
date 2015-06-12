@@ -1,6 +1,14 @@
 @echo off
+if "%1"=="" (
+  echo Usage: Make.bat [version x.y.z.rev] (e.g. Make.bat 1.2.3.456^)
+  echo        where 'rev' is the commit count on GitHub as of this revision
+  goto Quit
+)
+
 setlocal
+
 cd "%~dp0"
+set releaseVersion=%1
 
 rmdir /q /s bin 1>nul 2>nul
 rmdir /q /s obj 1>nul 2>nul
@@ -12,17 +20,19 @@ set buildPlatform=Release
 
 set zipper="%ProgramFiles%\7-zip\7z.exe"
 if not exist %zipper% (
-  echo Error: 7-zip ^^^(native version^^^) is not installed
+  echo Error: 7-zip (native version^) is not installed
   goto Quit
 )
 
-for /D %%D in (%SYSTEMROOT%\Microsoft.NET\Framework\v4*) do set msbuild.exe=%%D\MSBuild.exe
-if not defined msbuild.exe echo error: can't find MSBuild.exe & goto Quit
-if not exist "%msbuild.exe%" echo error: %msbuild.exe%: not found & goto Quit
+for /D %%D in (%SYSTEMROOT%\Microsoft.NET\Framework\v4*) do set msbuildexe=%%D\MSBuild.exe
+if not defined msbuildexe echo error: can't find MSBuild.exe & goto Quit
+if not exist "%msbuildexe%" echo error: %msbuildexe%: not found & goto Quit
 
 Echo Making MPDN Extensions...
 Echo.
-%msbuild.exe% Mpdn.Extensions.sln /m /p:Configuration=%buildPlatform% /v:q /t:rebuild
+call GenerateAssemblyInfo.bat %releaseVersion% > Properties\AssemblyInfo.cs
+%msbuildexe% Mpdn.Extensions.sln /m /p:Configuration=%buildPlatform% /v:q /t:rebuild
+del Properties\AssemblyInfo.cs
 Echo.
 
 if not "%ERRORLEVEL%"=="0" echo error: build failed & goto Quit
@@ -38,7 +48,7 @@ xcopy /y /e "Extensions\Libs\*.*" "Release\Extensions\Libs\" 1>nul 2>nul
 echo Zipping up...
 Echo.
 cd "Release"
-%zipper% a -r -tzip -mx9 "%~dp0Release\Mpdn.Extensions.zip" * > NUL
+%zipper% a -r -tzip -mm=lzma -mx9 "%~dp0Release\Mpdn.Extensions.zip" * > NUL
 rmdir /q /s Extensions 1>nul 2>nul
 
 Echo Completed successfully.
