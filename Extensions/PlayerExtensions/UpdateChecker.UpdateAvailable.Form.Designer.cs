@@ -57,7 +57,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // downloadButton
             // 
             this.downloadButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.downloadButton.Location = new System.Drawing.Point(204, 180);
+            this.downloadButton.Location = new System.Drawing.Point(264, 242);
             this.downloadButton.Name = "downloadButton";
             this.downloadButton.Size = new System.Drawing.Size(75, 23);
             this.downloadButton.TabIndex = 0;
@@ -69,7 +69,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.forgetUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.forgetUpdate.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.forgetUpdate.Location = new System.Drawing.Point(285, 180);
+            this.forgetUpdate.Location = new System.Drawing.Point(345, 242);
             this.forgetUpdate.Name = "forgetUpdate";
             this.forgetUpdate.Size = new System.Drawing.Size(86, 23);
             this.forgetUpdate.TabIndex = 1;
@@ -81,7 +81,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.CloseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.CloseButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.CloseButton.Location = new System.Drawing.Point(377, 180);
+            this.CloseButton.Location = new System.Drawing.Point(437, 242);
             this.CloseButton.Name = "CloseButton";
             this.CloseButton.Size = new System.Drawing.Size(75, 23);
             this.CloseButton.TabIndex = 2;
@@ -93,10 +93,11 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.changelogBox.BackColor = System.Drawing.SystemColors.Control;
             this.changelogBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.changelogBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.changelogBox.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.changelogBox.Location = new System.Drawing.Point(1, 1);
             this.changelogBox.Name = "changelogBox";
             this.changelogBox.ReadOnly = true;
-            this.changelogBox.Size = new System.Drawing.Size(439, 105);
+            this.changelogBox.Size = new System.Drawing.Size(499, 167);
             this.changelogBox.TabIndex = 0;
             this.changelogBox.Text = "";
             this.changelogBox.WordWrap = false;
@@ -111,14 +112,14 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.panel1.Location = new System.Drawing.Point(12, 29);
             this.panel1.Name = "panel1";
             this.panel1.Padding = new System.Windows.Forms.Padding(1);
-            this.panel1.Size = new System.Drawing.Size(441, 107);
+            this.panel1.Size = new System.Drawing.Size(501, 169);
             this.panel1.TabIndex = 3;
             // 
             // checkBoxDisable
             // 
             this.checkBoxDisable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBoxDisable.AutoSize = true;
-            this.checkBoxDisable.Location = new System.Drawing.Point(13, 144);
+            this.checkBoxDisable.Location = new System.Drawing.Point(13, 206);
             this.checkBoxDisable.Name = "checkBoxDisable";
             this.checkBoxDisable.Size = new System.Drawing.Size(430, 17);
             this.checkBoxDisable.TabIndex = 4;
@@ -142,7 +143,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.forgetUpdate;
-            this.ClientSize = new System.Drawing.Size(465, 215);
+            this.ClientSize = new System.Drawing.Size(525, 277);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.checkBoxDisable);
             this.Controls.Add(this.panel1);
