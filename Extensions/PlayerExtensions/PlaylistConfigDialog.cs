@@ -24,6 +24,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         public PlaylistConfigDialog()
         {
             InitializeComponent();
+            updateControls();
         }
 
         protected override void LoadSettings()
@@ -35,7 +36,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             cb_whenPlaylistFileIsOpened.Checked = Settings.BeginPlaybackWhenPlaylistFileIsOpened;
             cb_scaleWithPlayer.Checked = Settings.ScaleWithPlayer;
             cb_snapWithPlayer.Checked = Settings.SnapWithPlayer;
-            cb_keepSnapped.Checked = Settings.KeepSnapped;
+            cb_staySnapped.Checked = Settings.StaySnapped;
             cb_rememberColumns.Checked = Settings.RememberColumns;
             cb_rememberWindowPosition.Checked = Settings.RememberWindowPosition;
             cb_rememberWindowSize.Checked = Settings.RememberWindowSize;
@@ -53,13 +54,24 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.BeginPlaybackWhenPlaylistFileIsOpened = cb_whenPlaylistFileIsOpened.Checked;
             Settings.ScaleWithPlayer = cb_scaleWithPlayer.Checked;
             Settings.SnapWithPlayer = cb_snapWithPlayer.Checked;
-            Settings.KeepSnapped = cb_keepSnapped.Checked;
+            Settings.StaySnapped = cb_staySnapped.Checked;
             Settings.RememberColumns = cb_rememberColumns.Checked;
             Settings.RememberWindowPosition = cb_rememberWindowPosition.Checked;
             Settings.RememberWindowSize = cb_rememberWindowSize.Checked;
             Settings.LockWindowSize = cb_lockWindowSize.Checked;
             Settings.RememberPlaylist = cb_rememberPlaylist.Checked;
             Settings.AddToPlaylistOnFileOpen = cb_addToPlaylistOnFileOpen.Checked;
+        }
+
+        private void updateControls()
+        {
+            if (cb_snapWithPlayer.Checked) cb_staySnapped.Enabled = true;
+            else { cb_staySnapped.Checked = false; cb_staySnapped.Enabled = false; }
+        }
+
+        private void cb_snapWithPlayer_CheckedChanged(object sender, System.EventArgs e)
+        {
+            updateControls();
         }
     }
 

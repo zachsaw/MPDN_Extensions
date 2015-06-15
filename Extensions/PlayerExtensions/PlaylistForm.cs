@@ -561,54 +561,68 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             int borderWidth = SystemInformation.SizingBorderWidth;
 
-            if (RememberWindowPosition) 
-            { 
-                if (!firstShow) return; 
+            if (RememberWindowPosition && RememberWindowSize)
+            {
                 Location = WindowPosition;
+                Size = WindowSize;
             }
             else
             {
-                if (LockWindowSize)
+                if (RememberWindowPosition)
                 {
-                    Left = PlayerControl.Form.Right + borderWidth;
-                    Top = PlayerControl.Form.Top + borderWidth;
-
+                    if (firstShow)
+                    {
+                        Location = WindowPosition;
+                        firstShow = false;
+                    }
                 }
                 else
                 {
-                    Left = PlayerControl.Form.Right;
-                    Top = PlayerControl.Form.Top;
+                    if (LockWindowSize)
+                    {
+                        Left = PlayerControl.Form.Right + borderWidth;
+                        Top = PlayerControl.Form.Top + borderWidth;
+
+                    }
+                    else
+                    {
+                        Left = PlayerControl.Form.Right;
+                        Top = PlayerControl.Form.Top;
+                    }
+                }
+                if (RememberWindowSize)
+                {
+                    if (firstShow)
+                    {
+                        Size = WindowSize;
+                        firstShow = false;
+                    }
+                }
+                else
+                {
+                    var mpdnRememberBounds = PlayerControl.PlayerSettings.GeneralSettings.RememberWindowSizePos;
+                    var mpdnBounds = PlayerControl.PlayerSettings.GeneralSettings.WindowBounds;
+
+                    var screen = Screen.FromControl(owner);
+                    var screenBounds = screen.WorkingArea;
+
+                    if (mpdnRememberBounds)
+                        Width = mpdnBounds.Right + mpdnBounds.Width >= (screenBounds.Width / 2) ? screenBounds.Width - (mpdnBounds.Width + mpdnBounds.Left) : Width;
+                    else
+                        Width = PlayerControl.Form.Right + PlayerControl.Form.Width >= (screenBounds.Width / 2) ? (screenBounds.Width / 2) - PlayerControl.Form.Width / 2 : Width;
+
+                    if (LockWindowSize)
+                    {
+                        Width = Width - borderWidth;
+                        Height = PlayerControl.Form.Height - (borderWidth * 2);
+                    }
+                    else
+                    {
+                        Height = PlayerControl.Form.Height;
+                    }
                 }
             }
-            if (RememberWindowSize) { Size = WindowSize; }
-            else
-            {
-                if (!firstShow) return;
-
-                var mpdnRememberBounds = PlayerControl.PlayerSettings.GeneralSettings.RememberWindowSizePos;
-                var mpdnBounds = PlayerControl.PlayerSettings.GeneralSettings.WindowBounds;
-
-                var screen = Screen.FromControl(owner);
-                var screenBounds = screen.WorkingArea;
-
-                if (mpdnRememberBounds)
-                    Width = mpdnBounds.Right + mpdnBounds.Width >= (screenBounds.Width / 2) ? screenBounds.Width - (mpdnBounds.Width + mpdnBounds.Left) : Width;
-                else
-                    Width = PlayerControl.Form.Right + PlayerControl.Form.Width >= (screenBounds.Width / 2) ? (screenBounds.Width / 2) - PlayerControl.Form.Width / 2 : Width;
-
-                if (LockWindowSize)
-                {
-                    Width = Width - borderWidth;
-                    Height = PlayerControl.Form.Height - (borderWidth * 2);
-                }
-                else
-                {
-                    Height = PlayerControl.Form.Height;
-                }
-
-                firstShow = false;
-            }
-
+            
             if (SnapWithPlayer) { playListUi.SnapPlayer(); }
         }
 
@@ -841,15 +855,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (mediaFiles.Count > 0)
                 {
-                    AddFiles(mediaFiles.Where(file => openFileDialog.Filter.Contains(Path.GetExtension(file.ToLower()))).OrderBy(f => f, new NaturalSortComparer()).Where(f => Path.GetExtension(f).Length > 0).ToArray());
+                    AddFiles(mediaFiles.NaturalSort().ToArray());
                 }
 
                 var actualFiles =
                       files.Where(file => !Directory.Exists(file))
                           .Where(f => Path.GetExtension(f).Length > 0)
                           .Where(file => openFileDialog.Filter.Contains(Path.GetExtension(file.ToLower())))
-                          .OrderBy(f => f, new NaturalSortComparer());
-                AddFiles(actualFiles.ToArray());
+                          .OrderBy(f => f, new NaturalSortComparer()).ToList();
+                AddFiles(actualFiles.NaturalSort().ToArray());
 
                 dgv_PlayList.CurrentCell = dgv_PlayList.Rows[dgv_PlayList.Rows.Count - 1].Cells[titleCellIndex];
                 SetPlayStyling();
@@ -1254,15 +1268,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (ascending)
             {
-                //doesn't seem to work
-                //Playlist = Playlist.OrderBy(f => Path.GetDirectoryName(f.FilePath).Substring(4, Path.GetDirectoryName(f.FilePath).IndexOf(Path.DirectorySeparatorChar)), new NaturalSortComparer()).ToList();
-                Playlist = Playlist.OrderBy(f => f.FilePath, new NaturalSortComparer()).ToList();
+                Playlist = Playlist.OrderBy(f => Path.GetDirectoryName(f.FilePath), new NaturalSortComparer())
+                            .ThenBy(f => Path.GetFileName(f.FilePath), new NaturalSortComparer()).ToList();
             }
             else
             {
-                //doesn't seem to work
-                //Playlist = Playlist.OrderByDescending(f => Path.GetDirectoryName(f.FilePath).Substring(4, Path.GetDirectoryName(f.FilePath).IndexOf(Path.DirectorySeparatorChar)), new NaturalSortComparer()).ToList();
-                Playlist = Playlist.OrderByDescending(f => f.FilePath, new NaturalSortComparer()).ToList();
+                Playlist = Playlist.OrderByDescending(f => Path.GetDirectoryName(f.FilePath), new NaturalSortComparer())
+                            .ThenBy(f => Path.GetFileName(f.FilePath), new NaturalSortComparer()).ToList();
             }
 
             PopulatePlaylist();
@@ -1354,6 +1366,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             var fileNames = openFileDialog.FileNames;
             AddFiles(fileNames);
+            SortPlayList();
         }
 
         private void AddFolderToPlaylist()
@@ -1723,17 +1736,28 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
     public class NaturalSortComparer : IComparer<string>
     {
-        private readonly int modifier = 1;
-
         public NaturalSortComparer() : this(false) { }
+
         public NaturalSortComparer(bool descending)
         {
-            if (descending) modifier = -1;
         }
 
         public int Compare(string a, string b)
         {
-            return SafeNativeMethods.StrCmpLogicalW(a ?? "", b ?? "") * modifier;
+            string[] arrayA = a.Split(Path.DirectorySeparatorChar);
+            string[] arrayB = b.Split(Path.DirectorySeparatorChar);
+
+            int length = Math.Max(arrayA.Length, arrayB.Length);
+
+            for (int i = 0; i < length; i++)
+            {
+                int result = SafeNativeMethods.StrCmpLogicalW(arrayA.Length > i ? arrayA[i].ToLower() : string.Empty, arrayB.Length > i ? arrayB[i].ToLower() : string.Empty);
+
+                if (result != 0)
+                    return result;
+            }
+
+            return 0;
         }
     }
 
@@ -1750,6 +1774,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
     public static class ListExtensions
     {
+        public static IList<string> NaturalSort(this IList<string> list)
+        {
+            return list.OrderBy(f => Path.GetDirectoryName(f), new NaturalSortComparer())
+                            .ThenBy(f => Path.GetFileName(f), new NaturalSortComparer()).ToList();
+        }
+
         public static void Shuffle<T>(this IList<T> list)
         {
             int n = list.Count;

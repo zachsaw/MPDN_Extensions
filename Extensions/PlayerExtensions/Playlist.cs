@@ -106,9 +106,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 SnapPlayer();
             }
 
-            if (Settings.KeepSnapped)
+            if (Settings.StaySnapped)
             {
-                form.KeepSnapped = Settings.KeepSnapped;
+                form.KeepSnapped = Settings.StaySnapped;
             }
 
             if (Settings.RememberColumns)
@@ -193,7 +193,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             form.RememberWindowPosition = Settings.RememberWindowPosition;
             form.RememberWindowSize = Settings.RememberWindowSize;
             form.SnapWithPlayer = Settings.SnapWithPlayer;
-            form.KeepSnapped = Settings.KeepSnapped;
+            form.KeepSnapped = Settings.StaySnapped;
             form.LockWindowSize = Settings.LockWindowSize;
             form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
             form.BeginPlaybackWhenPlaylistFileIsOpened = Settings.BeginPlaybackWhenPlaylistFileIsOpened;
@@ -305,6 +305,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         }
 
         private void OnMpdnFormClosed(object sender, EventArgs e)
+        {
+            RememberSettings();
+        }
+
+        private void RememberSettings()
         {
             Settings.WindowPosition = form.Location;
             Settings.WindowSize = form.Size;
@@ -606,7 +611,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ViewPlaylist()
         {
-            form.Show(PlayerControl.VideoPanel);
+            if (form.Visible)
+                form.Hide();
+            else
+                form.Show(PlayerControl.VideoPanel);
         }
 
         public string GetDirectoryName(string path)
@@ -622,11 +630,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public IEnumerable<string> GetMediaFiles(string mediaDir)
         {
             string[] filter = form.openFileDialog.Filter.Split('|');
-            string[] extensions = filter[1].Replace(";","").Replace(" ", "").Split('*');
+            string[] extensions = filter[1].Replace(";", "").Replace(" ", "").Split('*');
 
             var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.AllDirectories)
-                .OrderBy(f => Path.GetDirectoryName(f).Substring(4, Path.GetDirectoryName(f).IndexOf(Path.DirectorySeparatorChar)), new NaturalSortComparer())
-                .Where(file => Path.GetExtension(file).Length > 0).Where(file => extensions.Contains(Path.GetExtension(file.ToLower())));
+            .OrderBy(f => Path.GetDirectoryName(f), new NaturalSortComparer())
+            .ThenBy(f => Path.GetFileName(f), new NaturalSortComparer())
+            .Where(f => Path.HasExtension(f))
+            .Where(f => extensions.Contains(Path.GetExtension(f.ToLower())));
+
             return files;
         }
 
@@ -703,7 +714,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public bool RememberWindowPosition { get; set; }
         public bool SnapWithPlayer { get; set; }
         public bool ScaleWithPlayer { get; set; }
-        public bool KeepSnapped { get; set; }
+        public bool StaySnapped { get; set; }
         public bool RememberPlaylist { get; set; }
         public Point WindowPosition { get; set; }
         public Size WindowSize { get; set; }
@@ -721,7 +732,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             BeginPlaybackWhenPlaylistFileIsOpened = false;
             AddToPlaylistOnFileOpen = false;
             SnapWithPlayer = true;
-            KeepSnapped = false;
+            StaySnapped = false;
             RememberColumns = false;
             RememberWindowPosition = false;
             RememberWindowSize = false;
