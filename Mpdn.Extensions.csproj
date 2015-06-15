@@ -39,13 +39,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClearScript">
-      <HintPath>Extensions\RenderScripts\ClearScript.dll</HintPath>
+      <HintPath>Extensions\Libs\ClearScript.dll</HintPath>
     </Reference>
     <Reference Include="DirectShowLib-2005">
       <HintPath>MPDN\DirectShowLib-2005.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.AvalonEdit">
-      <HintPath>Extensions\RenderScripts\ICSharpCode.AvalonEdit.dll</HintPath>
+      <HintPath>Extensions\Libs\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
     <Reference Include="MediaInfoDotNet">
       <HintPath>MPDN\MediaInfoDotNet.dll</HintPath>
@@ -78,9 +78,7 @@
       <HintPath>MPDN\YAXLib.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Compile Include="Examples\RenderScripts\Example.Basic.cs" />
     <Compile Include="Examples\RenderScripts\Example.CustomTextures.cs" />
@@ -331,6 +329,7 @@
       <DependentUpon>Shiandow.SuperRes.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Examples\RenderScripts\Examples\BlueTintDirectCompute.hlsl" />
@@ -392,14 +391,21 @@
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Extensions\PlayerExtensions\OpenSubtitles.ConfigDialog.resx">
+      <DependentUpon>OpenSubtitles.ConfigDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.resx">
+      <DependentUpon>UpdateChecker.UpdateAvailable.Form.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>rmdir /s /q "$(ProjectDir)MPDN\Extensions"
 mkdir "$(ProjectDir)MPDN\Extensions\RenderScripts"
+xcopy /y /e "$(SolutionDir)Extensions\*.resx" "$(SolutionDir)Sources\"
 xcopy /y /e "$(SolutionDir)Sources\*.resx" "$(SolutionDir)Extensions\"
 </PreBuildEvent>
   </PropertyGroup>
@@ -409,7 +415,8 @@ copy /y "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)MPDN\Extensions"
 echo .cs\ &gt; excludedfiles.txt
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Extensions\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Examples\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
-del excludedfiles.txt</PostBuildEvent>
+del excludedfiles.txt
+xcopy /y /e "$(SolutionDir)Extensions\Libs\*.*" "$(ProjectDir)MPDN\Extensions\Libs\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
