@@ -391,8 +391,14 @@
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Extensions\PlayerExtensions\OpenSubtitles.ConfigDialog.resx">
+      <DependentUpon>OpenSubtitles.ConfigDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.resx">
+      <DependentUpon>UpdateChecker.UpdateAvailable.Form.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -409,7 +415,8 @@ copy /y "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)MPDN\Extensions"
 echo .cs\ &gt; excludedfiles.txt
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Extensions\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Examples\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
-del excludedfiles.txt</PostBuildEvent>
+del excludedfiles.txt
+xcopy /y /e "$(SolutionDir)Extensions\Libs\*.*" "$(ProjectDir)MPDN\Extensions\Libs\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
