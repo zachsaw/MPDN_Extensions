@@ -391,14 +391,8 @@
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Extensions\PlayerExtensions\OpenSubtitles.ConfigDialog.resx">
-      <DependentUpon>OpenSubtitles.ConfigDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.resx">
-      <DependentUpon>UpdateChecker.UpdateAvailable.Form.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
