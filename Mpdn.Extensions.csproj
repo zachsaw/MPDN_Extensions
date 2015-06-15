@@ -56,7 +56,7 @@
     <Reference Include="Mpdn.RenderScript">
       <HintPath>MPDN\Mpdn.RenderScript.dll</HintPath>
     </Reference>
-    <Reference Include="DirectShowLib-2005">
+    <Reference Include="Ooki.Dialogs">
       <HintPath>Extensions\Libs\Ookii.Dialogs.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
