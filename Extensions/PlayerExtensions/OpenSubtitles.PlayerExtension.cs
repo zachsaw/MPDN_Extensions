@@ -67,14 +67,11 @@ namespace Mpdn.Extensions.PlayerExtensions
                     subList = m_Downloader.GetSubtitles(e.Filename);
                 }
                 if (subList == null || subList.Count == 0)
-                {
-                    MessageBox.Show(PlayerControl.VideoPanel, "No Subtitles found.");
-                    return;
-                }
-                subList.Sort((a, b) => a.Lang.CompareTo(b.Lang));
+                    return; // Opensubtitles messagebox is annoying #44 https://github.com/zachsaw/MPDN_Extensions/issues/44
+                subList.Sort((a, b) => String.Compare(a.Lang, b.Lang, StringComparison.Ordinal));
                 if (Settings.PreferedLanguage != null)
                 {
-                    var filteredSubList = subList.FindAll((sub) => sub.Lang.Contains(Settings.PreferedLanguage));
+                    var filteredSubList = subList.FindAll(sub => sub.Lang.Contains(Settings.PreferedLanguage));
                     if (filteredSubList.Count > 0)
                     {
                         subList = filteredSubList;
@@ -105,14 +102,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         public OpenSubtitlesSettings()
         {
             EnableAutoDownloader = false;
-            if (CultureInfo.CurrentUICulture.Parent != null)
-            {
-                PreferedLanguage = CultureInfo.CurrentUICulture.Parent.EnglishName;
-            }
-            else
-            {
-                PreferedLanguage = null;
-            }
+            PreferedLanguage = CultureInfo.CurrentUICulture.Parent.EnglishName;
         }
 
         public bool EnableAutoDownloader { get; set; }

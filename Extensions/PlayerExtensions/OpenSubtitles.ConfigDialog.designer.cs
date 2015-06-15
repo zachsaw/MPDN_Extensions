@@ -51,7 +51,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.comboBoxPrefLanguage = new System.Windows.Forms.ComboBox();
             this.cultureBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.labelPrefLang = new System.Windows.Forms.Label();
-            this.toolTipComboBox = new System.Windows.Forms.ToolTip(this.components);
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.cultureBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
@@ -89,19 +89,19 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             // comboBoxPrefLanguage
             // 
-            this.comboBoxPrefLanguage.DataSource = this.cultureBindingSource;
+            this.comboBoxPrefLanguage.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxPrefLanguage.DisplayMember = "EnglishName";
-            this.comboBoxPrefLanguage.FormattingEnabled = true;
+            this.comboBoxPrefLanguage.IntegralHeight = false;
             this.comboBoxPrefLanguage.Location = new System.Drawing.Point(151, 51);
             this.comboBoxPrefLanguage.Name = "comboBoxPrefLanguage";
             this.comboBoxPrefLanguage.Size = new System.Drawing.Size(121, 21);
             this.comboBoxPrefLanguage.TabIndex = 1007;
+            this.toolTip.SetToolTip(this.comboBoxPrefLanguage, "Used to filter the subtitles. If your language is unavailable it will show all th" +
+        "e subtitles.");
             this.comboBoxPrefLanguage.ValueMember = "EnglishName";
-            this.comboBoxPrefLanguage.MouseEnter += new System.EventHandler(this.comboBoxPrefLanguage_MouseEnter);
-            // 
-            // cultureBindingSource
-            // 
-            this.cultureBindingSource.DataSource = typeof(System.Globalization.CultureInfo);
+            this.comboBoxPrefLanguage.DropDownClosed += new System.EventHandler(this.ComboBoxPrefLanguageDropDownClosed);
+            this.comboBoxPrefLanguage.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ComboBoxPrefLanguageKeyDown);
+            this.comboBoxPrefLanguage.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ComboBoxPrefLanguageKeyPress);
             // 
             // labelPrefLang
             // 
@@ -148,7 +148,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private System.Windows.Forms.ComboBox comboBoxPrefLanguage;
         private System.Windows.Forms.BindingSource cultureBindingSource;
         private System.Windows.Forms.Label labelPrefLang;
-        private System.Windows.Forms.ToolTip toolTipComboBox;
+        private System.Windows.Forms.ToolTip toolTip;
 
     }
 }
