@@ -50,6 +50,12 @@ del excludedfiles.txt
 
 xcopy /y /e "Extensions\Libs\*.*" "Release\Extensions\Libs\" 1>nul 2>nul
 
+if exist Sign.bat (
+    echo Signing release...
+    Echo.
+    call Sign.bat Release\Extensions\Mpdn.Extensions.dll
+)
+
 echo Zipping release...
 Echo.
 cd "Release"
