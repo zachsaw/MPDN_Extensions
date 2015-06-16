@@ -102,6 +102,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             m_settings = settings;
             m_WebClient.DownloadStringCompleted += DownloadStringCompleted;
+            m_WebClient.Headers.Add("user-agent", string.Format("MPDN/{0} (+http://mpdn.zachsaw.com/)", Application.ProductVersion));
         }
 
         private void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
