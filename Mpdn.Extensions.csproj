@@ -391,22 +391,15 @@
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Extensions\PlayerExtensions\OpenSubtitles.ConfigDialog.resx">
-      <DependentUpon>OpenSubtitles.ConfigDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.resx">
-      <DependentUpon>UpdateChecker.UpdateAvailable.Form.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>rmdir /s /q "$(ProjectDir)MPDN\Extensions"
 mkdir "$(ProjectDir)MPDN\Extensions\RenderScripts"
-xcopy /y /e "$(SolutionDir)Extensions\*.resx" "$(SolutionDir)Sources\"
-xcopy /y /e "$(SolutionDir)Sources\*.resx" "$(SolutionDir)Extensions\"
+xcopy /d /y /s "$(SolutionDir)Sources\*.resx" "$(SolutionDir)Extensions\"
 </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
