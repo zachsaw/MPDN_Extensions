@@ -45,7 +45,27 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public override IList<Verb> Verbs
         {
-            get { return new Verb[0]; }
+            //get { return new Verb[0]; }
+              get
+            {
+                return new[]
+                {
+                    new Verb(Category.Help, String.Empty, "Check for Update", ManualUpdateCheck)
+                };
+            }
+        }
+
+        private void ManualUpdateCheck()
+        {
+            m_checker.CheckVersion();
+            if (Settings.VersionOnServer > m_currentVersion)
+            {
+                new UpdateCheckerNewVersionForm(Settings.VersionOnServer, Settings).ShowDialog(PlayerControl.VideoPanel);
+            }
+            else
+            {
+                MessageBox.Show(PlayerControl.VideoPanel, "You have the latest release.");
+            }
         }
 
         public override void Initialize()
@@ -65,7 +85,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 new UpdateCheckerNewVersionForm(Settings.VersionOnServer, Settings).ShowDialog(PlayerControl.VideoPanel);
             }
-            m_checker.CheckVersion();
+            m_checker.CheckVersionAsync();
 
         }
 
@@ -102,7 +122,11 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             m_settings = settings;
             m_WebClient.DownloadStringCompleted += DownloadStringCompleted;
-            m_WebClient.Headers.Add("user-agent", string.Format("MPDN/{0} (+http://mpdn.zachsaw.com/)", Application.ProductVersion));
+        }
+
+        private void SetHeaders()
+        {
+            m_WebClient.Headers.Add("User-Agent", string.Format("MPDN/{0} (+http://mpdn.zachsaw.com/)", Application.ProductVersion));
         }
 
         private void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
@@ -117,6 +141,11 @@ namespace Mpdn.Extensions.PlayerExtensions
                 return;
             }
           
+            ParseChangelog(changelog);
+        }
+
+        private void ParseChangelog(string changelog)
+        {
             Version serverVersion = null;
             foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
             {
@@ -139,7 +168,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() =>
             {
-                if (m_settings.VersionOnServer == serverVersion) 
+                if (m_settings.VersionOnServer == serverVersion)
                     return;
 
                 m_settings.VersionOnServer = serverVersion;
@@ -149,6 +178,14 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public void CheckVersion()
         {
+            SetHeaders();
+            var changelog = m_WebClient.DownloadString(ChangelogUrl);
+            ParseChangelog(changelog);
+
+        }
+        public void CheckVersionAsync()
+        {
+            SetHeaders();
             // DownloadStringAsync isn't fully async!
             // It blocks when it is detecting proxy settings and especially noticeable if user is behind a proxy server
             Task.Factory.StartNew(() => m_WebClient.DownloadStringAsync(ChangelogUrl));
