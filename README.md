@@ -47,6 +47,8 @@ You can set breakpoints and step through your code just as you normally would. I
 ####Quick Note about .resx Files
 Avoid deploying managed resource files (.resx) when possible. If you must deploy them, make sure they go into the `Resources` folder and their filenames match the controls that reference them. For example, `PlaylistForm.resx` is renamed to `Resources\Mpdn.Extensions.PlayerExtensions.Playlist.PlaylistForm.resx` for deployment. The original .resx file must then also be copied into the Source folder and checked in.
 
+Make sure you copy your .resx files into the `Source` folder before running Make.bat (it erases all .resx files in the `Extensions\PlayerExtensions` and `Extensions\RenderScripts` folders).
+
 
 Releasing Extensions
 --------------------
