@@ -402,8 +402,7 @@
   <PropertyGroup>
     <PreBuildEvent>rmdir /s /q "$(ProjectDir)MPDN\Extensions"
 mkdir "$(ProjectDir)MPDN\Extensions\RenderScripts"
-xcopy /y /e "$(SolutionDir)Extensions\*.resx" "$(SolutionDir)Sources\"
-xcopy /y /e "$(SolutionDir)Sources\*.resx" "$(SolutionDir)Extensions\"
+xcopy /d /y /s "$(SolutionDir)Sources\*.resx" "$(SolutionDir)Extensions\"
 </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>

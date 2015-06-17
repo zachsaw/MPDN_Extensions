@@ -31,13 +31,16 @@ if not exist "%msbuildexe%" echo error: %msbuildexe%: not found & goto Quit
 Echo Making MPDN Extensions...
 Echo.
 del Properties\AssemblyInfo.cs 1>nul 2>nul
+del Extensions\PlayerExtensions\*.resx 1>nul 2>nul
+del Extensions\RenderScripts\*.resx 1>nul 2>nul
 call GenerateAssemblyInfo.bat %releaseVersion% > Properties\AssemblyInfo.cs
-%msbuildexe% Mpdn.Extensions.sln /m /p:Configuration=%buildPlatform% /v:q /t:rebuild
+%msbuildexe% Mpdn.Extensions.sln /m /p:Configuration=%buildPlatform% /p:Platform="Any CPU" /v:q /t:rebuild
+if not "%ERRORLEVEL%"=="0" (set builderror=1)
 del Properties\AssemblyInfo.cs 1>nul 2>nul
 call GenerateAssemblyInfo.bat 0.0.0.0 > Properties\AssemblyInfo.cs
 Echo.
 
-if not "%ERRORLEVEL%"=="0" echo error: build failed & goto Quit
+if "%builderror%"=="1" echo error: build failed & goto Quit
 
 xcopy /y bin\Release\Mpdn.Extensions.dll Release\Extensions\  1>nul 2>nul
 
@@ -46,6 +49,12 @@ xcopy /y /e /exclude:excludedfiles.txt "Extensions\RenderScripts\*.*" "Release\E
 del excludedfiles.txt
 
 xcopy /y /e "Extensions\Libs\*.*" "Release\Extensions\Libs\" 1>nul 2>nul
+
+if exist Sign.bat (
+    echo Signing release...
+    Echo.
+    call Sign.bat Release\Extensions\Mpdn.Extensions.dll
+)
 
 echo Zipping release...
 Echo.

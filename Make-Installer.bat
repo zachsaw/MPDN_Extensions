@@ -30,6 +30,14 @@ rmdir /s /q Temp 1>nul 2>nul
 
 move MPDN-Extensions_v*_Installer.exe Release\ 1>nul 2>nul
 
+if exist Sign.bat (
+    echo Signing installer...
+    Echo.
+    for %%D in (Release\MPDN-Extensions_v*_Installer.exe) do (
+        call Sign.bat %%D
+    )
+)
+
 goto Done
 
 :Quit
