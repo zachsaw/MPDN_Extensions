@@ -507,7 +507,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (!BeginPlaybackWhenFileIsAdded) return;
 
-            currentPlayIndex = 0;
+            currentPlayIndex = fileNames.Count() > 1 ? 0 : Playlist.Count - 1;
+
             OpenMedia();
         }
         
@@ -1238,6 +1239,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
                 else
                 {
+                    if (currentPlayIndex != Playlist.Count - 1) PlayNext();
+                    else CloseMedia();
+
+                    SetPlayStyling();
                     return;
                 }
 
@@ -1295,6 +1300,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     r.DefaultCellStyle.ForeColor = Color.Black;
                     r.Selected = false;
+                }
+                else
+                {
+                    var f = new Font(dgv_PlayList.DefaultCellStyle.Font, FontStyle.Strikeout);
+                    r.DefaultCellStyle.Font = f;
+                    r.DefaultCellStyle.ForeColor = Color.LightGray;
                 }
             }
 
@@ -1366,7 +1377,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             var fileNames = openFileDialog.FileNames;
             AddFiles(fileNames);
-            SortPlayList();
         }
 
         private void AddFolderToPlaylist()
