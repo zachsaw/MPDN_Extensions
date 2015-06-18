@@ -507,8 +507,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (!BeginPlaybackWhenFileIsAdded) return;
 
-            currentPlayIndex = fileNames.Count() > 1 ? 0 : Playlist.Count - 1;
-
+            currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : currentPlayIndex = Playlist.Count - 1;
             OpenMedia();
         }
         
@@ -1298,6 +1297,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 if (File.Exists(Playlist[r.Index].FilePath))
                 {
+                    var f = new Font(dgv_PlayList.DefaultCellStyle.Font, FontStyle.Regular);
+                    r.DefaultCellStyle.Font = f;
                     r.DefaultCellStyle.ForeColor = Color.Black;
                     r.Selected = false;
                 }
