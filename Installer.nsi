@@ -41,9 +41,8 @@ SetCompressor lzma
 
 Var /GLOBAL mpdn32_root
 Var /GLOBAL mpdn64_root
+Var /Global doCleanInstall
 
-Var /GLOBAL backupFolder32
-Var /GLOBAL backupFolder64
 
 ;--------------------------------
 ;Configuration
@@ -65,24 +64,19 @@ ShowUninstDetails show
 ; Compile-time constants which we'll need during install
 !define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of ${PROJECT_NAME} v${VERSION_1}.${VERSION_2}.${VERSION_3}."
 
-!define MUI_COMPONENTSPAGE_TEXT_TOP "Select the components to install/upgrade.  Stop any MPDN processes.$\r$\nNote:  Existing extensions (if any) will be backed up."
+!define MUI_COMPONENTSPAGE_TEXT_TOP "Select the components to install/upgrade.  Stop any MPDN processes.$\r$\n*** WARNING ***  Existing extensions (if any) will be removed and replaced."
 
 !define MUI_COMPONENTSPAGE_SMALLDESC
-!define MUI_FINISHPAGE_SHOWREADME "$backupFolder32"
-!define MUI_FINISHPAGE_SHOWREADME_TEXT "Open folder of the backed up MPDN x86 Extensions"
-!define MUI_FINISHPAGE_SHOWREADME_FUNCTION "OpenBackup32"
-!define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_TEXT "Open folder of the backed up MPDN x64 Extensions"
-!define MUI_FINISHPAGE_RUN_FUNCTION "OpenBackup64"
 
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_ABORTWARNING
 !define MUI_HEADERIMAGE
 
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW Welcome.show
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE Welcome.leave
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES
-!define MUI_PAGE_CUSTOMFUNCTION_SHOW Finish.Show
 !insertmacro MUI_PAGE_FINISH
 
 ;--------------------------------
@@ -99,27 +93,23 @@ LangString DESC_SecMPDNExtensions64 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for
 ;--------------------------------
 ;Macros
 
-!macro BackupExtensions return_var path
-    StrCpy $R0 1
-Loop:
-    IfFileExists "${path}\Extensions.Backups\$R0\*.*" 0 DoBackup
-    IntOp $R0 $R0 + 1
-    Goto Loop
-DoBackup:
-    StrCpy $R1 "${path}\Extensions.Backups\"
-    CreateDirectory $R1
-    StrCpy ${return_var} "$R1$R0"
-    Rename "${path}\Extensions" "${return_var}"
-!macroend
-
-!macro InstallExtensions return_var path
-    StrCpy ${return_var} ""
-    IfFileExists "${path}\Extensions\*.*" 0 NoExt
-        !insertmacro BackupExtensions ${return_var} "${path}"
-NoExt:
+!macro InstallExtensions path
+    ${If} $doCleanInstall == "1"
+        RMDir /r "${path}\Extensions"
+    ${Else}
+        RMDir /r "${path}\InstTemp"
+        Rename "${path}\Extensions\RenderScripts\ImageProcessingShaders" "${path}\InstTemp"
+    ${EndIf}
     SetOverwrite on
     SetOutPath "${path}"
     File /r "TEMP\*.*"
+    ${IfNot} $doCleanInstall == "1"
+        IfFileExists "${path}\InstTemp\*.*" 0 skipRestore
+        RMDir /r "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+        Rename "${path}\InstTemp" "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+        CreateDirectory "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+    skipRestore:
+    ${EndIf}
 !macroend
 
 ;--------------------
@@ -157,13 +147,13 @@ SectionEnd
 
 Section /o "Extensions for MPDN x86" SecMPDNExtensions32
 
-    !insertmacro InstallExtensions $backupFolder32 "$mpdn32_root"
+    !insertmacro InstallExtensions "$mpdn32_root"
 
 SectionEnd
 
 Section /o "Extensions for MPDN x64" SecMPDNExtensions64
 
-    !insertmacro InstallExtensions $backupFolder64 "$mpdn64_root"
+    !insertmacro InstallExtensions "$mpdn64_root"
 
 SectionEnd
 
@@ -228,26 +218,18 @@ done:
 
 FunctionEnd
 
-Function Finish.Show
-    ${If} $backupFolder32 == ""
-        SendMessage $mui.FinishPage.Run ${BM_SETCHECK} ${BST_UNCHECKED} 0
-        ShowWindow $mui.FinishPage.Run 0
-    ${EndIf}
-    ${If} $backupFolder64 == ""
-        SendMessage $mui.FinishPage.ShowReadme ${BM_SETCHECK} ${BST_UNCHECKED} 0
-        ShowWindow $mui.FinishPage.ShowReadme 0
-    ${EndIf}
+Function Welcome.show
+    ${NSD_CreateCheckbox} 120u -18u 50% 12u "Perform a clean install (use with care)"
+    Pop $doCleanInstall
+    SetCtlColors $doCleanInstall "" ${MUI_BGCOLOR}
 FunctionEnd
 
-Function OpenBackup32
-    ${IfNot} $backupFolder32 == ""
-    ExecShell "" "$backupFolder32"
-    ${EndIf}
-FunctionEnd
-
-Function OpenBackup64
-    ${IfNot} $backupFolder64 == ""
-    ExecShell "" "$backupFolder64"
+Function Welcome.leave
+    ${NSD_GetState} $doCleanInstall $0
+    ${If} $0 <> 0
+        StrCpy $doCleanInstall "1"
+    ${Else}
+        StrCpy $doCleanInstall "0"
     ${EndIf}
 FunctionEnd
 
