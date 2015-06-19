@@ -507,8 +507,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (!BeginPlaybackWhenFileIsAdded) return;
 
-            currentPlayIndex = fileNames.Count() > 1 ? 0 : Playlist.Count - 1;
-
+            currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : currentPlayIndex = Playlist.Count - 1;
             OpenMedia();
         }
         
@@ -827,7 +826,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                     if (Directory.Exists(filename))
                     {
-                        var media = playListUi.GetMediaFiles(filename);
+                        var media = playListUi.GetAllMediaFiles(filename);
                         AddFiles(media.ToArray());
                         return;
                     }
@@ -849,7 +848,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     {
                         if (Directory.Exists(p))
                         {
-                            mediaFiles.AddRange(playListUi.GetMediaFiles(p));
+                            mediaFiles.AddRange(playListUi.GetAllMediaFiles(p));
                         }
                     }
                 }
@@ -1298,6 +1297,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 if (File.Exists(Playlist[r.Index].FilePath))
                 {
+                    var f = new Font(dgv_PlayList.DefaultCellStyle.Font, FontStyle.Regular);
+                    r.DefaultCellStyle.Font = f;
                     r.DefaultCellStyle.ForeColor = Color.Black;
                     r.Selected = false;
                 }
@@ -1390,7 +1391,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (fd.ShowDialog(this) != DialogResult.OK)
                     return;
 
-                var media = playListUi.GetMediaFiles(fd.SelectedPath);
+                var media = playListUi.GetAllMediaFiles(fd.SelectedPath);
                 if (media.ToArray().Length == 0)
                 {
                     MessageBox.Show("There are no files in the selected directory.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -1590,7 +1591,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 Hide();
             }
 
-            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Tab)
+            if (e.KeyCode == Keys.P && e.Modifiers == (Keys.Control | Keys.Alt))
+            {
+                playListUi.ViewPlaylist();
+                e.SuppressKeyPress = true;
+                e.Handled = true;
+            }
+
+            if (e.KeyCode == Keys.Tab && e.Modifiers == Keys.Control)
             {
                 if (!PlayerControl.InFullScreenMode && !PlayerControl.Form.ContainsFocus)
                 {
