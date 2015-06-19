@@ -64,6 +64,9 @@
     <Reference Include="SharpDX.Direct3D9">
       <HintPath>MPDN\SharpDX.Direct3D9.dll</HintPath>
     </Reference>
+    <Reference Include="ShellBasics">
+      <HintPath>Extensions\Libs\ShellBasics.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -188,11 +191,15 @@
     <Compile Include="Extensions\PlayerExtensions\PlaylistForm.Designer.cs">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.CalculatorDialog.cs" />
+    <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.CalculatorDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.CalculatorDialog.Designer.cs">
       <DependentUpon>PlayRateTuner.CalculatorDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.ConfigDialog.cs" />
+    <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.ConfigDialog.Designer.cs">
       <DependentUpon>PlayRateTuner.ConfigDialog.cs</DependentUpon>
     </Compile>

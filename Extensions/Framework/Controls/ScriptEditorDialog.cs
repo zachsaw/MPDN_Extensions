@@ -15,89 +15,132 @@
 // License along with this library.
 // 
 
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using ShellLib;
 
 namespace Mpdn.Extensions.Framework.Controls
 {
-        public partial class ScriptedRenderChainScriptEditorDialog : Form
+    public partial class ScriptedRenderChainScriptEditorDialog : Form
+    {
+        private bool m_Changed;
+        private string m_File;
+
+        public ScriptedRenderChainScriptEditorDialog()
         {
-            private bool m_Changed;
-            private string m_File;
+            InitializeComponent();
 
-            public ScriptedRenderChainScriptEditorDialog()
+            Icon = PlayerControl.ApplicationIcon;
+            textBoxScript.Editor.TextChanged += (s, e) =>
             {
-                InitializeComponent();
+                m_Changed = true;
+                Text = Path.GetFileName(m_File) + "*";
+            };
+        }
 
-                Icon = PlayerControl.ApplicationIcon;
-                textBoxScript.Editor.TextChanged += (s, e) =>
-                {
-                    m_Changed = true;
-                    Text = Path.GetFileName(m_File) + "*";
-                };
-            }
+        public void LoadFile(string file)
+        {
+            m_File = file;
+            textBoxScript.Editor.Text = File.ReadAllText(file);
+            Text = Path.GetFileName(m_File);
+            m_Changed = false;
+        }
 
-            public void LoadFile(string file)
-            {
-                m_File = file;
-                textBoxScript.Editor.Text = File.ReadAllText(file);
-                Text = Path.GetFileName(m_File);
-                m_Changed = false;
-            }
-
-            public void SaveFile()
+        public void SaveFile()
+        {
+            try
             {
                 File.WriteAllText(m_File, textBoxScript.Editor.Text);
-                m_Changed = false;
-                Text = Path.GetFileName(m_File);
             }
-
-            private void CloseClick(object sender, System.EventArgs e)
+            catch (UnauthorizedAccessException)
             {
-                if (m_Changed && !PromptSave()) 
-                    return;
-
-                Close();
+                if (!SaveFileElevatedRights())
+                    throw;
             }
+            m_Changed = false;
+            Text = Path.GetFileName(m_File);
+        }
 
-            private bool PromptSave()
+        private bool SaveFileElevatedRights()
+        {
+            var tempFileName = Path.GetTempFileName();
+            File.WriteAllText(tempFileName, textBoxScript.Editor.Text);
+
+            var fo = new ShellFileOperation
             {
-                var result = MessageBox.Show(this, "Do you want to save the changes?", "Save changes",
-                    MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-                if (result == DialogResult.Cancel)
-                    return false;
+                OperationFlags = ShellFileOperation.ShellFileOperationFlags.FOF_SILENT |
+                                 ShellFileOperation.ShellFileOperationFlags.FOF_NOCONFIRMATION |
+                                 ShellFileOperation.ShellFileOperationFlags.FOFX_SHOWELEVATIONPROMPT |
+                                 ShellFileOperation.ShellFileOperationFlags.FOFX_NOCOPYHOOKS |
+                                 ShellFileOperation.ShellFileOperationFlags.FOFX_REQUIREELEVATION
+            };
 
-                if (result == DialogResult.Yes)
-                {
-                    SaveFile();
-                }
-                return true;
-            }
+            var source = new String[1];
+            var dest = new String[1];
 
-            private void SaveClick(object sender, System.EventArgs e)
+            source[0] = tempFileName;
+            dest[0] = m_File;
+
+            fo.Operation = ShellFileOperation.FileOperations.FO_MOVE;
+            fo.OwnerWindow = Handle;
+            fo.SourceFiles = source;
+            fo.DestFiles = dest;
+
+            return fo.DoOperation();
+        }
+
+        private void CloseClick(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private bool PromptSave()
+        {
+            var result = MessageBox.Show(this, "Do you want to save the changes?", "Save changes",
+                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (result == DialogResult.Cancel)
+                return false;
+
+            if (result == DialogResult.Yes)
             {
-                if (!m_Changed)
-                    return;
-
                 SaveFile();
             }
+            return true;
+        }
 
-            private void AboutClick(object sender, System.EventArgs e)
-            {
-                MessageBox.Show(this,
-                    "This script editor uses AvalonEdit (MIT License).\r\nCopyright (c) 2014 AlphaSierraPapa for the SharpDevelopTeam.",
-                    "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+        private void SaveClick(object sender, EventArgs e)
+        {
+            if (!m_Changed)
+                return;
 
-            private void FormShown(object sender, System.EventArgs e)
-            {
-                HourGlass.Enabled = false;
-            }
+            SaveFile();
+        }
 
-            private void MenuShowFolderClick(object sender, System.EventArgs e)
+        private void AboutClick(object sender, EventArgs e)
+        {
+            MessageBox.Show(this,
+                "This script editor uses AvalonEdit (MIT License).\r\nCopyright (c) 2014 AlphaSierraPapa for the SharpDevelopTeam.",
+                "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void FormShown(object sender, EventArgs e)
+        {
+            HourGlass.Enabled = false;
+        }
+
+        private void MenuShowFolderClick(object sender, EventArgs e)
+        {
+            Process.Start("explorer.exe", string.Format("/select,\"{0}\"", m_File));
+        }
+
+        private void EditorFormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (m_Changed && !PromptSave())
             {
-                Process.Start("explorer.exe", string.Format("/select,\"{0}\"", m_File));
+                e.Cancel = true;
             }
         }
+    }
 }

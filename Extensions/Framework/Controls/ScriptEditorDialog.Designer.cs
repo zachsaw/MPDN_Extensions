@@ -50,11 +50,11 @@ namespace Mpdn.Extensions.Framework.Controls
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuShowFolder = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.textBoxScript = new Mpdn.Extensions.Framework.Controls.AvalonEditHost();
-            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuShowFolder = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -84,21 +84,36 @@ namespace Mpdn.Extensions.Framework.Controls
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             this.saveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.saveToolStripMenuItem.Text = "&Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.SaveClick);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(135, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.exitToolStripMenuItem.Text = "&Close";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.CloseClick);
+            // 
+            // viewToolStripMenuItem
+            // 
+            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuShowFolder});
+            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.viewToolStripMenuItem.Text = "&View";
+            // 
+            // menuShowFolder
+            // 
+            this.menuShowFolder.Name = "menuShowFolder";
+            this.menuShowFolder.Size = new System.Drawing.Size(161, 22);
+            this.menuShowFolder.Text = "&Show in Folder...";
+            this.menuShowFolder.Click += new System.EventHandler(this.MenuShowFolderClick);
             // 
             // helpToolStripMenuItem
             // 
@@ -123,21 +138,6 @@ namespace Mpdn.Extensions.Framework.Controls
             this.textBoxScript.Size = new System.Drawing.Size(791, 487);
             this.textBoxScript.TabIndex = 0;
             // 
-            // viewToolStripMenuItem
-            // 
-            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuShowFolder});
-            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            this.viewToolStripMenuItem.Text = "&View";
-            // 
-            // menuShowFolder
-            // 
-            this.menuShowFolder.Name = "menuShowFolder";
-            this.menuShowFolder.Size = new System.Drawing.Size(161, 22);
-            this.menuShowFolder.Text = "&Show in Folder...";
-            this.menuShowFolder.Click += new System.EventHandler(this.MenuShowFolderClick);
-            // 
             // ScriptedRenderChainScriptEditorDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -151,6 +151,7 @@ namespace Mpdn.Extensions.Framework.Controls
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Script Editor";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.EditorFormClosing);
             this.Shown += new System.EventHandler(this.FormShown);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
