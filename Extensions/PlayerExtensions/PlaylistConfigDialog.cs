@@ -24,24 +24,54 @@ namespace Mpdn.Extensions.PlayerExtensions
         public PlaylistConfigDialog()
         {
             InitializeComponent();
+            updateControls();
         }
 
         protected override void LoadSettings()
         {
             cb_showPlaylistOnStartup.Checked = Settings.ShowPlaylistOnStartup;
-            cb_autoplay.Checked = Settings.Autoplay;
-            cb_rememberWindowBounds.Checked = Settings.RememberWindowBounds;
-            cb_rememberLastPlayedFile.Checked = Settings.RememberLastPlayedFile;
-            cb_addFileToPlaylistOnOpen.Checked = Settings.AddFileToPlaylistOnOpen;
+            cb_afterPlaybackOpt.SelectedIndex = (int)Settings.AfterPlaybackOpt;
+            cb_onStartup.Checked = Settings.BeginPlaybackOnStartup;
+            cb_whenFileIsAdded.Checked = Settings.BeginPlaybackWhenFileIsAdded;
+            cb_whenPlaylistFileIsOpened.Checked = Settings.BeginPlaybackWhenPlaylistFileIsOpened;
+            cb_scaleWithPlayer.Checked = Settings.ScaleWithPlayer;
+            cb_snapWithPlayer.Checked = Settings.SnapWithPlayer;
+            cb_staySnapped.Checked = Settings.StaySnapped;
+            cb_rememberColumns.Checked = Settings.RememberColumns;
+            cb_rememberWindowPosition.Checked = Settings.RememberWindowPosition;
+            cb_rememberWindowSize.Checked = Settings.RememberWindowSize;
+            cb_lockWindowSize.Checked = Settings.LockWindowSize;
+            cb_rememberPlaylist.Checked = Settings.RememberPlaylist;
+            cb_addToPlaylistOnFileOpen.Checked = Settings.AddToPlaylistOnFileOpen;
         }
 
         protected override void SaveSettings()
         {
             Settings.ShowPlaylistOnStartup = cb_showPlaylistOnStartup.Checked;
-            Settings.Autoplay = cb_autoplay.Checked;
-            Settings.RememberWindowBounds = cb_rememberWindowBounds.Checked;
-            Settings.RememberLastPlayedFile = cb_rememberLastPlayedFile.Checked;
-            Settings.AddFileToPlaylistOnOpen = cb_addFileToPlaylistOnOpen.Checked;
+            Settings.AfterPlaybackOpt = (AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex;
+            Settings.BeginPlaybackOnStartup = cb_onStartup.Checked;
+            Settings.BeginPlaybackWhenFileIsAdded = cb_whenFileIsAdded.Checked;
+            Settings.BeginPlaybackWhenPlaylistFileIsOpened = cb_whenPlaylistFileIsOpened.Checked;
+            Settings.ScaleWithPlayer = cb_scaleWithPlayer.Checked;
+            Settings.SnapWithPlayer = cb_snapWithPlayer.Checked;
+            Settings.StaySnapped = cb_staySnapped.Checked;
+            Settings.RememberColumns = cb_rememberColumns.Checked;
+            Settings.RememberWindowPosition = cb_rememberWindowPosition.Checked;
+            Settings.RememberWindowSize = cb_rememberWindowSize.Checked;
+            Settings.LockWindowSize = cb_lockWindowSize.Checked;
+            Settings.RememberPlaylist = cb_rememberPlaylist.Checked;
+            Settings.AddToPlaylistOnFileOpen = cb_addToPlaylistOnFileOpen.Checked;
+        }
+
+        private void updateControls()
+        {
+            if (cb_snapWithPlayer.Checked) cb_staySnapped.Enabled = true;
+            else { cb_staySnapped.Checked = false; cb_staySnapped.Enabled = false; }
+        }
+
+        private void cb_snapWithPlayer_CheckedChanged(object sender, System.EventArgs e)
+        {
+            updateControls();
         }
     }
 
