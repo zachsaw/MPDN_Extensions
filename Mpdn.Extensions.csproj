@@ -188,6 +188,15 @@
     <Compile Include="Extensions\PlayerExtensions\PlaylistForm.Designer.cs">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.CalculatorDialog.cs" />
+    <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.CalculatorDialog.Designer.cs">
+      <DependentUpon>PlayRateTuner.CalculatorDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.ConfigDialog.cs" />
+    <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.ConfigDialog.Designer.cs">
+      <DependentUpon>PlayRateTuner.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\PlayRateTuner.cs" />
     <Compile Include="Extensions\PlayerExtensions\RemoteClients.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -216,6 +225,7 @@
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.Designer.cs">
       <DependentUpon>UpdateChecker.UpdateAvailable.Form.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\VideoSpecifier.cs" />
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfo.cs" />
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfoForm.cs">
       <SubType>Form</SubType>
