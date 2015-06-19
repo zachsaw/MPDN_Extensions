@@ -18,9 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using DirectShowLib;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.PlayerExtensions.DisplayChangerNativeMethods;
 
@@ -167,40 +165,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             // Parse video types
             var videoTypes = Settings.VideoTypes.ToLowerInvariant().Split(' ');
-            return videoTypes.Any(VideoTypeMatches);
-        }
-
-        private bool VideoTypeMatches(string vt)
-        {
-            var regexValidate = new Regex(@"^(w{1}\d+)?(h{1}\d+)?((i|p){1}\d+)?$");
-            if (regexValidate.Matches(vt).Count == 0)
-                return false;
-
-            var vid = PlayerControl.VideoInfo.BmiHeader;
-
-            var regexWidth = new Regex(@"w(\d+)");
-            var widthMatch = regexWidth.Match(vt).Groups[1];
-            var width = widthMatch.Success ? int.Parse(widthMatch.Value) : vid.Width;
-
-            var regexHeight = new Regex(@"h(\d+)");
-            var heightMatch = regexHeight.Match(vt).Groups[1];
-            var height = heightMatch.Success ? int.Parse(heightMatch.Value) : vid.Height;
-
-            var vidIsInterlaced = PlayerControl.VideoInfo.InterlaceFlags.HasFlag(AMInterlace.IsInterlaced);
-            var vidFps = 1000000/(int) PlayerControl.VideoInfo.AvgTimePerFrame;
-
-            bool interlaced = vidIsInterlaced;
-            int frameRate = vidFps;
-
-            var regexFrameRate = new Regex(@"(i|p)(\d+)");
-            var frameRateMatch = regexFrameRate.Match(vt);
-            if (frameRateMatch.Success)
-            {
-                interlaced = frameRateMatch.Groups[1].Value == "i";
-                frameRate = int.Parse(frameRateMatch.Groups[2].Value);
-            }
-
-            return width == vid.Width && height == vid.Height && interlaced == vidIsInterlaced && frameRate == vidFps;
+            return videoTypes.Any(VideoSpecifier.Match);
         }
 
         private void RestoreSettings()

@@ -31,10 +31,18 @@ SetCompressor lzma
 ; x64.nsh for architecture detection
 !include "x64.nsh"
 
+; File Associations
+!include "FileAssociation.nsh"
+
 ; Read the command-line parameters
 !insertmacro GetParameters
 
 !getdllversion "TEMP\Extensions\Mpdn.Extensions.dll" VERSION_
+
+Var /GLOBAL mpdn32_root
+Var /GLOBAL mpdn64_root
+Var /Global doCleanInstall
+
 
 ;--------------------------------
 ;Configuration
@@ -56,7 +64,7 @@ ShowUninstDetails show
 ; Compile-time constants which we'll need during install
 !define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of ${PROJECT_NAME} v${VERSION_1}.${VERSION_2}.${VERSION_3}."
 
-!define MUI_COMPONENTSPAGE_TEXT_TOP "Select the components to install/upgrade.  Stop any MPDN processes.$\r$\n*** WARNING ***  Existing extensions will be removed and replaced!"
+!define MUI_COMPONENTSPAGE_TEXT_TOP "Select the components to install/upgrade.  Stop any MPDN processes.$\r$\n*** WARNING ***  Existing extensions (if any) will be removed and replaced."
 
 !define MUI_COMPONENTSPAGE_SMALLDESC
 
@@ -64,13 +72,12 @@ ShowUninstDetails show
 !define MUI_ABORTWARNING
 !define MUI_HEADERIMAGE
 
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW Welcome.show
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE Welcome.leave
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
-
-Var /GLOBAL mpdn32_root
-Var /GLOBAL mpdn64_root
 
 ;--------------------------------
 ;Languages
@@ -86,100 +93,106 @@ LangString DESC_SecMPDNExtensions64 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for
 ;--------------------------------
 ;Macros
 
-!macro SelectByParameter SECT PARAMETER DEFAULT
-	${GetOptions} $R0 "/${PARAMETER}=" $0
-	${If} ${DEFAULT} == 0
-		${If} $0 == 1
-			!insertmacro SelectSection ${SECT}
-		${EndIf}
-	${Else}
-		${If} $0 != 0
-			!insertmacro SelectSection ${SECT}
-		${EndIf}
-	${EndIf}
-!macroend
-
 !macro InstallExtensions path
-    RMDir /r "${path}\Extensions"
-    
-	SetOverwrite on
-
-	SetOutPath "${path}"
-	
-	File /r "TEMP\*.*"
+    ${If} $doCleanInstall == "1"
+        RMDir /r "${path}\Extensions"
+    ${Else}
+        RMDir /r "${path}\InstTemp"
+        Rename "${path}\Extensions\RenderScripts\ImageProcessingShaders" "${path}\InstTemp"
+    ${EndIf}
+    SetOverwrite on
+    SetOutPath "${path}"
+    File /r "TEMP\*.*"
+    ${IfNot} $doCleanInstall == "1"
+        IfFileExists "${path}\InstTemp\*.*" 0 skipRestore
+        RMDir /r "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+        Rename "${path}\InstTemp" "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+        CreateDirectory "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+    skipRestore:
+    ${EndIf}
 !macroend
 
 ;--------------------
 ;Pre-install section
 
 Section -pre
-	${nsProcess::FindProcess} "MediaPlayerDotNet.exe" $R0
-	${If} $R0 == 0
-		MessageBox MB_YESNO|MB_ICONEXCLAMATION "To perform the specified operation, MPDN needs to be closed.$\r$\n$\r$\nClose it now?" /SD IDYES IDNO guiEndNo
-		DetailPrint "Closing MPDN..."
-		Goto guiEndYes
-	${Else}
-		Goto mpdnNotRunning
-	${EndIf}
+    ${nsProcess::FindProcess} "MediaPlayerDotNet.exe" $R0
+    ${If} $R0 == 0
+        MessageBox MB_YESNO|MB_ICONEXCLAMATION "To perform the specified operation, MPDN needs to be closed.$\r$\n$\r$\nClose it now?" /SD IDYES IDNO guiEndNo
+        DetailPrint "Closing MPDN..."
+        Goto guiEndYes
+    ${Else}
+        Goto mpdnNotRunning
+    ${EndIf}
 
-	guiEndNo:
-		Quit
+    guiEndNo:
+        Quit
 
-	guiEndYes:
-		; user wants to close MPDN as part of install/upgrade
-		${nsProcess::FindProcess} "MediaPlayerDotNet.exe" $R0
-		${If} $R0 == 0
-			${nsProcess::KillProcess} "MediaPlayerDotNet.exe" $R0
-		${Else}
-			Goto guiClosed
-		${EndIf}
-		Sleep 100
-		Goto guiEndYes
+    guiEndYes:
+        ; user wants to close MPDN as part of install/upgrade
+        ${nsProcess::FindProcess} "MediaPlayerDotNet.exe" $R0
+        ${If} $R0 == 0
+            ${nsProcess::KillProcess} "MediaPlayerDotNet.exe" $R0
+        ${Else}
+            Goto guiClosed
+        ${EndIf}
+        Sleep 100
+        Goto guiEndYes
 
-	guiClosed:
+    guiClosed:
     
-	mpdnNotRunning:	
+    mpdnNotRunning:    
 
 SectionEnd
 
 Section /o "Extensions for MPDN x86" SecMPDNExtensions32
 
     !insertmacro InstallExtensions "$mpdn32_root"
-    
+
 SectionEnd
 
 Section /o "Extensions for MPDN x64" SecMPDNExtensions64
 
     !insertmacro InstallExtensions "$mpdn64_root"
-    
+
+SectionEnd
+
+Section -post
+    ; Register for 64-bit first so it has precedence over the 32-bit MPDN
+    ${IfNot} $mpdn64_root == ""
+        ${registerExtension} "$mpdn64_root\MediaPlayerDotNet.exe" ".mpl" "MPDN Playlist File"
+    ${EndIf}
+    ${IfNot} $mpdn32_root == ""
+        ${registerExtension} "$mpdn32_root\MediaPlayerDotNet.exe" ".mpl" "MPDN Playlist File"
+    ${EndIf}
 SectionEnd
 
 ;--------------------------------
 ;Installer Sections
 
-Function .onInit	
-	${IfNot} ${AtLeastWin7}
-		MessageBox MB_OK "Windows 7 and above required"
-		Quit
-	${EndIf}
-	
-	System::Call 'kernel32::CreateMutex(i 0, i 0, t "myMutex") ?e'
-	Pop $R0
-	StrCmp $R0 0 +3
-		MessageBox MB_OK "The installer is already running."
-		Abort
+Function .onInit    
+    ${IfNot} ${AtLeastWin7}
+        MessageBox MB_OK "Windows 7 and above required"
+        Quit
+    ${EndIf}
+    
+    System::Call 'kernel32::CreateMutex(i 0, i 0, t "myMutex") ?e'
+    Pop $R0
+    StrCmp $R0 0 +3
+        MessageBox MB_OK "The installer is already running."
+        Abort
     
     ${GetParameters} $R0
-	ClearErrors
-	
-	!insertmacro SelectByParameter ${SecMPDNExtensions32} SELECT_MPDN32 1
-	!insertmacro SelectByParameter ${SecMPDNExtensions64} SELECT_MPDN64 1
-	
-	!insertmacro MULTIUSER_INIT
-	SetShellVarContext all
+    ClearErrors
+    
+    !insertmacro SelectSection ${SecMPDNExtensions32}
+    !insertmacro SelectSection ${SecMPDNExtensions64}
+    
+    !insertmacro MULTIUSER_INIT
+    SetShellVarContext all
     
     ${If} ${RunningX64}
-		SetRegView 64
+        SetRegView 64
     ${EndIf}
     
     ReadRegStr $R0 HKLM "SOFTWARE\${MPDN_REGNAME}_x86" ""
@@ -199,16 +212,31 @@ check64:
         !insertmacro UnselectSection ${SecMPDNExtensions64}
 done:
 
-	StrCmp "$R0$R1" "" 0 +3
-		MessageBox MB_OK "Unable to find any installations of MPDN.$\r$\n$\r$\nPlease install MPDN first!"
-		Abort
+    StrCmp "$R0$R1" "" 0 +3
+        MessageBox MB_OK "Unable to find any installations of MPDN.$\r$\n$\r$\nPlease install MPDN first!"
+        Abort
 
+FunctionEnd
+
+Function Welcome.show
+    ${NSD_CreateCheckbox} 120u -18u 50% 12u "Perform a clean install (use with care)"
+    Pop $doCleanInstall
+    SetCtlColors $doCleanInstall "" ${MUI_BGCOLOR}
+FunctionEnd
+
+Function Welcome.leave
+    ${NSD_GetState} $doCleanInstall $0
+    ${If} $0 <> 0
+        StrCpy $doCleanInstall "1"
+    ${Else}
+        StrCpy $doCleanInstall "0"
+    ${EndIf}
 FunctionEnd
 
 ;--------------------------------
 ;Descriptions
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecMPDNExtensions32} $(DESC_SecMPDNExtensions32)
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecMPDNExtensions64} $(DESC_SecMPDNExtensions64)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecMPDNExtensions32} $(DESC_SecMPDNExtensions32)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecMPDNExtensions64} $(DESC_SecMPDNExtensions64)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END

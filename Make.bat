@@ -10,6 +10,11 @@ setlocal
 cd "%~dp0"
 set releaseVersion=%1
 
+if not exist "MPDN\Mpdn.Core.dll" (
+    echo Error: Make sure you've copied MPDN into the MPDN folder first!
+    goto Quit
+)
+
 rmdir /q /s bin 1>nul 2>nul
 rmdir /q /s obj 1>nul 2>nul
 rmdir /q /s Release 1>nul 2>nul
