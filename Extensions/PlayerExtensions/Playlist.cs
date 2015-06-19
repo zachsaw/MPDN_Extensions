@@ -277,10 +277,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnPlayerStateChanged(object sender, EventArgs e)
         {
-            if (Settings.AddToPlaylistOnFileOpen)
-            {
-                SetActiveFile();
-            }
+            SetActiveFile();
         }
 
         private void OnPlaybackCompleted(object sender, EventArgs e)
@@ -609,7 +606,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             form.OpenPlaylist();
         }
 
-        private void ViewPlaylist()
+        public void ViewPlaylist()
         {
             if (form.Visible)
                 form.Hide();
@@ -627,12 +624,26 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             return Path.GetDirectoryName(path) ?? Path.GetPathRoot(path);
         }
 
-        public IEnumerable<string> GetMediaFiles(string mediaDir)
+        public IEnumerable<string> GetAllMediaFiles(string mediaDir)
         {
             string[] filter = form.openFileDialog.Filter.Split('|');
             string[] extensions = filter[1].Replace(";", "").Replace(" ", "").Split('*');
 
             var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.AllDirectories)
+            .OrderBy(f => Path.GetDirectoryName(f), new NaturalSortComparer())
+            .ThenBy(f => Path.GetFileName(f), new NaturalSortComparer())
+            .Where(f => Path.HasExtension(f))
+            .Where(f => extensions.Contains(Path.GetExtension(f.ToLower())));
+
+            return files;
+        }
+
+        public IEnumerable<string> GetMediaFiles(string mediaDir)
+        {
+            string[] filter = form.openFileDialog.Filter.Split('|');
+            string[] extensions = filter[1].Replace(";", "").Replace(" ", "").Split('*');
+
+            var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.TopDirectoryOnly)
             .OrderBy(f => Path.GetDirectoryName(f), new NaturalSortComparer())
             .ThenBy(f => Path.GetFileName(f), new NaturalSortComparer())
             .Where(f => Path.HasExtension(f))
@@ -660,7 +671,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (Directory.Exists(filename))
                 {
-                    var media = GetMediaFiles(filename);
+                    var media = GetAllMediaFiles(filename);
                     form.CloseMedia();
                     form.ClearPlaylist();
                     form.AddFiles(media.Where(file => extensions.Contains(Path.GetExtension(file.ToLower()))).OrderBy(f => f, new NaturalSortComparer()).Where(f => Path.GetExtension(f).Length > 0).ToArray());
