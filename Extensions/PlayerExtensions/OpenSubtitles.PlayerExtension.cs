@@ -20,6 +20,7 @@ using System.Globalization;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
+using System.IO;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -59,6 +60,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             if (!Settings.EnableAutoDownloader)
                 return;
+            if (hasExistingSubtitle(e.Filename))
+                return;
             try
             {
                 List<Subtitle> subList;
@@ -91,6 +94,19 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
 
         }
+
+        private bool hasExistingSubtitle(string MediaFilename)
+        {
+            var dir = Path.GetDirectoryName(MediaFilename);
+            var subFile = string.Format(Subtitle.FileNameFormat, Path.GetFileNameWithoutExtension(MediaFilename), Settings.PreferedLanguage);
+            if (dir != null)
+            {
+                var fullPath = Path.Combine(dir, subFile);
+                return File.Exists(fullPath);
+            }
+            return false;
+        }
+
         public override IList<Verb> Verbs
         {
             get { return new Verb[0]; }

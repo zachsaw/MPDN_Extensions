@@ -26,6 +26,7 @@ namespace Mpdn.Extensions.PlayerExtensions
     public class Subtitle
     {
         private readonly SubtitleDownloader m_Downloader;
+        public const string FileNameFormat = "{0}.{1}.srt";
 
         protected internal Subtitle(SubtitleDownloader downloader)
         {
@@ -169,7 +170,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         public void SaveSubtitleFile(Subtitle subtitle)
         {
             var dir = Path.GetDirectoryName(MediaFilename);
-            var subFile = Path.GetFileNameWithoutExtension(MediaFilename) + ".srt";
+            var subFile = string.Format(Subtitle.FileNameFormat, Path.GetFileNameWithoutExtension(MediaFilename), subtitle.Lang);
             var fullPath = Path.Combine(dir, subFile);
             var subs = this.FetchSubtitleText(subtitle);
             if (string.IsNullOrWhiteSpace(subs))
