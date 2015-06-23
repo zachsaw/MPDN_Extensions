@@ -1,14 +1,18 @@
 @echo off
-if "%1"=="" (
-  echo Usage: Make.bat [version x.y.z.rev] (e.g. Make.bat 1.2.3.456^)
-  echo        where 'rev' is the commit count on GitHub as of this revision
-  goto Quit
-)
+REM if "%1"=="" (
+REM   echo Usage: Make.bat [version x.y.z.rev] (e.g. Make.bat 1.2.3.456^)
+REM   echo        where 'rev' is the commit count on GitHub as of this revision
+  REM goto Quit
+REM )
 
 setlocal
 
 cd "%~dp0"
-set releaseVersion=%1
+git describe --abbrev=0 --tags > latestTag.txt
+for /f "delims=" %%i in ('git rev-list HEAD --count') do set commitCount=%%i
+set /p latestTag=<latestTag.txt
+delete latestTag.txt
+set releaseVersion=%latestTag%.%commitCount%
 
 if not exist "MPDN\Mpdn.Core.dll" (
     echo Error: Make sure you've copied MPDN into the MPDN folder first!
