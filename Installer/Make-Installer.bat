@@ -27,6 +27,8 @@ REM Generator of Uninstaller
 %makensis% /V1 unList.nsi
 
 REM The Installer
+unList.exe /DATE=1  /INSTDIR=TEMP\Extensions\  /LOG=UnInstallLog64.log  /PREFIX="	"  /UNDIR_VAR="$mpdn64_root\Extensions"  /MB=0
+unList.exe /DATE=1  /INSTDIR=TEMP\Extensions\  /LOG=UnInstallLog32.log  /PREFIX="	"  /UNDIR_VAR="$mpdn32_root\Extensions"  /MB=0
 %makensis% "/DPROJECT_NAME=MPDN-Extensions" "/DMPDN_REGNAME=MediaPlayerDotNet" /V1 Installer.nsi
 if not "%ERRORLEVEL%"=="0" echo error: makensis failed & goto Quit
 

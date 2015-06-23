@@ -97,20 +97,10 @@ LangString DESC_SecMPDNExtensions64 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for
 !macro InstallExtensions path
     ${If} $doCleanInstall == "1"
         RMDir /r "${path}\Extensions"
-    ${Else}
-        RMDir /r "${path}\InstTemp"
-        Rename "${path}\Extensions\RenderScripts\ImageProcessingShaders" "${path}\InstTemp"
     ${EndIf}
-    SetOverwrite on
+    SetOverwrite off
     SetOutPath "${path}"
     File /r "TEMP\*.*"
-    ${IfNot} $doCleanInstall == "1"
-        IfFileExists "${path}\InstTemp\*.*" 0 skipRestore
-        RMDir /r "${path}\Extensions\RenderScripts\ImageProcessingShaders"
-        Rename "${path}\InstTemp" "${path}\Extensions\RenderScripts\ImageProcessingShaders"
-        CreateDirectory "${path}\Extensions\RenderScripts\ImageProcessingShaders"
-    skipRestore:
-    ${EndIf}
 !macroend
 
 ;--------------------
@@ -147,15 +137,14 @@ Section -pre
 SectionEnd
 
 Section /o "Extensions for MPDN x86" SecMPDNExtensions32
-
+	!include UnInstallLog32.log
     !insertmacro InstallExtensions "$mpdn32_root"
 
 SectionEnd
 
 Section /o "Extensions for MPDN x64" SecMPDNExtensions64
-
+	!include UnInstallLog64.log
     !insertmacro InstallExtensions "$mpdn64_root"
-
 SectionEnd
 
 Section -post
