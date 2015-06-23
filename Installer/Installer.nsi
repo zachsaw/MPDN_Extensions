@@ -36,11 +36,14 @@ SetCompressor lzma
 
 ; Read the command-line parameters
 !insertmacro GetParameters
+!insertmacro GetOptions
 
 !getdllversion "TEMP\Extensions\Mpdn.Extensions.dll" VERSION_
 
 Var /GLOBAL mpdn32_root
 Var /GLOBAL mpdn64_root
+Var /GLOBAL isX64
+Var /GLOBAL uninstallerPresent
 Var /Global doCleanInstall
 
 
@@ -80,6 +83,10 @@ ShowUninstDetails show
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
+!insertmacro MUI_UNPAGE_WELCOME
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+
 ;--------------------------------
 ;Languages
  
@@ -94,13 +101,35 @@ LangString DESC_SecMPDNExtensions64 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for
 ;--------------------------------
 ;Macros
 
-!macro InstallExtensions path
-    ${If} $doCleanInstall == "1"
+!macro InstallExtensions path x64
+	IfFileExists "${path}\Extensions\Uninstall.exe" 0 noUn
+		StrCpy $uninstallerPresent "1"
+	noUn:	
+	${If} $doCleanInstall == "1"
         RMDir /r "${path}\Extensions"
-    ${EndIf}
-    SetOverwrite off
+	${Else}
+		${IfNot} $uninstallerPresent == "1"
+			RMDir /r "${path}\InstTemp"
+			Rename "${path}\Extensions\RenderScripts\ImageProcessingShaders" "${path}\InstTemp"
+			SetOverwrite on
+        ${Else}
+			ExecWait  "${path}\Extensions\Uninstall.exe /S /X64=${x64} _?=${path}\Extensions"
+			Delete ${path}\Extensions\Uninstall.exe
+			SetOverwrite off
+        ${EndIf}
+    ${EndIf}	
     SetOutPath "${path}"
     File /r "TEMP\*.*"
+    ${IfNot} $uninstallerPresent == "1"
+		 ${IfNot} $doCleanInstall == "1"
+			IfFileExists "${path}\InstTemp\*.*" 0 skipRestore
+			RMDir /r "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+			Rename "${path}\InstTemp" "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+			CreateDirectory "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+		skipRestore:
+		${EndIf}
+	${EndIf}
+    WriteUninstaller ${path}\Extensions\Uninstall.exe
 !macroend
 
 ;--------------------
@@ -137,14 +166,12 @@ Section -pre
 SectionEnd
 
 Section /o "Extensions for MPDN x86" SecMPDNExtensions32
-	!include UnInstallLog32.log
-    !insertmacro InstallExtensions "$mpdn32_root"
+    !insertmacro InstallExtensions "$mpdn32_root" "0"
 
 SectionEnd
 
 Section /o "Extensions for MPDN x64" SecMPDNExtensions64
-	!include UnInstallLog64.log
-    !insertmacro InstallExtensions "$mpdn64_root"
+    !insertmacro InstallExtensions "$mpdn64_root" "1"
 SectionEnd
 
 Section -post
@@ -155,6 +182,7 @@ Section -post
     ${IfNot} $mpdn32_root == ""
         ${registerExtension} "$mpdn32_root\MediaPlayerDotNet.exe" ".mpl" "MPDN Playlist File"
     ${EndIf}
+    
 SectionEnd
 
 ;--------------------------------
@@ -222,6 +250,38 @@ Function Welcome.leave
         StrCpy $doCleanInstall "0"
     ${EndIf}
 FunctionEnd
+
+Function un.onInit
+    ClearErrors
+    !insertmacro MULTIUSER_UNINIT
+    SetShellVarContext all
+    ${If} ${RunningX64}
+        SetRegView 64
+    ${EndIf}
+    
+    ${GetParameters} $R0
+	${GetOptions} '$R0' '/X64=' $R1
+	StrCmp $R1 '' 0 +3
+	StrCpy $isX64 '0'
+	Goto +2
+	StrCpy $isX64 $R1
+FunctionEnd
+
+Section "Uninstall"
+
+    ReadRegStr $R0 HKLM "SOFTWARE\${MPDN_REGNAME}_x86" ""
+    StrCpy $mpdn32_root "$R0"
+    ReadRegStr $R0 HKLM "SOFTWARE\${MPDN_REGNAME}_x64" ""
+    StrCpy $mpdn64_root "$R0"
+	
+	${If} $isX64 == '0'
+		!include UnInstallLog32.log
+	${Else}
+		!include UnInstallLog64.log	
+	${EndIf}
+
+	
+SectionEnd
 
 ;--------------------------------
 ;Descriptions
