@@ -103,6 +103,20 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #endregion
 
+        #region Implicit Shader Conversion
+
+        public static implicit operator RenderChain(ShaderFilterSettings<IShader> shaderSettings)
+        {
+            return (RenderChain)(f => new ShaderFilter(shaderSettings, f));
+        }
+
+        public static implicit operator RenderChain(ShaderFilterSettings<IShader11> shaderSettings)
+        {
+            return (RenderChain)(f => new Shader11Filter(shaderSettings, f));
+        }
+
+        #endregion
+
         #region Size Calculations
 
         public bool IsDownscalingFrom(TextureSize size)
