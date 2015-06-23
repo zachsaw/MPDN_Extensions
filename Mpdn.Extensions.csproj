@@ -347,6 +347,13 @@
       <DependentUpon>Shiandow.SuperChromaRes.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperChromaRes.cs" />
+    <Compile Include="Extensions\RenderScripts\Hylian.Super-xBR.cs" />
+    <Compile Include="Extensions\RenderScripts\Hylian.Super-xBR.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Hylian.Super-xBR.ConfigDialog.Designer.cs">
+      <DependentUpon>Hylian.Super-xBR.ConfigDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -402,18 +409,24 @@
     <Content Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
     <Content Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
     <Content Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
+    <Content Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
     <Content Include="Extensions\RenderScripts\SuperRes\Diff.hlsl" />
     <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyChroma.hlsl" />
     <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyLuma.hlsl" />
     <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\Diff.hlsl" />
     <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\MergeChroma.hlsl" />
+    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CrossBilateral.hlsl" />
+    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperResEx.hlsl" />
     <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperRes.hlsl" />
+    <Content Include="Extensions\RenderScripts\SuperRes\SuperResEx.hlsl" />
     <Content Include="Extensions\RenderScripts\SuperRes\SuperRes.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
     <None Include="Extensions\RenderScripts\NNEDI3\BuildShaders.bat" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
+    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-pass0.cg" />
+    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-pass1.cg" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
