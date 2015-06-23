@@ -1,4 +1,4 @@
-﻿// This file is a part of MPDN Extensions.
+// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -13,7 +13,6 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
 
 using System;
 using System.Collections.Generic;
@@ -24,17 +23,9 @@ using YAXLib;
 
 namespace Mpdn.Extensions.RenderScripts
 {
-    namespace Mpdn.Presets
+    namespace Mpdn.ScriptGroup
     {
-        public class PresetChain : PresetCollection
-        {
-            public override IFilter CreateFilter(IFilter input)
-            {
-                return Options.Aggregate(input, (result, chain) => chain.CreateSafeFilter(result));
-            }
-        }
-
-        public class PresetGroup : PresetCollection
+        public class ScriptGroup : PresetCollection
         {
             #region Settings
 
@@ -45,7 +36,9 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return m_Hotkey; }
                 set
                 {
+                    DeregisterHotkey();
                     m_Hotkey = value ?? "";
+                    RegisterHotkey();
                 }
             }
 
@@ -76,7 +69,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            public PresetGroup()
+            public ScriptGroup()
             {
                 SelectedIndex = 0;
                 m_HotkeyGuid = Guid.NewGuid();
@@ -105,7 +98,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override void Reset()
             {
-                DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
+                DeregisterHotkey();
                 base.Reset();
             }
 
@@ -118,6 +111,11 @@ namespace Mpdn.Extensions.RenderScripts
             private void RegisterHotkey()
             {
                 DynamicHotkeys.RegisterHotkey(m_HotkeyGuid, Hotkey, IncrementSelection);
+            }
+
+            private void DeregisterHotkey()
+            {
+                DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
             }
 
             private void IncrementSelection()
@@ -138,75 +136,7 @@ namespace Mpdn.Extensions.RenderScripts
             #endregion
         }
 
-        public class PresetChainDialog : PresetDialog
-        {
-            public PresetChainDialog()
-            {
-                Text = "Script Chain";
-            }
-
-            public override sealed string Text
-            {
-                get { return base.Text; }
-                set { base.Text = value; }
-            }
-        }
-
-        public class PresetGroupAdvDialog : PresetDialog
-        {
-            public PresetGroupAdvDialog()
-            {
-                Text = "Script Group";
-            }
-
-            public override sealed string Text
-            {
-                get { return base.Text; }
-                set { base.Text = value; }
-            }
-
-            protected override void SaveSettings()
-            {
-                base.SaveSettings();
-                ((PresetGroup) Settings).SelectedIndex = SelectedIndex;
-            }
-
-            protected override void LoadSettings()
-            {
-                base.LoadSettings();
-                SelectedIndex = ((PresetGroup) Settings).SelectedIndex;
-            }
-        }
-
-        public class ScriptChainScript : RenderChainUi<PresetChain, PresetChainDialog>
-        {
-            protected override string ConfigFileName
-            {
-                get { return "Mpdn.ScriptChain"; }
-            }
-
-            public override string Category
-            {
-                get { return "Meta"; }
-            }
-
-            public override ExtensionUiDescriptor Descriptor
-            {
-                get
-                {
-                    return new ExtensionUiDescriptor
-                    {
-                        Guid = new Guid("3A462015-2D92-43AC-B559-396DACF896C3"),
-                        Name = "Script Chain",
-                        Description = Settings.Options.Count > 0
-                            ? string.Join(" ➔ ", Settings.Options.Select(x => x.Name))
-                            : "Chains together multiple renderscripts"
-                    };
-                }
-            }
-        }
-
-        public class ScriptGroupScript : RenderChainUi<PresetGroup, PresetGroupDialog>
+        public class ScriptGroupScript : RenderChainUi<ScriptGroup, ScriptGroupDialog>
         {
             protected override string ConfigFileName
             {

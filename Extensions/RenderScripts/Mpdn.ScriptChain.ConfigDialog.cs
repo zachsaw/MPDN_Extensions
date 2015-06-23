@@ -13,25 +13,33 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
-// -- Misc --
-sampler s0 : register(s0);
-sampler sUV : register(s1);
-float4 p0 :  register(c0);
-float2 p1 :  register(c1);
-float4 args0 : register(c2);
 
-// -- Colour space Processing --
-#include "../../Common/ColourProcessing.hlsl"
-#define Kb args0[0] //redefinition
-#define Kr args0[1] //redefinition
+using Mpdn.Extensions.Framework.Config;
 
-// -- Main code --
-float4 main(float2 tex : TEXCOORD0) : COLOR {
-    float4 c0 = tex2D(s0, tex);
-    float4 chroma = tex2D(sUV, tex);
+namespace Mpdn.Extensions.RenderScripts
+{
+    namespace Mpdn.ScriptChain
+    {
+        public partial class ScriptChainDialog : ScriptChainDialogBase
+        {
+            public ScriptChainDialog()
+            {
+                InitializeComponent();
+            }
 
-    c0.rgb = Gamma(c0.rgb);
+            protected override void LoadSettings()
+            {
+                RenderChainList.PresetList = Settings.Options;
+            }
 
-    return float4(c0.xyz - chroma.xyz, 0);
+            protected override void SaveSettings()
+            {
+                Settings.Options = RenderChainList.PresetList;
+            }
+        }
+
+        public class ScriptChainDialogBase : ScriptConfigDialog<ScriptChain>
+        {
+        }
+    }
 }

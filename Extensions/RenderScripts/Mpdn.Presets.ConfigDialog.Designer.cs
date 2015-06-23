@@ -16,7 +16,7 @@
 // 
 namespace Mpdn.Extensions.RenderScripts
 {
-    namespace Mpdn.Presets
+    namespace Mpdn.ScriptGroup
     {
         partial class PresetDialog
         {

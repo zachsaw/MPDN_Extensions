@@ -13,39 +13,35 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.RenderScripts
 {
-    namespace Shiandow.SuperRes
+    namespace Hylian.SuperXbr
     {
-        public partial class SuperChromaResConfigDialog : SuperChromaResConfigDialogBase
+        public partial class SuperXbrConfigDialog : SuperXbrConfigDialogBase
         {
-            public SuperChromaResConfigDialog()
+            public SuperXbrConfigDialog()
             {
                 InitializeComponent();
             }
 
             protected override void LoadSettings()
             {
-                PassesSetter.Value = (Decimal)Settings.Passes;
-                StrengthSetter.Value = (Decimal)Settings.Strength;
-                SoftnessSetter.Value = (Decimal)Settings.Softness;
-                PrescalerBox.Checked = Settings.Prescaler;
+                EdgeStrengthSetter.Value = (Decimal)Settings.EdgeStrength;
+                SharpnessSetter.Value = (Decimal)Settings.Sharpness;
             }
 
             protected override void SaveSettings()
             {
-                Settings.Passes = (int)PassesSetter.Value;
-                Settings.Strength = (float)StrengthSetter.Value;
-                Settings.Softness = (float)SoftnessSetter.Value;
-                Settings.Prescaler = PrescalerBox.Checked; 
+                Settings.EdgeStrength = (float)EdgeStrengthSetter.Value;
+                Settings.Sharpness = (float)SharpnessSetter.Value;
             }
         }
 
-        public class SuperChromaResConfigDialogBase : ScriptConfigDialog<SuperChromaRes>
+        public class SuperXbrConfigDialogBase : ScriptConfigDialog<SuperXbr>
         {
         }
     }

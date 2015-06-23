@@ -13,39 +13,36 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
-using System;
+
 using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.RenderScripts
 {
-    namespace Shiandow.SuperRes
+    namespace Mpdn.ScriptGroup
     {
-        public partial class SuperChromaResConfigDialog : SuperChromaResConfigDialogBase
+        public partial class ScriptGroupDialog : ScriptGroupDialogBase
         {
-            public SuperChromaResConfigDialog()
+            public ScriptGroupDialog()
             {
                 InitializeComponent();
             }
 
             protected override void LoadSettings()
             {
-                PassesSetter.Value = (Decimal)Settings.Passes;
-                StrengthSetter.Value = (Decimal)Settings.Strength;
-                SoftnessSetter.Value = (Decimal)Settings.Softness;
-                PrescalerBox.Checked = Settings.Prescaler;
+                RenderChainList.PresetList = Settings.Options;
+                RenderChainList.SelectedIndex = Settings.SelectedIndex;
+                HotkeyBox.Text = Settings.Hotkey;
             }
 
             protected override void SaveSettings()
             {
-                Settings.Passes = (int)PassesSetter.Value;
-                Settings.Strength = (float)StrengthSetter.Value;
-                Settings.Softness = (float)SoftnessSetter.Value;
-                Settings.Prescaler = PrescalerBox.Checked; 
+                Settings.Options = RenderChainList.PresetList;
+                Settings.SelectedIndex = RenderChainList.SelectedIndex;
+                Settings.Hotkey = HotkeyBox.Text;
             }
         }
 
-        public class SuperChromaResConfigDialogBase : ScriptConfigDialog<SuperChromaRes>
+        public class ScriptGroupDialogBase : ScriptConfigDialog<ScriptGroup>
         {
         }
     }

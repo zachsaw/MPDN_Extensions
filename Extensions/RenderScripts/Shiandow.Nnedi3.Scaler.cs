@@ -32,12 +32,10 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 Neurons = NNedi3Neurons.Neurons16;
                 CodePath = NNedi3Path.ScalarMad;
-                ForceCentered = false;
             }
 
             public NNedi3Neurons Neurons { get; set; }
             public NNedi3Path CodePath { get; set; }
-            public bool ForceCentered { get; set; }
 
             #endregion
 
@@ -72,7 +70,7 @@ namespace Mpdn.Extensions.RenderScripts
                 result = new ShaderFilter(Combine, resultY, pass2, chroma);
 
                 return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),
-                    Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
+                    Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }
         }
 
