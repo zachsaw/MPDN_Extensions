@@ -75,6 +75,7 @@ ShowUninstDetails show
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW Welcome.show
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE Welcome.leave
 !insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "LGPL-3.0.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
