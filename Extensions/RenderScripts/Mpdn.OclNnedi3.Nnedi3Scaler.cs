@@ -42,7 +42,6 @@ namespace Mpdn.Extensions.RenderScripts
             public OclNNedi3()
             {
                 Neurons = OclNNedi3Neurons.Neurons16;
-                ForceCentered = false;
             }
 
             public OclNNedi3Neurons Neurons { get; set; }
