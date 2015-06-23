@@ -15,6 +15,7 @@
 // License along with this library.
 // 
 // -- Misc --
+//sampler sY : register(s0);
 sampler sU : register(s0);
 sampler sV : register(s1);
 float4 p0 :  register(c0);
@@ -28,7 +29,8 @@ float2 p1 :  register(c1);
 
 // -- Main code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
-    float u = tex2D(sU, tex)[0];
+	//float y = tex2D(sY, tex)[0];
+	float u = tex2D(sU, tex)[0];
     float v = tex2D(sV, tex)[0];
 
     return float4(0, u, v, 1);

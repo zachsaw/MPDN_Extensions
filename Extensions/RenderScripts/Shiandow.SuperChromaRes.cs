@@ -29,14 +29,9 @@ namespace Mpdn.Extensions.RenderScripts
             #region Settings
 
             public int Passes { get; set; }
-
             public float Strength { get; set; }
-            public float Sharpness { get; set; }
-            public float AntiAliasing { get; set; }
-            public float AntiRinging { get; set; }
             public float Softness { get; set; }
-
-            public bool FirstPassOnly;
+            public bool Prescaler { get; set; }
 
             #endregion
 
@@ -44,15 +39,12 @@ namespace Mpdn.Extensions.RenderScripts
 
             public SuperChromaRes()
             {
-                Passes = 2;
+                Passes = 1;
 
-                Strength = 0.75f;
-                Sharpness = 0.25f;
-                AntiAliasing = 0.25f;
-                AntiRinging = 0.0f;
-                Softness = 0.5f;
+                Strength = 1.0f;
+                Softness = 0.0f;
+                Prescaler = true;
 
-                FirstPassOnly = false; /* Not used anyway */
                 upscaler = new Bilinear();
                 downscaler = new Bilinear();
             }
@@ -62,14 +54,20 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return @"SuperRes\SuperChromaRes"; }
             }
 
+            private bool IsIntegral(double x)
+            {
+                return x == Math.Truncate(x);
+            }
+
             public override IFilter CreateFilter(IFilter input)
             {
-                IFilter gamma, chroma;
+                IFilter hiRes, chroma;
 
                 var chromaSize = (TextureSize)Renderer.ChromaSize;
                 var targetSize = input.OutputSize;
 
                 // Original values
+                var yInput = new YSourceFilter();
                 var uInput = new USourceFilter();
                 var vInput = new VSourceFilter();
 
@@ -92,20 +90,30 @@ namespace Mpdn.Extensions.RenderScripts
                 Vector2 offset = Renderer.ChromaOffset;
                 Vector2 adjointOffset = -offset * targetSize / chromaSize;
 
-                var consts = new[] { Strength, Sharpness   , AntiAliasing, AntiRinging,  
-                                     Softness, yuvConsts[0], yuvConsts[1], 0.0f,
-                                     offset.X, offset.Y };
+                string macroDefinitions = "";
+                if (IsIntegral(Strength))
+                    macroDefinitions += String.Format("strength = {0};", Strength);
+                if (IsIntegral(Softness))
+                    macroDefinitions += String.Format("softness = {0};", Softness);
 
                 var CopyLuma = CompileShader("CopyLuma.hlsl");
                 var CopyChroma = CompileShader("CopyChroma.hlsl");
-                var MergeChroma = CompileShader("MergeChroma.hlsl").Configure( format: TextureFormat.Float16 );
-                var Diff = CompileShader("Diff.hlsl").Configure(arguments: yuvConsts, format: TextureFormat.Float16);
-                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions:
-                        (AntiRinging == 0 ? "SkipAntiRinging = 1;" : "") +
-                        (AntiAliasing == 0 ? "SkipAntiAliasing = 1;" : "") +
-                        (Sharpness == 0 ? "SkipSharpening = 1;" : "") +
-                        (Softness  == 0 ? "SkipSoftening = 1;" : "")
-                        ).Configure(arguments: consts);
+                var MergeChroma = CompileShader("MergeChroma.hlsl").Configure(format: TextureFormat.Float16);
+
+                var Diff = CompileShader("Diff.hlsl")
+                    .Configure(arguments: yuvConsts, format: TextureFormat.Float16);
+
+                var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions)
+                    .Configure( 
+                        arguments: new[] { Strength, Softness, yuvConsts[0], yuvConsts[1], offset.X, offset.Y },
+                        perTextureLinearSampling: new[] { true, false }
+                    );
+
+                var CrossBilateral = CompileShader("CrossBilateral.hlsl")
+                    .Configure( 
+                        arguments: new[] { offset.X, offset.Y, yuvConsts[0], yuvConsts[1] },
+                        perTextureLinearSampling: new[] { true, false }
+                    );
 
                 var GammaToLab = CompileShader("../../Common/GammaToLab.hlsl");
                 var LabToGamma = CompileShader("../../Common/LabToGamma.hlsl");
@@ -115,28 +123,23 @@ namespace Mpdn.Extensions.RenderScripts
                 var LinearToLab = CompileShader("../../Common/LinearToLab.hlsl");
 
                 chroma = new ShaderFilter(MergeChroma, uInput, vInput);
+                hiRes = Prescaler ? new ShaderFilter(CrossBilateral, yInput, chroma).ConvertToRgb() : input;
                 chroma = new RgbFilter(chroma, limitChroma: false);
-                gamma = input;
 
                 for (int i = 1; i <= Passes; i++)
                 {
-                    IFilter loRes, diff, linear;
-                    bool useBilinear = (upscaler is Bilinear) || (FirstPassOnly && i != 1);
+                    IFilter diff, linear;
 
                     // Compare to chroma
-                    linear = new ShaderFilter(GammaToLinear, gamma);
-                    loRes = new ResizeFilter(linear, chromaSize, adjointOffset, upscaler, downscaler);
-                    diff = new ShaderFilter(Diff, loRes, chroma);
-                    if (!useBilinear)
-                        diff = new ResizeFilter(diff, targetSize, offset, upscaler, downscaler); // Scale to output size
+                    linear = new ShaderFilter(GammaToLinear, hiRes);
+                    linear = new ResizeFilter(linear, chromaSize, adjointOffset, upscaler, downscaler);
+                    diff = new ShaderFilter(Diff, linear, chroma);
 
                     // Update result
-                    gamma = new ShaderFilter( 
-                        SuperRes.Configure( perTextureLinearSampling: new [] { false, useBilinear, false } ),
-                        gamma, diff, chroma);
+                    hiRes = new ShaderFilter(SuperRes, hiRes, diff);
                 }
 
-                return gamma;
+                return hiRes;
             }
         }
 
