@@ -136,7 +136,7 @@ namespace Mpdn.Extensions.RenderScripts
             #endregion
         }
 
-        public class ScriptGroupScript : RenderChainUi<ScriptGroup, PresetGroupDialog>
+        public class ScriptGroupScript : RenderChainUi<ScriptGroup, ScriptGroupDialog>
         {
             protected override string ConfigFileName
             {

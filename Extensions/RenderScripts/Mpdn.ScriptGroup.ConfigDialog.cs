@@ -20,9 +20,9 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptGroup
     {
-        public partial class PresetGroupDialog : PresetGroupDialogBase
+        public partial class ScriptGroupDialog : ScriptGroupDialogBase
         {
-            public PresetGroupDialog()
+            public ScriptGroupDialog()
             {
                 InitializeComponent();
             }
@@ -42,7 +42,7 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
 
-        public class PresetGroupDialogBase : ScriptConfigDialog<ScriptGroup>
+        public class ScriptGroupDialogBase : ScriptConfigDialog<ScriptGroup>
         {
         }
     }

@@ -18,7 +18,7 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptGroup
     {
-        partial class PresetGroupDialog
+        partial class ScriptGroupDialog
         {
             /// <summary> 
             /// Required designer variable.
