@@ -123,7 +123,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
     {
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
-        private readonly IScaler m_Convolver;
+        private IScaler m_Convolver;
         private readonly Vector2 m_Offset;
         private TextureSize m_OutputSize;
         private readonly TextureChannels m_Channels;
@@ -177,6 +177,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_OutputSize = outputSize;
             m_Channels = channels;
             m_Offset = offset;
+        }
+
+        public void ForceOffsetCorrection()
+        {
+            if (!m_Offset.IsZero)
+                m_Convolver = m_Convolver ?? m_Upscaler;
         }
 
         public void SetSize(TextureSize targetSize)

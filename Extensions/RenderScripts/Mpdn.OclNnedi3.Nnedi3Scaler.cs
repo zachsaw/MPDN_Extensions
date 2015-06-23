@@ -46,7 +46,6 @@ namespace Mpdn.Extensions.RenderScripts
             }
 
             public OclNNedi3Neurons Neurons { get; set; }
-            public bool ForceCentered { get; set; }
 
             #endregion
 
@@ -183,7 +182,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var result = new ShaderFilter(combine, nnedi3V, chroma);
                 return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),
-                    Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
+                    Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }
         }
 
