@@ -176,7 +176,7 @@ Function .onInit
         Quit
     ${EndIf}
     
-    System::Call 'kernel32::CreateMutex(i 0, i 0, t "myMutex") ?e'
+    System::Call 'kernel32::CreateMutex(i 0, i 0, t "MpdnExtensionsInstaller") ?e'
     Pop $R0
     StrCmp $R0 0 +3
         MessageBox MB_OK "The installer is already running."
