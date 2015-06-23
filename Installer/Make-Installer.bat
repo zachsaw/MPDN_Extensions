@@ -23,6 +23,10 @@ rmdir /s /q Temp 1>nul 2>nul
 %zipper% x "..\Release\Mpdn.Extensions.zip" -oTemp *.* -r 1>nul 2>nul
 if not "%ERRORLEVEL%"=="0" echo error: extraction failed & goto Quit
 
+REM Generator of Uninstaller
+%makensis% /V1 unList.nsi
+
+REM The Installer
 %makensis% "/DPROJECT_NAME=MPDN-Extensions" "/DMPDN_REGNAME=MediaPlayerDotNet" /V1 Installer.nsi
 if not "%ERRORLEVEL%"=="0" echo error: makensis failed & goto Quit
 
