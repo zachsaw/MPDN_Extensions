@@ -27,88 +27,54 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
-        public class SuperResPreset : Preset
-        {
-            public int Passes { get; set; }
-            public float Strength { get; set; }
-            public float Sharpness { get; set; }
-            public float AntiAliasing { get; set; }
-            public float AntiRinging { get; set; }
-            public float Softness { get; set; }
-        }
-
         public class SuperRes : ScriptGroup
         {
             #region Settings
 
-            public bool NoIntermediates { get; set; }
-
-            public bool FirstPassOnly;
+            public int Passes { get; set; }
+            public float Strength { get; set; }
+            public float Softness { get; set; }
 
             #endregion
-
-            public override bool AllowRegrouping { get { return false; } }
 
             public Func<TextureSize> TargetSize; // Not saved
             private readonly IScaler m_Downscaler;
             private readonly IScaler m_Upscaler;
 
+            public override bool AllowRegrouping { get { return false; } }
+
             public SuperRes()
             {
                 TargetSize = () => Renderer.TargetSize;
 
-                Options = new List<Preset>
-                {
-                    new SuperResPreset
+                Passes = 2;
+                Strength = 1.0f;
+                Softness = 0.0f;
+
+                Options = new List<Preset> {
+                    new Preset
                     {
                         Name = "Default",
-                        Passes = 3,
-                        Strength = 0.75f,
-                        Sharpness = 0.3f,
-                        AntiAliasing = 0.3f,
-                        AntiRinging = 0.5f,
-                        Softness = 0.1f,
                         Script = new ScriptChainScript()
                     },
-                    new SuperResPreset
+                    new Preset
                     {
                         Name = "NEDI",
-                        Passes = 2,
-                        Strength = 0.65f,
-                        Sharpness = 0.25f,
-                        AntiAliasing = 0.25f,
-                        AntiRinging = 0.0f,
-                        Softness = 0.25f,
-                        Script = new Nedi.NediScaler {Settings = new Nedi.Nedi {ForceCentered = true}}
+                        Script = new Nedi.NediScaler()
                     },
-                    new SuperResPreset
+                    new Preset
                     {
                         Name = "NNEDI3",
-                        Passes = 2,
-                        Strength = 0.35f,
-                        Sharpness = 0.25f,
-                        AntiAliasing = 0.25f,
-                        AntiRinging = 0.0f,
-                        Softness = 0.25f,
-                        Script = new NNedi3.NNedi3Scaler {Settings = new NNedi3.NNedi3 {ForceCentered = true}}
+                        Script = new NNedi3.NNedi3Scaler()
                     },
-                    new SuperResPreset
+                    new Preset
                     {
                         Name = "OpenCL NNEDI3",
-                        Passes = 2,
-                        Strength = 0.35f,
-                        Sharpness = 0.25f,
-                        AntiAliasing = 0.25f,
-                        AntiRinging = 0.0f,
-                        Softness = 0.25f,
-                        Script = new OclNNedi3Scaler {Settings = new OclNNedi3 {ForceCentered = true}}
+                        Script = new OclNNedi3Scaler()
                     }
                 };
-
                 SelectedIndex = 0;
 
-                NoIntermediates = false;
-                FirstPassOnly = false;
                 m_Upscaler = new Jinc(ScalerTaps.Four, false);
                 m_Downscaler = new Bilinear();
             }
@@ -118,33 +84,35 @@ namespace Mpdn.Extensions.RenderScripts
                 return CreateFilter(input, input + SelectedOption);
             }
 
+            private bool IsIntegral(double x)
+            {
+                return x == Math.Truncate(x);
+            }
+
             public IFilter CreateFilter(IFilter original, IFilter initial)
             {
                 IFilter lab;
                 IFilter result = initial;
 
-                // Load Settings
-                var settings = (SuperResPreset)SelectedOption;
-                var passes = settings.Passes;
-                var strength = settings.Strength;
-                var sharpness = settings.Sharpness;
-                var AntiAliasing = settings.AntiAliasing;
-                var AntiRinging = settings.AntiRinging;
-                var Softness = settings.Softness;
-
                 // Calculate Sizes
                 var inputSize = original.OutputSize;
-                var currentSize = original.OutputSize;
                 var targetSize = TargetSize();
 
+                string macroDefinitions = "";
+                if (IsIntegral(Strength))
+                    macroDefinitions += String.Format("strength = {0};", Strength);
+                if (IsIntegral(Softness))
+                    macroDefinitions += String.Format("softness = {0};", Softness);
+
                 // Compile Shaders
-                var Diff = CompileShader("Diff.hlsl").Configure(format: TextureFormat.Float16);
-                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions:
-                        (AntiRinging  == 0 ? "SkipAntiRinging = 1;" : "") +
-                        (AntiAliasing == 0 ? "SkipAntiAliasing = 1;" : "") +
-                        (sharpness == 0 ? "SkipSharpening = 1;" : "") +
-                        (Softness  == 0 ? "SkipSoftening = 1;" : "")
-                    ).Configure(arguments: new[] { strength, sharpness, AntiAliasing, AntiRinging, Softness });
+                var Diff = CompileShader("Diff.hlsl")
+                    .Configure( format: TextureFormat.Float16 );
+
+                var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions)
+                    .Configure(
+                        arguments: new[] { Strength, Softness },
+                        perTextureLinearSampling: new[] { true, false }
+                    );
 
                 var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
                 var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
@@ -158,46 +126,33 @@ namespace Mpdn.Extensions.RenderScripts
                     return original;
 
                 // Initial scaling
-                currentSize = CalculateSize(currentSize, targetSize, 1, passes);
                 if (initial != original)
                 {
                     original = new ShaderFilter(GammaToLab, original);
-                    lab = new ShaderFilter(GammaToLab, initial.SetSize(currentSize));
+
+                    // Always correct offset (if any)
+                    if (initial is ResizeFilter)
+                        ((ResizeFilter)initial).ForceOffsetCorrection();
+
+                    lab = new ShaderFilter(GammaToLab, initial.SetSize(targetSize));
                 }
                 else
                 {
                     original = new ShaderFilter(GammaToLab, original);
-                    lab = new ResizeFilter(original, currentSize);
+                    lab = new ResizeFilter(original, targetSize);
                 }
 
-                for (int i = 1; i <= passes; i++)
+                for (int i = 1; i <= Passes; i++)
                 {
-                    IFilter res, diff, linear;
-                    bool useBilinear = (m_Upscaler is Bilinear) || (FirstPassOnly && i != 1);
-
-                    if (i != 1)
-                    {
-                        // Calculate size
-                        if (i == passes || NoIntermediates) currentSize = targetSize;
-                        else currentSize = CalculateSize(currentSize, targetSize, i, passes);
-
-                        // Resize
-                        lab = new ResizeFilter(lab, currentSize, m_Upscaler, m_Downscaler);
-                    }
+                    IFilter diff, linear;
 
                     // Downscale and Subtract
                     linear = new ShaderFilter(LabToLinear, lab);
-                    res = new ResizeFilter(linear, inputSize, m_Upscaler, m_Downscaler); // Downscale result
-                    diff = new ShaderFilter(Diff, res, original);                    // Compare with original
+                    linear = new ResizeFilter(linear, inputSize, m_Upscaler, m_Downscaler); // Downscale result
+                    diff = new ShaderFilter(Diff, linear, original);                        // Compare with original
 
-                    // Scale difference back
-                    if (!useBilinear)
-                        diff = new ResizeFilter(diff, currentSize, m_Upscaler, m_Downscaler);
-                    
                     // Update result
-                    lab = new ShaderFilter(
-                        SuperRes.Configure(perTextureLinearSampling: new[] { false, useBilinear, false }),
-                        lab, diff, original);
+                    lab = new ShaderFilter(SuperRes, lab, diff);
                     result = new ShaderFilter(LabToGamma, lab);
                 }
 

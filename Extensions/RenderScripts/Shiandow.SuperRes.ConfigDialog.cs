@@ -27,11 +27,11 @@ namespace Mpdn.Extensions.RenderScripts
         {
             protected int? selectedIndex;
 
-            protected SuperResPreset selectedPreset
+            protected Preset selectedPreset
             {
                 get
                 {
-                    return (SuperResPreset)Settings.Options.ElementAtOrDefault(selectedIndex ?? -1);
+                    return Settings.Options.ElementAtOrDefault(selectedIndex ?? -1);
                 }
             }
 
@@ -45,51 +45,24 @@ namespace Mpdn.Extensions.RenderScripts
                 PrescalerBox.DataSource = Settings.Options;
                 PrescalerBox.DisplayMember = "Name";
                 PrescalerBox.SelectedIndex = Settings.SelectedIndex;
-                HotkeyBox.Text = Settings.Hotkey;
+
+                PassesSetter.Value = Settings.Passes;
+                StrengthSetter.Value = (Decimal)Settings.Strength;
+                SoftnessSetter.Value = (Decimal)Settings.Softness;
                 
                 UpdateGui();
-            }
-
-            protected void LoadOption()
-            {
-                var option = selectedPreset;
-                if (option == null)
-                    return;
-
-                PassesSetter.Value = option.Passes;
-                StrengthSetter.Value = (Decimal)option.Strength;
-                SharpnessSetter.Value = (Decimal)option.Sharpness;
-                AntiAliasingSetter.Value = (Decimal)option.AntiAliasing;
-                AntiRingingSetter.Value = (Decimal)option.AntiRinging;
-                SoftnessSetter.Value = (Decimal)option.Softness;
             }
 
             protected override void SaveSettings()
             {
                 Settings.SelectedIndex = PrescalerBox.SelectedIndex;
-                Settings.Hotkey = HotkeyBox.Text;
-                SaveOption();
-            }
-
-            protected void SaveOption()
-            {
-                SuperResPreset option = selectedPreset;
-                if (option == null) 
-                    return;
-
-                option.Passes = (int)PassesSetter.Value;
-                option.Strength = (float)StrengthSetter.Value;
-                option.Sharpness = (float)SharpnessSetter.Value;
-                option.AntiAliasing = (float)AntiAliasingSetter.Value;
-                option.AntiRinging = (float)AntiRingingSetter.Value;
-                option.Softness = (float)SoftnessSetter.Value;
+                Settings.Passes = (int)PassesSetter.Value;
+                Settings.Strength = (float)StrengthSetter.Value;
+                Settings.Softness = (float)SoftnessSetter.Value;
             }
 
             private void SelectionChanged(object sender, EventArgs e)
             {
-                SaveOption();
-                selectedIndex = PrescalerBox.SelectedIndex;
-                LoadOption();
                 UpdateGui();
             }
 
@@ -99,9 +72,18 @@ namespace Mpdn.Extensions.RenderScripts
                 ConfigButton.Enabled = (preset != null) && preset.HasConfigDialog();
             }
 
-            private void ConfigButton_Click(object sender, EventArgs e)
+            private void ConfigButtonClick(object sender, EventArgs e)
             {
                 ((Preset) PrescalerBox.SelectedValue).ShowConfigDialog(Owner);
+            }
+
+            private void ModifyButtonClick(object sender, EventArgs e)
+            {
+                var groupUi = new Mpdn.ScriptGroup.ScriptGroupScript() { Settings = Settings };
+                groupUi.ShowConfigDialog(Owner);
+
+                PrescalerBox.DataSource = Settings.Options;
+                PrescalerBox.SelectedIndex = Settings.SelectedIndex;
             }
         }
 

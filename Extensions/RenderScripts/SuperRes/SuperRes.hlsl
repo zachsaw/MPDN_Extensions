@@ -85,7 +85,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     // Softening
     float W = 1;
     float3 soft = 0;
-    float3 D[8] = {    {Get(0,0) - Get(0,1), Get(0,0) - Get(1, 0), Get(0,0) - Get(0 ,-1), Get(0,0) - Get(-1,0)},
+    float3 D[8] = {  {Get(0,0) - Get(0,1), Get(0,0) - Get(1, 0), Get(0,0) - Get(0 ,-1), Get(0,0) - Get(-1,0)},
                      {Get(0,0) - Get(1,1), Get(0,0) - Get(1,-1), Get(0,0) - Get(-1,-1), Get(0,0) - Get(-1,1)} };
     [unroll] for( int k = 0; k < 8; k++)
     {
