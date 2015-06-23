@@ -72,7 +72,7 @@ cd "Release"
 rmdir /q /s Extensions 1>nul 2>nul
 
 cd "%~dp0"
-call Make-Installer.bat
+call ./Installer/Make-Installer.bat
 if not "%ERRORLEVEL%"=="0" echo error: make installer failed & goto Quit
 
 echo.
