@@ -29,10 +29,8 @@
 #define false  7
 
 // -- Gamma processing --
-#define A (0.272433)
-
 #if GammaCurve == Rec709
-float3 Gamma(float3 x)   { return x < 0.018                         ? x * 4.506198600878514 : 1.099 * pow(x, 0.45) - 0.099; }
+float3 Gamma(float3 x)   { return x < 0.018                      ? x * 4.506198600878514 : 1.099 * pow(x, 0.45) - 0.099; }
 float3 GammaInv(float3 x){ return x < 0.018 * 4.506198600878514  ? x / 4.506198600878514 : pow((x + 0.099) / 1.099, 1 / 0.45); }
 #elif GammaCurve == sRGB
 float3 Gamma(float3 x)   { return x < 0.00303993442528169  ? x * 12.9232102 : 1.055*pow(x, 1 / 2.4) - 0.055; }
@@ -118,4 +116,15 @@ float3x3 DinvLabtoRGB(float3 rgb) {
     xyz = 1 / DLabf(xyz);
     float3x3 D = { { xyz.x, 0, 0 }, { 0, xyz.y, 0 }, { 0, 0, xyz.z } };
     return mul(D, RGBtoXYZ);
+}
+
+float3 LimitChroma(float3 rgb) {
+	float3 Y = RGBtoYUV[0];
+	float3 S = saturate(rgb);
+	float3 X = dot(Y,rgb - S)*(rgb - S) > 0 ? 0 : Y;
+	return S + X*dot(Y,rgb - S)/dot(Y,X);
+}
+
+float Luma(float3 rgb) {
+	return dot(RGBtoYUV[0], rgb);
 }
