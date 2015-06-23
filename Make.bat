@@ -11,7 +11,7 @@ cd "%~dp0"
 git describe --abbrev=0 --tags > latestTag.txt
 for /f "delims=" %%i in ('git rev-list HEAD --count') do set commitCount=%%i
 set /p latestTag=<latestTag.txt
-delete latestTag.txt
+del latestTag.txt
 set releaseVersion=%latestTag%.%commitCount%
 
 if not exist "MPDN\Mpdn.Core.dll" (
