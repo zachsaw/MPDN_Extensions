@@ -1,13 +1,13 @@
 @echo off
-REM if "%1"=="" (
-REM   echo Usage: Make.bat [version x.y.z.rev] (e.g. Make.bat 1.2.3.456^)
-REM   echo        where 'rev' is the commit count on GitHub as of this revision
-  REM goto Quit
-REM )
-
 setlocal
+cd /d "%~dp0"
 
-cd "%~dp0"
+net session 1>nul 2>nul
+if not "%ERRORLEVEL%"=="0" (
+    echo Error: Restricted access. Please run Make.bat as administrator.
+    goto Quit
+)
+
 git describe --abbrev=0 --tags > latestTag.txt
 for /f "delims=" %%i in ('git rev-list HEAD --count') do set commitCount=%%i
 set /p latestTag=<latestTag.txt
