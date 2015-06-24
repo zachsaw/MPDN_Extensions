@@ -42,6 +42,7 @@ SetCompressor lzma
 
 Var /GLOBAL mpdn32_root
 Var /GLOBAL mpdn64_root
+Var /GLOBAL mpdn_root
 Var /GLOBAL uninstallerPresent
 Var /Global doCleanInstall
 
@@ -264,6 +265,10 @@ FunctionEnd
 
 ;--------------------------------
 ;Uninstaller Sections
+Function un.includeUninstall
+    DetailPrint "Remove un-modified files"
+    !include UnInstallLog.log
+FunctionEnd
 
 Section "Uninstall"
 
@@ -275,14 +280,14 @@ Section "Uninstall"
     ${GetParent} $INSTDIR $R0
     
     ${If} "$R0" == "$mpdn32_root"
-        !include UnInstallLog32.log
-        Delete "$INSTDIR\Uninstall.exe"
+        StrCpy $mpdn_root $mpdn32_root
+        Call un.includeUninstall
     ${EndIf}
     ${If} "$R0" == "$mpdn64_root"
-        !include UnInstallLog64.log    
-        Delete "$INSTDIR\Uninstall.exe"
+        StrCpy $mpdn_root $mpdn64_root
+        Call un.includeUninstall
     ${EndIf}
-
+        Delete "$INSTDIR\Uninstall.exe"
 SectionEnd
 
 ;--------------------------------
