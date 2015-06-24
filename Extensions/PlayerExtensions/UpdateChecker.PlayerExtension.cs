@@ -17,11 +17,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Controls;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -45,19 +48,21 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public override IList<Verb> Verbs
         {
-            //get { return new Verb[0]; }
-              get
+            get
             {
                 return new[]
                 {
-                    new Verb(Category.Help, String.Empty, "Check for Update", ManualUpdateCheck)
+                    new Verb(Category.Help, String.Empty, "Check for Update...", ManualUpdateCheck)
                 };
             }
         }
 
         private void ManualUpdateCheck()
         {
-            m_checker.CheckVersion();
+            using (new HourGlass())
+            {
+                m_checker.CheckVersion();
+            }
             if (Settings.VersionOnServer > m_currentVersion)
             {
                 new UpdateCheckerNewVersionForm(Settings.VersionOnServer, Settings).ShowDialog(PlayerControl.VideoPanel);
