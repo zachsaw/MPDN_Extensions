@@ -52,27 +52,25 @@ namespace Mpdn.Extensions.PlayerExtensions
     public class SubtitleDownloader
     {
         private static readonly string OSUrl =
-            "http://www.opensubtitles.org/isdb/index.php?player={0}&name[0]={1}&size[0]={2}&hash[0]={3}";
+            "http://www.opensubtitles.org/isdb/index.php?player=mpc&name[0]={0}&size[0]={1}&hash[0]={2}";
 
         private static readonly string OSDlSub = "http://www.opensubtitles.org/isdb/dl.php?id={0}&ticket={1}";
-        private readonly string PlayerId;
         private readonly string UserAgent;
         private readonly WebClient WebClient = new WebClient();
         private string LastTicket;
         private string MediaFilename;
 
 
-        public SubtitleDownloader(string UserAgent, string PlayerID)
+        public SubtitleDownloader(string UserAgent)
         {
             this.UserAgent = UserAgent;
-            this.PlayerId = PlayerID;
         }
 
         private string DoRequest(string url)
         {
             try
             {
-                using (var client = this.WebClient)
+                using (var client = WebClient)
                 {
                     client.Headers.Set("User-Agent", UserAgent);
                     return client.DownloadString(url);
@@ -105,7 +103,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             var size = file.Length.ToString("X");
             var hash = HashCalculator.GetHash(filename);
             MediaFilename = filename;
-            string subs = DoRequest(string.Format(OSUrl, PlayerId, name, size, hash));
+            string subs = DoRequest(string.Format(OSUrl, name, size, hash));
 
             if(string.IsNullOrEmpty(subs)) {
                 throw new EmptyResponseException();
@@ -158,7 +156,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public string FetchSubtitleText(Subtitle subtitle)
         {
-            var url = string.Format(OSDlSub, subtitle.ID, this.LastTicket);
+            var url = string.Format(OSDlSub, subtitle.ID, LastTicket);
             string sub = DoRequest(url);
             if (string.IsNullOrEmpty(sub))
             {

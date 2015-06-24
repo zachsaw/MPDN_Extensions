@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework.Controls;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -52,7 +53,10 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             try
             {
-                m_SelectedSub.Save();
+                using (new HourGlass())
+                {
+                    m_SelectedSub.Save();
+                }
                 Close();
             }
             catch (InternetConnectivityException)

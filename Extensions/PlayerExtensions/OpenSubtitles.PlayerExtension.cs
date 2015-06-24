@@ -45,7 +45,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            m_Downloader = new SubtitleDownloader("MPC-HC", "mpc-hc");
+            m_Downloader = new SubtitleDownloader("MPDN_Extensions");
             PlayerControl.MediaLoading += MediaLoading;
         }
 
@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             if (!Settings.EnableAutoDownloader)
                 return;
-            if (hasExistingSubtitle(e.Filename))
+            if (HasExistingSubtitle(e.Filename))
                 return;
             try
             {
@@ -71,7 +71,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 if (subList == null || subList.Count == 0)
                     return; // Opensubtitles messagebox is annoying #44 https://github.com/zachsaw/MPDN_Extensions/issues/44
-                subList.Sort((a, b) => String.Compare(a.Lang, b.Lang, StringComparison.Ordinal));
+                subList.Sort((a, b) => String.Compare(a.Lang, b.Lang, CultureInfo.CurrentUICulture, CompareOptions.StringSort));
                 if (Settings.PreferedLanguage != null)
                 {
                     var filteredSubList = subList.FindAll(sub => sub.Lang.Contains(Settings.PreferedLanguage));
@@ -95,16 +95,12 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         }
 
-        private bool hasExistingSubtitle(string MediaFilename)
+        private bool HasExistingSubtitle(string mediaFilename)
         {
-            var dir = Path.GetDirectoryName(MediaFilename);
-            var subFile = string.Format(Subtitle.FileNameFormat, Path.GetFileNameWithoutExtension(MediaFilename), Settings.PreferedLanguage);
-            if (dir != null)
-            {
-                var fullPath = Path.Combine(dir, subFile);
-                return File.Exists(fullPath);
-            }
-            return false;
+            var subFile = string.Format(Subtitle.FileNameFormat, Path.GetFileNameWithoutExtension(mediaFilename),
+                Settings.PreferedLanguage);
+            var fullPath = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), subFile);
+            return File.Exists(fullPath);
         }
 
         public override IList<Verb> Verbs
