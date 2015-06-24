@@ -272,22 +272,10 @@ FunctionEnd
 
 Section "Uninstall"
 
-    ReadRegStr $R0 HKLM "SOFTWARE\${MPDN_REGNAME}_x86" ""
-    StrCpy $mpdn32_root "$R0"
-    ReadRegStr $R0 HKLM "SOFTWARE\${MPDN_REGNAME}_x64" ""
-    StrCpy $mpdn64_root "$R0"
-
     ${GetParent} $INSTDIR $R0
-    
-    ${If} "$R0" == "$mpdn32_root"
-        StrCpy $mpdn_root $mpdn32_root
-        Call un.includeUninstall
-    ${EndIf}
-    ${If} "$R0" == "$mpdn64_root"
-        StrCpy $mpdn_root $mpdn64_root
-        Call un.includeUninstall
-    ${EndIf}
-        Delete "$INSTDIR\Uninstall.exe"
+    StrCpy $mpdn_root "$R0"
+    Call un.includeUninstall
+    Delete "$INSTDIR\Uninstall.exe"
 SectionEnd
 
 ;--------------------------------
