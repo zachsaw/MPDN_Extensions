@@ -1,6 +1,6 @@
 @echo off
 setlocal
-cd "%~dp0"
+cd /d "%~dp0"
 if not exist "..\Release\Mpdn.Extensions.zip" (
   echo Error: Mpdn.Extensions.zip is not found - run Make.bat first!
   goto Quit
@@ -35,6 +35,8 @@ if not "%ERRORLEVEL%"=="0" echo error: makensis failed & goto Quit
 rmdir /s /q Temp 1>nul 2>nul
 
 move MPDN-Extensions_v*_Installer.exe ..\Release\ 1>nul 2>nul
+
+cd "%~dp0\.."
 
 if exist Sign.bat (
     echo Signing installer...
