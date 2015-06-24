@@ -42,7 +42,6 @@ SetCompressor lzma
 
 Var /GLOBAL mpdn32_root
 Var /GLOBAL mpdn64_root
-Var /GLOBAL isX64
 Var /GLOBAL uninstallerPresent
 Var /Global doCleanInstall
 
@@ -101,35 +100,37 @@ LangString DESC_SecMPDNExtensions64 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for
 ;--------------------------------
 ;Macros
 
-!macro InstallExtensions path x64
-	IfFileExists "${path}\Extensions\Uninstall.exe" 0 noUn
-		StrCpy $uninstallerPresent "1"
-	noUn:	
-	${If} $doCleanInstall == "1"
+!macro InstallExtensions path
+    StrCpy $uninstallerPresent "0"
+    IfFileExists "${path}\Extensions\Uninstall.exe" 0 noUn
+        StrCpy $uninstallerPresent "1"
+    noUn:    
+    ${If} $doCleanInstall == "1"
         RMDir /r "${path}\Extensions"
-	${Else}
-		${IfNot} $uninstallerPresent == "1"
-			RMDir /r "${path}\InstTemp"
-			Rename "${path}\Extensions\RenderScripts\ImageProcessingShaders" "${path}\InstTemp"
-			SetOverwrite on
+    ${Else}
+        ${IfNot} $uninstallerPresent == "1"
+            RMDir /r "${path}\InstTemp"
+            Rename "${path}\Extensions\RenderScripts\ImageProcessingShaders" "${path}\InstTemp"
+            RMDir /r "${path}\Extensions"
+            SetOverwrite on
         ${Else}
-			ExecWait  "${path}\Extensions\Uninstall.exe /S /X64=${x64} _?=${path}\Extensions"
-			Delete ${path}\Extensions\Uninstall.exe
-			SetOverwrite off
+            ExecWait "${path}\Extensions\Uninstall.exe /S _?=${path}\Extensions"
+            Delete "${path}\Extensions\Uninstall.exe"
+            SetOverwrite off
         ${EndIf}
-    ${EndIf}	
+    ${EndIf}    
     SetOutPath "${path}"
     File /r "TEMP\*.*"
     ${IfNot} $uninstallerPresent == "1"
-		 ${IfNot} $doCleanInstall == "1"
-			IfFileExists "${path}\InstTemp\*.*" 0 skipRestore
-			RMDir /r "${path}\Extensions\RenderScripts\ImageProcessingShaders"
-			Rename "${path}\InstTemp" "${path}\Extensions\RenderScripts\ImageProcessingShaders"
-			CreateDirectory "${path}\Extensions\RenderScripts\ImageProcessingShaders"
-		skipRestore:
-		${EndIf}
-	${EndIf}
-    WriteUninstaller ${path}\Extensions\Uninstall.exe
+         ${IfNot} $doCleanInstall == "1"
+            IfFileExists "${path}\InstTemp\*.*" 0 skipRestore
+            RMDir /r "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+            Rename "${path}\InstTemp" "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+            CreateDirectory "${path}\Extensions\RenderScripts\ImageProcessingShaders"
+        skipRestore:
+        ${EndIf}
+    ${EndIf}
+    WriteUninstaller "${path}\Extensions\Uninstall.exe"
 !macroend
 
 ;--------------------
@@ -166,12 +167,12 @@ Section -pre
 SectionEnd
 
 Section /o "Extensions for MPDN x86" SecMPDNExtensions32
-    !insertmacro InstallExtensions "$mpdn32_root" "0"
+    !insertmacro InstallExtensions "$mpdn32_root"
 
 SectionEnd
 
 Section /o "Extensions for MPDN x64" SecMPDNExtensions64
-    !insertmacro InstallExtensions "$mpdn64_root" "1"
+    !insertmacro InstallExtensions "$mpdn64_root"
 SectionEnd
 
 Section -post
@@ -258,14 +259,11 @@ Function un.onInit
     ${If} ${RunningX64}
         SetRegView 64
     ${EndIf}
-    
-    ${GetParameters} $R0
-	${GetOptions} '$R0' '/X64=' $R1
-	StrCmp $R1 '' 0 +3
-	StrCpy $isX64 '0'
-	Goto +2
-	StrCpy $isX64 $R1
 FunctionEnd
+
+
+;--------------------------------
+;Uninstaller Sections
 
 Section "Uninstall"
 
@@ -273,14 +271,18 @@ Section "Uninstall"
     StrCpy $mpdn32_root "$R0"
     ReadRegStr $R0 HKLM "SOFTWARE\${MPDN_REGNAME}_x64" ""
     StrCpy $mpdn64_root "$R0"
-	
-	${If} $isX64 == '0'
-		!include UnInstallLog32.log
-	${Else}
-		!include UnInstallLog64.log	
-	${EndIf}
 
-	
+    ${GetParent} $INSTDIR $R0
+    
+    ${If} "$R0" == "$mpdn32_root"
+        !include UnInstallLog32.log
+        Delete "$INSTDIR\Uninstall.exe"
+    ${EndIf}
+    ${If} "$R0" == "$mpdn64_root"
+        !include UnInstallLog64.log    
+        Delete "$INSTDIR\Uninstall.exe"
+    ${EndIf}
+
 SectionEnd
 
 ;--------------------------------
