@@ -33,6 +33,20 @@ namespace Mpdn.Extensions.PlayerExtensions
             ".mid", ".midi", ".rmi"
         };
 
+        private readonly PlayerMenuItem[] m_MenuItems =
+        {
+            new PlayerMenuItem(initiallyDisabled: true),
+            new PlayerMenuItem(initiallyDisabled: true),
+            new PlayerMenuItem(initiallyDisabled: true),
+            new PlayerMenuItem(initiallyDisabled: true),
+            new PlayerMenuItem(initiallyDisabled: true),
+            new PlayerMenuItem(initiallyDisabled: true),
+            new PlayerMenuItem(initiallyDisabled: true),
+            new PlayerMenuItem(initiallyDisabled: true),
+            new PlayerMenuItem(initiallyDisabled: true),
+            new PlayerMenuItem(initiallyDisabled: true)
+        };
+
         public override ExtensionUiDescriptor Descriptor
         {
             get
@@ -52,23 +66,43 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 return new[]
                 {
-                    GetVerb("Forward (5 seconds)", "Right", Jump(5)),
-                    GetVerb("Backward (5 seconds)", "Left", Jump(-5)),
-                    GetVerb("Forward (1 frame)", "Ctrl+Right", StepFrame()),
-                    GetVerb("Backward (1 frame)", "Ctrl+Left", JumpFrame(-1)),
-                    GetVerb("Forward (30 seconds)", "Ctrl+Shift+Right", Jump(30)),
-                    GetVerb("Backward (30 seconds)", "Ctrl+Shift+Left", Jump(-30)),
-                    GetVerb("Play next chapter", "Shift+Right", PlayChapter(true)),
-                    GetVerb("Play previous chapter", "Shift+Left", PlayChapter(false)),
-                    GetVerb("Play next file in folder", "Ctrl+PageDown", PlayFileInFolder(true)),
-                    GetVerb("Play previous file in folder", "Ctrl+PageUp", PlayFileInFolder(false))
+                    GetVerb("Forward (5 seconds)", "Right", Jump(5), m_MenuItems[0]),
+                    GetVerb("Backward (5 seconds)", "Left", Jump(-5), m_MenuItems[1]),
+                    GetVerb("Forward (1 frame)", "Ctrl+Right", StepFrame(), m_MenuItems[2]),
+                    GetVerb("Backward (1 frame)", "Ctrl+Left", JumpFrame(-1), m_MenuItems[3]),
+                    GetVerb("Forward (30 seconds)", "Ctrl+Shift+Right", Jump(30), m_MenuItems[4]),
+                    GetVerb("Backward (30 seconds)", "Ctrl+Shift+Left", Jump(-30), m_MenuItems[5]),
+                    GetVerb("Play next chapter", "Shift+Right", PlayChapter(true), m_MenuItems[6]),
+                    GetVerb("Play previous chapter", "Shift+Left", PlayChapter(false), m_MenuItems[7]),
+                    GetVerb("Play next file in folder", "Ctrl+PageDown", PlayFileInFolder(true), m_MenuItems[8]),
+                    GetVerb("Play previous file in folder", "Ctrl+PageUp", PlayFileInFolder(false), m_MenuItems[9])
                 };
             }
         }
 
-        private static Verb GetVerb(string menuItemText, string shortCutString, Action action)
+        public override void Initialize()
         {
-            return new Verb(Category.Play, "Navigation", menuItemText, shortCutString, string.Empty, action);
+            base.Initialize();
+            PlayerControl.PlayerStateChanged += PlayerStateChanged;
+        }
+
+        public override void Destroy()
+        {
+            PlayerControl.PlayerStateChanged -= PlayerStateChanged;
+            base.Destroy();
+        }
+
+        private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
+        {
+            foreach (var item in m_MenuItems)
+            {
+                item.Enabled = e.NewState != PlayerState.Closed;
+            }
+        }
+
+        private static Verb GetVerb(string menuItemText, string shortCutString, Action action, PlayerMenuItem menuItem)
+        {
+            return new Verb(Category.Play, "Navigation", menuItemText, shortCutString, string.Empty, action, menuItem);
         }
 
         private Action PlayChapter(bool next)

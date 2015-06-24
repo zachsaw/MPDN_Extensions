@@ -429,6 +429,9 @@
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-pass1.cg" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistConfigDialog.resx">
+      <DependentUpon>PlaylistConfigDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
     </EmbeddedResource>

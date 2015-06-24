@@ -22,6 +22,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class ViewMediaInfo : PlayerExtension
     {
+        private readonly PlayerMenuItem m_MenuItem = new PlayerMenuItem(initiallyDisabled: true);
+
         public override ExtensionUiDescriptor Descriptor
         {
             get
@@ -41,9 +43,26 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 return new[]
                 {
-                    new Verb(Category.View, string.Empty, "Media Info...", "Ctrl+Shift+I", string.Empty, ShowMediaInfoDialog)
+                    new Verb(Category.View, string.Empty, "Media Info...", "Ctrl+Shift+I", string.Empty, ShowMediaInfoDialog, m_MenuItem)
                 };
             }
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            PlayerControl.PlayerStateChanged += PlayerStateChanged;
+        }
+
+        public override void Destroy()
+        {
+            PlayerControl.PlayerStateChanged -= PlayerStateChanged;
+            base.Destroy();
+        }
+
+        private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
+        {
+            m_MenuItem.Enabled = e.NewState != PlayerState.Closed;
         }
 
         private static void ShowMediaInfoDialog()

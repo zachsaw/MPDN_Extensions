@@ -29,9 +29,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private const string Subcategory = "Playlist";
 
         private readonly PlaylistForm form = new PlaylistForm();
+        private readonly PlayerMenuItem menuItem = new PlayerMenuItem();
 
         private bool docked;
-        
+
         private Form mpdnForm;
         private Point mpdnStartLocation;
 
@@ -143,13 +144,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 if (Settings.RememberedFiles.Count > 0)
                 {
-                    List<PlaylistItem> playList = new List<PlaylistItem>();
+                    var playList = new List<PlaylistItem>();
 
                     foreach (var f in Settings.RememberedFiles)
                     {
                         string[] s = f.Split('|');
                         string filePath = s[0];
-                        List<int> skipChapters = new List<int>();
+                        var skipChapters = new List<int>();
                         if (s[1].Length > 0)
                         {
                             if (s[1].Contains(","))
@@ -292,13 +293,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             if (Settings.AfterPlaybackOpt == AfterPlaybackSettingsOpt.ClosePlayer)
             {
-                CloseMPDN();
+                CloseMpdn();
             }
         }
 
         private void OnFormVisibilityChanged(object sender, EventArgs e)
         {
             mpdnForm.BringToFront();
+
+            menuItem.Checked = form.Visible;
         }
 
         private void OnMpdnFormClosed(object sender, EventArgs e)
@@ -493,7 +496,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 return new[]
                 {
                     new Verb(Category.File, string.Empty, "Open Playlist", "Ctrl+Alt+O", string.Empty, OpenPlaylist),
-                    new Verb(Category.View, string.Empty, "Playlist", "Ctrl+Alt+P", string.Empty, ViewPlaylist),
+                    new Verb(Category.View, string.Empty, "Playlist", "Ctrl+Alt+P", string.Empty, ViewPlaylist, menuItem),
                     new Verb(Category.Play, Subcategory, "Next", "Ctrl+Alt+N", string.Empty, () => form.PlayNext()),
                     new Verb(Category.Play, Subcategory, "Previous", "Ctrl+Alt+B", string.Empty, () => form.PlayPrevious())
                 };
@@ -512,25 +515,27 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             form.SetPlayStyling();
         }
 
-        private void CloseMPDN()
+        private void CloseMpdn()
         {
             if (String.IsNullOrEmpty(PlayerControl.MediaFilePath)) return;
             if (PlayerControl.MediaPosition < PlayerControl.MediaDuration) return;
-            if (form.GetDgvPlaylist().CurrentRow.Index < form.Playlist.Count - 1) return;
+            var row = form.GetDgvPlaylist().CurrentRow;
+            if (row == null) return;
+            if (row.Index < form.Playlist.Count - 1) return;
             mpdnForm.Close();
         }
 
         private void SetFormToSizable()
         {
             form.FormBorderStyle = FormBorderStyle.Sizable;
-            StatusStrip s = (StatusStrip)form.Controls["statusStrip1"];
+            var s = (StatusStrip)form.Controls["statusStrip1"];
             s.SizingGrip = true;
         }
 
         private void SetFormToFixed()
         {
             form.FormBorderStyle = FormBorderStyle.FixedSingle;
-            StatusStrip s = (StatusStrip)form.Controls["statusStrip1"];
+            var s = (StatusStrip)form.Controls["statusStrip1"];
             s.SizingGrip = false;
         }
 
@@ -538,8 +543,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             var screen = Screen.FromControl(mpdnForm);
             var screenBounds = screen.WorkingArea;
-            var p = mpdnForm.PointToScreen(new Point(mpdnForm.Right, mpdnForm.Bottom));
-
             if (form.Left < 0)
                 form.Left = 0;
             if (form.Left + form.Width > screenBounds.Width)
@@ -552,18 +555,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private bool IsOnScreen()
         {
-            Screen[] screens = Screen.AllScreens;
-            foreach (Screen screen in screens)
-            {
-                Rectangle formRectangle = new Rectangle(form.Left, form.Top, form.Width, form.Height);
-
-                if (screen.WorkingArea.Contains(formRectangle))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return (Screen.AllScreens.Select(
+                    screen => new {screen, formRectangle = new Rectangle(form.Left, form.Top, form.Width, form.Height)})
+                    .Where(t => t.screen.WorkingArea.Contains(t.formRectangle))
+                    .Select(t => t.screen)).Any();
         }
 
         private void SetActiveFile()
@@ -630,9 +625,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             string[] extensions = filter[1].Replace(";", "").Replace(" ", "").Split('*');
 
             var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.AllDirectories)
-            .OrderBy(f => Path.GetDirectoryName(f), new NaturalSortComparer())
-            .ThenBy(f => Path.GetFileName(f), new NaturalSortComparer())
-            .Where(f => Path.HasExtension(f))
+            .OrderBy(Path.GetDirectoryName, new NaturalSortComparer())
+            .ThenBy(Path.GetFileName, new NaturalSortComparer())
+            .Where(Path.HasExtension)
             .Where(f => extensions.Contains(Path.GetExtension(f.ToLower())));
 
             return files;
@@ -644,9 +639,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             string[] extensions = filter[1].Replace(";", "").Replace(" ", "").Split('*');
 
             var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.TopDirectoryOnly)
-            .OrderBy(f => Path.GetDirectoryName(f), new NaturalSortComparer())
-            .ThenBy(f => Path.GetFileName(f), new NaturalSortComparer())
-            .Where(f => Path.HasExtension(f))
+            .OrderBy(Path.GetDirectoryName, new NaturalSortComparer())
+            .ThenBy(Path.GetFileName, new NaturalSortComparer())
+            .Where(Path.HasExtension)
             .Where(f => extensions.Contains(Path.GetExtension(f.ToLower())));
 
             return files;
@@ -674,24 +669,33 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     var media = GetAllMediaFiles(filename);
                     form.CloseMedia();
                     form.ClearPlaylist();
-                    form.AddFiles(media.Where(file => extensions.Contains(Path.GetExtension(file.ToLower()))).OrderBy(f => f, new NaturalSortComparer()).Where(f => Path.GetExtension(f).Length > 0).ToArray());
+                    form.AddFiles(
+                        media.Where(file => extensions.Contains(PathHelper.GetExtension(file.ToLower())))
+                            .OrderBy(f => f, new NaturalSortComparer())
+                            .Where(f => PathHelper.GetExtension(f).Length > 0)
+                            .ToArray());
                     form.SetPlaylistIndex(0);
                     return;
                 }
-                else if (IsPlaylistFile(filename))
+
+                if (IsPlaylistFile(filename))
                 {
                     form.OpenPlaylist(filename);
                     return;
                 }
 
-                if (Path.GetExtension(filename).Length < 1 || !extensions.Contains(Path.GetExtension(filename))) return;
+                if (PathHelper.GetExtension(filename).Length < 1 || !extensions.Contains(Path.GetExtension(filename))) return;
 
                 form.ActiveFile(filename);
                 form.SetPlaylistIndex(0);
             }
             else
             {
-                form.AddFiles(files.Where(file => extensions.Contains(Path.GetExtension(file.ToLower()))).OrderBy(f => f, new NaturalSortComparer()).Where(f => Path.GetExtension(f).Length > 0).ToArray());
+                form.AddFiles(
+                    files.Where(file => extensions.Contains(PathHelper.GetExtension(file.ToLower())))
+                        .OrderBy(f => f, new NaturalSortComparer())
+                        .Where(f => PathHelper.GetExtension(f).Length > 0)
+                        .ToArray());
                 form.SetPlaylistIndex(0);
             }
 

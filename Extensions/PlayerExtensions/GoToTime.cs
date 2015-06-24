@@ -23,6 +23,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class GoToTime : PlayerExtension
     {
+        private readonly PlayerMenuItem m_MenuItem = new PlayerMenuItem(initiallyDisabled: true);
+
         public override ExtensionUiDescriptor Descriptor
         {
             get
@@ -42,13 +44,33 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 return new[]
                 {
-                    new Verb(Category.Play, string.Empty, "Go To...", "Ctrl+G", string.Empty, GotoPosition)
+                    new Verb(Category.Play, string.Empty, "Go To...", "Ctrl+G", string.Empty, GotoPosition, m_MenuItem)
                 };
             }
         }
 
+        public override void Initialize()
+        {
+            base.Initialize();
+            PlayerControl.PlayerStateChanged += PlayerStateChanged;
+        }
+
+        public override void Destroy()
+        {
+            PlayerControl.PlayerStateChanged -= PlayerStateChanged;
+            base.Destroy();
+        }
+
+        private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
+        {
+            m_MenuItem.Enabled = e.NewState != PlayerState.Closed;
+        }
+
         private void GotoPosition()
         {
+            if (!m_MenuItem.Enabled)
+                return;
+
             using (var form = new GoToTimeForm())
             {
                 if (form.ShowDialog(PlayerControl.VideoPanel) != DialogResult.OK)

@@ -269,9 +269,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.label2.ForeColor = System.Drawing.SystemColors.ControlText;
             this.label2.Location = new System.Drawing.Point(11, 25);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(167, 13);
+            this.label2.Size = new System.Drawing.Size(218, 13);
             this.label2.TabIndex = 5;
-            this.label2.Text = "Playlist with advanced capabilities";
+            this.label2.Text = "Playlist with advanced capabilities by Garteal";
             // 
             // groupBox5
             // 

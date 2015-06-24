@@ -36,7 +36,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public static int PlaylistCount { get; set; }
 
         private const double MaxOpacity = 1.0;
-        private const double MinOpacity = 0.7;
+        private const double MinOpacity = 0.8;
         private const string ActiveIndicator = "[*]";
         private const string InactiveIndicator = "[ ]";
 
@@ -636,7 +636,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             var pos = MousePosition;
             bool inForm = pos.X >= Left && pos.Y >= Top && pos.X < Right && pos.Y < Bottom;
 
-            if (inForm)
+            if (inForm || ActiveForm == this)
             {
                 if (Opacity < MaxOpacity)
                 {
