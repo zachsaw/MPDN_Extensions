@@ -84,8 +84,7 @@
       <HintPath>MPDN\YAXLib.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Compile Include="Examples\RenderScripts\Example.Basic.cs" />
     <Compile Include="Examples\RenderScripts\Example.CustomTextures.cs" />
     <Compile Include="Examples\RenderScripts\Example.DirectCompute.cs" />
@@ -93,6 +92,14 @@
     <Compile Include="Examples\RenderScripts\Example.Lut3D.cs" />
     <Compile Include="Examples\RenderScripts\Example.OpenCl.cs" />
     <Compile Include="Examples\RenderScripts\Example.Sm5.cs" />
+    <None Include="Examples\RenderScripts\Examples\BlueTintDirectCompute.hlsl" />
+    <None Include="Examples\RenderScripts\Examples\BlueTintSm3.hlsl" />
+    <None Include="Examples\RenderScripts\Examples\BlueTintSm5.hlsl" />
+    <None Include="Examples\RenderScripts\Examples\CustomTextures.hlsl" />
+    <None Include="Examples\RenderScripts\Examples\Lut3D.hlsl" />
+    <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincBlackman.cs" />
@@ -362,67 +369,57 @@
     </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Examples\RenderScripts\Examples\BlueTintDirectCompute.hlsl" />
-    <Content Include="Examples\RenderScripts\Examples\BlueTintSm3.hlsl" />
-    <Content Include="Examples\RenderScripts\Examples\BlueTintSm5.hlsl" />
-    <Content Include="Examples\RenderScripts\Examples\CustomTextures.hlsl" />
-    <Content Include="Examples\RenderScripts\Examples\Lut3D.hlsl" />
-    <Content Include="Extensions\RenderScripts\ChromaScaler\Chroma.hlsl" />
-    <Content Include="Extensions\RenderScripts\Common\ColourProcessing.hlsl" />
-    <Content Include="Extensions\RenderScripts\Common\GammaToLab.hlsl" />
-    <Content Include="Extensions\RenderScripts\Common\GammaToLinear.hlsl" />
-    <Content Include="Extensions\RenderScripts\Common\LabToGamma.hlsl" />
-    <Content Include="Extensions\RenderScripts\Common\LabToLinear.hlsl" />
-    <Content Include="Extensions\RenderScripts\Common\LinearToGamma.hlsl" />
-    <Content Include="Extensions\RenderScripts\Common\LinearToLab.hlsl" />
-    <Content Include="Extensions\RenderScripts\Deband\Deband.hlsl" />
-    <Content Include="Extensions\RenderScripts\Deband\Subtract.hlsl" />
-    <Content Include="Extensions\RenderScripts\Deband\SubtractLimited.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\ConvertToGammaLight.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\ConvertToLinearLight.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Bloom.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Border.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Cartoon.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Curves.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\DPX.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Explosion.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\HDR.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Levels.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\LiftGammaGain.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\LumaSharpen.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Monochrome.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Sepia.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Technicolor.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Tonemap.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Vibrance.hlsl" />
-    <Content Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Vignette.hlsl" />
-    <Content Include="Extensions\RenderScripts\Lut3D\Lut3D.hlsl" />
-    <Content Include="Extensions\RenderScripts\NEDI\NEDI-Common.hlsl" />
-    <Content Include="Extensions\RenderScripts\NEDI\NEDI-HInterleave.hlsl" />
-    <Content Include="Extensions\RenderScripts\NEDI\NEDI-I.hlsl" />
-    <Content Include="Extensions\RenderScripts\NEDI\NEDI-II.hlsl" />
-    <Content Include="Extensions\RenderScripts\NEDI\NEDI-VInterleave.hlsl" />
-    <Content Include="Extensions\RenderScripts\NNEDI3\Combine.hlsl" />
-    <Content Include="Extensions\RenderScripts\NNEDI3\Interleave.hlsl" />
-    <Content Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
-    <Content Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
-    <Content Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
-    <Content Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
-    <Content Include="Extensions\RenderScripts\SuperRes\Diff.hlsl" />
-    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyChroma.hlsl" />
-    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyLuma.hlsl" />
-    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\Diff.hlsl" />
-    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\MergeChroma.hlsl" />
-    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CrossBilateral.hlsl" />
-    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperResEx.hlsl" />
-    <Content Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperRes.hlsl" />
-    <Content Include="Extensions\RenderScripts\SuperRes\SuperResEx.hlsl" />
-    <Content Include="Extensions\RenderScripts\SuperRes\SuperRes.hlsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
+    <None Include="Extensions\RenderScripts\ChromaScaler\Chroma.hlsl" />
+    <None Include="Extensions\RenderScripts\Common\ColourProcessing.hlsl" />
+    <None Include="Extensions\RenderScripts\Common\GammaToLab.hlsl" />
+    <None Include="Extensions\RenderScripts\Common\GammaToLinear.hlsl" />
+    <None Include="Extensions\RenderScripts\Common\LabToGamma.hlsl" />
+    <None Include="Extensions\RenderScripts\Common\LabToLinear.hlsl" />
+    <None Include="Extensions\RenderScripts\Common\LinearToGamma.hlsl" />
+    <None Include="Extensions\RenderScripts\Common\LinearToLab.hlsl" />
+    <None Include="Extensions\RenderScripts\Deband\Deband.hlsl" />
+    <None Include="Extensions\RenderScripts\Deband\Subtract.hlsl" />
+    <None Include="Extensions\RenderScripts\Deband\SubtractLimited.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\ConvertToGammaLight.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\ConvertToLinearLight.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Bloom.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Border.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Cartoon.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Curves.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\DPX.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Explosion.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\HDR.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Levels.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\LiftGammaGain.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\LumaSharpen.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Monochrome.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Sepia.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Technicolor.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Tonemap.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Vibrance.hlsl" />
+    <None Include="Extensions\RenderScripts\ImageProcessingShaders\SweetFX\Vignette.hlsl" />
+    <None Include="Extensions\RenderScripts\Lut3D\Lut3D.hlsl" />
+    <None Include="Extensions\RenderScripts\NEDI\NEDI-Common.hlsl" />
+    <None Include="Extensions\RenderScripts\NEDI\NEDI-HInterleave.hlsl" />
+    <None Include="Extensions\RenderScripts\NEDI\NEDI-I.hlsl" />
+    <None Include="Extensions\RenderScripts\NEDI\NEDI-II.hlsl" />
+    <None Include="Extensions\RenderScripts\NEDI\NEDI-VInterleave.hlsl" />
+    <None Include="Extensions\RenderScripts\NNEDI3\Combine.hlsl" />
+    <None Include="Extensions\RenderScripts\NNEDI3\Interleave.hlsl" />
+    <None Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
+    <None Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
+    <None Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
+    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
+    <None Include="Extensions\RenderScripts\SuperRes\Diff.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyChroma.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyLuma.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\Diff.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\MergeChroma.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CrossBilateral.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperResEx.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperRes.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperResEx.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperRes.hlsl" />
     <None Include="Extensions\RenderScripts\NNEDI3\BuildShaders.bat" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-pass0.cg" />
