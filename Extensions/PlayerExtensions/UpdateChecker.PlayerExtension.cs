@@ -18,9 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -126,7 +128,12 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void SetHeaders()
         {
-            m_WebClient.Headers.Add("User-Agent", string.Format("MPDN/{0} (+http://mpdn.zachsaw.com/)", Application.ProductVersion));
+            var version = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\MediaPlayerDotNet_Extensions", "Version", null);
+            if (version == null)
+            {
+                version = "0.0.0.0";
+            }
+            m_WebClient.Headers.Add("User-Agent", string.Format("Mozilla/5.0 (compatible; Windows NT {0}; MPDN/{1}; MPDN_Extensions/{2}; +http://mpdn.zachsaw.com/)", Environment.OSVersion.Version, Application.ProductVersion, version));
         }
 
         private void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)

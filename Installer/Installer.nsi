@@ -169,7 +169,6 @@ SectionEnd
 
 Section /o "Extensions for MPDN x86" SecMPDNExtensions32
     !insertmacro InstallExtensions "$mpdn32_root"
-
 SectionEnd
 
 Section /o "Extensions for MPDN x64" SecMPDNExtensions64
@@ -184,6 +183,7 @@ Section -post
     ${IfNot} $mpdn32_root == ""
         ${registerExtension} "$mpdn32_root\MediaPlayerDotNet.exe" ".mpl" "MPDN Playlist File"
     ${EndIf}
+    WriteRegStr HKLM "SOFTWARE\${MPDN_REGNAME}_Extensions\" "Version" "${VERSION}"
     
 SectionEnd
 
@@ -275,6 +275,7 @@ Section "Uninstall"
     ${GetParent} $INSTDIR $R0
     StrCpy $mpdn_root "$R0"
     Call un.includeUninstall
+    DeleteRegKey HKLM "SOFTWARE\${MPDN_REGNAME}_Extensions\"
     Delete "$INSTDIR\Uninstall.exe"
 SectionEnd
 

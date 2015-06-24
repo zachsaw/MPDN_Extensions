@@ -19,6 +19,12 @@ if not exist %makensis% (
 
 echo Making installer...
 
+git describe --abbrev=0 --tags > latestTag.txt
+for /f "delims=" %%i in ('git rev-list HEAD --count') do set commitCount=%%i
+set /p latestTag=<latestTag.txt
+del latestTag.txt
+set releaseVersion=%latestTag%.%commitCount%
+
 rmdir /s /q Temp 1>nul 2>nul
 %zipper% x "..\Release\Mpdn.Extensions.zip" -oTemp *.* -r 1>nul 2>nul
 if not "%ERRORLEVEL%"=="0" echo error: extraction failed & goto Quit
@@ -31,7 +37,7 @@ if exist UnInstallLog.log (
 )
 REM The Installer
 unList.exe /DATE=1  /INSTDIR=TEMP\Extensions\  /LOG=UnInstallLog.log  /PREFIX="	"  /UNDIR_VAR="$mpdn_root\Extensions"  /MB=0
-%makensis% "/DPROJECT_NAME=MPDN-Extensions" "/DMPDN_REGNAME=MediaPlayerDotNet" /V1 Installer.nsi
+%makensis% "/DPROJECT_NAME=MPDN-Extensions" "/DMPDN_REGNAME=MediaPlayerDotNet" "/DVERSION=%releaseVersion%" /V1 Installer.nsi
 if not "%ERRORLEVEL%"=="0" echo error: makensis failed & goto Quit
 
 rmdir /s /q Temp 1>nul 2>nul
