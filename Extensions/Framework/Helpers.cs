@@ -53,6 +53,20 @@ namespace Mpdn.Extensions.Framework
 
             return Path.GetDirectoryName(path) ?? Path.GetPathRoot(path);
         }
+
+        public static string GetExtension(string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            var result = Path.GetExtension(path);
+            if (result == null)
+                throw new ArgumentException();
+
+            return result;
+        }
     }
 
     public static class EnumHelpers
