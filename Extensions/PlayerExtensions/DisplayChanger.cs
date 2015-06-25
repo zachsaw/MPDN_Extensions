@@ -91,6 +91,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
+            if (PlayerControl.VideoInfo == null) return;
+
             if (e.NewState == PlayerState.Closed)
             {
                 RestoreSettings();
