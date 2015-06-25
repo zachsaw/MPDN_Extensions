@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -129,9 +128,21 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_WebClient.DownloadStringCompleted += DownloadStringCompleted;
         }
 
+        public static Version GetExtensionsVersion()
+        {
+            var asm = typeof (UpdateChecker).Assembly;
+            var ver = FileVersionInfo.GetVersionInfo(asm.Location);
+            return new Version(ver.ToString());
+        }
+
         private void SetHeaders()
         {
-            m_WebClient.Headers.Add("User-Agent", string.Format("MPDN/{0} (+http://mpdn.zachsaw.com/)", Application.ProductVersion));
+            var version = GetExtensionsVersion();
+
+            m_WebClient.Headers.Add("User-Agent",
+                string.Format(
+                    "Mozilla/5.0 (compatible; Windows NT {0}; MPDN/{1}; MPDN_Extensions/{2}; +http://mpdn.zachsaw.com/)",
+                    Environment.OSVersion.Version, Application.ProductVersion, version));
         }
 
         private void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
@@ -298,7 +309,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             public override string ToString()
             {
-                return "v" + Major + "." + Minor + "." + Revision;
+                return Major + "." + Minor + "." + Revision;
             }
         }
 
