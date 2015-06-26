@@ -52,6 +52,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonShuffle = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonRestore = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.PlayButton = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.PauseButton = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.StopButton = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSaveDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonNewDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonNewEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
@@ -135,6 +137,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonShuffle,
             this.buttonRestore,
             this.PlayButton,
+            this.PauseButton,
+            this.StopButton,
             this.buttonSaveDisabled,
             this.buttonNewDisabled,
             this.buttonNewEnabled,
@@ -279,6 +283,24 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.PlayButton.Size = new System.Drawing.Size(24, 25);
             this.PlayButton.Visible = false;
             // 
+            // PauseButton
+            // 
+            this.PauseButton.BackColor = System.Drawing.Color.Transparent;
+            this.PauseButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("PauseButton.BackgroundImage")));
+            this.PauseButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.PauseButton.Name = "PauseButton";
+            this.PauseButton.Size = new System.Drawing.Size(24, 25);
+            this.PauseButton.Visible = false;
+            // 
+            // StopButton
+            // 
+            this.StopButton.BackColor = System.Drawing.Color.Transparent;
+            this.StopButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("StopButton.BackgroundImage")));
+            this.StopButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.StopButton.Name = "StopButton";
+            this.StopButton.Size = new System.Drawing.Size(24, 25);
+            this.StopButton.Visible = false;
+            // 
             // buttonSaveDisabled
             // 
             this.buttonSaveDisabled.BackColor = System.Drawing.Color.Transparent;
@@ -351,7 +373,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(448, 22);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(16, 22);
             this.toolStripStatusLabel1.Spring = true;
             // 
             // buttonRightEnabled
@@ -985,5 +1007,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private DataGridViewTextBoxColumn Title;
         private DataGridViewTextBoxColumn SkipChapters;
         private DataGridViewTextBoxColumn EndChapter;
+        private ButtonStripItem PauseButton;
+        private ButtonStripItem StopButton;
     }
 }

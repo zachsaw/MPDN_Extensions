@@ -504,11 +504,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
 
             dgv_PlayList.CurrentCell = dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex];
+         
+            int _currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
 
-            if (!BeginPlaybackWhenFileIsAdded) return;
-
-            currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : currentPlayIndex = Playlist.Count - 1;
-            OpenMedia();
+            if (BeginPlaybackWhenFileIsAdded)
+            {
+                currentPlayIndex = _currentPlayIndex;
+                OpenMedia();
+            }
+            else
+            {
+                if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused) return;
+                currentPlayIndex = _currentPlayIndex;
+                QueueMedia();
+            }
         }
         
         public void InsertFile(int index, string fileName)
@@ -667,15 +676,31 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             bool paintPlayRow = CurrentItem != null && e.RowIndex > -1 && e.RowIndex == currentPlayIndex;
             if (!paintPlayRow) return;
 
-            var brush = new SolidBrush(Color.FromArgb(42, 127, 183));
+            SolidBrush brush = null;
+            Bitmap icon = null;
+
+            if (PlayerControl.PlayerState == PlayerState.Playing)
+            {
+                brush = new SolidBrush(Color.FromArgb(42, 127, 183));
+                icon = (Bitmap)PlayButton.BackgroundImage;
+            }
+            else if (PlayerControl.PlayerState == PlayerState.Paused)
+            {
+                brush = new SolidBrush(Color.FromArgb(66, 140, 125));
+                icon = (Bitmap)PauseButton.BackgroundImage;
+            }
+            else if (PlayerControl.PlayerState == PlayerState.Stopped)
+            {
+                brush = new SolidBrush(Color.FromArgb(63, 137, 122));
+                icon = (Bitmap)StopButton.BackgroundImage;
+            }
 
             if (e.ColumnIndex == 0)
             {
                 var rect = new Rectangle(e.CellBounds.X + 15, e.CellBounds.Y + 4, e.CellBounds.Width, e.CellBounds.Height - 9);
-                var playIcon = (Bitmap) PlayButton.BackgroundImage;
                 var offset = new Point(e.CellBounds.X, e.CellBounds.Y + 2);
                 e.Graphics.FillRectangle(brush, rect);
-                e.Graphics.DrawImage(playIcon, offset);
+                e.Graphics.DrawImage(icon, offset);
             }
             else
             {
@@ -995,6 +1020,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (CurrentItem == null) return;
             Text = PlayerControl.PlayerState + " - " + CurrentItem.FilePath;
+            dgv_PlayList.InvalidateRow(currentPlayIndex);
         }
 
         private void PlaybackCompleted(object sender, EventArgs e)
@@ -1078,11 +1104,26 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                                 var toolTip = new ToolTip();
                                 var cellDisplayRect = dgv_PlayList.GetCellDisplayRectangle(skipChapterCell.ColumnIndex,
                                     skipChapterCell.RowIndex, false);
-                                toolTip.Show("Only numbers < " + PlayerControl.Chapters.Count + " are allowed",
-                                    dgv_PlayList,
-                                    cellDisplayRect.X + skipChapterCell.Size.Width / 2,
-                                    cellDisplayRect.Y + skipChapterCell.Size.Height / 2,
-                                    2000);
+                                if (PlayerControl.Chapters.Count == 0)
+                                {
+                                    if (PlayerControl.Chapters.Count == 0)
+                                    {
+                                        toolTip.Show("This file has no chapters",
+                                            dgv_PlayList,
+                                            cellDisplayRect.X + endChapterCell.Size.Width / 2,
+                                            cellDisplayRect.Y + endChapterCell.Size.Height / 2,
+                                            2000);
+                                    }
+                                }
+                                else
+                                {
+                                    toolTip.Show("Only numbers < " + PlayerControl.Chapters.Count + " are allowed",
+                                        dgv_PlayList,
+                                        cellDisplayRect.X + skipChapterCell.Size.Width / 2,
+                                        cellDisplayRect.Y + skipChapterCell.Size.Height / 2,
+                                        2000);
+                                }
+
                                 sortedNumbers.RemoveAll(num => num >= PlayerControl.Chapters.Count);
                             }
                             if (PlayerControl.Chapters.Count == 0)
@@ -1106,11 +1147,22 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                                 var toolTip = new ToolTip();
                                 var cellDisplayRect = dgv_PlayList.GetCellDisplayRectangle(endChapterCell.ColumnIndex,
                                     endChapterCell.RowIndex, false);
-                                toolTip.Show("Only numbers <= " + PlayerControl.Chapters.Count + " are allowed",
-                                    dgv_PlayList,
-                                    cellDisplayRect.X + endChapterCell.Size.Width / 2,
-                                    cellDisplayRect.Y + endChapterCell.Size.Height / 2,
-                                    2000);
+                                if (PlayerControl.Chapters.Count == 0)
+                                {
+                                    toolTip.Show("This file has no chapters",
+                                        dgv_PlayList,
+                                        cellDisplayRect.X + endChapterCell.Size.Width / 2,
+                                        cellDisplayRect.Y + endChapterCell.Size.Height / 2,
+                                        2000);
+                                }
+                                else
+                                {
+                                    toolTip.Show("Only numbers <= " + PlayerControl.Chapters.Count + " are allowed",
+                                        dgv_PlayList,
+                                        cellDisplayRect.X + endChapterCell.Size.Width / 2,
+                                        cellDisplayRect.Y + endChapterCell.Size.Height / 2,
+                                        2000);
+                                }
 
                                 value = PlayerControl.Chapters.Count.ToString();
                             }
@@ -1217,6 +1269,47 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             var endChapter = int.Parse(splitLine[2].Substring(splitLine[2].IndexOf(':') + 1).Trim());
             Playlist.Add(new PlaylistItem(title, skipChapters, endChapter, isActive));
+        }
+
+        private void QueueMedia()
+        {
+            if (currentPlayIndex < 0 || currentPlayIndex >= Playlist.Count) return;
+
+            bool playerWasFullScreen = PlayerControl.InFullScreenMode;
+            ResetActive();
+
+            try
+            {
+                var item = Playlist[currentPlayIndex];
+                dgv_PlayList.CurrentCell = dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex];
+
+                if (File.Exists(item.FilePath))
+                {
+                    SetPlayStyling();
+                    PlayerControl.OpenMedia(item.FilePath, false);
+                }
+                else
+                {
+                    if (currentPlayIndex != Playlist.Count - 1) PlayNext();
+                    else CloseMedia();
+
+                    SetPlayStyling();
+                    return;
+                }
+
+                item.Active = true;
+                CurrentItem = item;
+                previousChapterPosition = 0;
+
+                ParseChapterInput();
+            }
+            catch (Exception ex)
+            {
+                PlayerControl.HandleException(ex);
+                PlayNext();
+            }
+
+            dgv_PlayList.Invalidate();
         }
 
         private void OpenMedia()
