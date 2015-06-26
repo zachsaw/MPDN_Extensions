@@ -99,9 +99,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.toolTip.SetToolTip(this.comboBoxPrefLanguage, "Used to filter the subtitles. If your language is unavailable it will show all th" +
         "e subtitles.");
             this.comboBoxPrefLanguage.ValueMember = "EnglishName";
-            this.comboBoxPrefLanguage.DropDownClosed += new System.EventHandler(OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageDropDownClosed);
-            this.comboBoxPrefLanguage.KeyDown += new System.Windows.Forms.KeyEventHandler(OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyDown);
-            this.comboBoxPrefLanguage.KeyPress += new System.Windows.Forms.KeyPressEventHandler(OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyPress);
             // 
             // labelPrefLang
             // 

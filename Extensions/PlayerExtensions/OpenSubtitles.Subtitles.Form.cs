@@ -34,6 +34,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             CancelButton = btnCancel;
             Icon = PlayerControl.ApplicationIcon;
             FormClosed += OpenSubtitlesForm_FormClosed;
+            comboBoxChangeLang.KeyDown += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyDown;
+            comboBoxChangeLang.KeyPress += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyPress;
         }
 
         private void OpenSubtitlesForm_FormClosed(object sender, FormClosedEventArgs e)

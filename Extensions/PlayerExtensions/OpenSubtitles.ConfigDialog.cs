@@ -15,10 +15,6 @@
 // License along with this library.
 // 
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -32,6 +28,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             InitializeComponent();
             cultureBindingSource.DataSource = OpenSubtitlesLanguageHandler.GetListCulture();
             comboBoxPrefLanguage.DataSource = cultureBindingSource;
+            comboBoxPrefLanguage.DropDownClosed += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageDropDownClosed;
+            comboBoxPrefLanguage.KeyDown += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyDown;
+            comboBoxPrefLanguage.KeyPress += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyPress;
         }
 
         protected override void LoadSettings()
