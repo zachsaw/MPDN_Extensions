@@ -694,6 +694,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 brush = new SolidBrush(Color.FromArgb(63, 137, 122));
                 icon = (Bitmap)StopButton.BackgroundImage;
             }
+            else
+            {
+                brush = new SolidBrush(Color.FromArgb(0, 0, 0, 0));
+                icon = new Bitmap(24, 24);
+            }
 
             if (e.ColumnIndex == 0)
             {
@@ -1473,6 +1478,19 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             AddFiles(fileNames);
         }
 
+        private void AddClipboardToPlaylist()
+        {
+            var files = Clipboard.GetText().Replace("\r", "").Split('\n').ToList();
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                if (!File.Exists(files.ElementAt(i))) files.RemoveAt(i);
+            }
+
+            if (files.Count < 1) return;
+            AddFiles(files.ToArray());
+        }
+
         private void AddFolderToPlaylist()
         {
             using (Ookii.Dialogs.VistaFolderBrowserDialog fd = new Ookii.Dialogs.VistaFolderBrowserDialog())
@@ -1604,6 +1622,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             dgv_PlayList.Focus();
         }
 
+        private void ButtonAddFromClipboardClick(object sender, EventArgs e)
+        {
+            AddClipboardToPlaylist();
+            dgv_PlayList.Focus();
+        }
+
         private void ButtonAddFolderClick(object sender, EventArgs e)
         {
             AddFolderToPlaylist();
@@ -1682,6 +1706,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (e.KeyData == Keys.Escape)
             {
                 Hide();
+            }
+
+            if (e.KeyCode == Keys.V && e.Modifiers == (Keys.Control))
+            {
+                AddClipboardToPlaylist();
             }
 
             if (e.KeyCode == Keys.P && e.Modifiers == (Keys.Control | Keys.Alt))
