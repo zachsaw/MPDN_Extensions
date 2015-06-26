@@ -156,6 +156,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             // comboBoxChangeLang
             // 
+            this.comboBoxChangeLang.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxChangeLang.DataSource = this.subLangBindingSource;
             this.comboBoxChangeLang.FormattingEnabled = true;
             this.comboBoxChangeLang.Location = new System.Drawing.Point(623, 8);
@@ -163,8 +166,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.comboBoxChangeLang.Size = new System.Drawing.Size(121, 21);
             this.comboBoxChangeLang.TabIndex = 5;
             this.comboBoxChangeLang.DropDownClosed += new System.EventHandler(this.comboBoxChangeLang_DropDownClosed);
-            this.comboBoxChangeLang.KeyDown += new System.Windows.Forms.KeyEventHandler(OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyDown);
-            this.comboBoxChangeLang.KeyPress += new System.Windows.Forms.KeyPressEventHandler(OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyPress);
             // 
             // subLangBindingSource
             // 
