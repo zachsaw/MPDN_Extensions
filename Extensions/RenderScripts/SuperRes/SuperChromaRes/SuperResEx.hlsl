@@ -95,7 +95,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     float varS = (1 - softness) * var;
 
     // Apply force
-    c0.xyz -= strength*lerp(diff, stab, 0.5);//softness);
+    c0.xyz -= strength*lerp(diff, stab, softness);
 
 	// Limit to RGB cube and luma plane.
 	c0.rgb += Lum - Luma(c0.rgb);
