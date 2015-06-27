@@ -424,8 +424,8 @@
     <None Include="Extensions\RenderScripts\SuperRes\SuperRes.hlsl" />
     <None Include="Extensions\RenderScripts\NNEDI3\BuildShaders.bat" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
-    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-pass0.cg" />
-    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-pass1.cg" />
+    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
+    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr.hlsl" />
     <None Include="Properties\DataSources\System.Globalization.CultureAndRegionInfoBuilder.datasource" />
   </ItemGroup>
   <ItemGroup>

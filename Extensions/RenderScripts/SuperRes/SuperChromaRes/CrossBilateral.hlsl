@@ -15,7 +15,7 @@
 // License along with this library.
 // 
 // -- Edge detection options -- 
-#define acuity 3.0
+#define acuity 12.0
 #define radius 0.66
 #define power 3.0
 
