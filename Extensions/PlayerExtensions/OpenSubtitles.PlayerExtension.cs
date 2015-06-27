@@ -72,16 +72,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                 if (subList == null || subList.Count == 0)
                     return; // Opensubtitles messagebox is annoying #44 https://github.com/zachsaw/MPDN_Extensions/issues/44
                 subList.Sort((a, b) => String.Compare(a.Lang, b.Lang, CultureInfo.CurrentUICulture, CompareOptions.StringSort));
-                if (Settings.PreferedLanguage != null)
-                {
-                    var filteredSubList = subList.FindAll(sub => sub.Lang.Contains(Settings.PreferedLanguage));
-                    if (filteredSubList.Count > 0)
-                    {
-                        subList = filteredSubList;
-                    }
-                }
 
-                m_Form.SetSubtitles(subList);
+                m_Form.SetSubtitles(subList, Settings.PreferedLanguage);
                 m_Form.ShowDialog(PlayerControl.Form);
             }
             catch (InternetConnectivityException)

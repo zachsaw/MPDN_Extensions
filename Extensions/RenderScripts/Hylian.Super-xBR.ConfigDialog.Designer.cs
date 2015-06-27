@@ -55,6 +55,8 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonCancel = new System.Windows.Forms.Button();
             this.SharpnessSetter = new System.Windows.Forms.NumericUpDown();
             this.label8 = new System.Windows.Forms.Label();
+            this.FastBox = new System.Windows.Forms.CheckBox();
+            this.ExtraPassBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.EdgeStrengthSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SharpnessSetter)).BeginInit();
             this.SuspendLayout();
@@ -68,7 +70,7 @@ namespace Mpdn.Extensions.RenderScripts
             0,
             0,
             65536});
-            this.EdgeStrengthSetter.Location = new System.Drawing.Point(124, 12);
+            this.EdgeStrengthSetter.Location = new System.Drawing.Point(125, 12);
             this.EdgeStrengthSetter.Maximum = new decimal(new int[] {
             1,
             0,
@@ -98,7 +100,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(12, 65);
+            this.ButtonOK.Location = new System.Drawing.Point(13, 110);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 3;
@@ -110,7 +112,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(93, 65);
+            this.ButtonCancel.Location = new System.Drawing.Point(94, 110);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 4;
@@ -126,7 +128,7 @@ namespace Mpdn.Extensions.RenderScripts
             0,
             0,
             131072});
-            this.SharpnessSetter.Location = new System.Drawing.Point(124, 38);
+            this.SharpnessSetter.Location = new System.Drawing.Point(125, 38);
             this.SharpnessSetter.Maximum = new decimal(new int[] {
             2,
             0,
@@ -151,13 +153,35 @@ namespace Mpdn.Extensions.RenderScripts
             this.label8.TabIndex = 16;
             this.label8.Text = "Sharpness";
             // 
+            // FastBox
+            // 
+            this.FastBox.AutoSize = true;
+            this.FastBox.Location = new System.Drawing.Point(15, 64);
+            this.FastBox.Name = "FastBox";
+            this.FastBox.Size = new System.Drawing.Size(84, 17);
+            this.FastBox.TabIndex = 17;
+            this.FastBox.Text = "Fast method";
+            this.FastBox.UseVisualStyleBackColor = true;
+            // 
+            // ExtraPassBox
+            // 
+            this.ExtraPassBox.AutoSize = true;
+            this.ExtraPassBox.Location = new System.Drawing.Point(15, 87);
+            this.ExtraPassBox.Name = "ExtraPassBox";
+            this.ExtraPassBox.Size = new System.Drawing.Size(93, 17);
+            this.ExtraPassBox.TabIndex = 18;
+            this.ExtraPassBox.Text = "Use third pass";
+            this.ExtraPassBox.UseVisualStyleBackColor = true;
+            // 
             // SuperXbrConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(180, 100);
+            this.ClientSize = new System.Drawing.Size(181, 145);
+            this.Controls.Add(this.ExtraPassBox);
+            this.Controls.Add(this.FastBox);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.SharpnessSetter);
             this.Controls.Add(this.ButtonCancel);
@@ -187,6 +211,8 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button ButtonCancel;
             private System.Windows.Forms.NumericUpDown SharpnessSetter;
             private System.Windows.Forms.Label label8;
+            private System.Windows.Forms.CheckBox FastBox;
+            private System.Windows.Forms.CheckBox ExtraPassBox;
 
         }
     }

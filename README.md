@@ -58,7 +58,7 @@ MPDN Extensions are used either as source or compiled.
 As such, it is important that you validate your changes against both the usage models before releasing them on GitHub.
 
 ####Validating Extensions (Compiled Assembly)
-Build the solution in the IDE and test your extensions. Also run `make.bat 0.0.0.0` to make sure the build succeeds outside of the IDE.
+Build the solution in the IDE and test your extensions. Also run `make.bat` to make sure the build succeeds outside of the IDE.
 
 ####Validating Extensions (Source Code Deployment)
 `Validate Release.bat` sets up MPDN with your extensions to simulate production condition.

@@ -32,12 +32,16 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 EdgeStrengthSetter.Value = (Decimal)Settings.EdgeStrength;
                 SharpnessSetter.Value = (Decimal)Settings.Sharpness;
+                FastBox.Checked = Settings.FastMethod;
+                ExtraPassBox.Checked = Settings.ThirdPass;
             }
 
             protected override void SaveSettings()
             {
                 Settings.EdgeStrength = (float)EdgeStrengthSetter.Value;
                 Settings.Sharpness = (float)SharpnessSetter.Value;
+                Settings.FastMethod = FastBox.Checked;
+                Settings.ThirdPass = ExtraPassBox.Checked;
             }
         }
 

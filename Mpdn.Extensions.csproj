@@ -70,6 +70,7 @@
     <Reference Include="ShellBasics">
       <HintPath>Extensions\Libs\ShellBasics.dll</HintPath>
     </Reference>
+    <Reference Include="sysglobl" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -369,6 +370,7 @@
     </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Extensions\PlayerExtensions\OpenSubtitles.LanguageHandler.cs" />
     <None Include="Extensions\RenderScripts\ChromaScaler\Chroma.hlsl" />
     <None Include="Extensions\RenderScripts\Common\ColourProcessing.hlsl" />
     <None Include="Extensions\RenderScripts\Common\GammaToLab.hlsl" />
@@ -422,8 +424,9 @@
     <None Include="Extensions\RenderScripts\SuperRes\SuperRes.hlsl" />
     <None Include="Extensions\RenderScripts\NNEDI3\BuildShaders.bat" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
-    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-pass0.cg" />
-    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-pass1.cg" />
+    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
+    <None Include="Extensions\RenderScripts\Super-xBR\super-xbr.hlsl" />
+    <None Include="Properties\DataSources\System.Globalization.CultureAndRegionInfoBuilder.datasource" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">

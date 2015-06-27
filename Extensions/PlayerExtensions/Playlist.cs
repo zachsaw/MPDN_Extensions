@@ -659,6 +659,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             string[] extensions = filter[1].Replace(";", "").Replace(" ", "").Split('*');
 
             var files = (string[])e.InputArgs.Data.GetData(DataFormats.FileDrop);
+            if (files == null)
+                return;
 
             if (files.Length == 1)
             {
