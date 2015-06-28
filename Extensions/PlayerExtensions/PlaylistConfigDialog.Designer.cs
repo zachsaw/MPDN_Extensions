@@ -46,8 +46,6 @@ namespace Mpdn.Extensions.PlayerExtensions
         /// </summary>
         private void InitializeComponent()
         {
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.cb_addToPlaylistOnFileOpen = new System.Windows.Forms.CheckBox();
             this.cb_showPlaylistOnStartup = new System.Windows.Forms.CheckBox();
             this.cb_rememberPlaylist = new System.Windows.Forms.CheckBox();
             this.cb_rememberWindowPosition = new System.Windows.Forms.CheckBox();
@@ -58,8 +56,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.cb_afterPlaybackOpt = new System.Windows.Forms.ComboBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.cb_whenFileIsAdded = new System.Windows.Forms.CheckBox();
-            this.cb_whenPlaylistFileIsOpened = new System.Windows.Forms.CheckBox();
             this.cb_onStartup = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label3 = new System.Windows.Forms.Label();
@@ -72,7 +68,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.cb_rememberColumns = new System.Windows.Forms.CheckBox();
             this.cb_rememberWindowSize = new System.Windows.Forms.CheckBox();
-            this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -80,26 +75,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox5.SuspendLayout();
             this.groupBox6.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.cb_addToPlaylistOnFileOpen);
-            this.groupBox1.Location = new System.Drawing.Point(7, 51);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(205, 37);
-            this.groupBox1.TabIndex = 2;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "General";
-            // 
-            // cb_addToPlaylistOnFileOpen
-            // 
-            this.cb_addToPlaylistOnFileOpen.AutoSize = true;
-            this.cb_addToPlaylistOnFileOpen.Location = new System.Drawing.Point(7, 16);
-            this.cb_addToPlaylistOnFileOpen.Name = "cb_addToPlaylistOnFileOpen";
-            this.cb_addToPlaylistOnFileOpen.Size = new System.Drawing.Size(149, 17);
-            this.cb_addToPlaylistOnFileOpen.TabIndex = 3;
-            this.cb_addToPlaylistOnFileOpen.Text = "Add to playlist on file open";
-            this.cb_addToPlaylistOnFileOpen.UseVisualStyleBackColor = true;
             // 
             // cb_showPlaylistOnStartup
             // 
@@ -135,7 +110,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.btn_save.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_save.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btn_save.Location = new System.Drawing.Point(298, 290);
+            this.btn_save.Location = new System.Drawing.Point(298, 231);
             this.btn_save.Name = "btn_save";
             this.btn_save.Size = new System.Drawing.Size(75, 23);
             this.btn_save.TabIndex = 15;
@@ -146,7 +121,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.btn_cancel.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btn_cancel.Location = new System.Drawing.Point(375, 290);
+            this.btn_cancel.Location = new System.Drawing.Point(375, 231);
             this.btn_cancel.Name = "btn_cancel";
             this.btn_cancel.Size = new System.Drawing.Size(75, 23);
             this.btn_cancel.TabIndex = 16;
@@ -170,7 +145,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox2.Controls.Add(this.groupBox3);
             this.groupBox2.Location = new System.Drawing.Point(226, 51);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(224, 152);
+            this.groupBox2.Size = new System.Drawing.Size(224, 124);
             this.groupBox2.TabIndex = 8;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Playback";
@@ -178,7 +153,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // groupBox4
             // 
             this.groupBox4.Controls.Add(this.cb_afterPlaybackOpt);
-            this.groupBox4.Location = new System.Drawing.Point(6, 100);
+            this.groupBox4.Location = new System.Drawing.Point(6, 72);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(212, 45);
             this.groupBox4.TabIndex = 13;
@@ -200,35 +175,13 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             // groupBox3
             // 
-            this.groupBox3.Controls.Add(this.cb_whenFileIsAdded);
-            this.groupBox3.Controls.Add(this.cb_whenPlaylistFileIsOpened);
             this.groupBox3.Controls.Add(this.cb_onStartup);
             this.groupBox3.Location = new System.Drawing.Point(6, 18);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(212, 79);
+            this.groupBox3.Size = new System.Drawing.Size(212, 43);
             this.groupBox3.TabIndex = 9;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Begin playback";
-            // 
-            // cb_whenFileIsAdded
-            // 
-            this.cb_whenFileIsAdded.AutoSize = true;
-            this.cb_whenFileIsAdded.Location = new System.Drawing.Point(6, 38);
-            this.cb_whenFileIsAdded.Name = "cb_whenFileIsAdded";
-            this.cb_whenFileIsAdded.Size = new System.Drawing.Size(114, 17);
-            this.cb_whenFileIsAdded.TabIndex = 11;
-            this.cb_whenFileIsAdded.Text = "When file is added";
-            this.cb_whenFileIsAdded.UseVisualStyleBackColor = true;
-            // 
-            // cb_whenPlaylistFileIsOpened
-            // 
-            this.cb_whenPlaylistFileIsOpened.AutoSize = true;
-            this.cb_whenPlaylistFileIsOpened.Location = new System.Drawing.Point(6, 57);
-            this.cb_whenPlaylistFileIsOpened.Name = "cb_whenPlaylistFileIsOpened";
-            this.cb_whenPlaylistFileIsOpened.Size = new System.Drawing.Size(154, 17);
-            this.cb_whenPlaylistFileIsOpened.TabIndex = 12;
-            this.cb_whenPlaylistFileIsOpened.Text = "When playlist file is opened";
-            this.cb_whenPlaylistFileIsOpened.UseVisualStyleBackColor = true;
             // 
             // cb_onStartup
             // 
@@ -280,7 +233,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox5.Controls.Add(this.cb_lockWindowSize);
             this.groupBox5.Controls.Add(this.cb_snapWithPlayer);
             this.groupBox5.Controls.Add(this.cb_showPlaylistOnStartup);
-            this.groupBox5.Location = new System.Drawing.Point(7, 194);
+            this.groupBox5.Location = new System.Drawing.Point(7, 153);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(205, 100);
             this.groupBox5.TabIndex = 0;
@@ -336,7 +289,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox6.Controls.Add(this.cb_rememberWindowSize);
             this.groupBox6.Controls.Add(this.cb_rememberPlaylist);
             this.groupBox6.Controls.Add(this.cb_rememberWindowPosition);
-            this.groupBox6.Location = new System.Drawing.Point(7, 94);
+            this.groupBox6.Location = new System.Drawing.Point(7, 51);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Size = new System.Drawing.Size(205, 94);
             this.groupBox6.TabIndex = 4;
@@ -369,14 +322,13 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.ClientSize = new System.Drawing.Size(456, 320);
+            this.ClientSize = new System.Drawing.Size(456, 261);
             this.Controls.Add(this.groupBox6);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.btn_cancel);
             this.Controls.Add(this.btn_save);
-            this.Controls.Add(this.groupBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -385,8 +337,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Playlist Configuration";
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
@@ -403,9 +353,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         #endregion
 
-        private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox cb_rememberWindowPosition;
-        private System.Windows.Forms.CheckBox cb_addToPlaylistOnFileOpen;
         private System.Windows.Forms.CheckBox cb_rememberPlaylist;
         private System.Windows.Forms.Button btn_save;
         private System.Windows.Forms.Button btn_cancel;
@@ -420,8 +368,6 @@ namespace Mpdn.Extensions.PlayerExtensions
         private GroupBox groupBox3;
         private GroupBox groupBox5;
         private GroupBox groupBox6;
-        private CheckBox cb_whenFileIsAdded;
-        private CheckBox cb_whenPlaylistFileIsOpened;
         private CheckBox cb_onStartup;
         private CheckBox cb_rememberWindowSize;
         private CheckBox cb_snapWithPlayer;

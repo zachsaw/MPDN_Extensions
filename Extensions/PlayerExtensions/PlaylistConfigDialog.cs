@@ -32,8 +32,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             cb_showPlaylistOnStartup.Checked = Settings.ShowPlaylistOnStartup;
             cb_afterPlaybackOpt.SelectedIndex = (int)Settings.AfterPlaybackOpt;
             cb_onStartup.Checked = Settings.BeginPlaybackOnStartup;
-            cb_whenFileIsAdded.Checked = Settings.BeginPlaybackWhenFileIsAdded;
-            cb_whenPlaylistFileIsOpened.Checked = Settings.BeginPlaybackWhenPlaylistFileIsOpened;
             cb_scaleWithPlayer.Checked = Settings.ScaleWithPlayer;
             cb_snapWithPlayer.Checked = Settings.SnapWithPlayer;
             cb_staySnapped.Checked = Settings.StaySnapped;
@@ -42,7 +40,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             cb_rememberWindowSize.Checked = Settings.RememberWindowSize;
             cb_lockWindowSize.Checked = Settings.LockWindowSize;
             cb_rememberPlaylist.Checked = Settings.RememberPlaylist;
-            cb_addToPlaylistOnFileOpen.Checked = Settings.AddToPlaylistOnFileOpen;
         }
 
         protected override void SaveSettings()
@@ -50,8 +47,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.ShowPlaylistOnStartup = cb_showPlaylistOnStartup.Checked;
             Settings.AfterPlaybackOpt = (AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex;
             Settings.BeginPlaybackOnStartup = cb_onStartup.Checked;
-            Settings.BeginPlaybackWhenFileIsAdded = cb_whenFileIsAdded.Checked;
-            Settings.BeginPlaybackWhenPlaylistFileIsOpened = cb_whenPlaylistFileIsOpened.Checked;
             Settings.ScaleWithPlayer = cb_scaleWithPlayer.Checked;
             Settings.SnapWithPlayer = cb_snapWithPlayer.Checked;
             Settings.StaySnapped = cb_staySnapped.Checked;
@@ -60,7 +55,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.RememberWindowSize = cb_rememberWindowSize.Checked;
             Settings.LockWindowSize = cb_lockWindowSize.Checked;
             Settings.RememberPlaylist = cb_rememberPlaylist.Checked;
-            Settings.AddToPlaylistOnFileOpen = cb_addToPlaylistOnFileOpen.Checked;
         }
 
         private void updateControls()

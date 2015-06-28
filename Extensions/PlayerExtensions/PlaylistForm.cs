@@ -1,3 +1,4 @@
+using MediaInfoDotNet;
 // This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
@@ -40,6 +41,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private const string ActiveIndicator = "[*]";
         private const string InactiveIndicator = "[ ]";
 
+        private string loadedPlaylist;
+
         private bool firstShow = true;
         private bool wasShowing;
 
@@ -68,8 +71,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public bool KeepSnapped { get; set; }
         public bool LockWindowSize { get; set; }
         public bool BeginPlaybackOnStartup { get; set; }
-        public bool BeginPlaybackWhenFileIsAdded { get; set; }
-        public bool BeginPlaybackWhenPlaylistFileIsOpened { get; set; }
         public List<string> Columns { get; set; }
         public List<string> TempRememberedFiles { get; set; }
 
@@ -187,7 +188,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         void dgv_PlayList_SelectionChanged(object sender, EventArgs e)
         {
-            if (Playlist.Count < 1) return;
+            if (Playlist.Count == 0) return;
 
             if (dgv_PlayList.SelectedRows.Count > 0)
             {
@@ -208,6 +209,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         void PlaylistForm_Shown(object sender, EventArgs e)
         {
             SetColumnSize();
+            var t = new Thread(GetMediaDuration);
+            t.Start();
         }
 
         private void SetColumnSize()
@@ -292,6 +295,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             NotifyPlaylistChanged();
             PlaylistCount = Playlist.Count;
+
+            var t = new Thread(GetMediaDuration);
+            t.Start();
         }
 
         public void NewPlaylist(bool closeMedia = false)
@@ -312,6 +318,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             openPlaylistDialog.FileName = savePlaylistDialog.FileName;
             if (openPlaylistDialog.ShowDialog(PlayerControl.Form) != DialogResult.OK) return;
 
+            loadedPlaylist = openPlaylistDialog.FileName;
             OpenPlaylist(openPlaylistDialog.FileName);
         }
 
@@ -350,18 +357,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             PopulatePlaylist();
 
-            if (!BeginPlaybackWhenPlaylistFileIsOpened) return;
             PlayActive();
         }
 
-        public void SavePlaylist()
+        private void SavePlaylist()
         {
-            if (Playlist.Count == 0) return;
-
-            savePlaylistDialog.FileName = openPlaylistDialog.FileName;
-            if (savePlaylistDialog.ShowDialog(PlayerControl.Form) != DialogResult.OK) return;
-
-            SavePlaylist(savePlaylistDialog.FileName);
+            if (String.IsNullOrEmpty(loadedPlaylist)) return;
+            SavePlaylist(loadedPlaylist);
         }
 
         public void SavePlaylist(string filename)
@@ -399,6 +401,19 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
 
             File.WriteAllLines(filename, playlist, Encoding.UTF8);
+
+            var t = new ToolTip();
+            t.Show("Playlist saved!", this, PointToClient(Cursor.Position), 2000);
+        }
+
+        public void SavePlaylistAs()
+        {
+            if (Playlist.Count == 0) return;
+
+            savePlaylistDialog.FileName = openPlaylistDialog.FileName;
+            if (savePlaylistDialog.ShowDialog(PlayerControl.Form) != DialogResult.OK) return;
+
+            SavePlaylist(savePlaylistDialog.FileName);
         }
 
         public void PlayActive()
@@ -485,39 +500,17 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void AddFiles(string[] fileNames)
         {
-            foreach (var item in fileNames.Select(s => new PlaylistItem(s, false) { EndChapter = -1 }))
-            {
-                Playlist.Add(item);
-            }
+            AddFilesToPlaylist(fileNames);
+            if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused) return;
+            currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
+            QueueMedia();
+        }
 
-            if (dgv_PlayList.CurrentRow != null) selectedRowIndex = dgv_PlayList.CurrentRow.Index;
-
-            PopulatePlaylist();
-
-            if (selectedRowIndex < 0)
-            {
-                selectedRowIndex = 0;
-            }
-            else if (selectedRowIndex > Playlist.Count - 1)
-            {
-                selectedRowIndex = Playlist.Count - 1;
-            }
-
-            dgv_PlayList.CurrentCell = dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex];
-         
-            int _currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
-
-            if (BeginPlaybackWhenFileIsAdded)
-            {
-                currentPlayIndex = _currentPlayIndex;
-                OpenMedia();
-            }
-            else
-            {
-                if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused) return;
-                currentPlayIndex = _currentPlayIndex;
-                QueueMedia();
-            }
+        public void OpenFiles(string[] fileNames)
+        {
+            AddFilesToPlaylist(fileNames);
+            currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
+            OpenMedia();
         }
         
         public void InsertFile(int index, string fileName)
@@ -933,8 +926,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 buttonSortDescending.Enabled = true;
                 buttonShuffle.Enabled = true;
                 buttonRestore.Enabled = true;
-                nextItemToolStripMenuItem.Enabled = true;
-                previousItemToolStripMenuItem.Enabled = true;
                 sortToolStripMenuItem.Enabled = true;
                 ascendingToolStripMenuItem.Enabled = true;
                 descendingToolStripMenuItem.Enabled = true;
@@ -954,8 +945,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 buttonSortDescending.Enabled = false;
                 buttonShuffle.Enabled = false;
                 buttonRestore.Enabled = false;
-                nextItemToolStripMenuItem.Enabled = false;
-                previousItemToolStripMenuItem.Enabled = false;
                 sortToolStripMenuItem.Enabled = false;
                 ascendingToolStripMenuItem.Enabled = false;
                 descendingToolStripMenuItem.Enabled = false;
@@ -975,9 +964,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 buttonDel.Enabled = true;
                 newPlaylistToolStripMenuItem.Enabled = true;
                 savePlaylistToolStripMenuItem.Enabled = true;
-                openFolderToolStripMenuItem.Enabled = true;
-                playFileToolStripMenuItem.Enabled = true;
-                removeFilesToolStripMenuItem.Enabled = true;
+                savePlaylistAsToolStripMenuItem.Enabled = true;
+                viewFileLocationToolStripMenuItem.Enabled = true;
+                viewMediaInfoToolStripMenuItem.Enabled = true;
+                playToolStripMenuItem.Enabled = true;
+                removeSelectedItemsToolStripMenuItem.Enabled = true;
+                removeUnselectedItemsToolStripMenuItem.Enabled = true;
+                removeNonExistentItemsToolStripMenuItem.Enabled = true;
                 buttonNew.BackgroundImage = buttonNewEnabled.BackgroundImage;
                 buttonSave.BackgroundImage = buttonSaveEnabled.BackgroundImage;
                 buttonDel.BackgroundImage = buttonDelEnabled.BackgroundImage;
@@ -989,9 +982,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 buttonDel.Enabled = false;
                 newPlaylistToolStripMenuItem.Enabled = false;
                 savePlaylistToolStripMenuItem.Enabled = false;
-                openFolderToolStripMenuItem.Enabled = false;
-                playFileToolStripMenuItem.Enabled = false;
-                removeFilesToolStripMenuItem.Enabled = false;
+                savePlaylistAsToolStripMenuItem.Enabled = false;
+                viewFileLocationToolStripMenuItem.Enabled = false;
+                viewMediaInfoToolStripMenuItem.Enabled = false;
+                playToolStripMenuItem.Enabled = false;
+                removeSelectedItemsToolStripMenuItem.Enabled = false;
+                removeUnselectedItemsToolStripMenuItem.Enabled = false;
+                removeNonExistentItemsToolStripMenuItem.Enabled = false;
                 buttonNew.BackgroundImage = buttonNewDisabled.BackgroundImage;
                 buttonSave.BackgroundImage = buttonSaveDisabled.BackgroundImage;
                 buttonDel.BackgroundImage = buttonDelDisabled.BackgroundImage;
@@ -1015,15 +1012,17 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             fullPathToolStripMenuItem.Checked = FullPath.Visible;
             skipChaptersToolStripMenuItem.Checked = SkipChapters.Visible;
             endChapterToolStripMenuItem.Checked = EndChapter.Visible;
+            durationToolStripMenuItem.Checked = Duration.Visible;
 
-            titleCellIndex = Title.Index;
-            skipCellIndex = SkipChapters.Index;
-            endCellIndex = EndChapter.Index;
+            if (Title.Visible) titleCellIndex = Title.Index;
+            if (SkipChapters.Visible) skipCellIndex = SkipChapters.Index;
+            if (EndChapter.Visible) endCellIndex = EndChapter.Index;
         }
 
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
             if (CurrentItem == null) return;
+            if (PlayerControl.PlayerState == PlayerState.Stopped) ResetActive();
             Text = PlayerControl.PlayerState + " - " + CurrentItem.FilePath;
             dgv_PlayList.InvalidateRow(currentPlayIndex);
         }
@@ -1079,7 +1078,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     {
                         SelectChapter(currentChapterIndex);
                     }
-                    else if (currentChapterIndex == CurrentItem.EndChapter)
+                    if (currentChapterIndex == CurrentItem.EndChapter)
                     {
                         PlayNext();
                     }
@@ -1089,6 +1088,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ParseChapterInput()
         {
+            if (!SkipChapters.Visible && !EndChapter.Visible) return;
+
             try
             {
                 for (int i = 0; i < dgv_PlayList.Rows.Count; i++)
@@ -1291,7 +1292,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (File.Exists(item.FilePath))
                 {
                     SetPlayStyling();
-                    PlayerControl.OpenMedia(item.FilePath, false);
+                    PlayerControl.OpenMedia(item.FilePath);
+                    PlayerControl.StopMedia();
                 }
                 else
                 {
@@ -1314,6 +1316,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 PlayNext();
             }
 
+            var t = new Thread(GetCurrentMediaDuration);
+            t.Start();
             dgv_PlayList.Invalidate();
         }
 
@@ -1361,6 +1365,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 PlayNext();
             }
 
+            var t = new Thread(GetCurrentMediaDuration);
+            t.Start();
             dgv_PlayList.Invalidate();
         }
 
@@ -1469,33 +1475,54 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 PlaylistChanged(this, null);
         }
 
-        private void AddFilesToPlaylist()
+        private void AddFilesToPlaylist(string[] fileNames)
         {
-            if (openFileDialog.ShowDialog(this) != DialogResult.OK)
-                return;
+            foreach (var item in fileNames.Select(s => new PlaylistItem(s, false) { EndChapter = -1 }))
+            {
+                Playlist.Add(item);
+            }
 
-            var fileNames = openFileDialog.FileNames;
-            AddFiles(fileNames);
+            if (dgv_PlayList.CurrentRow != null) selectedRowIndex = dgv_PlayList.CurrentRow.Index;
+
+            PopulatePlaylist();
+
+            if (selectedRowIndex < 0)
+            {
+                selectedRowIndex = 0;
+            }
+            else if (selectedRowIndex > Playlist.Count - 1)
+            {
+                selectedRowIndex = Playlist.Count - 1;
+            }
+
+            dgv_PlayList.CurrentCell = dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex];
         }
 
         private void AddClipboardToPlaylist()
         {
             var files = Clipboard.GetText().Replace("\r", "").Split('\n').ToList();
+            files.RemoveAll(f => !File.Exists(f));
 
-            for (int i = 0; i < files.Count; i++)
-            {
-                if (!File.Exists(files.ElementAt(i))) files.RemoveAt(i);
-            }
-
-            if (files.Count < 1) return;
+            if (files == null || files.Count < 1) return;
             AddFiles(files.ToArray());
+        }
+
+        private void OpenAndPlayClipboard()
+        {
+            ClearPlaylist();
+
+            var files = Clipboard.GetText().Replace("\r", "").Split('\n').ToList();
+            files.RemoveAll(f => !File.Exists(f));
+
+            if (files == null || files.Count < 1) return;
+            OpenFiles(files.ToArray());
         }
 
         private void AddFolderToPlaylist()
         {
             using (Ookii.Dialogs.VistaFolderBrowserDialog fd = new Ookii.Dialogs.VistaFolderBrowserDialog())
             {
-                fd.Description = "Add folder";
+                fd.Description = "Add folder to playlist";
                 fd.UseDescriptionForTitle = true;
                 fd.ShowNewFolderButton = true;
 
@@ -1513,6 +1540,30 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
+        private void OpenAndPlayFolder()
+        {
+            ClearPlaylist();
+
+            using (Ookii.Dialogs.VistaFolderBrowserDialog fd = new Ookii.Dialogs.VistaFolderBrowserDialog())
+            {
+                fd.Description = "Open and play folder";
+                fd.UseDescriptionForTitle = true;
+                fd.ShowNewFolderButton = true;
+
+                if (fd.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                var media = playListUi.GetAllMediaFiles(fd.SelectedPath);
+                if (media.ToArray().Length == 0)
+                {
+                    MessageBox.Show("There are no files in the selected directory.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                OpenFiles(media.ToArray());
+            }
+        }
+
         private void RemoveSelectedItems()
         {
             var rowIndexes = new List<int>();
@@ -1527,23 +1578,66 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 foreach (int index in rowIndexes.OrderByDescending(v => v))
                 {
                     if (index == currentPlayIndex)
-                    {
                         CloseMedia();
-                    }
 
                     Playlist.RemoveAt(index);
                 }
 
                 PopulatePlaylist();
 
-                if (selectedRowIndex < 0)
+                selectedRowIndex = selectedRowIndex < 0 ? 0 : selectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : selectedRowIndex;
+
+                dgv_PlayList.CurrentCell = Playlist.Count > 0 ? dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex] : dgv_PlayList.CurrentCell = null;
+            }
+            catch (Exception ex)
+            {
+                PlayerControl.HandleException(ex);
+            }
+        }
+
+        private void RemoveUnselectedItems()
+        {
+            var rowIndexes = new List<int>();
+
+            try
+            {
+                if (Playlist.Count <= 0) return;
+                if (dgv_PlayList.CurrentRow != null) selectedRowIndex = dgv_PlayList.CurrentRow.Index;
+
+                rowIndexes.AddRange(dgv_PlayList.Rows.Cast<DataGridViewRow>().Where(r1 => !r1.Selected).Select(r2 => r2.Index));
+
+                foreach (int index in rowIndexes.OrderByDescending(v => v))
                 {
-                    selectedRowIndex = 0;
+                    if (index == currentPlayIndex)
+                        CloseMedia();
+
+                    Playlist.RemoveAt(index);
                 }
-                else if (selectedRowIndex > Playlist.Count - 1)
-                {
-                    selectedRowIndex = Playlist.Count - 1;
-                }
+
+                PopulatePlaylist();
+
+                selectedRowIndex = selectedRowIndex < 0 ? 0 : selectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : selectedRowIndex;
+
+                dgv_PlayList.CurrentCell = Playlist.Count > 0 ? dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex] : dgv_PlayList.CurrentCell = null;
+            }
+            catch (Exception ex)
+            {
+                PlayerControl.HandleException(ex);
+            }
+        }
+
+        private void RemoveNonExistentItems()
+        {
+            try
+            {
+                if (Playlist.Count <= 0) return;
+                if (dgv_PlayList.CurrentRow != null) selectedRowIndex = dgv_PlayList.CurrentRow.Index;
+
+                Playlist.RemoveAll(p => !File.Exists(p.FilePath));
+
+                PopulatePlaylist();
+
+                selectedRowIndex = selectedRowIndex < 0 ? 0 : selectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : selectedRowIndex;
 
                 dgv_PlayList.CurrentCell = Playlist.Count > 0 ? dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex] : dgv_PlayList.CurrentCell = null;
             }
@@ -1610,15 +1704,63 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             RefreshPlaylist();
         }
 
-        private void OpenContainingFolder()
+        private void ViewFileLocation()
         {
             if (Playlist.Count == 0) return;
             System.Diagnostics.Process.Start(Path.GetDirectoryName(Playlist[dgv_PlayList.CurrentRow.Index].FilePath));
         }
 
-        private void ButtonAddClick(object sender, EventArgs e)
+        private void ViewMediaInfo()
         {
-            AddFilesToPlaylist();
+            var media = Playlist[dgv_PlayList.CurrentRow.Index].FilePath;
+            var mediaInfo = new ViewMediaInfoForm(media);
+            mediaInfo.ShowDialog();
+        }
+
+        private void GetMediaDuration()
+        {
+            if (Playlist.Count < 1) return;
+            if (!Duration.Visible) return;
+
+            int rows = 0;
+
+            foreach (var p in Playlist)
+            {
+                var media = new MediaFile(p.FilePath);
+                var t = TimeSpan.FromMilliseconds(media.duration);
+                dgv_PlayList.Rows[rows].Cells[Duration.Name].Value = t.ToString(@"hh\:mm\:ss");
+                rows++;
+            }
+        }
+
+        private void GetCurrentMediaDuration()
+        {
+            if (Playlist.Count < 1) return;
+            if (!Duration.Visible) return;
+
+            var t = TimeSpan.FromMilliseconds(PlayerControl.MediaDuration / 1000);
+            dgv_PlayList.Rows[currentPlayIndex].Cells[Duration.Name].Value = t.ToString(@"hh\:mm\:ss");
+        }
+
+        private void ButtonAddFilesClick(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog(this) != DialogResult.OK)
+                return;
+
+            var fileNames = openFileDialog.FileNames;
+
+            AddFiles(fileNames);
+            dgv_PlayList.Focus();
+        }
+
+        private void ButtonOpenFilesClick(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog(this) != DialogResult.OK)
+                return;
+
+            var fileNames = openFileDialog.FileNames;
+
+            OpenFiles(fileNames);
             dgv_PlayList.Focus();
         }
 
@@ -1628,36 +1770,60 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             dgv_PlayList.Focus();
         }
 
+        private void ButtonOpenFromClipboardClick(object sender, EventArgs e)
+        {
+            OpenAndPlayClipboard();
+            dgv_PlayList.Focus();
+        }
+
         private void ButtonAddFolderClick(object sender, EventArgs e)
         {
             AddFolderToPlaylist();
             dgv_PlayList.Focus();
         }
 
-        private void ButtonOpenFolderClick(object sender, EventArgs e)
+        private void ButtonOpenAndPlayFolderClick(object sender, EventArgs e)
         {
-            OpenContainingFolder();
+            OpenAndPlayFolder();
+            dgv_PlayList.Focus();
         }
 
-        private void ButtonDelClick(object sender, EventArgs e)
+        private void ButtonRemoveSelectedItemsClick(object sender, EventArgs e)
         {
             RemoveSelectedItems();
             dgv_PlayList.Focus();
         }
 
-        private void ButtonNewClick(object sender, EventArgs e)
+        private void ButtonRemoveUnselectedItemsClick(object sender, EventArgs e)
+        {
+            RemoveUnselectedItems();
+            dgv_PlayList.Focus();
+        }
+
+        private void ButtonRemoveNonExistentItemsClick(object sender, EventArgs e)
+        {
+            RemoveNonExistentItems();
+            dgv_PlayList.Focus();
+        }
+
+        private void ButtonNewPlaylistClick(object sender, EventArgs e)
         {
             NewPlaylist(true);
         }
 
-        private void ButtonOpenClick(object sender, EventArgs e)
+        private void ButtonOpenPlaylistClick(object sender, EventArgs e)
         {
             OpenPlaylist();
         }
 
-        private void ButtonSaveClick(object sender, EventArgs e)
+        private void ButtonSavePlaylistClick(object sender, EventArgs e)
         {
             SavePlaylist();
+        }
+
+        private void ButtonSavePlaylistAsClick(object sender, EventArgs e)
+        {
+            SavePlaylistAs();
         }
 
         private void ButtonLeftClick(object sender, EventArgs e)
@@ -1668,6 +1834,16 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void ButtonRightClick(object sender, EventArgs e)
         {
             PlayNext();
+        }
+
+        private void ButtonViewFileLocation(object sender, EventArgs e)
+        {
+            ViewFileLocation();
+        }
+
+        private void ButtonViewMediaInfo(object sender, EventArgs e)
+        {
+            ViewMediaInfo();
         }
 
         private void ButtonSortAscendingClick(object sender, EventArgs e)
@@ -1756,10 +1932,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             CurrentDirectory.Visible = directoryToolStripMenuItem.Checked;
             SkipChapters.Visible = skipChaptersToolStripMenuItem.Checked;
             EndChapter.Visible = endChapterToolStripMenuItem.Checked;
+            Duration.Visible = durationToolStripMenuItem.Checked;
 
-            titleCellIndex = Title.Index;
-            skipCellIndex = SkipChapters.Index;
-            endCellIndex = EndChapter.Index;
+            if (Title.Visible) titleCellIndex = Title.Index;
+            if (SkipChapters.Visible) skipCellIndex = SkipChapters.Index;
+            if (EndChapter.Visible) endCellIndex = EndChapter.Index;
         }
     }
 

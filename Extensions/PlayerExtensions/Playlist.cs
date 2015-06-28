@@ -130,16 +130,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
             }
 
-            if (Settings.BeginPlaybackWhenFileIsAdded)
-            {
-                form.BeginPlaybackWhenFileIsAdded = Settings.BeginPlaybackWhenFileIsAdded;
-            }
-
-            if (Settings.BeginPlaybackWhenPlaylistFileIsOpened)
-            {
-                form.BeginPlaybackWhenPlaylistFileIsOpened = Settings.BeginPlaybackWhenPlaylistFileIsOpened;
-            }
-
             if (Settings.RememberPlaylist)
             {
                 if (Settings.RememberedFiles.Count > 0)
@@ -197,8 +187,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             form.KeepSnapped = Settings.StaySnapped;
             form.LockWindowSize = Settings.LockWindowSize;
             form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
-            form.BeginPlaybackWhenPlaylistFileIsOpened = Settings.BeginPlaybackWhenPlaylistFileIsOpened;
-            form.BeginPlaybackWhenFileIsAdded = Settings.BeginPlaybackWhenFileIsAdded;
         }
 
         public override void Destroy()
@@ -283,10 +271,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnPlaybackCompleted(object sender, EventArgs e)
         {
-            if (Settings.AddToPlaylistOnFileOpen && form.Playlist.Count > 1)
-            {
-                AddFileToPlaylist();
-            }
             if (Settings.AfterPlaybackOpt == AfterPlaybackSettingsOpt.PlayNextFileInFolder)
             {
                 PlayNextInFolder();
@@ -724,9 +708,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public bool ShowPlaylistOnStartup { get; set; }
         public AfterPlaybackSettingsOpt AfterPlaybackOpt { get; set; }
         public bool BeginPlaybackOnStartup { get; set; }
-        public bool BeginPlaybackWhenFileIsAdded { get; set; }
-        public bool BeginPlaybackWhenPlaylistFileIsOpened { get; set; }
-        public bool AddToPlaylistOnFileOpen { get; set; }
         public bool RememberWindowSize { get; set; }
         public bool RememberWindowPosition { get; set; }
         public bool SnapWithPlayer { get; set; }
@@ -745,9 +726,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             ShowPlaylistOnStartup = false;
             AfterPlaybackOpt = AfterPlaybackSettingsOpt.DoNothing;
             BeginPlaybackOnStartup = false;
-            BeginPlaybackWhenFileIsAdded = false;
-            BeginPlaybackWhenPlaylistFileIsOpened = false;
-            AddToPlaylistOnFileOpen = false;
             SnapWithPlayer = true;
             StaySnapped = false;
             RememberColumns = false;
