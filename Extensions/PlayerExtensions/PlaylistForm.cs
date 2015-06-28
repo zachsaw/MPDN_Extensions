@@ -1,4 +1,3 @@
-using MediaInfoDotNet;
 // This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
@@ -27,6 +26,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
+using MediaInfoDotNet;
 
 namespace Mpdn.Extensions.PlayerExtensions.Playlist
 {
