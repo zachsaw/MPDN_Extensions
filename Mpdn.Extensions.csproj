@@ -133,6 +133,8 @@
     <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.Designer.cs">
       <DependentUpon>ScriptEditorDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\Framework\Exceptions\MpdnScriptEngineException.cs" />
+    <Compile Include="Extensions\Framework\Exceptions\RenderScriptException.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
     <Compile Include="Extensions\Framework\PlayerExtension.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filter.cs" />
@@ -260,6 +262,13 @@
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.Parser.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.DxvaHd.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.DxvaHd.ConfigDialog.designer.cs">
+      <DependentUpon>Mpdn.DxvaHd.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.DxvaHd.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ImageProcessor.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
