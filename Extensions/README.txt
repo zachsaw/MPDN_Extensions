@@ -4,11 +4,11 @@ MPDN Extensions README
 MPDN Extensions are distributed in two formats - binary version (also via 
 installer) or source version.
 
-The binaries are built from LGPL v3.0 source codes available on GitHub: 
+These binaries are built from LGPL v3.0 source codes available on GitHub: 
 https://github.com/zachsaw/MPDN_Extensions
 
-For end-users, the binary version is the preferred choice as MPDN can start 
-faster and it has contains version info that can be used to check for updates 
+For end-users, the binary version is the preferred choice as MPDN starts faster
+and it has contains version info that can be used to check for updates 
 automatically.
 
 If you want to change the way the extensions behave, or found a patch online 
