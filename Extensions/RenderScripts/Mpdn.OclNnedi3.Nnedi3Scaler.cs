@@ -144,11 +144,11 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 DisposeHelper.Dispose(ref m_Buffer);
 
-                if (!Renderer.IsOpenClAvail)
-                    return sourceFilter; // OpenCL is not available; fallback
-
-                if (Renderer.RenderQuality == RenderQuality.MaxPerformance)
-                    return sourceFilter; // UNORM8 textures aren't supported; fallback
+                if (!Renderer.IsOpenClAvail || Renderer.RenderQuality == RenderQuality.MaxPerformance)
+                {
+                    Renderer.FallbackOccurred = true; // Warn user via player stats OSD
+                    return sourceFilter; // OpenCL is not available, or UNORM8 textures used (not supported); fallback
+                }
 
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2*s.Width, s.Height);
                 Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2*s.Height);
