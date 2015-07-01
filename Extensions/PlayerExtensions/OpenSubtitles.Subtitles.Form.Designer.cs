@@ -48,7 +48,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.DownloadButton = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
@@ -133,8 +133,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.movieDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.movieDataGridViewTextBoxColumn.DataPropertyName = "Movie";
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-            this.movieDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+            this.movieDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle2;
             this.movieDataGridViewTextBoxColumn.HeaderText = "Movie";
             this.movieDataGridViewTextBoxColumn.MaxInputLength = 0;
             this.movieDataGridViewTextBoxColumn.Name = "movieDataGridViewTextBoxColumn";
@@ -165,7 +165,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.comboBoxChangeLang.Name = "comboBoxChangeLang";
             this.comboBoxChangeLang.Size = new System.Drawing.Size(121, 21);
             this.comboBoxChangeLang.TabIndex = 5;
-            this.comboBoxChangeLang.DropDownClosed += new System.EventHandler(this.comboBoxChangeLang_DropDownClosed);
+            this.comboBoxChangeLang.SelectedValueChanged += new System.EventHandler(this.comboBoxChangeLang_SelectedValueChanged);
             // 
             // subLangBindingSource
             // 

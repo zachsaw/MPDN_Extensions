@@ -36,6 +36,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             FormClosed += OpenSubtitlesForm_FormClosed;
             comboBoxChangeLang.KeyDown += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyDown;
             comboBoxChangeLang.KeyPress += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyPress;
+            comboBoxChangeLang.DropDownClosed += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageDropDownClosed;
         }
 
         private void OpenSubtitlesForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -108,12 +109,13 @@ namespace Mpdn.Extensions.PlayerExtensions
             DownloadButton_Click(sender, e);
         }
 
-        private void comboBoxChangeLang_DropDownClosed(object sender, EventArgs e)
+        private void comboBoxChangeLang_SelectedValueChanged(object sender, EventArgs e)
         {
-            OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageDropDownClosed(sender, e);
             var selectedLang = (string)comboBoxChangeLang.SelectedItem;
-            var subs = FilterSubs(m_SubtitleList, selectedLang);
-            subtitleBindingSource.DataSource = subs;
+            if (selectedLang != null) {
+                var subs = FilterSubs(m_SubtitleList, selectedLang);
+                subtitleBindingSource.DataSource = subs;
+            }
         }
 
     }
