@@ -60,16 +60,27 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void ManualUpdateCheck()
         {
+            var newVersion = false;
             using (new HourGlass())
             {
                 m_checker.CheckVersion();
                 m_extChecker.CheckVersion();
             }
+
             if (Settings.MpdnVersionOnServer > m_currentVersion)
             {
                 new UpdateCheckerNewVersionForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(PlayerControl.VideoPanel);
+                newVersion = true;
             }
-            else
+
+            if (Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion())
+            {
+                new UpdateCheckerNewExtensionForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
+                    PlayerControl.VideoPanel);
+                newVersion = true;
+            }
+            
+            if (!newVersion)
             {
                 MessageBox.Show(PlayerControl.VideoPanel, "You have the latest release.");
             }
@@ -92,6 +103,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (!Settings.ForgetMpdnVersion && Settings.MpdnVersionOnServer > m_currentVersion)
             {
                 new UpdateCheckerNewVersionForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(PlayerControl.VideoPanel);
+            }
+            if (!Settings.ForgetExtensionVersion &&
+                Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion())
+            {
+                new UpdateCheckerNewExtensionForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
+                    PlayerControl.VideoPanel);
             }
             m_checker.CheckVersionAsync();
             m_extChecker.CheckVersionAsync();
