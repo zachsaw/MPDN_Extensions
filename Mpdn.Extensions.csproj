@@ -50,6 +50,12 @@
     <Reference Include="MediaInfoDotNet">
       <HintPath>MPDN\MediaInfoDotNet.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack">
+      <HintPath>Extensions\Libs\Microsoft.WindowsAPICodePack.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell">
+      <HintPath>Extensions\Libs\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
     <Reference Include="Mpdn.Core">
       <HintPath>MPDN\Mpdn.Core.dll</HintPath>
     </Reference>
@@ -168,6 +174,7 @@
     <Compile Include="Extensions\PlayerExtensions\GoToTimeForm.Designer.cs">
       <DependentUpon>GoToTimeForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\TaskbarEnhancer.cs" />
     <Compile Include="Extensions\PlayerExtensions\KeyBindings.cs" />
     <Compile Include="Extensions\PlayerExtensions\MouseControl.ConfigDialog.cs">
       <SubType>Form</SubType>
