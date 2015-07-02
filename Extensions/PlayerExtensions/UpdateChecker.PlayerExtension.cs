@@ -117,7 +117,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
     public class UpdateChecker
     {
-        private static readonly Uri ChangelogUrl = new Uri("http://mpdn.zachsaw.com/Latest/ChangeLog.txt");
+        private static readonly Uri ChangelogUrl = new Uri("http://mpdn.zachsaw.com/LatestVersion.txt");
         public static readonly string WebsiteUrl = "http://mpdn.zachsaw.com/Latest/";
         private readonly UpdateCheckerSettings m_settings;
         private readonly WebClient m_WebClient = new WebClient();
