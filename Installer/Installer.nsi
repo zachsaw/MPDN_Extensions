@@ -34,6 +34,9 @@ SetCompressor lzma
 ; File Associations
 !include "FileAssociation.nsh"
 
+; MD5 
+!include "md5.nsh"
+
 ; Read the command-line parameters
 !insertmacro GetParameters
 !insertmacro GetOptions

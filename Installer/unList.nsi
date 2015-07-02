@@ -1,6 +1,8 @@
 ;-----------------------------------------------------------------------------------------------
+; Use MD5 plugin to generate MD5 Hash and compare them instead of timestamp.
+; 2015 Antoine Aflalo aka Belphemur (antoine@aaflalo.me)
+;-----------------------------------------------------------------------------------------------
 ; Generate list of files and directories for uninstaller with command line support (/? for help)
-;
 ; 2006 Shengalts Aleksander aka Instructor (Shengalts@mail.ru)
 ;-----------------------------------------------------------------------------------------------
 ; - added file filter as command option
@@ -10,7 +12,7 @@
 ; 2005 Matei "Ambient.Impact" Stanca (ambient.impact@rogers.com)
 ;-----------------------------------------------------------------------------------------------
 
-Name "unList v1.5"
+Name "unList v1.6"
 OutFile "unList.exe"
 Caption "$(^Name)"
 SubCaption 2 " "
@@ -28,6 +30,9 @@ SubCaption 3 " "
 !insertmacro TrimNewLines
 
 !include "Sections.nsh"
+; MD5 Plugin
+!addplugindir ./
+!include "md5.nsh"
 
 Var DATE
 Var FILEFILTER
@@ -193,13 +198,13 @@ Function FilesCallback
 	goto end
 
 	unListDate:
-	${GetTime} '$9' 'MS' $0 $1 $2 $3 $4 $5 $6
+	${md5::GetMD5File} "$9" $0
 
 	StrCpy $3 '$${'
 	StrCpy $9 $9 '' $R5
-	FileWrite $R4 `$PREFIX$3un.GetTime} "$UNDIR_VAR\$9" "MS" $$0 $$1 $$2 $$3 $$4 $$5 $$6$\r$\n`
+	FileWrite $R4 `$PREFIX$3md5::GetMD5File} "$UNDIR_VAR\$9" $$0 $\r$\n`
 	FileWrite $R4 `$PREFIXIfErrors +5$\r$\n`
-	FileWrite $R4 `$PREFIXStrCmp "$$0/$$1/$$2-$$4:$$5" "$0/$1/$2-$4:$5" 0 +3$\r$\n`
+	FileWrite $R4 `$PREFIXStrCmp "$0" "$$0" 0 +3$\r$\n`
 	FileWrite $R4 `$PREFIXDelete "$UNDIR_VAR\$9"$\r$\n`
 	FileWrite $R4 `$PREFIXgoto +2$\r$\n`
 	FileWrite $R4 `$PREFIXDetailPrint "Not deleted: $UNDIR_VAR\$9"$\r$\n$\r$\n`
