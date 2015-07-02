@@ -48,6 +48,10 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             PlayerControl.PlayerStateChanged += PlayerStateChanged;
             PlayerControl.MediaLoaded += MediaLoaded;
+
+            var playPauseButton = new ThumbnailToolBarButton(PlayerControl.ApplicationIcon, "test");
+            playPauseButton.Click += (sender, args) => MessageBox.Show("Test");
+            Taskbar.ThumbnailToolBars.AddButtons(PlayerControl.Form.Handle, playPauseButton);
         }
 
         public override void Destroy()
@@ -102,8 +106,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (PlayerControl.PlayerState == PlayerState.Closed || PlayerControl.PlayerState == PlayerState.Stopped)
                 return;
 
-            Taskbar.SetProgressValue(
-                (int) (PlayerControl.MediaPosition*1000/PlayerControl.MediaDuration), 1000);
+            var duration = Math.Max(1, PlayerControl.MediaDuration);
+            Taskbar.SetProgressValue((int) (PlayerControl.MediaPosition*1000/duration), 1000);
         }
 
         private static TaskbarManager Taskbar
