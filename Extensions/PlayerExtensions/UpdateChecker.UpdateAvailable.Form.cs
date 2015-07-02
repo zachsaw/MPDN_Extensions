@@ -34,7 +34,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void forgetUpdate_Click(object sender, EventArgs e)
         {
-            m_settings.ForgetVersion = true;
+            m_settings.ForgetMpdnVersion = true;
             Close();
         }
 
