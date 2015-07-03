@@ -463,7 +463,8 @@ echo .cs\ &gt; excludedfiles.txt
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Extensions\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Examples\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
 del excludedfiles.txt
-xcopy /y /e "$(SolutionDir)Extensions\Libs\*.*" "$(ProjectDir)MPDN\Extensions\Libs\"</PostBuildEvent>
+xcopy /y /e "$(SolutionDir)Extensions\Libs\*.*" "$(ProjectDir)MPDN\Extensions\Libs\"
+xcopy /y /e "$(SolutionDir)Extensions\PlayerExtensions\Images\*.*" "$(ProjectDir)MPDN\Extensions\PlayerExtensions\Images\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
