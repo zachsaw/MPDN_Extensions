@@ -62,6 +62,10 @@
     <Reference Include="Mpdn.RenderScript">
       <HintPath>MPDN\Mpdn.RenderScript.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Extensions\Libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Ooki.Dialogs">
       <HintPath>Extensions\Libs\Ookii.Dialogs.dll</HintPath>
     </Reference>
@@ -76,9 +80,13 @@
     <Reference Include="ShellBasics">
       <HintPath>Extensions\Libs\ShellBasics.dll</HintPath>
     </Reference>
+    <Reference Include="SplitButton">
+      <HintPath>Extensions\Libs\SplitButton.dll</HintPath>
+    </Reference>
     <Reference Include="sysglobl" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
@@ -244,6 +252,12 @@
     </Compile>
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ConfigDialog.designer.cs">
       <DependentUpon>UpdateChecker.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ExtensionAvailable.Form.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ExtensionAvailable.Form.Designer.cs">
+      <DependentUpon>UpdateChecker.ExtensionAvailable.Form.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.PlayerExtension.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.cs">

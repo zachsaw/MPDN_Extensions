@@ -1,6 +1,9 @@
 ;-----------------------------------------------------------------------------------------------
+; Use MD5 plugin to generate MD5 Hash and compare them instead of timestamp.
+; Rename DATE -> HASH
+; 2015 Antoine Aflalo aka Belphemur (antoine@aaflalo.me)
+;-----------------------------------------------------------------------------------------------
 ; Generate list of files and directories for uninstaller with command line support (/? for help)
-;
 ; 2006 Shengalts Aleksander aka Instructor (Shengalts@mail.ru)
 ;-----------------------------------------------------------------------------------------------
 ; - added file filter as command option
@@ -10,7 +13,7 @@
 ; 2005 Matei "Ambient.Impact" Stanca (ambient.impact@rogers.com)
 ;-----------------------------------------------------------------------------------------------
 
-Name "unList v1.5"
+Name "unList v1.6"
 OutFile "unList.exe"
 Caption "$(^Name)"
 SubCaption 2 " "
@@ -28,8 +31,11 @@ SubCaption 3 " "
 !insertmacro TrimNewLines
 
 !include "Sections.nsh"
+; MD5 Plugin
+!addplugindir ./
+!include "md5.nsh"
 
-Var DATE
+Var HASH
 Var FILEFILTER
 Var LOG
 Var PREFIX
@@ -44,19 +50,19 @@ Page components
 Page instfiles
 
 Section "unList" unList
-	StrCpy $DATE '0'
+	StrCpy $HASH '0'
 	call main
 SectionEnd
 
-Section /o "unListDate" unListDate
-	StrCpy $DATE '1'
+Section /o "unListHash" unListHash
+	StrCpy $HASH '1'
 	call main
 SectionEnd
 
 Function .onSelChange
 	!insertmacro StartRadioButtons $RADIOBUTTON
 	!insertmacro RadioButton ${unList}
-	!insertmacro RadioButton ${unListDate}
+	!insertmacro RadioButton ${unListHash}
 	!insertmacro EndRadioButtons
 FunctionEnd
 
@@ -70,7 +76,7 @@ Function .onInit
 	MessageBox MB_OK \
 	  `|   Command line options:$\n\
 	   |   $\n\
-	   |   /DATE=[0|1]                  Only files not modified after installation are deleted$\n\
+	   |   /HASH=[0|1]                  Only files not modified after installation are deleted$\n\
 	   |                                           default: 0$\n\
 	   |   /INSTDIR=[path]          Get file list from this path$\n\
 	   |                                           default: [exe directory]$\n\
@@ -87,15 +93,15 @@ Function .onInit
 	   $\n\
 	   $\n\
 	   Example:$\n\
-	   unList.exe /DATE=1  /INSTDIR=C:\a  /LOG=C:\a.log  /PREFIX="  "  /UNDIR_VAR=$$R0`
+	   unList.exe /HASH=1  /INSTDIR=C:\a  /LOG=C:\a.log  /PREFIX="  "  /UNDIR_VAR=$$R0`
 	quit
 
 	GetOptions:
-	${GetOptions} '$R0' '/DATE=' $R1
+	${GetOptions} '$R0' '/HASH=' $R1
 	StrCmp $R1 '' 0 +3
-	StrCpy $DATE '0'
+	StrCpy $HASH '0'
 	Goto +2
-	StrCpy $DATE $R1
+	StrCpy $HASH $R1
 
 	${GetOptions} '$R0' '/INSTDIR=' $R1
 	StrCmp $R1 '' 0 +3
@@ -187,19 +193,19 @@ Function FilesCallback
 	System::Call 'user32::OemToChar(t r9, t .r9)'
 	${TrimNewLines} '$9' $9
 
-	StrCmp $DATE '0' 0 unListDate
+	StrCmp $HASH '0' 0 unListHash
 	StrCpy $9 $9 '' $R5
 	FileWrite $R4 `$PREFIXDelete "$UNDIR_VAR\$9"$\r$\n`
 	goto end
 
-	unListDate:
-	${GetTime} '$9' 'MS' $0 $1 $2 $3 $4 $5 $6
+	unListHash:
+	${md5::GetMD5File} "$9" $0
 
 	StrCpy $3 '$${'
 	StrCpy $9 $9 '' $R5
-	FileWrite $R4 `$PREFIX$3un.GetTime} "$UNDIR_VAR\$9" "MS" $$0 $$1 $$2 $$3 $$4 $$5 $$6$\r$\n`
+	FileWrite $R4 `$PREFIX$3md5::GetMD5File} "$UNDIR_VAR\$9" $$0 $\r$\n`
 	FileWrite $R4 `$PREFIXIfErrors +5$\r$\n`
-	FileWrite $R4 `$PREFIXStrCmp "$$0/$$1/$$2-$$4:$$5" "$0/$1/$2-$4:$5" 0 +3$\r$\n`
+	FileWrite $R4 `$PREFIXStrCmp "$0" "$$0" 0 +3$\r$\n`
 	FileWrite $R4 `$PREFIXDelete "$UNDIR_VAR\$9"$\r$\n`
 	FileWrite $R4 `$PREFIXgoto +2$\r$\n`
 	FileWrite $R4 `$PREFIXDetailPrint "Not deleted: $UNDIR_VAR\$9"$\r$\n$\r$\n`
