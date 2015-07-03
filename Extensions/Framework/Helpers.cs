@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Mpdn.Extensions.Framework
 {
@@ -66,6 +67,15 @@ namespace Mpdn.Extensions.Framework
                 throw new ArgumentException();
 
             return result;
+        }
+
+        public static string ExtensionsPath
+        {
+            get
+            {
+                return Path.Combine(GetDirectoryName(Assembly.GetAssembly(typeof (IPlayerExtension)).Location),
+                    "Extensions");
+            }
         }
     }
 
