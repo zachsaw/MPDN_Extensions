@@ -61,6 +61,9 @@ del excludedfiles.txt
 xcopy /y /e "Extensions\Libs\*.*" "Release\Extensions\Libs\" 1>nul 2>nul
 xcopy /y "Extensions\README.txt" "Release\Extensions\" 1>nul 2>nul
 
+mkdir "Release\Extensions\PlayerExtensions\"
+xcopy /y /e "Extensions\PlayerExtensions\Images\*.*" "Release\Extensions\PlayerExtensions\Images\" 1>nul 2>nul
+
 if exist Sign.bat (
     echo Signing release...
     Echo.
