@@ -46,6 +46,9 @@ namespace Mpdn.Extensions.PlayerExtensions
         private static readonly Icon s_NextIcon = new Icon(Path.Combine(s_IconPath, "Next.ico"));
         private static readonly Icon s_PrevIcon = new Icon(Path.Combine(s_IconPath, "Prev.ico"));
 
+        private static readonly Icon s_PlayOverlayIcon = new Icon(Path.Combine(s_IconPath, "play-overlay.ico"));
+        private static readonly Icon s_PauseOverlayIcon = new Icon(Path.Combine(s_IconPath, "pause-overlay.ico"));
+
         private static ThumbnailToolBarButton s_PlayPauseButton;
         private static ThumbnailToolBarButton s_StopButton;
         private static ThumbnailToolBarButton s_ForwardButton;
@@ -138,14 +141,14 @@ namespace Mpdn.Extensions.PlayerExtensions
                     m_UpdateTimer.Start();
                     s_PlayPauseButton.Icon = s_PauseIcon;
                     s_PlayPauseButton.Tooltip = TEXT_PAUSE;
-                    Taskbar.SetOverlayIcon(m_MpdnFormHandle, s_PlayIcon, "Playing");
+                    Taskbar.SetOverlayIcon(m_MpdnFormHandle, s_PlayOverlayIcon, "Playing");
                     break;
                 case PlayerState.Paused:
                     Taskbar.SetProgressState(TaskbarProgressBarState.Paused);
                     m_UpdateTimer.Start();
                     s_PlayPauseButton.Icon = s_PlayIcon;
                     s_PlayPauseButton.Tooltip = TEXT_PLAY;
-                    Taskbar.SetOverlayIcon(m_MpdnFormHandle, s_PauseIcon, "Paused");
+                    Taskbar.SetOverlayIcon(m_MpdnFormHandle, s_PauseOverlayIcon, "Paused");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
