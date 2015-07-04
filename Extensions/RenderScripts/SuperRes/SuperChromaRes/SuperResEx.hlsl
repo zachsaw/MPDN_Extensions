@@ -48,13 +48,14 @@ float4 args1  : register(c4);
 #define sqr(x) dot(x,x)
 
 // -- Colour space Processing --
+#define Kb args0[2]
+#define Kr args0[3]
 #include "../../Common/ColourProcessing.hlsl"
-#define Kb args0[2] //redefinition
-#define Kr args0[3] //redefinition
 
 // -- Input processing --
 //Current high res value
 #define Get(x,y)      (tex2D(s0,ddxddy*(pos+chromaOffset+int2(x,y)+0.5)).xyz)
+#define GetY(x,y)      (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)).a)
 //Downsampled result
 #define Diff(x,y)     (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)).xyz)
 
@@ -69,7 +70,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     pos -= offset;
 
     // Calculate faithfulness force
-    float W = 0;
+    float weightSum = 0;
     float3 diff = 0;
     float3 stab = 0;
     float var = 0;
@@ -77,29 +78,26 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     [unroll] for (int X = -1; X <= 1; X++)
     [unroll] for (int Y = -1; Y <= 1; Y++)
     {
-        float dI2 = sqr(acuity*Luma(c0.rgb - Get(X,Y)));
+        // float dI2 = sqr(acuity*Luma(c0.rgb - Get(X,Y)));
+        float dI2 = sqr(acuity*(Luma(c0.rgb) - GetY(X,Y)));
         float dXY2 = sqr(float2(X,Y) - offset);
-        float w = exp(-dXY2/(2*radius*radius))*pow(1 + dI2/power, - power);
+        float weight = exp(-dXY2 / (2 * radius * radius)) * pow(1 + dI2 / power, -power);
 
-        diff += w*Diff(X,Y);
-        stab += w*(c0.rgb - Get(X,Y));
-        var += w*dI2;
-        W += w;
+        diff += weight*Diff(X,Y);
+        stab += weight*(c0.rgb - Get(X,Y));
+        var += weight*dI2;
+        weightSum += weight;
     }
-    diff /= W;
-    stab /= W;
-    var = (var / W) - sqr(acuity*Luma(stab));
+    diff /= weightSum;
+    stab /= weightSum;
+    var = (var / weightSum) - sqr(acuity*Luma(stab));
 
     // Calculate edge statistics
     float varD = softness * sqr(acuity*Luma(stab));
     float varS = (1 - softness) * var;
 
     // Apply force
-    c0.xyz -= strength*lerp(diff, stab, softness);
-
-	// Limit to RGB cube and luma plane.
-	c0.rgb += Lum - Luma(c0.rgb);
-	c0.rgb = LimitChroma(c0.rgb);
+    c0.yz -= strength*lerp(diff, stab, softness).yz;
     
     return c0;
 }

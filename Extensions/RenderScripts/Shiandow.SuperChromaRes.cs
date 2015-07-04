@@ -15,6 +15,7 @@
 // License along with this library.
 
 using System;
+using System.Linq;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
@@ -61,7 +62,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                IFilter hiRes, chroma;
+                IFilter hiRes;
 
                 var chromaSize = (TextureSize)Renderer.ChromaSize;
                 var targetSize = input.OutputSize;
@@ -72,15 +73,18 @@ namespace Mpdn.Extensions.RenderScripts
                 var vInput = new VSourceFilter();
 
                 float[] yuvConsts = new float[0];
+                int bitdepth = (uInput.OutputFormat == TextureFormat.Unorm8) ? 8 : 10;
+                
+                float range = (1 << bitdepth) - 1;
                 switch (Renderer.Colorimetric)
                 {
                     case YuvColorimetric.Auto : return input;
-                    case YuvColorimetric.FullRangePc601: yuvConsts = new[] { 0.114f, 0.299f, 0.0f}; break;
-                    case YuvColorimetric.FullRangePc709: yuvConsts = new[] { 0.0722f, 0.2126f, 0.0f }; break;
-                    case YuvColorimetric.FullRangePc2020: yuvConsts = new[] { 0.0593f, 0.2627f, 0.0f }; break;
-                    case YuvColorimetric.ItuBt601: yuvConsts = new[] { 0.114f, 0.299f, 1.0f }; break;
-                    case YuvColorimetric.ItuBt709: yuvConsts = new[] { 0.0722f, 0.2126f, 1.0f }; break;
-                    case YuvColorimetric.ItuBt2020: yuvConsts = new[] { 0.0593f, 0.2627f, 1.0f }; break;
+                    case YuvColorimetric.FullRangePc601: yuvConsts = new[] { 0.114f, 0.299f, 1.0f, range }; break;
+                    case YuvColorimetric.FullRangePc709: yuvConsts = new[] { 0.0722f, 0.2126f, 1.0f, range }; break;
+                    case YuvColorimetric.FullRangePc2020: yuvConsts = new[] { 0.0593f, 0.2627f, 1.0f, range }; break;
+                    case YuvColorimetric.ItuBt601: yuvConsts = new[] { 0.114f, 0.299f, 0.0f, range }; break;
+                    case YuvColorimetric.ItuBt709: yuvConsts = new[] { 0.0722f, 0.2126f, 0.0f, range }; break;
+                    case YuvColorimetric.ItuBt2020: yuvConsts = new[] { 0.0593f, 0.2627f, 0.0f, range }; break;
                 }
 
                 // Skip if downscaling
@@ -105,8 +109,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions)
                     .Configure( 
-                        arguments: new[] { Strength, Softness, yuvConsts[0], yuvConsts[1], offset.X, offset.Y },
-                        perTextureLinearSampling: new[] { true, false }
+                        arguments: new[] { Strength, Softness, yuvConsts[0], yuvConsts[1], offset.X, offset.Y }
                     );
 
                 var CrossBilateral = CompileShader("CrossBilateral.hlsl")
@@ -122,24 +125,22 @@ namespace Mpdn.Extensions.RenderScripts
                 var LabToLinear = CompileShader("../../Common/LabToLinear.hlsl");
                 var LinearToLab = CompileShader("../../Common/LinearToLab.hlsl");
 
-                chroma = new ShaderFilter(MergeChroma, uInput, vInput);
-                hiRes = Prescaler ? new ShaderFilter(CrossBilateral, yInput, chroma).ConvertToRgb() : input;
-                chroma = new RgbFilter(chroma, limitChroma: false);
+                hiRes = Prescaler ? new ShaderFilter(CrossBilateral, yInput, uInput, vInput) : input.ConvertToYuv();
 
                 for (int i = 1; i <= Passes; i++)
                 {
                     IFilter diff, linear;
 
                     // Compare to chroma
-                    linear = new ShaderFilter(GammaToLinear, hiRes);
+                    linear = new ShaderFilter(GammaToLinear, hiRes.ConvertToRgb());
                     linear = new ResizeFilter(linear, chromaSize, adjointOffset, upscaler, downscaler);
-                    diff = new ShaderFilter(Diff, linear, chroma);
+                    diff = new ShaderFilter(Diff, linear, uInput, vInput);
 
                     // Update result
                     hiRes = new ShaderFilter(SuperRes, hiRes, diff);
                 }
 
-                return hiRes;
+                return hiRes.ConvertToRgb();
             }
         }
 
