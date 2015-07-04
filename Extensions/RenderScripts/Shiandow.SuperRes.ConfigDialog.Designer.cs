@@ -61,6 +61,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.SoftnessSetter = new System.Windows.Forms.NumericUpDown();
             this.label8 = new System.Windows.Forms.Label();
             this.ModifyButton = new System.Windows.Forms.Button();
+            this.HQBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.StrengthSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PassesSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SoftnessSetter)).BeginInit();
@@ -75,7 +76,7 @@ namespace Mpdn.Extensions.RenderScripts
             0,
             0,
             65536});
-            this.StrengthSetter.Location = new System.Drawing.Point(160, 38);
+            this.StrengthSetter.Location = new System.Drawing.Point(167, 38);
             this.StrengthSetter.Maximum = new decimal(new int[] {
             1,
             0,
@@ -105,7 +106,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(48, 147);
+            this.ButtonOK.Location = new System.Drawing.Point(55, 165);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 8;
@@ -117,7 +118,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(129, 147);
+            this.ButtonCancel.Location = new System.Drawing.Point(136, 165);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 9;
@@ -136,7 +137,7 @@ namespace Mpdn.Extensions.RenderScripts
             // PassesSetter
             // 
             this.PassesSetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.PassesSetter.Location = new System.Drawing.Point(160, 12);
+            this.PassesSetter.Location = new System.Drawing.Point(167, 12);
             this.PassesSetter.Maximum = new decimal(new int[] {
             10,
             0,
@@ -161,7 +162,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.PrescalerBox.FormattingEnabled = true;
             this.PrescalerBox.Location = new System.Drawing.Point(69, 90);
             this.PrescalerBox.Name = "PrescalerBox";
-            this.PrescalerBox.Size = new System.Drawing.Size(135, 21);
+            this.PrescalerBox.Size = new System.Drawing.Size(142, 21);
             this.PrescalerBox.TabIndex = 0;
             this.PrescalerBox.SelectedIndexChanged += new System.EventHandler(this.SelectionChanged);
             // 
@@ -178,9 +179,9 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.ConfigButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ConfigButton.Location = new System.Drawing.Point(12, 117);
+            this.ConfigButton.Location = new System.Drawing.Point(15, 117);
             this.ConfigButton.Name = "ConfigButton";
-            this.ConfigButton.Size = new System.Drawing.Size(111, 21);
+            this.ConfigButton.Size = new System.Drawing.Size(115, 21);
             this.ConfigButton.TabIndex = 6;
             this.ConfigButton.Text = "Configure Prescaler";
             this.ConfigButton.UseVisualStyleBackColor = true;
@@ -195,7 +196,7 @@ namespace Mpdn.Extensions.RenderScripts
             0,
             0,
             131072});
-            this.SoftnessSetter.Location = new System.Drawing.Point(160, 64);
+            this.SoftnessSetter.Location = new System.Drawing.Point(167, 64);
             this.SoftnessSetter.Maximum = new decimal(new int[] {
             2,
             0,
@@ -223,7 +224,7 @@ namespace Mpdn.Extensions.RenderScripts
             // ModifyButton
             // 
             this.ModifyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ModifyButton.Location = new System.Drawing.Point(129, 117);
+            this.ModifyButton.Location = new System.Drawing.Point(136, 117);
             this.ModifyButton.Name = "ModifyButton";
             this.ModifyButton.Size = new System.Drawing.Size(75, 21);
             this.ModifyButton.TabIndex = 17;
@@ -231,13 +232,24 @@ namespace Mpdn.Extensions.RenderScripts
             this.ModifyButton.UseVisualStyleBackColor = true;
             this.ModifyButton.Click += new System.EventHandler(this.ModifyButtonClick);
             // 
+            // HQBox
+            // 
+            this.HQBox.AutoSize = true;
+            this.HQBox.Location = new System.Drawing.Point(15, 144);
+            this.HQBox.Name = "HQBox";
+            this.HQBox.Size = new System.Drawing.Size(126, 17);
+            this.HQBox.TabIndex = 18;
+            this.HQBox.Text = "Use HQ downscaling";
+            this.HQBox.UseVisualStyleBackColor = true;
+            // 
             // SuperResConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(216, 182);
+            this.ClientSize = new System.Drawing.Size(223, 200);
+            this.Controls.Add(this.HQBox);
             this.Controls.Add(this.ModifyButton);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.SoftnessSetter);
@@ -280,6 +292,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.NumericUpDown SoftnessSetter;
             private System.Windows.Forms.Label label8;
             private System.Windows.Forms.Button ModifyButton;
+            private System.Windows.Forms.CheckBox HQBox;
 
         }
     }

@@ -20,6 +20,7 @@ using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
 using Mpdn.Extensions.RenderScripts.Mpdn.ScriptChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
+using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
 
@@ -35,6 +36,8 @@ namespace Mpdn.Extensions.RenderScripts
             public float Strength { get; set; }
             public float Softness { get; set; }
 
+            public bool HQdownscaling { get; set; }
+
             #endregion
 
             public Func<TextureSize> TargetSize; // Not saved
@@ -47,15 +50,17 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 TargetSize = () => Renderer.TargetSize;
 
-                Passes = 2;
+                Passes = 3;
                 Strength = 1.0f;
                 Softness = 0.0f;
+
+                HQdownscaling = true;
 
                 Options = new List<Preset> {
                     new Preset
                     {
-                        Name = "Default",
-                        Script = new ScriptChainScript()
+                        Name = "Super-xBR",
+                        Script = new SuperXbrUi()
                     },
                     new Preset
                     {
@@ -75,8 +80,12 @@ namespace Mpdn.Extensions.RenderScripts
                 };
                 SelectedIndex = 0;
 
-                m_Upscaler = new Jinc(ScalerTaps.Four, false);
-                m_Downscaler = new Bilinear();
+                m_Upscaler = new Jinc(ScalerTaps.Four, false); // Deprecated
+                if (HQdownscaling)
+                    m_Downscaler = new Bicubic(0.66f, false);
+                else
+                    m_Downscaler = new Bilinear();
+
             }
 
             public override IFilter CreateFilter(IFilter input)
@@ -110,8 +119,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions)
                     .Configure(
-                        arguments: new[] { Strength, Softness },
-                        perTextureLinearSampling: new[] { true, false }
+                        arguments: new[] { Strength, Softness }
                     );
 
                 var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
@@ -159,7 +167,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return result;
             }
 
-            private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k, int passes)
+            private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k, int passes) // Deprecated
             {            
                 double w, h;
                 var maxScale = 2.25;
