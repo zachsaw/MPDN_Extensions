@@ -35,5 +35,5 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 
     c0.xyz = RGBtoLab(c0.rgb);
 
-    return float4(c0.xyz - c1.xyz, 0);
+    return float4(c0.xyz - c1.xyz, c0.y);
 }

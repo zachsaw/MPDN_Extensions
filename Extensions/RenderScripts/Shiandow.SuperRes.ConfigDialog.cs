@@ -49,6 +49,8 @@ namespace Mpdn.Extensions.RenderScripts
                 PassesSetter.Value = Settings.Passes;
                 StrengthSetter.Value = (Decimal)Settings.Strength;
                 SoftnessSetter.Value = (Decimal)Settings.Softness;
+
+                HQBox.Checked = Settings.HQdownscaling;
                 
                 UpdateGui();
             }
@@ -56,9 +58,12 @@ namespace Mpdn.Extensions.RenderScripts
             protected override void SaveSettings()
             {
                 Settings.SelectedIndex = PrescalerBox.SelectedIndex;
+
                 Settings.Passes = (int)PassesSetter.Value;
                 Settings.Strength = (float)StrengthSetter.Value;
                 Settings.Softness = (float)SoftnessSetter.Value;
+
+                Settings.HQdownscaling = HQBox.Checked;
             }
 
             private void SelectionChanged(object sender, EventArgs e)

@@ -47,8 +47,19 @@ float3 GammaInv(float3 x){ return x; }
 #endif
 
 // -- Colour space Processing --
-#define Kb 0.114
-#define Kr 0.299
+#ifndef Kb
+    #define Kb 0.0722
+#endif
+#ifndef Kr
+    #define Kr 0.2126
+#endif
+#ifndef LimitedRange
+    #define LimitedRange 1
+#endif
+#ifndef midpoint
+    #define range 255.0
+#endif
+
 #define RGBtoYUV float3x3(float3(Kr, 1 - Kr - Kb, Kb), float3(-Kr, Kr + Kb - 1, 1 - Kb) / (2*(1 - Kb)), float3(1 - Kr, Kr + Kb - 1, -Kb) / (2*(1 - Kr)))
 #define YUVtoRGB float3x3(float3(1, 0, 2*(1 - Kr)), float3(Kb + Kr - 1, 2*(1 - Kb)*Kb, 2*Kr*(1 - Kr)) / (Kb + Kr - 1), float3(1, 2*(1 - Kb),0))
 #define D65 float3(0.9505, 1.0, 1.0890)
@@ -121,10 +132,28 @@ float3x3 DinvLabtoRGB(float3 rgb) {
 float3 LimitChroma(float3 rgb) {
 	float3 Y = RGBtoYUV[0];
 	float3 S = saturate(rgb);
-	float3 X = dot(Y,rgb - S)*(rgb - S) > 0 ? 0 : Y;
-	return S + X*dot(Y,rgb - S)/dot(Y,X);
+	float3 X = dot(Y,rgb - S)*(rgb - S) > 0 ? 0 : S;
+	return S + X*dot(Y,rgb - S)/max(1e-6, dot(Y,X));
 }
 
 float Luma(float3 rgb) {
 	return dot(RGBtoYUV[0], rgb);
+}
+
+float3 ConvertToYUV(float3 rgb) {
+    float midpoint = 0.5 + 0.5/range;
+    float3 yuv = mul(RGBtoYUV, rgb);
+	if (LimitedRange == 0)
+		return yuv + float3(0,midpoint,midpoint);
+	else
+		return yuv*float3(219.0, 224.0, 224.0)/255.0 + float3(16.0/255.0,midpoint,midpoint);
+}
+
+float3 ConvertToRGB(float3 yuv) {
+    float midpoint = 0.5 + 0.5/range;
+	if (LimitedRange == 0)
+		yuv = yuv - float3(0,midpoint,midpoint);
+	else
+		yuv = (yuv - float3(16.0/255.0,midpoint,midpoint))*255.0/float3(219.0, 224.0, 224.0);
+    return mul(YUVtoRGB, yuv);
 }
