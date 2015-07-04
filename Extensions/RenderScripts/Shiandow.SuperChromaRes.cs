@@ -79,12 +79,12 @@ namespace Mpdn.Extensions.RenderScripts
                 switch (Renderer.Colorimetric)
                 {
                     case YuvColorimetric.Auto : return input;
-                    case YuvColorimetric.FullRangePc601: yuvConsts = new[] { 0.114f, 0.299f, 1.0f, range }; break;
-                    case YuvColorimetric.FullRangePc709: yuvConsts = new[] { 0.0722f, 0.2126f, 1.0f, range }; break;
-                    case YuvColorimetric.FullRangePc2020: yuvConsts = new[] { 0.0593f, 0.2627f, 1.0f, range }; break;
-                    case YuvColorimetric.ItuBt601: yuvConsts = new[] { 0.114f, 0.299f, 0.0f, range }; break;
-                    case YuvColorimetric.ItuBt709: yuvConsts = new[] { 0.0722f, 0.2126f, 0.0f, range }; break;
-                    case YuvColorimetric.ItuBt2020: yuvConsts = new[] { 0.0593f, 0.2627f, 0.0f, range }; break;
+                    case YuvColorimetric.FullRangePc601: yuvConsts = new[] { 0.114f, 0.299f, 0.0f, range }; break;
+                    case YuvColorimetric.FullRangePc709: yuvConsts = new[] { 0.0722f, 0.2126f, 0.0f, range }; break;
+                    case YuvColorimetric.FullRangePc2020: yuvConsts = new[] { 0.0593f, 0.2627f, 0.0f, range }; break;
+                    case YuvColorimetric.ItuBt601: yuvConsts = new[] { 0.114f, 0.299f, 1.0f, range }; break;
+                    case YuvColorimetric.ItuBt709: yuvConsts = new[] { 0.0722f, 0.2126f, 1.0f, range }; break;
+                    case YuvColorimetric.ItuBt2020: yuvConsts = new[] { 0.0593f, 0.2627f, 1.0f, range }; break;
                 }
 
                 // Skip if downscaling
