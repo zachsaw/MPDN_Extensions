@@ -77,11 +77,11 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 	float SSres = sqr(mul(float4(0.5,-0.5,-0.5,0.5),X).xyz);
 	float SStot = (sqr(X[0].xyz) + sqr(X[1].xyz) + sqr(X[2].xyz) + sqr(X[3].xyz)) - sqr(mul(float4(0.5,0.5,0.5,0.5),X).xyz);
 	float R = 1 - (SSres/SStot);
-	float3 p = frac(avg*acuity);
+	float3 p = saturate(abs(c0 - avg)*acuity);
 
 	// Merge with high res values
 	float3 str = p*(1-p)*power/(SSres*(1 - power) + p*(1-p)*power);
-	c0.rgb += clamp(str*(avg - c0), -0.5*(1 + margin)/acuity, 0.5*(1 + margin)/acuity);
+	c0.rgb += str*(avg - c0);
 
 	// Debugging
 	//if (all(p0.xy == size0.xy)) return float4(dot(p*(1-p),1/3.0),0.5,0.5,1);
