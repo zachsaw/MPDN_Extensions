@@ -40,14 +40,14 @@ if not exist "%msbuildexe%" echo error: %msbuildexe%: not found & goto Quit
 Echo Making MPDN Extensions...
 Echo.
 del Properties\AssemblyInfo.cs.bak 1>nul 2>nul
-ren Properties\AssemblyInfo.cs Properties\AssemblyInfo.cs.bak 1>nul 2>nul
+ren Properties\AssemblyInfo.cs AssemblyInfo.cs.bak 1>nul 2>nul
 del Extensions\PlayerExtensions\*.resx 1>nul 2>nul
 del Extensions\RenderScripts\*.resx 1>nul 2>nul
 call GenerateAssemblyInfo.bat %releaseVersion% > Properties\AssemblyInfo.cs
 %msbuildexe% Mpdn.Extensions.sln /m /p:Configuration=%buildPlatform% /p:Platform="Any CPU" /v:q /t:rebuild
 if not "%ERRORLEVEL%"=="0" (set builderror=1)
 del Properties\AssemblyInfo.cs 1>nul 2>nul
-ren Properties\AssemblyInfo.cs.bak Properties\AssemblyInfo.cs 1>nul 2>nul
+ren Properties\AssemblyInfo.cs.bak AssemblyInfo.cs 1>nul 2>nul
 Echo.
 
 if "%builderror%"=="1" echo error: build failed & goto Quit
