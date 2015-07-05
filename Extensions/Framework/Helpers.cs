@@ -126,6 +126,19 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
+        public static bool IsRgb(this FrameBufferInputFormat format)
+        {
+            switch (format)
+            {
+                case FrameBufferInputFormat.Rgb24:
+                case FrameBufferInputFormat.Rgb32:
+                case FrameBufferInputFormat.Rgb48:
+                    return true;
+            }
+
+            return false;
+        }
+
         public static int GetBitDepth(this FrameBufferInputFormat format)
         {
             switch (format)

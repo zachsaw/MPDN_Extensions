@@ -40,13 +40,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                switch (Renderer.InputFormat)
-                {
-                    case FrameBufferInputFormat.Rgb24:
-                    case FrameBufferInputFormat.Rgb32:
-                    case FrameBufferInputFormat.Rgb48:
-                        return input;
-                }
+                if (Renderer.InputFormat.IsRgb())
+                    return input;
 
                 int bits = Renderer.InputFormat.GetBitDepth();
                 if (bits > maxbitdepth) return input;
