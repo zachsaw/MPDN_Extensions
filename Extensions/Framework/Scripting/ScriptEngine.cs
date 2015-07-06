@@ -20,9 +20,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.Windows;
+using Mpdn.Extensions.Framework.Exceptions;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.Framework.Scripting.ScriptEngineUtilities;
 using Mpdn.RenderScript;
@@ -157,25 +157,6 @@ namespace Mpdn.Extensions.Framework.Scripting
             m_Engine.Script["Gpu"] = Renderer.Dx9GpuInfo.Details;
             m_Engine.Script["__$xhost"] = new InternalHostFunctions();
             m_Engine.Script["Host"] = new Host();
-        }
-    }
-
-    public class MpdnScriptEngineException : Exception
-    {
-        public MpdnScriptEngineException()
-        {
-        }
-
-        public MpdnScriptEngineException(string message) : base(message)
-        {
-        }
-
-        public MpdnScriptEngineException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected MpdnScriptEngineException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
         }
     }
 }

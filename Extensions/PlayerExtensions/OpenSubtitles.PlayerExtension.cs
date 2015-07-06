@@ -16,6 +16,7 @@
 // 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
@@ -78,11 +79,11 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
             catch (InternetConnectivityException)
             {
-                MessageBox.Show(PlayerControl.VideoPanel, "MPDN can't access OpenSubtitles.org");
+                Trace.WriteLine("OpenSubtitles: Failed to access OpenSubtitles.org (InternetConnectivityException)");
             }
             catch (Exception)
             {
-                MessageBox.Show(PlayerControl.VideoPanel, "No Subtitles found.");
+                Trace.WriteLine("OpenSubtitles: General exception occurred while trying to get subtitles");
             }
 
         }

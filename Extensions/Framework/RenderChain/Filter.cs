@@ -72,7 +72,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public IBaseFilter[] InputFilters { get; private set; }
 
-        public ITexture2D OutputTexture { get { return OutputTarget; } }
+        public virtual ITexture2D OutputTexture { get { return OutputTarget; } }
         public abstract TextureSize OutputSize { get; }
         public virtual TextureFormat OutputFormat
         {

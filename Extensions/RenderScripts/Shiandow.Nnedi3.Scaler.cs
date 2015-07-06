@@ -45,7 +45,10 @@ namespace Mpdn.Extensions.RenderScripts
             public override IFilter CreateFilter(IFilter input)
             {
                 if (!Renderer.IsDx11Avail)
+                {
+                    Renderer.FallbackOccurred = true; // Warn user via player stats OSD
                     return input; // DX11 is not available; fallback
+                }
 
                 Func<TextureSize, TextureSize> Transformation = s => new TextureSize(2 * s.Height, s.Width);
 

@@ -50,8 +50,8 @@ float4 args0  : register(c3);
 
 // -- Input processing --
 //Current high res value
-// #define Get(x,y)      (tex2D(s0,tex+dxdy*int2(x,y)).xyz)
 #define Get(x,y)    (tex2D(s0,ddxddy*(pos+int2(x,y)+0.5)).xyz)
+#define GetY(x,y)    (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)).a)
 //Downsampled result
 #define Diff(x,y)     (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)).xyz)
 
@@ -73,7 +73,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     [unroll] for (int X = -1; X <= 1; X++)
 	[unroll] for (int Y = -1; Y <= 1; Y++)
     {
-		float dI2 = sqr(acuity*(c0.rgb - Get(X,Y)));
+		float dI2 = sqr(acuity*(c0.y - GetY(X,Y))); // sqr(acuity*(c0.xyz - Get(X,Y)));
         float dXY2 = sqr(float2(X,Y) - offset);
         float w = exp(-dXY2/(2*radius*radius))*pow(1 + dI2/power, - power);
 

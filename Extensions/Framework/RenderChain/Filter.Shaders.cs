@@ -99,9 +99,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
             : base(inputFilters)
         {
             Shader = settings.Shader;
-            LinearSampling = settings.PerTextureLinearSampling.Length > 0
-                ? settings.PerTextureLinearSampling
-                : Enumerable.Repeat(settings.LinearSampling, inputFilters.Length).ToArray();
+            LinearSampling = settings.PerTextureLinearSampling
+                .Concat(Enumerable.Repeat(settings.LinearSampling, inputFilters.Length - settings.PerTextureLinearSampling.Length))
+                .ToArray();
+
             Transform = settings.Transform;
             Format = settings.Format;
             SizeIndex = settings.SizeIndex;

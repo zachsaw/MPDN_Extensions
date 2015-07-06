@@ -14,31 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-// -- Misc --
 sampler s0 : register(s0);
-sampler sU : register(s1);
-sampler sV : register(s2);
-float4 p0 :  register(c0);
-float2 p1 :  register(c1);
-float4 args0 : register(c2);
-
-// -- Colour space Processing --
-#define Kb args0[0]
-#define Kr args0[1]
-#define LimitedRange args0[2]
-#define range args0[3]
-#include "../../Common/ColourProcessing.hlsl"
-
-// -- Main code --
-float4 main(float2 tex : TEXCOORD0) : COLOR {
-    float4 c0 = tex2D(s0, tex);
-	float u = tex2D(sU, tex)[0];
-    float v = tex2D(sV, tex)[0];
-
-    c0.rgb = Gamma(c0.rgb);
-	c0.xyz = ConvertToYUV(c0.rgb);
-
-    float2 diff = c0.yz - float2(u,v);
-
-    return float4(0, diff, c0.x);
+float4 main(float2 tex : TEXCOORD0) : COLOR
+{
+    return float4(tex2D(s0, tex).rgb, 1);
 }

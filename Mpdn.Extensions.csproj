@@ -50,11 +50,21 @@
     <Reference Include="MediaInfoDotNet">
       <HintPath>MPDN\MediaInfoDotNet.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack">
+      <HintPath>Extensions\Libs\Microsoft.WindowsAPICodePack.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell">
+      <HintPath>Extensions\Libs\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
     <Reference Include="Mpdn.Core">
       <HintPath>MPDN\Mpdn.Core.dll</HintPath>
     </Reference>
     <Reference Include="Mpdn.RenderScript">
       <HintPath>MPDN\Mpdn.RenderScript.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Extensions\Libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Ooki.Dialogs">
       <HintPath>Extensions\Libs\Ookii.Dialogs.dll</HintPath>
@@ -70,9 +80,13 @@
     <Reference Include="ShellBasics">
       <HintPath>Extensions\Libs\ShellBasics.dll</HintPath>
     </Reference>
+    <Reference Include="SplitButton">
+      <HintPath>Extensions\Libs\SplitButton.dll</HintPath>
+    </Reference>
     <Reference Include="sysglobl" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
@@ -133,6 +147,8 @@
     <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.Designer.cs">
       <DependentUpon>ScriptEditorDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\Framework\Exceptions\MpdnScriptEngineException.cs" />
+    <Compile Include="Extensions\Framework\Exceptions\RenderScriptException.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
     <Compile Include="Extensions\Framework\PlayerExtension.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filter.cs" />
@@ -166,6 +182,7 @@
     <Compile Include="Extensions\PlayerExtensions\GoToTimeForm.Designer.cs">
       <DependentUpon>GoToTimeForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\TaskbarEnhancer.cs" />
     <Compile Include="Extensions\PlayerExtensions\KeyBindings.cs" />
     <Compile Include="Extensions\PlayerExtensions\MouseControl.ConfigDialog.cs">
       <SubType>Form</SubType>
@@ -236,6 +253,12 @@
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ConfigDialog.designer.cs">
       <DependentUpon>UpdateChecker.ConfigDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ExtensionAvailable.Form.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ExtensionAvailable.Form.Designer.cs">
+      <DependentUpon>UpdateChecker.ExtensionAvailable.Form.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.PlayerExtension.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.cs">
       <SubType>Form</SubType>
@@ -260,6 +283,13 @@
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.Parser.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.DxvaHd.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.DxvaHd.ConfigDialog.designer.cs">
+      <DependentUpon>Mpdn.DxvaHd.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.DxvaHd.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ImageProcessor.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -447,7 +477,8 @@ echo .cs\ &gt; excludedfiles.txt
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Extensions\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Examples\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
 del excludedfiles.txt
-xcopy /y /e "$(SolutionDir)Extensions\Libs\*.*" "$(ProjectDir)MPDN\Extensions\Libs\"</PostBuildEvent>
+xcopy /y /e "$(SolutionDir)Extensions\Libs\*.*" "$(ProjectDir)MPDN\Extensions\Libs\"
+xcopy /y /e "$(SolutionDir)Extensions\PlayerExtensions\Images\*.*" "$(ProjectDir)MPDN\Extensions\PlayerExtensions\Images\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.Controls;
+using Mpdn.Extensions.Framework.Exceptions;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.Framework.Scripting;
 

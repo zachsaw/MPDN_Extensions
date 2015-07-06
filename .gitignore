@@ -191,3 +191,6 @@ _Pvt_Extensions/
 ModelManifest.xml
 /Installer/unList.exe
 /Sign.bat
+
+# MPDN
+MPDN/
