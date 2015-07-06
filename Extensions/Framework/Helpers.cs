@@ -126,6 +126,11 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
+        public static bool IsYuv(this FrameBufferInputFormat format)
+        {
+            return !IsRgb(format);
+        }
+
         public static bool IsRgb(this FrameBufferInputFormat format)
         {
             switch (format)

@@ -118,7 +118,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void OnPlayerStateChanged(object sender, PlayerStateEventArgs args)
         {
             var enabled = (args.NewState == PlayerState.Playing || args.NewState == PlayerState.Paused) &&
-                          !Renderer.InputFormat.IsRgb();
+                          Renderer.InputFormat.IsYuv();
 
             m_Enabled = enabled;
 
