@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
-using Mpdn.Extensions.RenderScripts.Mpdn.ScriptChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
 using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
 using Mpdn.RenderScript;
@@ -81,11 +80,7 @@ namespace Mpdn.Extensions.RenderScripts
                 SelectedIndex = 0;
 
                 m_Upscaler = new Jinc(ScalerTaps.Four, false); // Deprecated
-                if (HQdownscaling)
-                    m_Downscaler = new Bicubic(0.66f, false);
-                else
-                    m_Downscaler = new Bilinear();
-
+                m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.66f, false) : new Bilinear();
             }
 
             public override IFilter CreateFilter(IFilter input)
@@ -139,8 +134,9 @@ namespace Mpdn.Extensions.RenderScripts
                     original = new ShaderFilter(GammaToLab, original);
 
                     // Always correct offset (if any)
-                    if (initial is ResizeFilter)
-                        ((ResizeFilter)initial).ForceOffsetCorrection();
+                    var filter = initial as ResizeFilter;
+                    if (filter != null)
+                        filter.ForceOffsetCorrection();
 
                     lab = new ShaderFilter(GammaToLab, initial.SetSize(targetSize));
                 }
