@@ -25,8 +25,6 @@ float4 args0 : register(c2);
 // -- Colour space Processing --
 #define Kb args0[0]
 #define Kr args0[1]
-#define LimitedRange args0[2]
-#define range args0[3]
 #include "../../Common/ColourProcessing.hlsl"
 
 // -- Main code --

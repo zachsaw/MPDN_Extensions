@@ -220,6 +220,16 @@ namespace Mpdn.Extensions.Framework.Scripting
                 get { return 8; }
             }
 
+            public bool SourceRgb
+            {
+                get { return false; }
+            }
+
+            public bool SourceYuv
+            {
+                get { return true; }
+            }
+
             public double FrameRateHz
             {
                 get { return 24/1.001; }
@@ -293,32 +303,17 @@ namespace Mpdn.Extensions.Framework.Scripting
 
             public int SourceBitDepth
             {
-                get
-                {
-                    switch (Renderer.InputFormat)
-                    {
-                        case FrameBufferInputFormat.Nv12:
-                        case FrameBufferInputFormat.Yv12:
-                        case FrameBufferInputFormat.Yuy2:
-                        case FrameBufferInputFormat.Uyvy:
-                        case FrameBufferInputFormat.Yv24:
-                        case FrameBufferInputFormat.Ayuv:
-                        case FrameBufferInputFormat.Rgb24:
-                        case FrameBufferInputFormat.Rgb32:
-                            return 8;
-                        case FrameBufferInputFormat.P010:
-                        case FrameBufferInputFormat.P210:
-                        case FrameBufferInputFormat.Y410:
-                            return 10;
-                        case FrameBufferInputFormat.P016:
-                        case FrameBufferInputFormat.P216:
-                        case FrameBufferInputFormat.Y416:
-                        case FrameBufferInputFormat.Rgb48:
-                            return 16;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
+                get { return Renderer.InputFormat.GetBitDepth(); }
+            }
+
+            public bool SourceRgb
+            {
+                get { return Renderer.InputFormat.IsRgb(); }
+            }
+
+            public bool SourceYuv
+            {
+                get { return Renderer.InputFormat.IsYuv(); }
             }
 
             public double FrameRateHz

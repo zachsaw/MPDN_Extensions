@@ -15,6 +15,7 @@
 // License along with this library.
 
 using System;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 
@@ -39,22 +40,10 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                int bits = 8;
-                switch (Renderer.InputFormat)
-                {
-                    case FrameBufferInputFormat.P010: 
-                    case FrameBufferInputFormat.Y410: 
-                        bits = 10;
-                        break;
-                    case FrameBufferInputFormat.P016: 
-                    case FrameBufferInputFormat.Y416: 
-                        bits = 16;
-                        break;
-                    case FrameBufferInputFormat.Rgb24:
-                    case FrameBufferInputFormat.Rgb32:
-                    case FrameBufferInputFormat.Rgb48:
-                        return input;
-                }
+                if (Renderer.InputFormat.IsRgb())
+                    return input;
+
+                int bits = Renderer.InputFormat.GetBitDepth();
                 if (bits > maxbitdepth) return input;
 
                 float[] consts = {

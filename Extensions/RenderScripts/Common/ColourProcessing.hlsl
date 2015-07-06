@@ -56,7 +56,7 @@ float3 GammaInv(float3 x){ return x; }
 #ifndef LimitedRange
     #define LimitedRange 1
 #endif
-#ifndef midpoint
+#ifndef range
     #define range 255.0
 #endif
 

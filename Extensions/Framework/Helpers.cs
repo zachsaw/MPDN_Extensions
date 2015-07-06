@@ -107,7 +107,7 @@ namespace Mpdn.Extensions.Framework
         }
     }
 
-    public static class RenderQualityHelpers
+    public static class RendererHelpers
     {
         public static TextureFormat GetTextureFormat(this RenderQuality quality)
         {
@@ -121,6 +121,73 @@ namespace Mpdn.Extensions.Framework
                     return TextureFormat.Unorm16;
                 case RenderQuality.MaxQuality:
                     return TextureFormat.Float32;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public static bool IsFullRange(this YuvColorimetric colorimetric)
+        {
+            return !IsLimitedRange(colorimetric);
+        }
+
+        public static bool IsLimitedRange(this YuvColorimetric colorimetric)
+        {
+            switch (colorimetric)
+            {
+                case YuvColorimetric.FullRangePc601: 
+                case YuvColorimetric.FullRangePc709: 
+                case YuvColorimetric.FullRangePc2020:
+                    return false;
+                case YuvColorimetric.ItuBt601: 
+                case YuvColorimetric.ItuBt709: 
+                case YuvColorimetric.ItuBt2020:
+                    return true;
+                default: 
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public static bool IsYuv(this FrameBufferInputFormat format)
+        {
+            return !IsRgb(format);
+        }
+
+        public static bool IsRgb(this FrameBufferInputFormat format)
+        {
+            switch (format)
+            {
+                case FrameBufferInputFormat.Rgb24:
+                case FrameBufferInputFormat.Rgb32:
+                case FrameBufferInputFormat.Rgb48:
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static int GetBitDepth(this FrameBufferInputFormat format)
+        {
+            switch (format)
+            {
+                case FrameBufferInputFormat.Nv12:
+                case FrameBufferInputFormat.Yv12:
+                case FrameBufferInputFormat.Yuy2:
+                case FrameBufferInputFormat.Uyvy:
+                case FrameBufferInputFormat.Yv24:
+                case FrameBufferInputFormat.Ayuv:
+                case FrameBufferInputFormat.Rgb24:
+                case FrameBufferInputFormat.Rgb32:
+                    return 8;
+                case FrameBufferInputFormat.P010:
+                case FrameBufferInputFormat.P210:
+                case FrameBufferInputFormat.Y410:
+                    return 10;
+                case FrameBufferInputFormat.P016:
+                case FrameBufferInputFormat.P216:
+                case FrameBufferInputFormat.Y416:
+                case FrameBufferInputFormat.Rgb48:
+                    return 16;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
