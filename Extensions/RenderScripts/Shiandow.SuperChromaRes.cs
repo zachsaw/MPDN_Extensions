@@ -78,13 +78,13 @@ namespace Mpdn.Extensions.RenderScripts
                 float range = (1 << bitdepth) - 1;
                 switch (Renderer.Colorimetric)
                 {
-                    case YuvColorimetric.Auto : return input;
                     case YuvColorimetric.FullRangePc601: yuvConsts = new[] { 0.114f, 0.299f, 0.0f, range }; break;
                     case YuvColorimetric.FullRangePc709: yuvConsts = new[] { 0.0722f, 0.2126f, 0.0f, range }; break;
                     case YuvColorimetric.FullRangePc2020: yuvConsts = new[] { 0.0593f, 0.2627f, 0.0f, range }; break;
                     case YuvColorimetric.ItuBt601: yuvConsts = new[] { 0.114f, 0.299f, 1.0f, range }; break;
                     case YuvColorimetric.ItuBt709: yuvConsts = new[] { 0.0722f, 0.2126f, 1.0f, range }; break;
                     case YuvColorimetric.ItuBt2020: yuvConsts = new[] { 0.0593f, 0.2627f, 1.0f, range }; break;
+                    default: throw new ArgumentOutOfRangeException();
                 }
 
                 // Skip if downscaling
@@ -94,20 +94,22 @@ namespace Mpdn.Extensions.RenderScripts
                 Vector2 offset = Renderer.ChromaOffset;
                 Vector2 adjointOffset = -offset * targetSize / chromaSize;
 
-                string macroDefinitions = "";
+                string superResMacros = "";
                 if (IsIntegral(Strength))
-                    macroDefinitions += String.Format("strength = {0};", Strength);
+                    superResMacros += String.Format("strength = {0};", Strength);
                 if (IsIntegral(Softness))
-                    macroDefinitions += String.Format("softness = {0};", Softness);
+                    superResMacros += String.Format("softness = {0};", Softness);
+
+                string diffMacros = string.Format("LimitedRange = {0};", yuvConsts[2]);
 
                 var CopyLuma = CompileShader("CopyLuma.hlsl");
                 var CopyChroma = CompileShader("CopyChroma.hlsl");
                 var MergeChroma = CompileShader("MergeChroma.hlsl").Configure(format: TextureFormat.Float16);
 
-                var Diff = CompileShader("Diff.hlsl")
+                var Diff = CompileShader("Diff.hlsl", macroDefinitions: diffMacros)
                     .Configure(arguments: yuvConsts, format: TextureFormat.Float16);
 
-                var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions)
+                var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: superResMacros)
                     .Configure( 
                         arguments: new[] { Strength, Softness, yuvConsts[0], yuvConsts[1], offset.X, offset.Y }
                     );
