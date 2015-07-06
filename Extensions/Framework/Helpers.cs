@@ -126,6 +126,28 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
+        public static bool IsFullRange(this YuvColorimetric colorimetric)
+        {
+            return !IsLimitedRange(colorimetric);
+        }
+
+        public static bool IsLimitedRange(this YuvColorimetric colorimetric)
+        {
+            switch (colorimetric)
+            {
+                case YuvColorimetric.FullRangePc601: 
+                case YuvColorimetric.FullRangePc709: 
+                case YuvColorimetric.FullRangePc2020:
+                    return false;
+                case YuvColorimetric.ItuBt601: 
+                case YuvColorimetric.ItuBt709: 
+                case YuvColorimetric.ItuBt2020:
+                    return true;
+                default: 
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         public static bool IsYuv(this FrameBufferInputFormat format)
         {
             return !IsRgb(format);
