@@ -72,29 +72,9 @@ namespace Mpdn.Extensions.RenderScripts
                 var uInput = new USourceFilter();
                 var vInput = new VSourceFilter();
 
-                float[] yuvConsts;
-                int bitdepth = (uInput.OutputFormat == TextureFormat.Unorm8) ? 8 : 10;
-                
-                float range = (1 << bitdepth) - 1;
-                bool limited = Renderer.Colorimetric.IsLimitedRange();
-
-                switch (Renderer.Colorimetric)
-                {
-                    case YuvColorimetric.FullRangePc601:
-                    case YuvColorimetric.ItuBt601:
-                        yuvConsts = new[] {0.114f, 0.299f};
-                        break;
-                    case YuvColorimetric.FullRangePc709:
-                    case YuvColorimetric.ItuBt709:
-                        yuvConsts = new[] {0.0722f, 0.2126f};
-                        break;
-                    case YuvColorimetric.FullRangePc2020:
-                    case YuvColorimetric.ItuBt2020:
-                        yuvConsts = new[] {0.0593f, 0.2627f};
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
+                int bitdepth = Renderer.InputFormat.GetBitDepth();        
+                bool limited = Renderer.Colorimetric.IsLimitedRange();                
 
                 // Skip if downscaling
                 if (targetSize.Width <= chromaSize.Width && targetSize.Height <= chromaSize.Height)
@@ -109,7 +89,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (IsIntegral(Softness))
                     superResMacros += String.Format("softness = {0};", Softness);
 
-                string diffMacros = string.Format("LimitedRange = {0}; range = {1}", limited ? 1 : 0, range);
+                string diffMacros = string.Format("LimitedRange = {0}; range = {1}", limited ? 1 : 0, (1 << bitdepth) - 1);
 
                 var CopyLuma = CompileShader("CopyLuma.hlsl");
                 var CopyChroma = CompileShader("CopyChroma.hlsl");
