@@ -143,7 +143,8 @@ namespace Mpdn.Extensions.RenderScripts
                     IFilter diff, linear;
 
                     // Compare to chroma
-                    linear = new ShaderFilter(GammaToLinear, hiRes.ConvertToRgb());
+                    var rgb = new RgbFilter(hiRes, limitChroma: false);
+                    linear = new ShaderFilter(GammaToLinear, rgb);
                     linear = new ResizeFilter(linear, chromaSize, adjointOffset, upscaler, downscaler);
                     diff = new ShaderFilter(Diff, linear, uInput, vInput);
 
