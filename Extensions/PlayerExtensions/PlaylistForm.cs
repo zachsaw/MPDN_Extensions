@@ -310,6 +310,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             NotifyPlaylistChanged();
             PlaylistCount = Playlist.Count;
+            FitColumnsToContent();
         }
 
         public void RefreshPlaylist()
@@ -334,20 +335,22 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             Playlist.Clear();
             currentPlayIndex = -1;
+            playToolStripMenuItem.Text = "Play";
         }
 
-        public void OpenPlaylist()
+        public void OpenPlaylist(bool clear=true)
         {
             openPlaylistDialog.FileName = savePlaylistDialog.FileName;
             if (openPlaylistDialog.ShowDialog(PlayerControl.Form) != DialogResult.OK) return;
 
             loadedPlaylist = openPlaylistDialog.FileName;
-            OpenPlaylist(openPlaylistDialog.FileName);
+            OpenPlaylist(openPlaylistDialog.FileName, clear);
         }
 
-        public void OpenPlaylist(string fileName)
+        public void OpenPlaylist(string fileName, bool clear=true)
         {
-            ClearPlaylist();
+            if (clear)
+                ClearPlaylist();
 
             try
             {
@@ -375,7 +378,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             PopulatePlaylist();
 
-            PlayActive();
+            if (clear)
+                PlayActive();
         }
 
         private void SavePlaylist()
@@ -533,7 +537,19 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 throw new FileLoadException();
             }
 
-            Playlist.Add(new PlaylistItem(title, isActive));
+            string duration = "";
+
+            var t = new Thread(() =>
+            {
+                var media = new MediaInfoDotNet.MediaFile(title);
+                var time = TimeSpan.FromMilliseconds(media.duration);
+                duration = time.ToString(@"hh\:mm\:ss");
+            });
+            t.Start();
+            t.Join();
+
+            var item = new PlaylistItem(title, isActive) {Duration = duration};
+            Playlist.Add(item);
         }
 
         private void ParseWithChapters(string line)
@@ -565,7 +581,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
 
             var endChapter = int.Parse(splitLine[2].Substring(splitLine[2].IndexOf(':') + 1).Trim());
-            Playlist.Add(new PlaylistItem(title, skipChapters, endChapter, isActive));
+            string duration = "";
+
+            var t = new Thread(() =>
+            {
+                var media = new MediaInfoDotNet.MediaFile(title);
+                var time = TimeSpan.FromMilliseconds(media.duration);
+                duration = time.ToString(@"hh\:mm\:ss");
+            });
+            t.Start();
+            t.Join();
+
+            Playlist.Add(new PlaylistItem(title, skipChapters, endChapter, isActive, duration));
         }
 
         private void UpdatePlaylist()
@@ -1153,17 +1180,26 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void HandleContextMenu()
         {
-            switch (PlayerControl.PlayerState)
+            if (dgv_PlayList.Rows.Count < 1) return;
+
+            if (dgv_PlayList.CurrentCell.RowIndex != currentPlayIndex)
             {
-                case PlayerState.Paused:
-                    playToolStripMenuItem.Text = "Resume";
-                    break;
-                case PlayerState.Playing:
-                    playToolStripMenuItem.Text = "Pause";
-                    break;
-                default:
-                    playToolStripMenuItem.Text = "Play";
-                    break;
+                playToolStripMenuItem.Text = "Play";
+            }
+            else
+            {
+                switch (PlayerControl.PlayerState)
+                {
+                    case PlayerState.Paused:
+                        playToolStripMenuItem.Text = "Resume";
+                        break;
+                    case PlayerState.Playing:
+                        playToolStripMenuItem.Text = "Pause";
+                        break;
+                    default:
+                        playToolStripMenuItem.Text = "Play";
+                        break;
+                }
             }
         }
 
@@ -1195,9 +1231,27 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void SetPlaylistToFill()
         {
-            foreach (DataGridViewColumn c in from DataGridViewColumn c in dgv_PlayList.Columns where c.Name != "Playing" select c)
+            foreach (var c in from DataGridViewColumn c in dgv_PlayList.Columns where c.Name != "Playing" select c)
             {
                 c.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            }
+        }
+
+        private void FitColumnsToContent()
+        {
+            var list = new List<int>();
+
+            foreach (var c in from DataGridViewColumn c in dgv_PlayList.Columns where c.Name != "Playing" select c)
+            {
+                c.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
+                list.Add(c.Width);
+            }
+
+            for (int i = 1; i < dgv_PlayList.Columns.Count; i++)
+            {
+                var c = dgv_PlayList.Columns[i];
+                c.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                c.MinimumWidth = list[i - 1];
             }
         }
 
@@ -1444,21 +1498,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             bool paintPlayRow = CurrentItem != null && e.RowIndex > -1 && e.RowIndex == currentPlayIndex;
             if (!paintPlayRow) return;
 
-            SolidBrush brush = null;
-            Bitmap icon = null;
+            SolidBrush brush = new SolidBrush(Color.FromArgb(42, 127, 183));
+            Bitmap icon = new Bitmap(24, 24);
 
             switch (PlayerControl.PlayerState)
             {
                 case PlayerState.Playing:
-                    brush = new SolidBrush(Color.FromArgb(42, 127, 183));
                     icon = (Bitmap)PlayButton.BackgroundImage;
                     break;
                 case PlayerState.Paused:
-                    brush = new SolidBrush(Color.FromArgb(66, 140, 125));
                     icon = (Bitmap)PauseButton.BackgroundImage;
                     break;
                 case PlayerState.Stopped:
-                    brush = new SolidBrush(Color.FromArgb(63, 137, 122));
                     icon = (Bitmap)StopButton.BackgroundImage;
                     break;
                 default:
@@ -1472,7 +1523,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 var rect = new Rectangle(e.CellBounds.X + 15, e.CellBounds.Y + 4, e.CellBounds.Width, e.CellBounds.Height - 9);
                 var offset = new Point(e.CellBounds.X, e.CellBounds.Y + 2);
                 e.Graphics.FillRectangle(brush, rect);
-                e.Graphics.DrawImage(icon, offset);
+                e.Graphics.DrawImage(icon, new Rectangle(offset, new Size(24, 24)), 0, 0, 24, 24, GraphicsUnit.Pixel);
             }
             else
             {
@@ -1598,6 +1649,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
                 else
                 {
+                    HandleContextMenu();
                     dgv_PlaylistContextMenu.Show(Cursor.Position);
                 }
             }
@@ -1690,17 +1742,24 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ButtonPlayClick(object sender, EventArgs e)
         {
-            switch (PlayerControl.PlayerState)
+            if (dgv_PlayList.CurrentCell.RowIndex != currentPlayIndex)
             {
-                case PlayerState.Paused:
-                    PlayerControl.PlayMedia();
-                    break;
-                case PlayerState.Playing:
-                    PlayerControl.PauseMedia();
-                    break;
-                default:
-                    PlaySelectedFile();
-                    break;
+                PlaySelectedFile();
+            }
+            else
+            {
+                switch (PlayerControl.PlayerState)
+                {
+                    case PlayerState.Paused:
+                        PlayerControl.PlayMedia();
+                        break;
+                    case PlayerState.Playing:
+                        PlayerControl.PauseMedia();
+                        break;
+                    default:
+                        PlaySelectedFile();
+                        break;
+                }
             }
         }
 
@@ -1773,6 +1832,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void ButtonNewPlaylistClick(object sender, EventArgs e)
         {
             NewPlaylist(true);
+        }
+
+        private void ButtonAddPlaylistClick(object sender, EventArgs e)
+        {
+            OpenPlaylist(false);
         }
 
         private void ButtonOpenPlaylistClick(object sender, EventArgs e)
