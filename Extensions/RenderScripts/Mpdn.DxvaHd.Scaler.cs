@@ -45,6 +45,7 @@ namespace Mpdn.Extensions.RenderScripts
             #endregion
 
             #region Filter Classes
+
             private class DxvaHdResizeFilter : ResizeFilter
             {
                 private readonly IDxvaHd m_DxvaHd;
@@ -53,6 +54,7 @@ namespace Mpdn.Extensions.RenderScripts
                     : base(inputFilter)
                 {
                     m_DxvaHd = dxvaHd;
+                    SetSize(Renderer.TargetSize);
                 }
 
                 protected override IFilter<ITexture2D> Optimize()
@@ -72,33 +74,6 @@ namespace Mpdn.Extensions.RenderScripts
                     }
 
                     m_DxvaHd.Render(texture, OutputTarget);
-                }
-            }
-
-            public class CopyShaderFilter : ShaderFilter
-            {
-                private readonly ITargetTexture m_OutputTarget;
-
-                public CopyShaderFilter(ITargetTexture outputTarget, ShaderFilterSettings<IShader> settings,
-                    params IFilter<IBaseTexture>[] inputFilters)
-                    : base(settings, inputFilters)
-                {
-                    m_OutputTarget = outputTarget;
-                }
-
-                public override ITexture2D OutputTexture
-                {
-                    get { return m_OutputTarget; }
-                }
-
-                public override TextureFormat OutputFormat
-                {
-                    get { return m_OutputTarget.Format; }
-                }
-
-                protected override void Render(IShader shader)
-                {
-                    Renderer.Render(m_OutputTarget, shader);
                 }
             }
 
@@ -143,13 +118,11 @@ namespace Mpdn.Extensions.RenderScripts
                 if (sourceFilter.OutputFormat != TextureFormat.Unorm8)
                 {
                     // Convert input to Unorm8 (and unforunately murdering quality at the same time)
-                    var copy = CompileShader("Copy.hlsl").Configure(linearSampling: false);
-                    m_TextureUnorm8 = Renderer.CreateRenderTarget((Size) input.OutputSize, TextureFormat.Unorm8);
-                    input = new CopyShaderFilter(m_TextureUnorm8, copy, input);
+                    var copy = CompileShader("Copy.hlsl").Configure(linearSampling: false, format: TextureFormat.Unorm8);
+                    input = new ShaderFilter(copy, input);
                 }
 
                 var result = new DxvaHdResizeFilter(m_DxvaHd, input);
-                result.SetSize(Renderer.TargetSize);
 
                 return YuvMode ? result.ConvertToRgb() : result;
             }
