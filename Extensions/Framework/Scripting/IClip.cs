@@ -36,6 +36,8 @@ namespace Mpdn.Extensions.Framework.Scripting
         YuvColorimetric Colorimetric { get; }
         FrameBufferInputFormat InputFormat { get; }
         int SourceBitDepth { get; }
+        bool SourceRgb { get; }
+        bool SourceYuv { get; }
         double FrameRateHz { get; }
     }
 }

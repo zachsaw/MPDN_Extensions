@@ -220,6 +220,16 @@ namespace Mpdn.Extensions.Framework.Scripting
                 get { return 8; }
             }
 
+            public bool SourceRgb
+            {
+                get { return false; }
+            }
+
+            public bool SourceYuv
+            {
+                get { return true; }
+            }
+
             public double FrameRateHz
             {
                 get { return 24/1.001; }
@@ -294,6 +304,16 @@ namespace Mpdn.Extensions.Framework.Scripting
             public int SourceBitDepth
             {
                 get { return Renderer.InputFormat.GetBitDepth(); }
+            }
+
+            public bool SourceRgb
+            {
+                get { return Renderer.InputFormat.IsRgb(); }
+            }
+
+            public bool SourceYuv
+            {
+                get { return Renderer.InputFormat.IsYuv(); }
             }
 
             public double FrameRateHz
