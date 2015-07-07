@@ -24,7 +24,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         public PlaylistConfigDialog()
         {
             InitializeComponent();
-            updateControls();
+            UpdateControls();
         }
 
         protected override void LoadSettings()
@@ -57,15 +57,26 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.RememberPlaylist = cb_rememberPlaylist.Checked;
         }
 
-        private void updateControls()
+        private void UpdateControls()
         {
-            if (cb_snapWithPlayer.Checked) cb_staySnapped.Enabled = true;
-            else { cb_staySnapped.Checked = false; cb_staySnapped.Enabled = false; }
+            if (cb_snapWithPlayer.Checked)
+            {
+                cb_staySnapped.Enabled = true;
+                cb_rememberWindowPosition.Checked = false;
+                cb_rememberWindowPosition.Enabled = false;
+            }
+
+            else
+            {
+                cb_staySnapped.Checked = false;
+                cb_staySnapped.Enabled = false;
+                cb_rememberWindowPosition.Enabled = true;
+            }
         }
 
         private void cb_snapWithPlayer_CheckedChanged(object sender, System.EventArgs e)
         {
-            updateControls();
+            UpdateControls();
         }
     }
 

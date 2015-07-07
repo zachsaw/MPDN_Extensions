@@ -35,11 +35,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PlaylistForm));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.buttonAdd = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonDel = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
@@ -96,6 +96,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.openFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addPlaylistToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -124,7 +125,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.skipChaptersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.endChapterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.durationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addPlaylistToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_PlayList)).BeginInit();
             this.dgv_PlaylistContextMenu.SuspendLayout();
@@ -588,8 +588,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.AllowUserToAddRows = false;
             this.dgv_PlayList.AllowUserToDeleteRows = false;
             this.dgv_PlayList.AllowUserToResizeRows = false;
-            dataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(248)))), ((int)(((byte)(248)))));
-            this.dgv_PlayList.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(248)))), ((int)(((byte)(248)))));
+            this.dgv_PlayList.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dgv_PlayList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -606,14 +606,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.SkipChapters,
             this.EndChapter,
             this.Duration});
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle10.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle10.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.SkyBlue;
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_PlayList.DefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.SkyBlue;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_PlayList.DefaultCellStyle = dataGridViewCellStyle5;
             this.dgv_PlayList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
             this.dgv_PlayList.GridColor = System.Drawing.SystemColors.Window;
             this.dgv_PlayList.Location = new System.Drawing.Point(0, 0);
@@ -634,9 +634,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // Playing
             // 
             this.Playing.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle7.NullValue = "null";
-            this.Playing.DefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.NullValue = "null";
+            this.Playing.DefaultCellStyle = dataGridViewCellStyle2;
             this.Playing.FillWeight = 1F;
             this.Playing.HeaderText = "";
             this.Playing.MinimumWidth = 24;
@@ -692,8 +692,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // SkipChapters
             // 
             this.SkipChapters.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle8.NullValue = null;
-            this.SkipChapters.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle3.NullValue = null;
+            this.SkipChapters.DefaultCellStyle = dataGridViewCellStyle3;
             this.SkipChapters.FillWeight = 1F;
             this.SkipChapters.HeaderText = "Skip Chapters";
             this.SkipChapters.MinimumWidth = 50;
@@ -704,8 +704,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // EndChapter
             // 
             this.EndChapter.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle9.NullValue = null;
-            this.EndChapter.DefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle4.NullValue = null;
+            this.EndChapter.DefaultCellStyle = dataGridViewCellStyle4;
             this.EndChapter.FillWeight = 1F;
             this.EndChapter.HeaderText = "End Chapter";
             this.EndChapter.MaxInputLength = 2;
@@ -736,12 +736,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.viewToolStripMenuItem,
             this.sortToolStripMenuItem});
             this.dgv_PlaylistContextMenu.Name = "contextMenuStrip1";
-            this.dgv_PlaylistContextMenu.Size = new System.Drawing.Size(153, 180);
+            this.dgv_PlaylistContextMenu.Size = new System.Drawing.Size(118, 158);
             // 
             // playToolStripMenuItem
             // 
             this.playToolStripMenuItem.Name = "playToolStripMenuItem";
-            this.playToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.playToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.playToolStripMenuItem.Text = "Play";
             this.playToolStripMenuItem.Click += new System.EventHandler(this.ButtonPlayClick);
             // 
@@ -753,7 +753,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.addClipboardToolStripMenuItem,
             this.addPlaylistToolStripMenuItem});
             this.addToolStripMenuItem.Name = "addToolStripMenuItem";
-            this.addToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.addToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.addToolStripMenuItem.Text = "Add";
             // 
             // openFilesToolStripMenuItem
@@ -777,6 +777,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.addClipboardToolStripMenuItem.Text = "From clipboard";
             this.addClipboardToolStripMenuItem.Click += new System.EventHandler(this.ButtonAddFromClipboardClick);
             // 
+            // addPlaylistToolStripMenuItem
+            // 
+            this.addPlaylistToolStripMenuItem.Name = "addPlaylistToolStripMenuItem";
+            this.addPlaylistToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.addPlaylistToolStripMenuItem.Text = "Playlist";
+            this.addPlaylistToolStripMenuItem.Click += new System.EventHandler(this.ButtonAddPlaylistClick);
+            // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -785,7 +792,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.openClipboardToolStripMenuItem,
             this.openPlaylistToolStripMenuItem});
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.openToolStripMenuItem.Text = "Open";
             // 
             // openFileToolStripMenuItem
@@ -823,7 +830,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.removeUnselectedItemsToolStripMenuItem,
             this.removeNonExistentItemsToolStripMenuItem});
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.removeToolStripMenuItem.Text = "Remove";
             // 
             // removeSelectedItemsToolStripMenuItem
@@ -854,7 +861,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.savePlaylistToolStripMenuItem,
             this.savePlaylistAsToolStripMenuItem});
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.saveToolStripMenuItem.Text = "Playlist";
             // 
             // newPlaylistToolStripMenuItem
@@ -884,7 +891,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.viewFileLocationToolStripMenuItem,
             this.viewMediaInfoToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.viewToolStripMenuItem.Text = "View";
             // 
             // viewFileLocationToolStripMenuItem
@@ -909,7 +916,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.shuffleToolStripMenuItem,
             this.restoreToolStripMenuItem});
             this.sortToolStripMenuItem.Name = "sortToolStripMenuItem";
-            this.sortToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.sortToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.sortToolStripMenuItem.Text = "Sort";
             // 
             // ascendingToolStripMenuItem
@@ -1008,13 +1015,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.durationToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.durationToolStripMenuItem.Text = "Duration";
             this.durationToolStripMenuItem.Click += new System.EventHandler(this.UpdateColumns);
-            // 
-            // addPlaylistToolStripMenuItem
-            // 
-            this.addPlaylistToolStripMenuItem.Name = "addPlaylistToolStripMenuItem";
-            this.addPlaylistToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-            this.addPlaylistToolStripMenuItem.Text = "Playlist";
-            this.addPlaylistToolStripMenuItem.Click += new System.EventHandler(this.ButtonAddPlaylistClick);
             // 
             // PlaylistForm
             // 

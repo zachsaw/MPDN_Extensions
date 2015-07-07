@@ -1239,12 +1239,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void FitColumnsToContent()
         {
-            var list = new List<int>();
+            var list = new int[7];
 
-            foreach (var c in from DataGridViewColumn c in dgv_PlayList.Columns where c.Name != "Playing" select c)
+            for (int i = 1; i < dgv_PlayList.Columns.Count; i++)
             {
-                c.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
-                list.Add(c.Width);
+                var c = dgv_PlayList.Columns[i];
+                c.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader;
+                list[i - 1] = c.Width;
             }
 
             for (int i = 1; i < dgv_PlayList.Columns.Count; i++)
