@@ -15,10 +15,14 @@
 // License along with this library.
 // 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace Mpdn.Extensions.Framework
 {
@@ -206,4 +210,150 @@ namespace Mpdn.Extensions.Framework
             return self.Substring(startIndex, length);
         }
     }
+
+    public static class VersionHelpers
+    {
+        public static readonly Version ApplicationVersion = new Version(Application.ProductVersion);
+        public static readonly Version ExtensionDllVersion;
+
+        static VersionHelpers()
+        {
+            var asm = typeof(VersionHelpers).Assembly;
+            var ver = FileVersionInfo.GetVersionInfo(asm.Location);
+            ExtensionDllVersion = new Version(ver.ToString());
+        }
+        #region VersionObjects
+        #region GithubObjects
+        public class GitHubVersion
+        {
+            public class GitHubAsset
+            {
+                public string name { get; set; }
+                public string browser_download_url { get; set; }
+            }
+            public string tag_name { get; set; }
+            public string body { get; set; }
+            public List<GitHubAsset> assets { get; set; }
+        }
+        #endregion
+        public class Version
+        {
+            public static readonly Regex VERSION_REGEX = new Regex(@"([0-9]+)\.([0-9]+)\.([0-9]+)");
+
+            public Version()
+            {
+            }
+
+            public Version(string version)
+            {
+                var matches = VERSION_REGEX.Match(version);
+                Major = UInt32.Parse(matches.Groups[1].Value);
+                Minor = UInt32.Parse(matches.Groups[2].Value);
+                Revision = UInt32.Parse(matches.Groups[3].Value);
+            }
+
+            public uint Major { get; set; }
+            public uint Minor { get; set; }
+            public uint Revision { get; set; }
+            public string Changelog { get; set; }
+
+
+            public static bool operator >(Version v1, Version v2)
+            {
+                if (v1 == null)
+                    return false;
+                if (v2 == null)
+                    return true;
+                if (v1 == v2)
+                    return false;
+                var iv1 = GetInteger(v1);
+                var iv2 = GetInteger(v2);
+                return iv1 > iv2;
+            }
+
+            private static int GetInteger(Version v)
+            {
+                return (int)(((v.Major & 0xFF) << 24) + (v.Minor << 12) + v.Revision);
+            }
+
+            public static bool operator <(Version v1, Version v2)
+            {
+                if (v1 == null)
+                    return true;
+                if (v2 == null)
+                    return false;
+                if (v1 == v2)
+                    return false;
+
+                if (v1.Major < v2.Major)
+                    return true;
+                if (v1.Minor < v2.Minor)
+                    return true;
+                if (v1.Revision < v2.Revision)
+                    return true;
+                return false;
+            }
+
+
+            public static bool operator ==(Version v1, Version v2)
+            {
+                if (ReferenceEquals(null, v1) && ReferenceEquals(null, v2))
+                    return true;
+                if (ReferenceEquals(null, v1) || ReferenceEquals(null, v2))
+                    return false;
+
+                return v1.Equals(v2);
+            }
+
+            public static bool operator !=(Version v1, Version v2)
+            {
+                return !(v1 == v2);
+            }
+
+            protected bool Equals(Version other)
+            {
+                return Major == other.Major && Minor == other.Minor && Revision == other.Revision;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((Version)obj);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    var hashCode = (int)Major;
+                    hashCode = (hashCode * 397) ^ (int)Minor;
+                    hashCode = (hashCode * 397) ^ (int)Revision;
+                    return hashCode;
+                }
+            }
+
+            public override string ToString()
+            {
+                return Major + "." + Minor + "." + Revision;
+            }
+        }
+
+
+        public class ExtensionVersion : Version
+        {
+            public ExtensionVersion(string version)
+                : base(version)
+            {
+            }
+
+            public List<GitHubVersion.GitHubAsset> Files { get; set; }
+        }
+
+     
+        #endregion
+    }
+
+
 }
