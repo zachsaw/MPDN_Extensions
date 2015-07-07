@@ -16,6 +16,7 @@
 // 
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using YAXLib;
 
@@ -69,6 +70,8 @@ namespace Mpdn.Extensions.Framework.Config
             {
                 loadException = ex;
                 Configuration = new T();
+                Trace.WriteLine(string.Format("Failed to deserialize: {0}", m_FileName));
+                Trace.Write(ex);
             }
             return false;
         }
