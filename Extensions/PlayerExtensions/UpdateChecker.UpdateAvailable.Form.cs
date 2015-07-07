@@ -17,6 +17,7 @@
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -24,7 +25,7 @@ namespace Mpdn.Extensions.PlayerExtensions
     {
         private readonly UpdateCheckerSettings m_settings;
 
-        public UpdateCheckerNewVersionForm(UpdateChecker.Version version, UpdateCheckerSettings settings)
+        public UpdateCheckerNewVersionForm(VersionHelpers.Version version, UpdateCheckerSettings settings)
         {
             InitializeComponent();
             m_settings = settings;

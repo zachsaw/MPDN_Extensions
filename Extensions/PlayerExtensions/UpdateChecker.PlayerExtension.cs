@@ -30,7 +30,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class UpdateCheckerExtension : PlayerExtension<UpdateCheckerSettings, UpdateCheckerConfigDialog>
     {
-        private UpdateChecker.Version m_currentVersion;
         private UpdateChecker m_checker;
         private ExtensionUpdateChecker m_extChecker;
 
@@ -67,13 +66,13 @@ namespace Mpdn.Extensions.PlayerExtensions
                 m_extChecker.CheckVersion();
             }
 
-            if (Settings.MpdnVersionOnServer > m_currentVersion)
+            if (Settings.MpdnVersionOnServer > VersionHelpers.ApplicationVersion)
             {
                 new UpdateCheckerNewVersionForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(PlayerControl.VideoPanel);
                 newVersion = true;
             }
 
-            if (Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion())
+            if (Settings.ExtensionVersionOnServer > VersionHelpers.ExtensionDllVersion)
             {
                 new UpdateCheckerNewExtensionForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
                     PlayerControl.VideoPanel);
@@ -99,13 +98,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (!Settings.CheckForUpdate)
                 return;
 
-            m_currentVersion = new UpdateChecker.Version(Application.ProductVersion);
-            if (!Settings.ForgetMpdnVersion && Settings.MpdnVersionOnServer > m_currentVersion)
+            if (!Settings.ForgetMpdnVersion && Settings.MpdnVersionOnServer > VersionHelpers.ApplicationVersion)
             {
                 new UpdateCheckerNewVersionForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(PlayerControl.VideoPanel);
             }
             if (!Settings.ForgetExtensionVersion &&
-                Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion())
+                Settings.ExtensionVersionOnServer > VersionHelpers.ExtensionDllVersion)
             {
                 new UpdateCheckerNewExtensionForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
                     PlayerControl.VideoPanel);
@@ -131,8 +129,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         }
         
         public bool CheckForUpdate { get; set; }
-        public UpdateChecker.Version MpdnVersionOnServer { get; set; }
-        public ExtensionUpdateChecker.ExtensionVersion ExtensionVersionOnServer { get; set; }
+        public VersionHelpers.Version MpdnVersionOnServer { get; set; }
+        public VersionHelpers.ExtensionVersion ExtensionVersionOnServer { get; set; }
         public bool ForgetMpdnVersion { get; set; }
         public bool ForgetExtensionVersion { get; set; }
     }
@@ -155,7 +153,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         protected void SetHeaders()
         {
-            var version = ExtensionUpdateChecker.GetExtensionsVersion();
+            var version = VersionHelpers.ExtensionDllVersion;
 
             m_WebClient.Headers.Add("User-Agent",
                 string.Format(
@@ -180,14 +178,14 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         protected virtual void ParseChangelog(string changelog)
         {
-            Version serverVersion = null;
+            VersionHelpers.Version serverVersion = null;
             foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
             {
-                if (Version.VERSION_REGEX.IsMatch(line))
+                if (VersionHelpers.Version.VERSION_REGEX.IsMatch(line))
                 {
                     if (serverVersion == null)
                     {
-                        serverVersion = new Version(line);
+                        serverVersion = new VersionHelpers.Version(line);
                     }
                     else
                     {
@@ -224,114 +222,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             // It blocks when it is detecting proxy settings and especially noticeable if user is behind a proxy server
             Task.Factory.StartNew(() => m_WebClient.DownloadStringAsync(ChangelogUrl));
         }
-
-        #region Version
-
-        public class Version
-        {
-            public static readonly Regex VERSION_REGEX = new Regex(@"([0-9]+)\.([0-9]+)\.([0-9]+)");
-
-            public Version()
-            {
-            }
-
-            public Version(string version)
-            {
-                var matches = VERSION_REGEX.Match(version);
-                Major = uint.Parse(matches.Groups[1].Value);
-                Minor = uint.Parse(matches.Groups[2].Value);
-                Revision = uint.Parse(matches.Groups[3].Value);
-            }
-
-            public uint Major { get; set; }
-            public uint Minor { get; set; }
-            public uint Revision { get; set; }
-            public string Changelog { get; set; }
-
-
-            public static bool operator >(Version v1, Version v2)
-            {
-                if (v1 == null)
-                    return false;
-                if (v2 == null)
-                    return true;
-                if (v1 == v2)
-                    return false;
-                var iv1 = GetInteger(v1);
-                var iv2 = GetInteger(v2);
-                return iv1 > iv2;
-            }
-
-            private static int GetInteger(Version v)
-            {
-                return (int) (((v.Major & 0xFF) << 24) + (v.Minor << 12) + v.Revision);
-            }
-
-            public static bool operator <(Version v1, Version v2)
-            {
-                if (v1 == null)
-                    return true;
-                if (v2 == null)
-                    return false;
-                if (v1 == v2)
-                    return false;
-
-                if (v1.Major < v2.Major)
-                    return true;
-                if (v1.Minor < v2.Minor)
-                    return true;
-                if (v1.Revision < v2.Revision)
-                    return true;
-                return false;
-            }
-
-
-            public static bool operator ==(Version v1, Version v2)
-            {
-                if (ReferenceEquals(null, v1) && ReferenceEquals(null, v2))
-                    return true;
-                if (ReferenceEquals(null, v1) || ReferenceEquals(null, v2))
-                    return false;
-
-                return v1.Equals(v2);
-            }
-
-            public static bool operator !=(Version v1, Version v2)
-            {
-                return !(v1 == v2);
-            }
-
-            protected bool Equals(Version other)
-            {
-                return Major == other.Major && Minor == other.Minor && Revision == other.Revision;
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (ReferenceEquals(null, obj)) return false;
-                if (ReferenceEquals(this, obj)) return true;
-                if (obj.GetType() != this.GetType()) return false;
-                return Equals((Version)obj);
-            }
-
-            public override int GetHashCode()
-            {
-                unchecked
-                {
-                    var hashCode = (int)Major;
-                    hashCode = (hashCode * 397) ^ (int)Minor;
-                    hashCode = (hashCode * 397) ^ (int)Revision;
-                    return hashCode;
-                }
-            }
-
-            public override string ToString()
-            {
-                return Major + "." + Minor + "." + Revision;
-            }
-        }
-
-        #endregion
     }
     #region ExtensionUpdateChecker
 
@@ -341,17 +231,10 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
         }
 
-        public static Version GetExtensionsVersion()
-        {
-            var asm = typeof(UpdateChecker).Assembly;
-            var ver = FileVersionInfo.GetVersionInfo(asm.Location);
-            return new Version(ver.ToString());
-        }
-
         protected override void ParseChangelog(string changelog)
         {
-            var result = JsonConvert.DeserializeObject<GitHubVersion>(changelog);
-            var version = new ExtensionVersion(result.tag_name);
+            var result = JsonConvert.DeserializeObject<VersionHelpers.GitHubVersion>(changelog);
+            var version = new VersionHelpers.ExtensionVersion(result.tag_name);
             var changelogStarted = false;
             foreach (string line in Regex.Split(result.body, "\r\n|\r|\n"))
             {
@@ -376,28 +259,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             }));
 
         }
-        public class GitHubVersion
-        {
-            public class GitHubAsset
-            {
-                public string name { get; set; }
-                public string browser_download_url { get; set; }
-            }
-            public string tag_name { get; set; }
-            public string body { get; set; }
-            public List<GitHubAsset> assets { get; set; }
-        }
-
-        public class ExtensionVersion : Version
-        {
-            public ExtensionVersion(string version) : base(version)
-            {
-            }
-
-            public List<GitHubVersion.GitHubAsset> Files { get; set; }
-        }
 
     }
+
     #endregion
     #endregion
 }

@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
 using System.IO;
+using Mpdn.Extensions.Framework.Exceptions;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {

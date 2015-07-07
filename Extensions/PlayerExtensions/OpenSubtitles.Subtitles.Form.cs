@@ -16,9 +16,11 @@
 // 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Controls;
+using Mpdn.Extensions.Framework.Exceptions;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -87,9 +89,10 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 Close();
             }
-            catch (InternetConnectivityException)
+            catch (InternetConnectivityException exception)
             {
                 MessageBox.Show(this, "MPDN was unable to access OpenSubtitles.org");
+                Trace.WriteLine(string.Format("InternetConnectivityProblem: {0}", exception.Message));
             }
             catch (Exception)
             {

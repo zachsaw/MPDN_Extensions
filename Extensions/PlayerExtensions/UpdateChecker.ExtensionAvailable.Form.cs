@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -26,9 +27,9 @@ namespace Mpdn.Extensions.PlayerExtensions
     {
         private readonly UpdateCheckerSettings _settings;
         private string _chosenDownload = null;
-        private readonly List<ExtensionUpdateChecker.GitHubVersion.GitHubAsset> _files;
+        private readonly List<VersionHelpers.GitHubVersion.GitHubAsset> _files;
 
-        public UpdateCheckerNewExtensionForm(ExtensionUpdateChecker.ExtensionVersion version, UpdateCheckerSettings settings)
+        public UpdateCheckerNewExtensionForm(VersionHelpers.ExtensionVersion version, UpdateCheckerSettings settings)
         {
             InitializeComponent();
             Icon = PlayerControl.ApplicationIcon;
