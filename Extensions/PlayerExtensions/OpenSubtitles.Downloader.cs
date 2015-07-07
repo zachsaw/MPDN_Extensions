@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using Mpdn.Extensions.Framework.Exceptions;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -76,9 +77,9 @@ namespace Mpdn.Extensions.PlayerExtensions
                     return client.DownloadString(url);
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {                
-                throw new InternetConnectivityException();
+                throw new InternetConnectivityException(string.Format("Url: {0}", url), exception);
             }
   
         }
@@ -109,11 +110,11 @@ namespace Mpdn.Extensions.PlayerExtensions
                 throw new EmptyResponseException();
             }
 
-            return parseSubtitlesResponse(subs);
+            return ParseSubtitlesResponse(subs);
 
         }
 
-        private List<Subtitle> parseSubtitlesResponse(string subs)
+        private List<Subtitle> ParseSubtitlesResponse(string subs)
         {
             var subList = new List<Subtitle>();
             var subtitle = new Subtitle(this);
@@ -244,11 +245,6 @@ namespace Mpdn.Extensions.PlayerExtensions
     }
 
     public class EmptyResponseException : Exception
-    {
-
-    }
-
-    public class InternetConnectivityException : Exception
     {
 
     }

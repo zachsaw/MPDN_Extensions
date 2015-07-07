@@ -147,6 +147,7 @@
     <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.Designer.cs">
       <DependentUpon>ScriptEditorDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\Framework\Exceptions\InternetConnectivityException.cs" />
     <Compile Include="Extensions\Framework\Exceptions\MpdnScriptEngineException.cs" />
     <Compile Include="Extensions\Framework\Exceptions\RenderScriptException.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
