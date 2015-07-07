@@ -343,6 +343,10 @@ namespace Mpdn.Extensions.Framework
 
         public class ExtensionVersion : Version
         {
+            public ExtensionVersion()
+            {
+            }
+
             public ExtensionVersion(string version)
                 : base(version)
             {
