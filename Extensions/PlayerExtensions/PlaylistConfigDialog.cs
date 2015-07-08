@@ -62,6 +62,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (cb_snapWithPlayer.Checked)
             {
                 cb_staySnapped.Enabled = true;
+                cb_scaleWithPlayer.Enabled = true;
                 cb_rememberWindowPosition.Checked = false;
                 cb_rememberWindowPosition.Enabled = false;
             }
@@ -70,6 +71,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 cb_staySnapped.Checked = false;
                 cb_staySnapped.Enabled = false;
+                cb_scaleWithPlayer.Checked = false;
+                cb_scaleWithPlayer.Enabled = false;
                 cb_rememberWindowPosition.Enabled = true;
             }
         }

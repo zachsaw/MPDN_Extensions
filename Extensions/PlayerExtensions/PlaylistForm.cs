@@ -24,6 +24,7 @@ using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
@@ -58,6 +59,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private int titleCellIndex = 4;
         private int skipCellIndex = 5;
         private int endCellIndex = 6;
+
+        private int minWorker;
+        private int minIoc;
 
         #endregion
 
@@ -130,6 +134,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             Playlist = new List<PlaylistItem>();
             TempRememberedFiles = new List<string>();
+
+            ThreadPool.GetMaxThreads(out minWorker, out minIoc);
+            ThreadPool.SetMinThreads(minWorker, minIoc);
+
             SetControlStates();
             DisableTabStop(this);
         }
@@ -310,7 +318,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             NotifyPlaylistChanged();
             PlaylistCount = Playlist.Count;
-            FitColumnsToContent();
         }
 
         public void RefreshPlaylist()
@@ -537,19 +544,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 throw new FileLoadException();
             }
 
-            string duration = "";
-
-            var t = new Thread(() =>
-            {
-                var media = new MediaInfoDotNet.MediaFile(title);
-                var time = TimeSpan.FromMilliseconds(media.duration);
-                duration = time.ToString(@"hh\:mm\:ss");
-            });
-            t.Start();
-            t.Join();
-
-            var item = new PlaylistItem(title, isActive) {Duration = duration};
+            var item = new PlaylistItem(title, isActive);
             Playlist.Add(item);
+
+            Task.Factory.StartNew(GetMediaDuration);
         }
 
         private void ParseWithChapters(string line)
@@ -581,18 +579,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
 
             var endChapter = int.Parse(splitLine[2].Substring(splitLine[2].IndexOf(':') + 1).Trim());
-            string duration = "";
+            Playlist.Add(new PlaylistItem(title, skipChapters, endChapter, isActive));
 
-            var t = new Thread(() =>
-            {
-                var media = new MediaInfoDotNet.MediaFile(title);
-                var time = TimeSpan.FromMilliseconds(media.duration);
-                duration = time.ToString(@"hh\:mm\:ss");
-            });
-            t.Start();
-            t.Join();
-
-            Playlist.Add(new PlaylistItem(title, skipChapters, endChapter, isActive, duration));
+            Task.Factory.StartNew(GetMediaDuration);
         }
 
         private void UpdatePlaylist()
@@ -761,15 +750,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 PlayNext();
             }
 
-            var t = new Thread(() =>
-            {
-                var time = TimeSpan.FromMilliseconds(PlayerControl.MediaDuration / 1000);
-                Playlist[currentPlayIndex].Duration = time.ToString(@"hh\:mm\:ss");
-            });
-            t.Start();
-            t.Join();
-
-            dgv_PlayList.Rows[currentPlayIndex].Cells["Duration"].Value = Playlist[currentPlayIndex].Duration;
+            Task.Factory.StartNew(GetCurrentMediaDuration);
             dgv_PlayList.Invalidate();
         }
 
@@ -818,14 +799,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             foreach (var item in fileNames.Select(s => new PlaylistItem(s, false) { EndChapter = -1 }))
             {
-                var t = new Thread(() =>
-                {
-                    var media = new MediaInfoDotNet.MediaFile(item.FilePath);
-                    var time = TimeSpan.FromMilliseconds(media.duration);
-                    item.Duration = time.ToString(@"hh\:mm\:ss");
-                });
-                t.Start();
-                t.Join();
                 Playlist.Add(item);
             }
 
@@ -843,6 +816,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
 
             dgv_PlayList.CurrentCell = dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex];
+
+            Task.Factory.StartNew(GetMediaDuration);
         }
 
         private void AddFolderToPlaylist()
@@ -1237,7 +1212,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
-        private void FitColumnsToContent()
+        private void FitColumnsToHeader()
         {
             var list = new int[7];
 
@@ -1913,6 +1888,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void PlaylistForm_Shown(object sender, EventArgs e)
         {
             SetColumnSize();
+            FitColumnsToHeader();
         }
 
         private void PlaylistForm_Resize(object sender, EventArgs e)
@@ -1946,6 +1922,56 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 Cursor.Position = new Point(PlayerControl.Form.Location.X + 100, PlayerControl.Form.Location.Y + 100);
                 e.SuppressKeyPress = true;
                 e.Handled = true;
+            }
+        }
+
+        #endregion
+
+        #region Threaded Methods
+
+        private void GetCurrentMediaDuration()
+        {
+            try
+            {
+                var time = TimeSpan.FromMilliseconds(PlayerControl.MediaDuration / 1000);
+                CurrentItem.Duration = time.ToString(@"hh\:mm\:ss");
+                Invoke((Action)(() =>
+                {
+                    if (dgv_PlayList.Rows.Count < 1) return;
+                    dgv_PlayList.Rows[currentPlayIndex].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
+                    dgv_PlayList.InvalidateRow(currentPlayIndex);
+                }));
+            }
+            catch (Exception ex)
+            {
+                PlayerControl.HandleException(ex);
+            }
+        }
+
+        private void GetMediaDuration()
+        {
+            try
+            {
+                for (int i = 0; i < Playlist.Count; i++)
+                {
+                    var item = Playlist[i];
+                    var media = new MediaInfoDotNet.MediaFile(item.FilePath);
+                    var time = TimeSpan.FromMilliseconds(media.duration);
+                    item.Duration = time.ToString(@"hh\:mm\:ss");
+                    Invoke((Action)(() =>
+                    {
+                        if (dgv_PlayList.Rows.Count < 1) return;
+                        if (i != currentPlayIndex)
+                        {
+                            dgv_PlayList.Rows[i].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
+                            dgv_PlayList.InvalidateRow(i);
+                        }
+                    }));
+                }
+            }
+            catch (Exception ex)
+            {
+                PlayerControl.HandleException(ex);
             }
         }
 

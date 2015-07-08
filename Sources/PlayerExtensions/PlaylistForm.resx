@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing">
+    <value>17, 17</value>
+  </data>
   <data name="buttonAdd.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAedJREFUOE9j
@@ -610,50 +610,56 @@
         LPHoGv4AoMZiYNaQHXAAAAAASUVORK5CYII=
 </value>
   </data>
-  <data name="buttonSettings.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
-        EgAACxIB0t1+/AAAAAd0SU1FB98CEgErCaEC59QAAAGNSURBVDhPlZM/S8NQFMXzQVzEYCH1zyI4O1Uo
-        SBc3v4cIgrOIKFUQCyKigzU6asFBxC5iq7UYkLroUJcqrSY2NYlwzbnxpXlKhBZ+5XHfOefd3LwoRCRh
-        vHzSQrlDk4UPGjk0GaxRM14dXyLrw4XtftF8qUNDuknJGLAHDbRSAAozZ+2u8MhiLCtA1MQ+tCKEA5Aq
-        Nk3TpKnTNuXuHfI8j8EaNREG4OEAo9FtGwJhiiPsyAczUTAcLvgtpvUncpzuyb9xXZc10GsH7zxYBRNG
-        AWATIohxUma/RuldQ+ostVWmRLZM6lqVUscmKXhNMEdF6ALmsY1rGs1e0vjKudQZtAOLFxwUG4CTYdaW
-        i7EBg0vF/x8BRhANx6kwg4nNq96HGA2YKzyQctewe36NMKs+1edWcB2jFwmC/u069eUeQ1Nm54anL8xg
-        9qQWXCT82Y4nXeVkvsnAANTVUmgE03u3BE8YIEKiH5OWb/0xom2cbDsum6UAAWYiPudh/Y0S6xWeNgZW
-        rTd9Cf9+9KR8AxfYNKf5nBBBAAAAAElFTkSuQmCC
-</value>
-  </data>
-  <metadata name="timer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  <data name="timer.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>133, 17</value>
-  </metadata>
-  <metadata name="openFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  </data>
+  <data name="openFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>213, 17</value>
-  </metadata>
+  </data>
   <data name="openFileDialog.Filter" xml:space="preserve">
     <value>Media files (all types) (*.avi; *.mp4; *.mkv; ...) |*.avi; *.mpg; *.mpeg; *.mpe; *.m1v; *.m2v; *.mpv2; *.mp2v; *.pva; *.evo; *.m2p; *.ts; *.tp; *.trp; *.m2t; *.m2ts; *.mts; *.rec; *.vob; *.mkv; *.webm; *.mp4; *.m4v; *.mp4v; *.mpv4; *.hdmov; *.mov; *.3gp; *.3gpp; *.3g2; *.3gp2; *.flv; *.f4v; *.ogm; *.ogv; *.rm; *.ram; *.rpm; *.rmm; *.rt; *.rp; *.smi; *.smil; *.wmv; *.wmp; *.wm; *.asf; *.smk; *.bik; *.fli; *.flc; *.flic; *.dsm; *.dsv; *.dsa; *.dss; *.ivf; *.swf; *.divx; *.rmvb; *.amv; *.ac3; *.dts; *.aif; *.aifc; *.aiff; *.alac; *.amr; *.ape; *.apl; *.au; *.snd; *.cda; *.flac; *.m4a; *.m4b; *.aac; *.mid; *.midi; *.rmi; *.mka; *.mp3; *.mpa; *.mp2; *.m1a; *.m2a; *.mpc; *.ofr; *.ofs; *.ogg; *.oga; *.opus; *.ra; *.tta; *.wav; *.wma; *.wv; *.aob; *.mlp; *.asx; *.m3u; *.m3u8; *.wvx; *.wax; *.wmx; *.bdmv|All files (*.*)|*.*</value>
   </data>
-  <metadata name="openPlaylistDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  <data name="openPlaylistDialog.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>346, 17</value>
-  </metadata>
-  <metadata name="savePlaylistDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  </data>
+  <data name="savePlaylistDialog.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>499, 17</value>
-  </metadata>
-  <metadata name="Number.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Number.UserAddedColumn" type="System.Boolean, mscorlib">
     <value>True</value>
-  </metadata>
-  <metadata name="FullPath.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  </data>
+  <data name="FullPath.UserAddedColumn" type="System.Boolean, mscorlib">
     <value>True</value>
-  </metadata>
-  <metadata name="CurrentDirectory.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  </data>
+  <data name="CurrentDirectory.UserAddedColumn" type="System.Boolean, mscorlib">
     <value>True</value>
-  </metadata>
-  <metadata name="Duration.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  </data>
+  <data name="Duration.UserAddedColumn" type="System.Boolean, mscorlib">
     <value>True</value>
-  </metadata>
-  <metadata name="dgv_PlaylistContextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  </data>
+  <data name="dgv_PlaylistContextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>651, 17</value>
-  </metadata>
-  <metadata name="dgv_PlaylistColumnContextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  </data>
+  <data name="dgv_PlaylistColumnContextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>832, 17</value>
-  </metadata>
+  </data>
+  <data name="buttonSettings.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
+        EgAACxIB0t1+/AAAAAd0SU1FB98HCA0tJ9XQjHIAAAKzSURBVDhPfVNLSFRhFL67aJnPEbdCgq4qiiB6
+        uDXSwMUotGhh1MJc1cJalFFRSURoQdgiBdGcMtHGESFz0nzgyERTZBYjNs5ozp3HvXPvzH3MfJ3zTw8i
+        bPHBuec/33f+893/SAAYO+1sbu+6ajvdX9J667SOw6MqSgYUAY455/6a1rmGa5nDXEE27VzzUsS06l9p
+        2bI+JcekKpeC0xN5VA3mhfiMa7iWOcyVSG2fjxIHR1M5LjwxpqDUpaJhIoWEqiGhaGgYV+F4pqLOkxfj
+        WuYwV1pXbCer8kH7jIKInELbvI7hoIG0aQlwzLlILEU1qhBhDnMl94qu89XqPElsyAosy0KGYBJs2xbg
+        mHN8tiHnb8Ic9kRic8qeKnD0x9EyHkLaMATJskzE1LQAx1nKZUwTLZ41OHq/o7QvhtY3GqQj5HA1GVbz
+        Io5Lr8OiyCKsbsbR5PoMZ/9HrEZkIWLQOG1jy6jp9qOy049Drk1I7C47HVdS0DLcyYKs6GgkckWXD+X3
+        ZlH/cAbRhCpuoaVNxJMqGnt8KOyY30YgqVPnD4JcctuL+gfTvwVSJBCjuLFnEQXXp7YZgcwKhmWcpM5M
+        DoajYoQMjXDx+SccvT+LyjteHOicg3T+PybKSU2ABYWJhokzfQHsuuZFwY0pnHUFIL1c0f79jQaBuv36
+        jWwef/NZZCuB2u4FFF+dzI28C+l/P6S3KiJRFc1DEVwYDYt5tYyBy55ltAwFsBFNoH34PSpueXG8158N
+        xTTnz6ds/HnK7iSKerZwbDBKxmrC8ZpHSyi66UXt4wVB3tM5n/MF5fxTzi9TlpbJEMvkoHHK6c9UD8ho
+        6g8It3d3TIuZi69McufcYjBKy5TNLxOvJAe8oiEahz0R6zxCG/gkjMK7i9jfNYdzZNiI/xvo2gbVniLO
+        DgDSD9rcN2t+ciA2AAAAAElFTkSuQmCC
+</value>
+  </data>
 </root>

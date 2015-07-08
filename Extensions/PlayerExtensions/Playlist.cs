@@ -185,7 +185,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
             }
 
-            FixFormLocationBounds();
+            //FixFormLocationBounds();
         }
 
         public override void Destroy()
