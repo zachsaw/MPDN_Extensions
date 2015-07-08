@@ -266,6 +266,7 @@
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.Designer.cs">
       <DependentUpon>UpdateChecker.UpdateAvailable.Form.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\Exceptions\Exceptions.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.Version.cs" />
     <Compile Include="Extensions\PlayerExtensions\VideoSpecifier.cs" />
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfo.cs" />
