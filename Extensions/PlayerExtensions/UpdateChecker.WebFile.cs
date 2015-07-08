@@ -29,6 +29,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
     {
         public delegate void FileDownloadedHandler(object sender);
 
+        public delegate void FileDownloadErrorHandler(object sender, Exception error);
+
         private readonly WebClient m_WebClient = new WebClient();
 
         public WebFile(Uri fileUri) : this(fileUri, DefaultFilePath(fileUri))
@@ -57,13 +59,16 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         }
 
         public event FileDownloadedHandler Downloaded;
+        public event FileDownloadErrorHandler DownloadFailed;
         public event DownloadProgressChangedEventHandler DownloadProgressChanged;
 
         private void WebClientOnDownloadFileCompleted(object sender, AsyncCompletedEventArgs asyncCompletedEventArgs)
         {
             if (asyncCompletedEventArgs.Error != null)
             {
-                Trace.Write(string.Format("Can't download file: {0}", FileUri));
+                if (DownloadFailed != null) 
+                    DownloadFailed(this, asyncCompletedEventArgs.Error);
+
                 Trace.Write(asyncCompletedEventArgs.Error);
                 return;
             }
