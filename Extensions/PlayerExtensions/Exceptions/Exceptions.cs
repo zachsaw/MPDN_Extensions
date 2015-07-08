@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -14,30 +14,15 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using Mpdn.Extensions.Framework.Config;
+using System;
 
-namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
+namespace Mpdn.Extensions.PlayerExtensions.Exceptions
 {
-    public partial class UpdateCheckerConfigDialog : UpdateCheckerConfigBase
-    {
-        public UpdateCheckerConfigDialog()
-        {
-            InitializeComponent();
-
-        }
-
-        protected override void LoadSettings()
-        {
-            checkBoxCheckUpdate.Checked = Settings.CheckForUpdate;
-        }
-
-        protected override void SaveSettings()
-        {
-            Settings.CheckForUpdate = checkBoxCheckUpdate.Checked;
-        }
-    }
-    public class UpdateCheckerConfigBase : ScriptConfigDialog<UpdateCheckerSettings>
+    public class EmptyResponseException : Exception
     {
     }
 
+    public class InternetConnectivityException : Exception
+    {
+    }
 }

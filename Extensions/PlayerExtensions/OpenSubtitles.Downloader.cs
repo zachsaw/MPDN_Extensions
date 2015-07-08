@@ -19,14 +19,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using Mpdn.Extensions.PlayerExtensions.Exceptions;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
     #region Subtitle
+
     public class Subtitle
     {
+        public const string FILE_NAME_FORMAT = "{0}.{1}.srt";
         private readonly SubtitleDownloader m_Downloader;
-        public const string FileNameFormat = "{0}.{1}.srt";
 
         protected internal Subtitle(SubtitleDownloader downloader)
         {
@@ -36,8 +39,9 @@ namespace Mpdn.Extensions.PlayerExtensions
         public string Lang { get; protected internal set; }
         public string Name { get; protected internal set; }
         public string Movie { get; protected internal set; }
-        public int ID { get; protected internal set; }
-        public string SRT
+        public int Id { get; protected internal set; }
+
+        public string Srt
         {
             get { return m_Downloader.FetchSubtitleText(this); }
         }
@@ -47,43 +51,43 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_Downloader.SaveSubtitleFile(this);
         }
     }
+
     #endregion
 
     public class SubtitleDownloader
     {
-        private static readonly string OSUrl =
-            "http://www.opensubtitles.org/isdb/index.php?player=mpc&name[0]={0}&size[0]={1}&hash[0]={2}";
+        private const string OS_URL = "http://www.opensubtitles.org/isdb/index.php?player=mpc&name[0]={0}&size[0]={1}&hash[0]={2}";
 
-        private static readonly string OSDlSub = "http://www.opensubtitles.org/isdb/dl.php?id={0}&ticket={1}";
-        private readonly string UserAgent;
-        private readonly WebClient WebClient = new WebClient();
-        private string LastTicket;
-        private string MediaFilename;
+        private const string OS_DL_SUB = "http://www.opensubtitles.org/isdb/dl.php?id={0}&ticket={1}";
+        private readonly string m_UserAgent;
+        private readonly WebClient m_WebClient = new WebClient();
+        private string m_LastTicket;
+        private string m_MediaFilename;
 
 
-        public SubtitleDownloader(string UserAgent)
+        public SubtitleDownloader(string userAgent)
         {
-            this.UserAgent = UserAgent;
+            m_UserAgent = userAgent;
         }
 
         private string DoRequest(string url)
         {
             try
             {
-                using (var client = WebClient)
+                using (var client = m_WebClient)
                 {
-                    client.Headers.Set("User-Agent", UserAgent);
+                    client.Headers.Set("User-Agent", m_UserAgent);
                     return client.DownloadString(url);
                 }
             }
             catch (Exception)
-            {                
+            {
                 throw new InternetConnectivityException();
             }
-  
         }
+
         /// <summary>
-        /// Get Subtitles for the file
+        ///     Get Subtitles for the file
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
@@ -102,18 +106,18 @@ namespace Mpdn.Extensions.PlayerExtensions
             var name = file.Name;
             var size = file.Length.ToString("X");
             var hash = HashCalculator.GetHash(filename);
-            MediaFilename = filename;
-            string subs = DoRequest(string.Format(OSUrl, name, size, hash));
+            m_MediaFilename = filename;
+            var subs = DoRequest(string.Format(OS_URL, name, size, hash));
 
-            if(string.IsNullOrEmpty(subs)) {
+            if (string.IsNullOrEmpty(subs))
+            {
                 throw new EmptyResponseException();
             }
 
-            return parseSubtitlesResponse(subs);
-
+            return ParseSubtitlesResponse(subs);
         }
 
-        private List<Subtitle> parseSubtitlesResponse(string subs)
+        private List<Subtitle> ParseSubtitlesResponse(string subs)
         {
             var subList = new List<Subtitle>();
             var subtitle = new Subtitle(this);
@@ -121,7 +125,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 if (line.StartsWith("ticket="))
                 {
-                    LastTicket = GetValue(line);
+                    m_LastTicket = GetValue(line);
                 }
                 else if (line.StartsWith("movie="))
                 {
@@ -130,7 +134,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 else if (line.StartsWith("subtitle="))
                 {
-                    subtitle.ID = int.Parse(GetValue(line));
+                    subtitle.Id = int.Parse(GetValue(line));
                 }
                 else if (line.StartsWith("language="))
                 {
@@ -156,8 +160,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public string FetchSubtitleText(Subtitle subtitle)
         {
-            var url = string.Format(OSDlSub, subtitle.ID, LastTicket);
-            string sub = DoRequest(url);
+            var url = string.Format(OS_DL_SUB, subtitle.Id, m_LastTicket);
+            var sub = DoRequest(url);
             if (string.IsNullOrEmpty(sub))
             {
                 throw new EmptyResponseException();
@@ -167,22 +171,22 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public void SaveSubtitleFile(Subtitle subtitle)
         {
-            var dir = Path.GetDirectoryName(MediaFilename);
-            var subFile = string.Format(Subtitle.FileNameFormat, Path.GetFileNameWithoutExtension(MediaFilename), subtitle.Lang);
+            var dir = PathHelper.GetDirectoryName(m_MediaFilename);
+            var subFile = string.Format(Subtitle.FILE_NAME_FORMAT, Path.GetFileNameWithoutExtension(m_MediaFilename),
+                subtitle.Lang);
             var fullPath = Path.Combine(dir, subFile);
-            var subs = this.FetchSubtitleText(subtitle);
+            var subs = FetchSubtitleText(subtitle);
             if (string.IsNullOrWhiteSpace(subs))
                 throw new Exception("Empty Subtitle");
             var subtitleLines = subs.Split(new[] {"\n"}, StringSplitOptions.RemoveEmptyEntries);
             File.WriteAllLines(@fullPath, subtitleLines);
         }
-
     }
 
     #region HashCalculator
+
     public class HashCalculator
     {
-
         public static string GetHash(string filename)
         {
             return ToHexadecimal(ComputeMovieHash(filename));
@@ -200,9 +204,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static byte[] ComputeMovieHash(Stream input)
         {
-            long lhash, streamsize;
-            streamsize = input.Length;
-            lhash = streamsize;
+            var streamsize = input.Length;
+            var lhash = streamsize;
 
             long i = 0;
             var buffer = new byte[sizeof (long)];
@@ -228,29 +231,13 @@ namespace Mpdn.Extensions.PlayerExtensions
         private static string ToHexadecimal(byte[] bytes)
         {
             var hexBuilder = new StringBuilder();
-            for (var i = 0; i < bytes.Length; i++)
+            foreach (var data in bytes)
             {
-                hexBuilder.Append(bytes[i].ToString("x2"));
+                hexBuilder.Append(data.ToString("x2"));
             }
             return hexBuilder.ToString();
         }
     }
 
     #endregion
-#region Exceptions
-    public class EmptySubtitleException : Exception
-    {
-
-    }
-
-    public class EmptyResponseException : Exception
-    {
-
-    }
-
-    public class InternetConnectivityException : Exception
-    {
-
-    }
-#endregion
 }

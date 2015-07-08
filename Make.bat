@@ -52,6 +52,7 @@ Echo.
 
 if "%builderror%"=="1" echo error: build failed & goto Quit
 
+xcopy /y bin\Release\Mpdn.Extensions.Framework.dll Release\Extensions\  1>nul 2>nul
 xcopy /y bin\Release\Mpdn.Extensions.dll Release\Extensions\  1>nul 2>nul
 
 echo .cs\ > excludedfiles.txt

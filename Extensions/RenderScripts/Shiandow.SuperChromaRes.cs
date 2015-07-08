@@ -15,7 +15,6 @@
 // License along with this library.
 
 using System;
-using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;

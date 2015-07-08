@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
 using System.IO;
+using Mpdn.Extensions.PlayerExtensions.Exceptions;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -90,7 +90,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private bool HasExistingSubtitle(string mediaFilename)
         {
-            var subFile = string.Format(Subtitle.FileNameFormat, Path.GetFileNameWithoutExtension(mediaFilename),
+            var subFile = string.Format(Subtitle.FILE_NAME_FORMAT, Path.GetFileNameWithoutExtension(mediaFilename),
                 Settings.PreferedLanguage);
             var fullPath = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), subFile);
             return File.Exists(fullPath);

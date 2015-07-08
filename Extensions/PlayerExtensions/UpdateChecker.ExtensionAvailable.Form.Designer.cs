@@ -17,7 +17,7 @@
 
 using wyDay.Controls;
 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     partial class UpdateCheckerNewExtensionForm
     {
@@ -54,6 +54,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.CloseButton = new System.Windows.Forms.Button();
             this.forgetUpdate = new System.Windows.Forms.Button();
             this.downloadButton = new wyDay.Controls.SplitButton();
+            this.downloadProgressBar = new CustomProgressBar();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -77,7 +78,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.checkBoxDisable.Text = "Never check for updates (you can also change this in update checker\'s config dial" +
     "og)";
             this.checkBoxDisable.UseVisualStyleBackColor = true;
-            this.checkBoxDisable.CheckedChanged += new System.EventHandler(this.checkBoxDisable_CheckedChanged);
+            this.checkBoxDisable.CheckedChanged += new System.EventHandler(this.CheckBoxDisableCheckedChanged);
             // 
             // panel1
             // 
@@ -127,7 +128,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.forgetUpdate.TabIndex = 7;
             this.forgetUpdate.Text = "&Forget Update";
             this.forgetUpdate.UseVisualStyleBackColor = true;
-            this.forgetUpdate.Click += new System.EventHandler(this.forgetUpdate_Click);
+            this.forgetUpdate.Click += new System.EventHandler(this.ForgetUpdateClick);
             // 
             // downloadButton
             // 
@@ -139,7 +140,19 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.downloadButton.TabIndex = 6;
             this.downloadButton.Text = "&Download...";
             this.downloadButton.UseVisualStyleBackColor = true;
-            this.downloadButton.Click += new System.EventHandler(this.downloadButton_Click);
+            this.downloadButton.Click += new System.EventHandler(this.DownloadButtonClick);
+            // 
+            // downloadProgressBar
+            // 
+            this.downloadProgressBar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.downloadProgressBar.Location = new System.Drawing.Point(70, 3);
+            this.downloadProgressBar.Name = "downloadProgressBar";
+            this.downloadProgressBar.Size = new System.Drawing.Size(443, 23);
+            this.downloadProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.downloadProgressBar.TabIndex = 12;
+            this.downloadProgressBar.Visible = false;
             // 
             // UpdateCheckerNewExtensionForm
             // 
@@ -148,6 +161,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.forgetUpdate;
             this.ClientSize = new System.Drawing.Size(525, 277);
+            this.Controls.Add(this.downloadProgressBar);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.checkBoxDisable);
             this.Controls.Add(this.panel1);
@@ -155,6 +169,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.Controls.Add(this.forgetUpdate);
             this.Controls.Add(this.downloadButton);
             this.Name = "UpdateCheckerNewExtensionForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "New Extensions Available";
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -171,6 +186,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private System.Windows.Forms.Button CloseButton;
         private System.Windows.Forms.Button forgetUpdate;
         private SplitButton downloadButton;
+        private CustomProgressBar downloadProgressBar;
 
     }
 }

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Controls;
+using Mpdn.Extensions.PlayerExtensions.Exceptions;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -30,16 +31,16 @@ namespace Mpdn.Extensions.PlayerExtensions
         public OpenSubtitlesForm()
         {
             InitializeComponent();
-            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
+            gridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
             CancelButton = btnCancel;
             Icon = PlayerControl.ApplicationIcon;
-            FormClosed += OpenSubtitlesForm_FormClosed;
+            FormClosed += OpenSubtitlesFormFormClosed;
             comboBoxChangeLang.KeyDown += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyDown;
             comboBoxChangeLang.KeyPress += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyPress;
             comboBoxChangeLang.DropDownClosed += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageDropDownClosed;
         }
 
-        private void OpenSubtitlesForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void OpenSubtitlesFormFormClosed(object sender, FormClosedEventArgs e)
         {
             m_SelectedSub = null;
             subtitleBindingSource.DataSource = typeof (Subtitle);
@@ -73,11 +74,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             return subtitles;
         }
 
-        private void OpenSubtitles_Load(object sender, EventArgs e)
-        {
-        }
-
-        private void DownloadButton_Click(object sender, EventArgs e)
+        private void DownloadButtonClick(object sender, EventArgs e)
         {
             try
             {
@@ -97,19 +94,19 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
-        private void dataGridView1_SelectionChanged(object sender, EventArgs e)
+        private void GridViewSelectionChanged(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedRows.Count == 0)
+            if (gridView.SelectedRows.Count == 0)
                 return;
-            m_SelectedSub = (Subtitle) dataGridView1.SelectedRows[0].DataBoundItem;
+            m_SelectedSub = (Subtitle) gridView.SelectedRows[0].DataBoundItem;
         }
 
-        private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private void GridViewCellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            DownloadButton_Click(sender, e);
+            DownloadButtonClick(sender, e);
         }
 
-        private void comboBoxChangeLang_SelectedValueChanged(object sender, EventArgs e)
+        private void LanguageSelectedValueChanged(object sender, EventArgs e)
         {
             var selectedLang = (string)comboBoxChangeLang.SelectedItem;
             if (selectedLang != null) {
