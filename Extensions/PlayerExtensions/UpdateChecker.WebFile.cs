@@ -88,6 +88,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         public Process Execute()
         {
+            if(!Exists())
+                throw new InvalidOperationException("The file to be run doesn't exists");
             return Process.Start(FilePath);
         }
 
