@@ -16,6 +16,8 @@
 // 
 
 using System;
+using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace Mpdn.Extensions.Framework.Config
 {
@@ -27,7 +29,15 @@ namespace Mpdn.Extensions.Framework.Config
         public PersistentConfig(string configName)
         {
             m_ConfigName = configName;
-            Load();
+            if (Load()) 
+                return;
+
+#if DEBUG
+            Trace.WriteLine(string.Format("Load Settings Failed!\r\n\r\n{0}", LastException));
+            MessageBox.Show(PlayerControl.VideoPanel,
+                "WARNING: Script settings have failed to load. This will cause user's config to be deleted (or become corrupted)",
+                "Load Settings Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+#endif
         }
 
         public string ConfigFilePath
