@@ -40,7 +40,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             if (m_ChosenDownload == null)
             {
-                m_ChosenDownload = m_Files[0].name;
+                var chosenDownload = m_Files.First(file => file.name.Contains("Installer")).name;
+                if (chosenDownload != null)
+                    m_ChosenDownload = m_Files[0].name;
             }
             string url =
                 (m_Files.Where(file => file.name == m_ChosenDownload).Select(file => file.browser_download_url))
