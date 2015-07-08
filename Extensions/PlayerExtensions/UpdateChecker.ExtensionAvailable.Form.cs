@@ -73,7 +73,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 var file = new TemporaryWebFile(new Uri(url));
                 file.Downloaded += o =>
                 {
-                    file.Execute();
+                    file.Start();
                     PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() =>
                     {
                         downloadButton.Enabled = true;
