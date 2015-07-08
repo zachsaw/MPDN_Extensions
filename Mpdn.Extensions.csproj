@@ -24,6 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>$(MSBuildProjectDirectory)\MPDN\</OutputPath>
@@ -36,22 +37,14 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ClearScript">
-      <HintPath>Extensions\Libs\ClearScript.dll</HintPath>
-    </Reference>
     <Reference Include="DirectShowLib-2005">
       <HintPath>MPDN\DirectShowLib-2005.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.AvalonEdit">
-      <HintPath>Extensions\Libs\ICSharpCode.AvalonEdit.dll</HintPath>
-    </Reference>
     <Reference Include="MediaInfoDotNet">
       <HintPath>MPDN\MediaInfoDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack">
-      <HintPath>Extensions\Libs\Microsoft.WindowsAPICodePack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack.Shell">
       <HintPath>Extensions\Libs\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
@@ -74,27 +67,15 @@
     <Reference Include="SharpDX">
       <HintPath>MPDN\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Direct3D9">
-      <HintPath>MPDN\SharpDX.Direct3D9.dll</HintPath>
-    </Reference>
-    <Reference Include="ShellBasics">
-      <HintPath>Extensions\Libs\ShellBasics.dll</HintPath>
-    </Reference>
     <Reference Include="SplitButton">
       <HintPath>Extensions\Libs\SplitButton.dll</HintPath>
     </Reference>
-    <Reference Include="sysglobl" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
-    <Reference Include="WindowsFormsIntegration" />
     <Reference Include="YAXLib">
       <HintPath>MPDN\YAXLib.dll</HintPath>
     </Reference>
@@ -121,50 +102,6 @@
     <Compile Include="Extensions\CustomLinearScalers\SincCosine.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHamming.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHann.cs" />
-    <Compile Include="Extensions\Framework\Config\ConfigProviderBase.cs" />
-    <Compile Include="Extensions\Framework\Config\ConfigProviders.cs" />
-    <Compile Include="Extensions\Framework\Config\ExtensionsUi.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Extensions\Framework\Config\IConfigProvider.cs" />
-    <Compile Include="Extensions\Framework\Config\IScriptSettings.cs" />
-    <Compile Include="Extensions\Framework\Config\ScriptSettings.cs" />
-    <Compile Include="Extensions\Framework\Config\ScriptSettingsBase.cs" />
-    <Compile Include="Extensions\Framework\Controls\AvalonEditHost.cs" />
-    <Compile Include="Extensions\Framework\Controls\HotkeyBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Extensions\Framework\Controls\HourGlass.cs" />
-    <Compile Include="Extensions\Framework\Controls\RenderChainList.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Extensions\Framework\Controls\RenderChainList.Designer.cs">
-      <DependentUpon>RenderChainList.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.Designer.cs">
-      <DependentUpon>ScriptEditorDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Extensions\Framework\Exceptions\MpdnScriptEngineException.cs" />
-    <Compile Include="Extensions\Framework\Exceptions\RenderScriptException.cs" />
-    <Compile Include="Extensions\Framework\Helpers.cs" />
-    <Compile Include="Extensions\Framework\PlayerExtension.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.Shaders.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.Sources.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.Text.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.Utilities.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\RenderChain.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\RenderChainScript.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\RenderChainUi.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\ShaderCache.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Textures.cs" />
-    <Compile Include="Extensions\Framework\RenderScript.cs" />
-    <Compile Include="Extensions\Framework\Scripting\IClip.cs" />
-    <Compile Include="Extensions\Framework\Scripting\ScriptEngine.cs" />
-    <Compile Include="Extensions\Framework\Scripting\ScriptEngineUtilities.cs" />
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -314,7 +251,6 @@
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Weights.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Presets.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -465,6 +401,12 @@
       <DependentUpon>PlaylistForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Mpdn.Extensions.Framework.csproj">
+      <Project>{023b9940-e6ad-47ac-85a4-9d0ed3aecf0c}</Project>
+      <Name>Mpdn.Extensions.Framework</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>rmdir /s /q "$(ProjectDir)MPDN\Extensions"
@@ -473,7 +415,9 @@ xcopy /d /y /s "$(SolutionDir)Sources\*.resx" "$(SolutionDir)Extensions\"
 </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>copy /y "$(TargetDir)$(TargetName).dll" "$(ProjectDir)MPDN\Extensions"
+    <PostBuildEvent>copy /y "$(TargetDir)Mpdn.Extensions.Framework.dll" "$(ProjectDir)MPDN\Extensions"
+copy /y "$(TargetDir)Mpdn.Extensions.Framework.pdb" "$(ProjectDir)MPDN\Extensions"
+copy /y "$(TargetDir)$(TargetName).dll" "$(ProjectDir)MPDN\Extensions"
 copy /y "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)MPDN\Extensions"
 echo .cs\ &gt; excludedfiles.txt
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Extensions\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
