@@ -18,35 +18,35 @@ using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     public partial class UpdateCheckerNewVersionForm : Form
     {
-        private readonly UpdateCheckerSettings m_settings;
+        private readonly UpdateCheckerSettings m_Settings;
 
-        public UpdateCheckerNewVersionForm(UpdateChecker.Version version, UpdateCheckerSettings settings)
+        public UpdateCheckerNewVersionForm(Version version, UpdateCheckerSettings settings)
         {
             InitializeComponent();
-            m_settings = settings;
+            m_Settings = settings;
             Text += ": " + version;
             changelogBox.Text = version.Changelog;
         }
 
-        private void forgetUpdate_Click(object sender, EventArgs e)
+        private void ForgetUpdateClick(object sender, EventArgs e)
         {
-            m_settings.ForgetMpdnVersion = true;
+            m_Settings.ForgetMpdnVersion = true;
             Close();
         }
 
-        private void downloadButton_Click(object sender, EventArgs e)
+        private void DownloadButtonClick(object sender, EventArgs e)
         {
             Process.Start(UpdateChecker.WebsiteUrl);
             Close();
         }
 
-        private void checkBoxDisable_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxDisableCheckedChanged(object sender, EventArgs e)
         {
-            m_settings.CheckForUpdate = !checkBoxDisable.Checked;
+            m_Settings.CheckForUpdate = !checkBoxDisable.Checked;
         }
     }
 }

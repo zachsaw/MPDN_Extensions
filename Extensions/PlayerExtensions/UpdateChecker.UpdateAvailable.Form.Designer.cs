@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     partial class UpdateCheckerNewVersionForm
     {
@@ -63,7 +63,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.downloadButton.TabIndex = 0;
             this.downloadButton.Text = "&Download...";
             this.downloadButton.UseVisualStyleBackColor = true;
-            this.downloadButton.Click += new System.EventHandler(this.downloadButton_Click);
+            this.downloadButton.Click += new System.EventHandler(this.DownloadButtonClick);
             // 
             // forgetUpdate
             // 
@@ -75,7 +75,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.forgetUpdate.TabIndex = 1;
             this.forgetUpdate.Text = "&Forget Update";
             this.forgetUpdate.UseVisualStyleBackColor = true;
-            this.forgetUpdate.Click += new System.EventHandler(this.forgetUpdate_Click);
+            this.forgetUpdate.Click += new System.EventHandler(this.ForgetUpdateClick);
             // 
             // CloseButton
             // 
@@ -126,7 +126,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.checkBoxDisable.Text = "Never check for updates (you can also change this in update checker\'s config dial" +
     "og)";
             this.checkBoxDisable.UseVisualStyleBackColor = true;
-            this.checkBoxDisable.CheckedChanged += new System.EventHandler(this.checkBoxDisable_CheckedChanged);
+            this.checkBoxDisable.CheckedChanged += new System.EventHandler(this.CheckBoxDisableCheckedChanged);
             // 
             // label1
             // 

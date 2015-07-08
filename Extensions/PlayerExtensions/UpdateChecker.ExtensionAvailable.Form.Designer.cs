@@ -17,7 +17,7 @@
 
 using wyDay.Controls;
 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     partial class UpdateCheckerNewExtensionForm
     {
@@ -77,7 +77,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.checkBoxDisable.Text = "Never check for updates (you can also change this in update checker\'s config dial" +
     "og)";
             this.checkBoxDisable.UseVisualStyleBackColor = true;
-            this.checkBoxDisable.CheckedChanged += new System.EventHandler(this.checkBoxDisable_CheckedChanged);
+            this.checkBoxDisable.CheckedChanged += new System.EventHandler(this.CheckBoxDisableCheckedChanged);
             // 
             // panel1
             // 
@@ -127,7 +127,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.forgetUpdate.TabIndex = 7;
             this.forgetUpdate.Text = "&Forget Update";
             this.forgetUpdate.UseVisualStyleBackColor = true;
-            this.forgetUpdate.Click += new System.EventHandler(this.forgetUpdate_Click);
+            this.forgetUpdate.Click += new System.EventHandler(this.ForgetUpdateClick);
             // 
             // downloadButton
             // 
@@ -139,7 +139,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.downloadButton.TabIndex = 6;
             this.downloadButton.Text = "&Download...";
             this.downloadButton.UseVisualStyleBackColor = true;
-            this.downloadButton.Click += new System.EventHandler(this.downloadButton_Click);
+            this.downloadButton.Click += new System.EventHandler(this.DownloadButtonClick);
             // 
             // UpdateCheckerNewExtensionForm
             // 
@@ -155,6 +155,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.Controls.Add(this.forgetUpdate);
             this.Controls.Add(this.downloadButton);
             this.Name = "UpdateCheckerNewExtensionForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "New Extensions Available";
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);

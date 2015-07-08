@@ -16,7 +16,7 @@
 // 
 using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     public partial class UpdateCheckerConfigDialog : UpdateCheckerConfigBase
     {
