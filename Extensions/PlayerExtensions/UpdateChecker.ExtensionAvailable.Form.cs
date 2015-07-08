@@ -67,33 +67,47 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     .FirstOrDefault();
             if (url != null)
             {
-                downloadButton.Enabled = false;
-                downloadProgressBar.Visible = true;
-
-                var file = new TemporaryWebFile(new Uri(url));
-                file.Downloaded += o =>
-                {
-                    file.Start();
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() =>
-                    {
-                        downloadButton.Enabled = true;
-                        downloadProgressBar.Visible = false;
-                        Close();
-                    }));
-                };
-                file.DownloadProgressChanged +=
-                    (o, args) =>
-                    {
-                        PlayerControl.VideoPanel.BeginInvoke(
-                            (MethodInvoker) (() => { downloadProgressBar.Value = args.ProgressPercentage; }));
-                    };
-
-                file.DownloadFile();
+                DownloadFile(url);
             }
             else
             {
                 Close();
             }
+        }
+
+        private void DownloadFile(string url)
+        {
+            downloadButton.Enabled = false;
+            downloadProgressBar.Visible = true;
+
+            var file = new TemporaryWebFile(new Uri(url));
+            file.Downloaded += o =>
+            {
+                file.Start();
+                PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() =>
+                {
+                    downloadButton.Enabled = true;
+                    downloadProgressBar.Visible = false;
+                    Close();
+                }));
+            };
+            file.DownloadProgressChanged +=
+                (o, args) =>
+                {
+                    PlayerControl.VideoPanel.BeginInvoke(
+                        (MethodInvoker) (() => { downloadProgressBar.Value = args.ProgressPercentage; }));
+                };
+
+            file.DownloadFailed += (sender, error) =>
+            {
+                PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() =>
+                {
+                    downloadButton.Enabled = true;
+                    downloadProgressBar.Visible = false;
+                    MessageBox.Show(error.Message, "Download Error");
+                }));
+            };
+            file.DownloadFile();
         }
 
         private void ForgetUpdateClick(object sender, EventArgs e)
