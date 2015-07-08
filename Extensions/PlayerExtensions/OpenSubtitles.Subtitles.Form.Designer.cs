@@ -15,8 +15,6 @@
 // License along with this library.
 // 
 
-using System;
-
 namespace Mpdn.Extensions.PlayerExtensions
 {
     partial class OpenSubtitlesForm
