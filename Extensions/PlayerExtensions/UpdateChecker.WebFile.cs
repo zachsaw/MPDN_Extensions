@@ -42,7 +42,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             FileUri = fileUri;
             FilePath = filePath;
             m_WebClient.DownloadFileCompleted += WebClientOnDownloadFileCompleted;
-            m_WebClient.DownloadProgressChanged += DownloadProgressChanged;
+            m_WebClient.DownloadProgressChanged += (sender, args) => DownloadProgressChanged(sender,args);
             HttpHeaders = new NameValueCollection();
         }
 
