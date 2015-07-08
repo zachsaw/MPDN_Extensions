@@ -1,6 +1,23 @@
-﻿using System;
+﻿// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -15,6 +32,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public UpdateCheckerNewExtensionForm(ExtensionVersion version, UpdateCheckerSettings settings)
         {
             InitializeComponent();
+            downloadProgressBar.DisplayStyle = CustomProgressBar.ProgressBarDisplayText.Percentage;
             Icon = PlayerControl.ApplicationIcon;
             downloadButton.ContextMenuStrip = new ContextMenuStrip();
             m_Files = version.Files;
@@ -44,11 +62,38 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 if (chosenDownload != null)
                     m_ChosenDownload = m_Files[0].name;
             }
-            string url =
+            var url =
                 (m_Files.Where(file => file.name == m_ChosenDownload).Select(file => file.browser_download_url))
                     .FirstOrDefault();
-            if (url != null) Process.Start(url);
-            Close();
+            if (url != null)
+            {
+                downloadButton.Enabled = false;
+                downloadProgressBar.Visible = true;
+
+                var file = new TemporaryWebFile(new Uri(url));
+                file.Downloaded += o =>
+                {
+                    file.Execute();
+                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() =>
+                    {
+                        downloadButton.Enabled = true;
+                        downloadProgressBar.Visible = false;
+                        Close();
+                    }));
+                };
+                file.DownloadProgressChanged +=
+                    (o, args) =>
+                    {
+                        PlayerControl.VideoPanel.BeginInvoke(
+                            (MethodInvoker) (() => { downloadProgressBar.Value = args.ProgressPercentage; }));
+                    };
+
+                file.DownloadFile();
+            }
+            else
+            {
+                Close();
+            }
         }
 
         private void ForgetUpdateClick(object sender, EventArgs e)
@@ -61,5 +106,62 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             m_Settings.CheckForUpdate = !checkBoxDisable.Checked;
         }
+
+        #region ProgressBarWithText
+
+        private class CustomProgressBar : ProgressBar
+        {
+            public enum ProgressBarDisplayText
+            {
+                Percentage,
+                CustomText
+            }
+
+            public CustomProgressBar()
+            {
+                // Modify the ControlStyles flags
+                //http://msdn.microsoft.com/en-us/library/system.windows.forms.controlstyles.aspx
+                SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
+            }
+
+            //Property to set to decide whether to print a % or Text
+            public ProgressBarDisplayText DisplayStyle { get; set; }
+            //Property to hold the custom text
+            public string CustomText { get; set; }
+
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                var rect = ClientRectangle;
+                var g = e.Graphics;
+
+                ProgressBarRenderer.DrawHorizontalBar(g, rect);
+                rect.Inflate(-3, -3);
+                if (Value > 0)
+                {
+                    // As we doing this ourselves we need to draw the chunks on the progress bar
+                    var clip = new Rectangle(rect.X, rect.Y, (int) Math.Round(((float) Value/Maximum)*rect.Width),
+                        rect.Height);
+                    ProgressBarRenderer.DrawHorizontalChunks(g, clip);
+                }
+
+                // Set the Display text (Either a % amount or our custom text
+                var text = DisplayStyle == ProgressBarDisplayText.Percentage ? Value.ToString() + '%' : CustomText;
+
+
+                using (var f = new Font(FontFamily.GenericSansSerif, 8.25F))
+                {
+                    var len = g.MeasureString(text, f);
+                    // Calculate the location of the text (the middle of progress bar)
+                    // Point location = new Point(Convert.ToInt32((rect.Width / 2) - (len.Width / 2)), Convert.ToInt32((rect.Height / 2) - (len.Height / 2)));
+                    var location = new Point(Convert.ToInt32((Width/2) - len.Width/2),
+                        Convert.ToInt32((Height/2) - len.Height/2));
+                    // The commented-out code will centre the text into the highlighted area only. This will centre the text regardless of the highlighted area.
+                    // Draw the custom text
+                    g.DrawString(text, f, Brushes.Black, location);
+                }
+            }
+        }
+
+        #endregion
     }
 }

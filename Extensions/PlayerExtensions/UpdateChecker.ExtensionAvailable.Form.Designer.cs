@@ -54,6 +54,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.CloseButton = new System.Windows.Forms.Button();
             this.forgetUpdate = new System.Windows.Forms.Button();
             this.downloadButton = new wyDay.Controls.SplitButton();
+            this.downloadProgressBar = new CustomProgressBar();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -141,6 +142,18 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.downloadButton.UseVisualStyleBackColor = true;
             this.downloadButton.Click += new System.EventHandler(this.DownloadButtonClick);
             // 
+            // downloadProgressBar
+            // 
+            this.downloadProgressBar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.downloadProgressBar.Location = new System.Drawing.Point(70, 3);
+            this.downloadProgressBar.Name = "downloadProgressBar";
+            this.downloadProgressBar.Size = new System.Drawing.Size(443, 23);
+            this.downloadProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.downloadProgressBar.TabIndex = 12;
+            this.downloadProgressBar.Visible = false;
+            // 
             // UpdateCheckerNewExtensionForm
             // 
             this.AcceptButton = this.downloadButton;
@@ -148,6 +161,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.forgetUpdate;
             this.ClientSize = new System.Drawing.Size(525, 277);
+            this.Controls.Add(this.downloadProgressBar);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.checkBoxDisable);
             this.Controls.Add(this.panel1);
@@ -172,6 +186,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private System.Windows.Forms.Button CloseButton;
         private System.Windows.Forms.Button forgetUpdate;
         private SplitButton downloadButton;
+        private CustomProgressBar downloadProgressBar;
 
     }
 }
