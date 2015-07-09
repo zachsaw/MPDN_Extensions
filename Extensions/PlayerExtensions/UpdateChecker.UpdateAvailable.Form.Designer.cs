@@ -145,14 +145,13 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             // 
             // downloadProgressBar
             // 
-            this.downloadProgressBar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.downloadProgressBar.Cursor = System.Windows.Forms.Cursors.Default;
             this.downloadProgressBar.CustomText = null;
             this.downloadProgressBar.DisplayStyle = Mpdn.Extensions.PlayerExtensions.UpdateChecker.UpdateAvailableForm.CustomProgressBar.ProgressBarDisplayText.Percentage;
-            this.downloadProgressBar.Location = new System.Drawing.Point(70, 3);
+            this.downloadProgressBar.Dock = System.Windows.Forms.DockStyle.Top;
+            this.downloadProgressBar.Location = new System.Drawing.Point(0, 0);
             this.downloadProgressBar.Name = "downloadProgressBar";
-            this.downloadProgressBar.Size = new System.Drawing.Size(443, 23);
+            this.downloadProgressBar.Size = new System.Drawing.Size(525, 23);
             this.downloadProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.downloadProgressBar.TabIndex = 12;
             this.downloadProgressBar.Visible = false;
