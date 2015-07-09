@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -29,6 +30,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private readonly List<GitHubVersion.GitHubAsset> m_Files;
         private readonly UpdateCheckerSettings m_Settings;
         private string m_ChosenDownload;
+        private TemporaryWebFile m_File;
 
         public UpdateCheckerNewExtensionForm(ExtensionVersion version, UpdateCheckerSettings settings)
         {
@@ -79,28 +81,38 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             downloadButton.Enabled = false;
             downloadProgressBar.Visible = true;
 
-            var file = new TemporaryWebFile(new Uri(url));
-            file.Downloaded += o =>
+            m_File = new TemporaryWebFile(new Uri(url));
+            m_File.Downloaded += o =>
             {
-                file.Start();
+                m_File.Start();
                 GuiThread.DoAsync(() =>
                 {
-                    downloadButton.Enabled = true;
-                    downloadProgressBar.Visible = false;
+                    ResetDlButtonProgressBar();
                     Close();
                 });
             };
-            file.DownloadProgressChanged +=
+            m_File.DownloadProgressChanged +=
                 (o, args) => GuiThread.DoAsync(() => { downloadProgressBar.Value = args.ProgressPercentage; });
 
-            file.DownloadFailed += (sender, error) => GuiThread.DoAsync(() =>
+            m_File.DownloadFailed += (sender, error) => GuiThread.DoAsync(() =>
             {
-                downloadButton.Enabled = true;
-                downloadProgressBar.Visible = false;
+                ResetDlButtonProgressBar();
                 MessageBox.Show(error.Message, "Download Error");
             });
 
-            file.DownloadFile();
+            m_File.Cancelled += sender =>
+            {
+                Trace.WriteLine("Download Cancelled");
+                ResetDlButtonProgressBar();
+            };
+
+            m_File.DownloadFile();
+        }
+
+        private void ResetDlButtonProgressBar()
+        {
+            downloadButton.Enabled = true;
+            downloadProgressBar.Visible = false;
         }
 
         private void ForgetUpdateClick(object sender, EventArgs e)
@@ -112,6 +124,16 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private void CheckBoxDisableCheckedChanged(object sender, EventArgs e)
         {
             m_Settings.CheckForUpdate = !checkBoxDisable.Checked;
+        }
+
+        private void CloseButtonClick(object sender, EventArgs e)
+        {
+            if (m_File == null)
+            {
+                return;
+            }
+
+            m_File.CancelDownload();
         }
 
         #region ProgressBarWithText
@@ -170,5 +192,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         }
 
         #endregion
+
+
     }
 }
