@@ -10,27 +10,29 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     public partial class UpdateCheckerNewExtensionForm : Form
     {
-        private readonly List<GitHubVersion.GitHubAsset> m_Files;
+        private readonly List<SplitButtonToolStripItem> m_Files;
         private readonly UpdateCheckerSettings m_Settings;
-        private string m_ChosenDownload;
-        private TemporaryWebFile m_File;
+        private SplitButtonToolStripItem m_ChosenDownload;
+        private WebFile m_File;
 
-        public UpdateCheckerNewExtensionForm(ExtensionVersion version, UpdateCheckerSettings settings)
+        public UpdateCheckerNewExtensionForm(Version version, UpdateCheckerSettings settings)
         {
             InitializeComponent();
             downloadProgressBar.DisplayStyle = CustomProgressBar.ProgressBarDisplayText.Both;
             Icon = Gui.Icon;
             downloadButton.ContextMenuStrip = new ContextMenuStrip();
-            m_Files = version.Files;
-            foreach (var file in m_Files)
+            m_Files = version.GenerateSplitButtonItemList();
+
+            foreach (var downloadButtonToolStripItem in m_Files)
             {
-                downloadButton.ContextMenuStrip.Items.Add(file.name);
+                downloadButton.ContextMenuStrip.Items.Add(downloadButtonToolStripItem);
             }
+
 
             downloadButton.ContextMenuStrip.ItemClicked +=
                 delegate(object sender, ToolStripItemClickedEventArgs args)
                 {
-                    m_ChosenDownload = args.ClickedItem.Text;
+                    m_ChosenDownload = (SplitButtonToolStripItem)args.ClickedItem;
                     DownloadButtonClick(sender, args);
                 };
             CancelButton = CloseButton;
@@ -44,15 +46,22 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             if (m_ChosenDownload == null)
             {
-                m_ChosenDownload = m_Files.First(file => file.name.Contains("Installer")).name ?? m_Files[0].name;
+                m_ChosenDownload = m_Files.First(file => file.Name.Contains("Installer")) ?? m_Files[0];
             }
-            var url =
-                (m_Files.Where(file => file.name == m_ChosenDownload).Select(file => file.browser_download_url))
-                    .FirstOrDefault();
+            var url = m_ChosenDownload.Url;
+               
             if (url != null)
             {
-                downloadProgressBar.CustomText = m_ChosenDownload;
-                DownloadFile(url);
+                if (m_ChosenDownload.IsFile)
+                {
+                    downloadProgressBar.CustomText = m_ChosenDownload.Name;
+                    DownloadFile(url);
+                }
+                else
+                {
+                    Process.Start(url);
+                    Close();
+                }
             }
             else
             {
@@ -186,6 +195,32 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     g.DrawString(text, f, Brushes.Black, location);
                 }
             }
+        }
+
+        #endregion
+
+        #region SplitButtonToolStripItem
+
+        public sealed class SplitButtonToolStripItem : ToolStripMenuItem
+        {
+            public SplitButtonToolStripItem(string name, string url, bool isFile)
+            {
+                Url = url;
+                IsFile = isFile;
+                Name = name;
+                Text = name;
+            }
+
+            public SplitButtonToolStripItem(string name, string url) : this(name, url, true)
+            {
+            }
+
+            public SplitButtonToolStripItem(GitHubVersion.GitHubAsset asset) : this(asset.name,asset.browser_download_url)
+            {
+            }
+
+            public string Url { get; private set; }
+            public bool IsFile { get; private set; }
         }
 
         #endregion

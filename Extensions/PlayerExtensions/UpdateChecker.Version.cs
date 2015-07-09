@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
@@ -59,7 +60,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var iv2 = GetInteger(v2);
             return iv1 < iv2;
         }
-        
+
         public static bool operator ==(Version v1, Version v2)
         {
             if (ReferenceEquals(null, v1) && ReferenceEquals(null, v2))
@@ -105,19 +106,39 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             return Major + "." + Minor + "." + Revision;
         }
+
+        public virtual List<UpdateCheckerNewExtensionForm.SplitButtonToolStripItem> GenerateSplitButtonItemList()
+        {
+            var list = new List<UpdateCheckerNewExtensionForm.SplitButtonToolStripItem>
+            {
+                new UpdateCheckerNewExtensionForm.SplitButtonToolStripItem("x64 Installer",
+                    "http://mpdn.zachsaw.com/Latest/MediaPlayerDotNet_x64_Installer.exe"),
+                new UpdateCheckerNewExtensionForm.SplitButtonToolStripItem("x86 Installer",
+                    "http://mpdn.zachsaw.com/Latest/MediaPlayerDotNet_x86_Installer.exe"),
+                new UpdateCheckerNewExtensionForm.SplitButtonToolStripItem("AnyCPU Zip",
+                    "http://mpdn.zachsaw.com/Latest/MediaPlayerDotNet_AnyCPU.zip"),
+                new UpdateCheckerNewExtensionForm.SplitButtonToolStripItem("x64 Zip",
+                    "http://mpdn.zachsaw.com/Latest/MediaPlayerDotNet_x64.zip"),
+                new UpdateCheckerNewExtensionForm.SplitButtonToolStripItem("x86 Zip",
+                    "http://mpdn.zachsaw.com/Latest/MediaPlayerDotNet_x86.zip"),
+                new UpdateCheckerNewExtensionForm.SplitButtonToolStripItem("Open in Browser...",
+                    "http://mpdn.zachsaw.com/Latest/", false)
+            };
+            return list;
+        }
     }
 
     public class GitHubVersion
     {
+        public string tag_name { get; set; }
+        public string body { get; set; }
+        public List<GitHubAsset> assets { get; set; }
+
         public class GitHubAsset
         {
             public string name { get; set; }
             public string browser_download_url { get; set; }
         }
-
-        public string tag_name { get; set; }
-        public string body { get; set; }
-        public List<GitHubAsset> assets { get; set; }
     }
 
     public class ExtensionVersion : Version
@@ -132,5 +153,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         }
 
         public List<GitHubVersion.GitHubAsset> Files { get; set; }
+        public override List<UpdateCheckerNewExtensionForm.SplitButtonToolStripItem> GenerateSplitButtonItemList()
+        {
+            var list = Files.Select(gitHubAsset => new UpdateCheckerNewExtensionForm.SplitButtonToolStripItem(gitHubAsset)).ToList();
+            list.Add(new UpdateCheckerNewExtensionForm.SplitButtonToolStripItem("Open in Browser", "https://github.com/zachsaw/MPDN_Extensions/releases", false));
+            return list;
+        }
     }
 }
