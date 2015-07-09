@@ -173,7 +173,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.Controls.Add(this.downloadButton);
             this.Name = "UpdateAvailableForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "New Extensions Available";
+            this.Text = "New XXX available: XXX";
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();

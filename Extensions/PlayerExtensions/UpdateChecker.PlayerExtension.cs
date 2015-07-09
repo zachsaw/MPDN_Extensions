@@ -135,6 +135,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public ExtensionVersion ExtensionVersionOnServer { get; set; }
         public bool ForgetMpdnVersion { get; set; }
         public bool ForgetExtensionVersion { get; set; }
+        public string LastMpdnReleaseChosen { get; set; }
     }
 
     public class UpdateChecker

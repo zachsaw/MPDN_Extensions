@@ -10,8 +10,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     public partial class UpdateAvailableForm : Form
     {
-        private readonly List<SplitButtonToolStripItem> m_Files;
-        protected readonly UpdateCheckerSettings m_Settings;
+        protected readonly List<SplitButtonToolStripItem> SplitMenuChoices;
+        protected readonly UpdateCheckerSettings Settings;
         private SplitButtonToolStripItem m_ChosenDownload;
         private WebFile m_File;
 
@@ -21,11 +21,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             downloadProgressBar.DisplayStyle = CustomProgressBar.ProgressBarDisplayText.Both;
             Icon = Gui.Icon;
             downloadButton.ContextMenuStrip = new ContextMenuStrip();
-            m_Files = version.GenerateSplitButtonItemList();
+            SplitMenuChoices = version.GenerateSplitButtonItemList();
 
-            foreach (var downloadButtonToolStripItem in m_Files)
+            foreach (var choice in SplitMenuChoices)
             {
-                downloadButton.ContextMenuStrip.Items.Add(downloadButtonToolStripItem);
+                downloadButton.ContextMenuStrip.Items.Add(choice);
             }
 
 
@@ -37,7 +37,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 };
             CancelButton = CloseButton;
 
-            m_Settings = settings;
+            Settings = settings;
             Text = "New Player available: " + version;
             changelogBox.Text = version.Changelog;
         }
@@ -52,12 +52,13 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             if (m_ChosenDownload == null)
             {
-                m_ChosenDownload = m_Files.First(file => file.Name.Contains("Installer")) ?? m_Files[0];
+                m_ChosenDownload = DefaultDownloadFile();
             }
             var url = m_ChosenDownload.Url;
 
             if (url != null)
             {
+                SetLastMenuChoiceUsed(m_ChosenDownload.Name);
                 if (m_ChosenDownload.IsFile)
                 {
                     downloadProgressBar.CustomText = m_ChosenDownload.Name;
@@ -73,6 +74,25 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             {
                 Close();
             }
+        }
+
+        protected virtual void SetLastMenuChoiceUsed(string name)
+        {
+            Settings.LastMpdnReleaseChosen = name;
+        }
+
+        protected virtual SplitButtonToolStripItem DefaultDownloadFile()
+        {
+            if (Settings.LastMpdnReleaseChosen != null)
+            {
+                return SplitMenuChoices.First(file => file.Name == Settings.LastMpdnReleaseChosen);
+            }
+
+            //Coudln't find how to get the version of MPDN Used
+            //use the OS version then
+            var arch = Environment.Is64BitOperatingSystem ? "x64" : "x86";
+
+            return SplitMenuChoices.First(file => file.Name.Contains(arch)) ?? SplitMenuChoices[0];
         }
 
         private void DownloadFile(string url)
@@ -122,12 +142,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected virtual void ForgetVersion()
         {
-            m_Settings.ForgetMpdnVersion = true;
+            Settings.ForgetMpdnVersion = true;
         }
 
         private void CheckBoxDisableCheckedChanged(object sender, EventArgs e)
         {
-            m_Settings.CheckForUpdate = !checkBoxDisable.Checked;
+            Settings.CheckForUpdate = !checkBoxDisable.Checked;
         }
 
         private void CloseButtonClick(object sender, EventArgs e)
@@ -248,7 +268,17 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected override void ForgetVersion()
         {
-            m_Settings.ForgetExtensionVersion = true;
+            Settings.ForgetExtensionVersion = true;
+        }
+
+        protected override SplitButtonToolStripItem DefaultDownloadFile()
+        {
+            return SplitMenuChoices.First(file => file.Name.Contains("Installer")) ?? SplitMenuChoices[0];
+        }
+
+        protected override void SetLastMenuChoiceUsed(string name)
+        {
+            return;
         }
     }
 }
