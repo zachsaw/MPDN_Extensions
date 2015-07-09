@@ -1,21 +1,4 @@
-﻿// This file is a part of MPDN Extensions.
-// https://github.com/zachsaw/MPDN_Extensions
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3.0 of the License, or (at your option) any later version.
-// 
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library.
-// 
-
-using System;
+﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -28,7 +11,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     public class WebFile
     {
-        public delegate void FileDownloadedHandler(object sender);
+        public delegate void FileDownloadHandler(object sender);
 
         public delegate void FileDownloadErrorHandler(object sender, Exception error);
 
@@ -47,7 +30,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             FileUri = fileUri;
             FilePath = filePath;
             m_WebClient.DownloadFileCompleted += WebClientOnDownloadFileCompleted;
-            m_WebClient.DownloadProgressChanged += (sender, args) => DownloadProgressChanged.Handle(h => h(sender, args));
+            m_WebClient.DownloadProgressChanged +=
+                (sender, args) => DownloadProgressChanged.Handle(h => h(sender, args));
             HttpHeaders = new NameValueCollection();
         }
 
@@ -61,7 +45,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             return AppPath.GetUserDataFilePath(fi.Name, "Downloads");
         }
 
-        public event FileDownloadedHandler Downloaded;
+        public event FileDownloadHandler Downloaded;
+        public event FileDownloadHandler Cancelled;
         public event FileDownloadErrorHandler DownloadFailed;
         public event DownloadProgressChangedEventHandler DownloadProgressChanged;
 
@@ -72,6 +57,16 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 DownloadFailed.Handle(h => h(this, asyncCompletedEventArgs.Error));
 
                 Trace.Write(asyncCompletedEventArgs.Error);
+                return;
+            }
+
+            if (asyncCompletedEventArgs.Cancelled)
+            {
+                if (Exists())
+                {
+                    Delete();
+                }
+                Cancelled.Handle(h => h(this));
                 return;
             }
 
@@ -91,6 +86,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             return File.Exists(FilePath);
         }
 
+        public bool Delete()
+        {
+            File.Delete(FilePath);
+        }
+
         public Process Start()
         {
             if (!Exists())
@@ -104,6 +104,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             PrepareWebClientRequest();
             Task.Factory.StartNew(() => m_WebClient.DownloadFileAsync(FileUri, FilePath));
+        }
+
+        public void CancelDownload()
+        {
+            m_WebClient.CancelAsync();
         }
     }
 
