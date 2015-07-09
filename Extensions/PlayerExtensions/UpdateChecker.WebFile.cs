@@ -52,14 +52,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void WebClientOnDownloadFileCompleted(object sender, AsyncCompletedEventArgs asyncCompletedEventArgs)
         {
-            if (asyncCompletedEventArgs.Error != null)
-            {
-                DownloadFailed.Handle(h => h(this, asyncCompletedEventArgs.Error));
-
-                Trace.Write(asyncCompletedEventArgs.Error);
-                return;
-            }
-
             if (asyncCompletedEventArgs.Cancelled)
             {
                 if (Exists())
@@ -69,6 +61,15 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 Cancelled.Handle(h => h(this));
                 return;
             }
+
+            if (asyncCompletedEventArgs.Error != null)
+            {
+                DownloadFailed.Handle(h => h(this, asyncCompletedEventArgs.Error));
+
+                Trace.Write(asyncCompletedEventArgs.Error);
+                return;
+            }
+           
 
             if (Exists())
             {
@@ -86,7 +87,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             return File.Exists(FilePath);
         }
 
-        public bool Delete()
+        public void Delete()
         {
             File.Delete(FilePath);
         }
