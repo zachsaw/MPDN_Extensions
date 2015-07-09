@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
@@ -33,7 +34,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             InitializeComponent();
             downloadProgressBar.DisplayStyle = CustomProgressBar.ProgressBarDisplayText.Percentage;
-            Icon = PlayerControl.ApplicationIcon;
+            Icon = Gui.Icon;
             downloadButton.ContextMenuStrip = new ContextMenuStrip();
             m_Files = version.Files;
             foreach (var file in m_Files)
@@ -82,29 +83,23 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             file.Downloaded += o =>
             {
                 file.Start();
-                PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() =>
+                GuiThread.DoAsync(() =>
                 {
                     downloadButton.Enabled = true;
                     downloadProgressBar.Visible = false;
                     Close();
-                }));
+                });
             };
             file.DownloadProgressChanged +=
-                (o, args) =>
-                {
-                    PlayerControl.VideoPanel.BeginInvoke(
-                        (MethodInvoker) (() => { downloadProgressBar.Value = args.ProgressPercentage; }));
-                };
+                (o, args) => GuiThread.DoAsync(() => { downloadProgressBar.Value = args.ProgressPercentage; });
 
-            file.DownloadFailed += (sender, error) =>
+            file.DownloadFailed += (sender, error) => GuiThread.DoAsync(() =>
             {
-                PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() =>
-                {
-                    downloadButton.Enabled = true;
-                    downloadProgressBar.Visible = false;
-                    MessageBox.Show(error.Message, "Download Error");
-                }));
-            };
+                downloadButton.Enabled = true;
+                downloadProgressBar.Visible = false;
+                MessageBox.Show(error.Message, "Download Error");
+            });
+
             file.DownloadFile();
         }
 

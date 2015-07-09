@@ -34,7 +34,7 @@ namespace Mpdn.Extensions.Framework.Config
 
 #if DEBUG
             Trace.WriteLine(string.Format("Load Settings Failed!\r\n\r\n{0}", LastException));
-            MessageBox.Show(PlayerControl.VideoPanel,
+            MessageBox.Show(Gui.VideoBox,
                 "WARNING: Script settings have failed to load. This will cause user's config to be deleted (or become corrupted)",
                 "Load Settings Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 #endif

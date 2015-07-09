@@ -26,6 +26,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions.Playlist
 {
@@ -93,12 +94,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (Playlist != null)
                 {
-                    PlayerControl.PlayerStateChanged -= PlayerStateChanged;
-                    PlayerControl.PlaybackCompleted -= PlaybackCompleted;
-                    PlayerControl.FrameDecoded -= FrameDecoded;
-                    PlayerControl.FramePresented -= FramePresented;
-                    PlayerControl.EnteringFullScreenMode -= EnteringFullScreenMode;
-                    PlayerControl.ExitedFullScreenMode -= ExitedFullScreenMode;
+                    Player.StateChanged -= PlayerStateChanged;
+                    Player.Playback.Completed -= PlaybackCompleted;
+                    Media.Frame.Decoded -= FrameDecoded;
+                    Media.Frame.Presented -= FramePresented;
+                    Player.FullScreenMode.Entering -= EnteringFullScreenMode;
+                    Player.FullScreenMode.Exited -= ExitedFullScreenMode;
                 }
             }
             base.Dispose(disposing);
@@ -106,7 +107,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void Show(Control owner)
         {
-            if (PlayerControl.InFullScreenMode)
+            if (Player.FullScreenMode.Active)
                 return;
 
             Hide();
@@ -122,7 +123,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 return;
 
             this.playListUi = playListUi;
-            Icon = PlayerControl.ApplicationIcon;
+            Icon = Gui.Icon;
             DoubleBuffered = true;
 
             Load += PlaylistForm_Load;
@@ -144,12 +145,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             dgv_PlayList.RowsRemoved += dgv_PlayList_RowsRemoved;
             dgv_PlayList.SelectionChanged += dgv_PlayList_SelectionChanged;
 
-            PlayerControl.PlayerStateChanged += PlayerStateChanged;
-            PlayerControl.PlaybackCompleted += PlaybackCompleted;
-            PlayerControl.FrameDecoded += FrameDecoded;
-            PlayerControl.FramePresented += FramePresented;
-            PlayerControl.EnteringFullScreenMode += EnteringFullScreenMode;
-            PlayerControl.ExitedFullScreenMode += ExitedFullScreenMode;
+            Player.StateChanged += PlayerStateChanged;
+            Player.Playback.Completed += PlaybackCompleted;
+            Media.Frame.Decoded += FrameDecoded;
+            Media.Frame.Presented += FramePresented;
+            Player.FullScreenMode.Entering += EnteringFullScreenMode;
+            Player.FullScreenMode.Exited += ExitedFullScreenMode;
 
             Playlist = new List<PlaylistItem>();
             TempRememberedFiles = new List<string>();
@@ -310,7 +311,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public void OpenPlaylist()
         {
             openPlaylistDialog.FileName = savePlaylistDialog.FileName;
-            if (openPlaylistDialog.ShowDialog(PlayerControl.Form) != DialogResult.OK) return;
+            if (openPlaylistDialog.ShowDialog(Player.ActiveForm) != DialogResult.OK) return;
 
             OpenPlaylist(openPlaylistDialog.FileName);
         }
@@ -359,7 +360,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (Playlist.Count == 0) return;
 
             savePlaylistDialog.FileName = openPlaylistDialog.FileName;
-            if (savePlaylistDialog.ShowDialog(PlayerControl.Form) != DialogResult.OK) return;
+            if (savePlaylistDialog.ShowDialog(Player.ActiveForm) != DialogResult.OK) return;
 
             SavePlaylist(savePlaylistDialog.FileName);
         }
@@ -437,10 +438,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void PlayNextFileInDirectory(bool next = true)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            var mediaPath = PlayerControl.MediaFilePath;
+            var mediaPath = Media.FilePath;
             var mediaDir = playListUi.GetDirectoryName(mediaPath);
             var mediaFiles = playListUi.GetMediaFiles(mediaDir);
             var nextFile = next
@@ -448,7 +449,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 : mediaFiles.TakeWhile(file => file != mediaPath).LastOrDefault();
             if (nextFile != null)
             {
-                PlayerControl.OpenMedia(nextFile);
+                Media.Open(nextFile);
                 if (Playlist.Count > 1) AddActiveFile(nextFile);
                 else
                 {
@@ -468,7 +469,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             PopulatePlaylist();
             dgv_PlayList.CurrentCell = dgv_PlayList.Rows[currentPlayIndex].Cells[0];
 
-            Text = PlayerControl.PlayerState + " ─ " + CurrentItem.FilePath;
+            Text = Player.State + " ─ " + CurrentItem.FilePath;
         }
 
         public void ActiveFile(string fileName)
@@ -480,7 +481,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             CurrentItem = item;
             PopulatePlaylist();
 
-            Text = PlayerControl.PlayerState + " ─ " + CurrentItem.FilePath;
+            Text = Player.State + " ─ " + CurrentItem.FilePath;
         }
 
         public void AddFiles(string[] fileNames)
@@ -553,7 +554,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             CurrentItem = null;
             currentPlayIndex = -1;
             Text = "Playlist";
-            PlayerControl.CloseMedia();
+            Media.Close();
             dgv_PlayList.Invalidate();
         }
 
@@ -580,14 +581,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     if (LockWindowSize)
                     {
-                        Left = PlayerControl.Form.Right + borderWidth;
-                        Top = PlayerControl.Form.Top + borderWidth;
+                        Left = Player.ActiveForm.Right + borderWidth;
+                        Top = Player.ActiveForm.Top + borderWidth;
 
                     }
                     else
                     {
-                        Left = PlayerControl.Form.Right;
-                        Top = PlayerControl.Form.Top;
+                        Left = Player.ActiveForm.Right;
+                        Top = Player.ActiveForm.Top;
                     }
                 }
                 if (RememberWindowSize)
@@ -600,8 +601,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
                 else
                 {
-                    var mpdnRememberBounds = PlayerControl.PlayerSettings.GeneralSettings.RememberWindowSizePos;
-                    var mpdnBounds = PlayerControl.PlayerSettings.GeneralSettings.WindowBounds;
+                    var mpdnRememberBounds = Player.Config.Settings.GeneralSettings.RememberWindowSizePos;
+                    var mpdnBounds = Player.Config.Settings.GeneralSettings.WindowBounds;
 
                     var screen = Screen.FromControl(owner);
                     var screenBounds = screen.WorkingArea;
@@ -609,16 +610,16 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     if (mpdnRememberBounds)
                         Width = mpdnBounds.Right + mpdnBounds.Width >= (screenBounds.Width / 2) ? screenBounds.Width - (mpdnBounds.Width + mpdnBounds.Left) : Width;
                     else
-                        Width = PlayerControl.Form.Right + PlayerControl.Form.Width >= (screenBounds.Width / 2) ? (screenBounds.Width / 2) - PlayerControl.Form.Width / 2 : Width;
+                        Width = Player.ActiveForm.Right + Player.ActiveForm.Width >= (screenBounds.Width / 2) ? (screenBounds.Width / 2) - Player.ActiveForm.Width / 2 : Width;
 
                     if (LockWindowSize)
                     {
                         Width = Width - borderWidth;
-                        Height = PlayerControl.Form.Height - (borderWidth * 2);
+                        Height = Player.ActiveForm.Height - (borderWidth * 2);
                     }
                     else
                     {
-                        Height = PlayerControl.Form.Height;
+                        Height = Player.ActiveForm.Height;
                     }
                 }
             }
@@ -994,13 +995,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
             if (CurrentItem == null) return;
-            Text = PlayerControl.PlayerState + " - " + CurrentItem.FilePath;
+            Text = Player.State + " - " + CurrentItem.FilePath;
         }
 
         private void PlaybackCompleted(object sender, EventArgs e)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed) return;
-            if (PlayerControl.MediaPosition == PlayerControl.MediaDuration)
+            if (Player.State == PlayerState.Closed) return;
+            if (Media.Position == Media.Duration)
             {
                 PlayNext();
             }
@@ -1016,7 +1017,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (wasShowing)
             {
-                Show(PlayerControl.VideoPanel);
+                Show(Gui.VideoBox);
             }
         }
 
@@ -1030,7 +1031,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void FrameDecoded(object sender, FrameEventArgs e)
         {
-            if (PlayerControl.MediaFilePath != "" && PlayerControl.Chapters.Count != 0 && CurrentItem != null && CurrentItem.HasChapter)
+            if (Media.FilePath != "" && Media.Chapters.Count != 0 && CurrentItem != null && CurrentItem.HasChapter)
             {
                 previousChapterPosition = GetChapters().Aggregate((prev, next) => e.SampleTime >= prev.Position && e.SampleTime <= next.Position ? prev : next).Position;
             }
@@ -1038,13 +1039,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void FramePresented(object sender, FrameEventArgs e)
         {
-            if (PlayerControl.MediaFilePath != "" && PlayerControl.Chapters.Count != 0 && CurrentItem != null && CurrentItem.HasChapter)
+            if (Media.FilePath != "" && Media.Chapters.Count != 0 && CurrentItem != null && CurrentItem.HasChapter)
             {
                 if (e.SampleTime >= previousChapterPosition)
                 {
                     int currentChapterIndex = GetChapterIndexByPosition(previousChapterPosition);
 
-                    if (CurrentItem.SkipChapters.Contains(currentChapterIndex) && currentChapterIndex < PlayerControl.Chapters.Count)
+                    if (CurrentItem.SkipChapters.Contains(currentChapterIndex) && currentChapterIndex < Media.Chapters.Count)
                     {
                         SelectChapter(currentChapterIndex);
                     }
@@ -1073,19 +1074,19 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                         if (CurrentItem != null && i == currentPlayIndex)
                         {
-                            if (sortedNumbers.Any(num => num >= PlayerControl.Chapters.Count))
+                            if (sortedNumbers.Any(num => num >= Media.Chapters.Count))
                             {
                                 var toolTip = new ToolTip();
                                 var cellDisplayRect = dgv_PlayList.GetCellDisplayRectangle(skipChapterCell.ColumnIndex,
                                     skipChapterCell.RowIndex, false);
-                                toolTip.Show("Only numbers < " + PlayerControl.Chapters.Count + " are allowed",
+                                toolTip.Show("Only numbers < " + Media.Chapters.Count + " are allowed",
                                     dgv_PlayList,
                                     cellDisplayRect.X + skipChapterCell.Size.Width / 2,
                                     cellDisplayRect.Y + skipChapterCell.Size.Height / 2,
                                     2000);
-                                sortedNumbers.RemoveAll(num => num >= PlayerControl.Chapters.Count);
+                                sortedNumbers.RemoveAll(num => num >= Media.Chapters.Count);
                             }
-                            if (PlayerControl.Chapters.Count == 0)
+                            if (Media.Chapters.Count == 0)
                             {
                                 sortedNumbers.Clear();
                             }
@@ -1101,20 +1102,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                         if (CurrentItem != null && i == currentPlayIndex)
                         {
-                            if (value.Length > 0 && int.Parse(value) > PlayerControl.Chapters.Count)
+                            if (value.Length > 0 && int.Parse(value) > Media.Chapters.Count)
                             {
                                 var toolTip = new ToolTip();
                                 var cellDisplayRect = dgv_PlayList.GetCellDisplayRectangle(endChapterCell.ColumnIndex,
                                     endChapterCell.RowIndex, false);
-                                toolTip.Show("Only numbers <= " + PlayerControl.Chapters.Count + " are allowed",
+                                toolTip.Show("Only numbers <= " + Media.Chapters.Count + " are allowed",
                                     dgv_PlayList,
                                     cellDisplayRect.X + endChapterCell.Size.Width / 2,
                                     cellDisplayRect.Y + endChapterCell.Size.Height / 2,
                                     2000);
 
-                                value = PlayerControl.Chapters.Count.ToString();
+                                value = Media.Chapters.Count.ToString();
                             }
-                            if (PlayerControl.Chapters.Count == 0)
+                            if (Media.Chapters.Count == 0)
                             {
                                 value = "";
                             }
@@ -1128,7 +1129,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             catch (Exception ex)
             {
-                PlayerControl.HandleException(ex);
+                Player.HandleException(ex);
             }
         }
 
@@ -1161,7 +1162,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             catch (Exception ex)
             {
-                PlayerControl.HandleException(ex);
+                Player.HandleException(ex);
             }
         }
 
@@ -1223,7 +1224,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (currentPlayIndex < 0 || currentPlayIndex >= Playlist.Count) return;
 
-            bool playerWasFullScreen = PlayerControl.InFullScreenMode;
+            bool playerWasFullScreen = Player.FullScreenMode.Active;
             ResetActive();
 
             try
@@ -1234,7 +1235,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (File.Exists(item.FilePath))
                 {
                     SetPlayStyling();
-                    PlayerControl.OpenMedia(item.FilePath);
+                    Media.Open(item.FilePath);
                 }
                 else
                 {
@@ -1247,19 +1248,19 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (playerWasFullScreen)
                 {
-                    PlayerControl.GoFullScreen();
+                    Player.FullScreenMode.Active = true;
                 }
 
                 item.Active = true;
                 CurrentItem = item;
                 previousChapterPosition = 0;
 
-                Text = PlayerControl.PlayerState + " ─ " + CurrentItem.FilePath;
+                Text = Player.State + " ─ " + CurrentItem.FilePath;
                 ParseChapterInput();
             }
             catch (Exception ex)
             {
-                PlayerControl.HandleException(ex);
+                Player.HandleException(ex);
                 PlayNext();
             }
 
@@ -1319,13 +1320,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void SelectChapter(int chapterNum)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed) return;
+            if (Player.State == PlayerState.Closed) return;
 
             var chapters = GetChapters();
 
             if (chapters.ElementAt(chapterNum) == null) return;
-            PlayerControl.SeekMedia(chapters.ElementAt(chapterNum).Position);
-            PlayerControl.ShowOsdText(chapters.ElementAt(chapterNum).Name);
+            Media.Seek(chapters.ElementAt(chapterNum).Position);
+            Player.OsdText.Show(chapters.ElementAt(chapterNum).Name);
         }
 
         private int GetChapterIndexByPosition(long position)
@@ -1344,7 +1345,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private IEnumerable<Chapter> GetChapters()
         {
-            return PlayerControl.Chapters.OrderBy(chapter => chapter.Position);
+            return Media.Chapters.OrderBy(chapter => chapter.Position);
         }
 
         public void FocusPlaylistItem(int index)
@@ -1367,8 +1368,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void NotifyPlaylistChanged()
         {
-            if (PlaylistChanged != null)
-                PlaylistChanged(this, null);
+            PlaylistChanged.Handle(h => h(this, EventArgs.Empty));
         }
 
         private void AddFilesToPlaylist()
@@ -1438,7 +1438,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             catch (Exception ex)
             {
-                PlayerControl.HandleException(ex);
+                Player.HandleException(ex);
             }
         }
 
@@ -1600,10 +1600,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (e.KeyCode == Keys.Tab && e.Modifiers == Keys.Control)
             {
-                if (!PlayerControl.InFullScreenMode && !PlayerControl.Form.ContainsFocus)
+                if (!Player.FullScreenMode.Active && !Player.ActiveForm.ContainsFocus)
                 {
-                    PlayerControl.Form.Activate();
-                    Cursor.Position = new Point(PlayerControl.Form.Location.X + 100, PlayerControl.Form.Location.Y + 100);
+                    Player.ActiveForm.Activate();
+                    Cursor.Position = new Point(Player.ActiveForm.Location.X + 100, Player.ActiveForm.Location.Y + 100);
                     e.SuppressKeyPress = true;
                     e.Handled = true;
                 }

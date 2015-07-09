@@ -17,6 +17,7 @@
 using System;
 using System.Windows.Forms;
 using System.Net;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -63,7 +64,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 catch(Exception ex)
                 {
-                    MessageBox.Show(PlayerControl.VideoPanel, "Error " + ex);
+                    MessageBox.Show(Gui.VideoBox, "Error " + ex);
                 }
             } 
         }

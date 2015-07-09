@@ -32,7 +32,7 @@ namespace Mpdn.Extensions.Framework.Controls
         {
             InitializeComponent();
 
-            Icon = PlayerControl.ApplicationIcon;
+            Icon = Gui.Icon;
             textBoxScript.Editor.TextChanged += (s, e) =>
             {
                 m_Changed = true;

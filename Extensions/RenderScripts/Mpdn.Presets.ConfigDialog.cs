@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.RenderChain;
 
@@ -57,7 +58,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 InitializeComponent();
 
-                var renderScripts = PlayerControl.RenderScripts
+                var renderScripts = Extension.RenderScripts
                     .Where(script => script is IRenderChainUi)
                     .Select(x => (x as IRenderChainUi).CreateNew())
                     .Concat(new [] { RenderChainUi.Identity } )

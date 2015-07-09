@@ -98,12 +98,12 @@ namespace Mpdn.Extensions.Framework.Scripting
 
             public string ConfigFile
             {
-                get { return PlayerControl.ConfigRootPath; }
+                get { return Player.Config.Path; }
             }
 
             public string ConfigFilePath
             {
-                get { return PathHelper.GetDirectoryName(PlayerControl.ConfigRootPath); }
+                get { return PathHelper.GetDirectoryName(Player.Config.Path); }
             }
 
             public string Version
@@ -147,7 +147,7 @@ namespace Mpdn.Extensions.Framework.Scripting
             private static IEnumerable<IRenderChainUi> GetRenderScripts()
             {
                 return s_RenderScripts ??
-                       (s_RenderScripts = PlayerControl.RenderScripts
+                       (s_RenderScripts = Extension.RenderScripts
                            .Where(script => script is IRenderChainUi)
                            .Select(x => (x as IRenderChainUi))).ToArray();
             }

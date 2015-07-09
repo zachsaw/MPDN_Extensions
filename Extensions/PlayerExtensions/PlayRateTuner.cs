@@ -44,12 +44,12 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            PlayerControl.MediaLoaded += MediaLoaded;
+            Media.Loaded += MediaLoaded;
         }
 
         public override void Destroy()
         {
-            PlayerControl.MediaLoaded -= MediaLoaded;
+            Media.Loaded -= MediaLoaded;
             base.Destroy();
         }
 
@@ -60,13 +60,13 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void MediaLoaded(object sender, EventArgs eventArgs)
         {
-            PlayerControl.PlaybackBaseRate = 1.0;
+            Player.Playback.BaseRate = 1.0;
 
             if (!Settings.Activate)
                 return;
 
             var tuning = Settings.Tunings.FirstOrDefault(t => VideoSpecifier.Match(t.Specifier));
-            PlayerControl.PlaybackBaseRate = tuning == null ? 1.0 : tuning.Rate;
+            Player.Playback.BaseRate = tuning == null ? 1.0 : tuning.Rate;
         }
     }
 

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.PlayerExtensions.Exceptions;
 
@@ -33,7 +34,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             InitializeComponent();
             gridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
             CancelButton = btnCancel;
-            Icon = PlayerControl.ApplicationIcon;
+            Icon = Gui.Icon;
             FormClosed += OpenSubtitlesFormFormClosed;
             comboBoxChangeLang.KeyDown += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyDown;
             comboBoxChangeLang.KeyPress += OpenSubtitlesLanguageHandler.ComboBoxPrefLanguageKeyPress;

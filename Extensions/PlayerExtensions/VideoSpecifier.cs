@@ -16,6 +16,7 @@
 // 
 using System.Text.RegularExpressions;
 using DirectShowLib;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -26,7 +27,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (!IsValid(specifier))
                 return false;
 
-            var vid = PlayerControl.VideoInfo.BmiHeader;
+            var vid = Media.VideoInfo.BmiHeader;
 
             var regexWidth = new Regex(@"w(\d+)");
             var widthMatch = regexWidth.Match(specifier).Groups[1];
@@ -36,8 +37,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             var heightMatch = regexHeight.Match(specifier).Groups[1];
             var height = heightMatch.Success ? int.Parse(heightMatch.Value) : vid.Height;
 
-            var vidIsInterlaced = PlayerControl.VideoInfo.InterlaceFlags.HasFlag(AMInterlace.IsInterlaced);
-            var vidFps = 1000000/(int) PlayerControl.VideoInfo.AvgTimePerFrame;
+            var vidIsInterlaced = Media.VideoInfo.InterlaceFlags.HasFlag(AMInterlace.IsInterlaced);
+            var vidFps = 1000000/(int) Media.VideoInfo.AvgTimePerFrame;
 
             bool interlaced = vidIsInterlaced;
             int frameRate = vidFps;

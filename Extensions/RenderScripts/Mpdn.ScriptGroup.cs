@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.PlayerExtensions;
 using YAXLib;
@@ -127,10 +128,10 @@ namespace Mpdn.Extensions.RenderScripts
 
                 if (SelectedOption != null)
                 {
-                    PlayerControl.ShowOsdText(Name + ": " + SelectedOption.Name);
+                    Player.OsdText.Show(Name + ": " + SelectedOption.Name);
                 }
 
-                PlayerControl.SetRenderScript(PlayerControl.ActiveRenderScriptGuid);
+                Extension.SetRenderScript(Extension.RenderScriptGuid);
             }
 
             #endregion

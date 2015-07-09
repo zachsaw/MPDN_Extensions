@@ -47,13 +47,13 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             base.Initialize();
             m_Downloader = new SubtitleDownloader("MPDN_Extensions");
-            PlayerControl.MediaLoading += MediaLoading;
+            Media.Loading += MediaLoading;
         }
 
         public override void Destroy()
         {
             base.Destroy();
-            PlayerControl.MediaLoading -= MediaLoading;
+            Media.Loading -= MediaLoading;
         }
 
 
@@ -75,7 +75,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 subList.Sort((a, b) => String.Compare(a.Lang, b.Lang, CultureInfo.CurrentUICulture, CompareOptions.StringSort));
 
                 m_Form.SetSubtitles(subList, Settings.PreferedLanguage);
-                m_Form.ShowDialog(PlayerControl.Form);
+                m_Form.ShowDialog(Player.ActiveForm);
             }
             catch (InternetConnectivityException)
             {

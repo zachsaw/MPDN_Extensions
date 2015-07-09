@@ -52,12 +52,12 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            PlayerControl.PlayerStateChanged += PlayerStateChanged;
+            Player.StateChanged += PlayerStateChanged;
         }
 
         public override void Destroy()
         {
-            PlayerControl.PlayerStateChanged -= PlayerStateChanged;
+            Player.StateChanged -= PlayerStateChanged;
             base.Destroy();
         }
 
@@ -73,18 +73,18 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             using (var form = new GoToTimeForm())
             {
-                if (form.ShowDialog(PlayerControl.VideoPanel) != DialogResult.OK)
+                if (form.ShowDialog(Gui.VideoBox) != DialogResult.OK)
                     return;
 
-                if (PlayerControl.PlayerState == PlayerState.Closed)
+                if (Player.State == PlayerState.Closed)
                     return;
 
-                if (PlayerControl.PlayerState == PlayerState.Stopped)
+                if (Player.State == PlayerState.Stopped)
                 {
-                    PlayerControl.PauseMedia(false);
+                    Media.Pause(false);
                 }
 
-                PlayerControl.SeekMedia(form.Position * 1000);
+                Media.Seek(form.Position * 1000);
             }
         }
     }

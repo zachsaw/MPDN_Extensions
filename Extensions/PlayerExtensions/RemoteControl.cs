@@ -112,7 +112,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             _locationTimer = new Timer(100);
             _locationTimer.Elapsed += _locationTimer_Elapsed;
             _clientManager = new RemoteClients(this);
-            var playlist = PlayerControl.PlayerExtensions.FirstOrDefault(t => t.Descriptor.Guid == _playlistGuid);
+            var playlist = Extension.PlayerExtensions.FirstOrDefault(t => t.Descriptor.Guid == _playlistGuid);
             if (playlist != null)
             {
                 _playlistInstance = playlist as Playlist.Playlist;
@@ -138,13 +138,13 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void Subscribe()
         {
-            PlayerControl.PlaybackCompleted += m_PlayerControl_PlaybackCompleted;
-            PlayerControl.PlayerStateChanged += m_PlayerControl_PlayerStateChanged;
-            PlayerControl.EnteringFullScreenMode += m_PlayerControl_EnteringFullScreenMode;
-            PlayerControl.ExitingFullScreenMode += m_PlayerControl_ExitingFullScreenMode;
-            PlayerControl.VolumeChanged += PlayerControl_VolumeChanged;
-            PlayerControl.SubtitleTrackChanged += PlayerControl_SubtitleTrackChanged;
-            PlayerControl.AudioTrackChanged += PlayerControl_AudioTrackChanged;            
+            Player.Playback.Completed += m_PlayerControl_PlaybackCompleted;
+            Player.StateChanged += m_PlayerControl_PlayerStateChanged;
+            Player.FullScreenMode.Entering += m_PlayerControl_EnteringFullScreenMode;
+            Player.FullScreenMode.Exiting += m_PlayerControl_ExitingFullScreenMode;
+            Player.VolumeChanged += PlayerControl_VolumeChanged;
+            Media.SubtitleTrackChanged += PlayerControl_SubtitleTrackChanged;
+            Media.AudioTrackChanged += PlayerControl_AudioTrackChanged;            
         }
 
         void Settings_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -161,29 +161,29 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void Unsubscribe()
         {
-            PlayerControl.PlaybackCompleted -= m_PlayerControl_PlaybackCompleted;
-            PlayerControl.PlayerStateChanged -= m_PlayerControl_PlayerStateChanged;
-            PlayerControl.EnteringFullScreenMode -= m_PlayerControl_EnteringFullScreenMode;
-            PlayerControl.ExitingFullScreenMode -= m_PlayerControl_ExitingFullScreenMode;
-            PlayerControl.VolumeChanged -= PlayerControl_VolumeChanged;
-            PlayerControl.SubtitleTrackChanged -= PlayerControl_SubtitleTrackChanged;
-            PlayerControl.AudioTrackChanged -= PlayerControl_AudioTrackChanged;
+            Player.Playback.Completed -= m_PlayerControl_PlaybackCompleted;
+            Player.StateChanged -= m_PlayerControl_PlayerStateChanged;
+            Player.FullScreenMode.Entering -= m_PlayerControl_EnteringFullScreenMode;
+            Player.FullScreenMode.Exiting -= m_PlayerControl_ExitingFullScreenMode;
+            Player.VolumeChanged -= PlayerControl_VolumeChanged;
+            Media.SubtitleTrackChanged -= PlayerControl_SubtitleTrackChanged;
+            Media.AudioTrackChanged -= PlayerControl_AudioTrackChanged;
         }
 
         void PlayerControl_AudioTrackChanged(object sender, EventArgs e)
         {
-            PushToAllListeners("AudioChanged|" + PlayerControl.ActiveAudioTrack.Description);
+            PushToAllListeners("AudioChanged|" + Media.AudioTrack.Description);
         }
 
         void PlayerControl_SubtitleTrackChanged(object sender, EventArgs e)
         {
-            PushToAllListeners("SubChanged|" + PlayerControl.ActiveSubtitleTrack.Description);
+            PushToAllListeners("SubChanged|" + Media.SubtitleTrack.Description);
         }
 
         void PlayerControl_VolumeChanged(object sender, EventArgs e)
         {
-            PushToAllListeners("Volume|" + PlayerControl.Volume.ToString());
-            PushToAllListeners("Mute|" + PlayerControl.Mute.ToString());
+            PushToAllListeners("Volume|" + Player.Volume.ToString());
+            PushToAllListeners("Mute|" + Player.Mute.ToString());
         }
 
         void m_PlayerControl_ExitingFullScreenMode(object sender, EventArgs e)
@@ -215,17 +215,17 @@ namespace Mpdn.Extensions.PlayerExtensions
                     break;
             }
 
-            PushToAllListeners(e.NewState + "|" + PlayerControl.MediaFilePath);
+            PushToAllListeners(e.NewState + "|" + Media.FilePath);
         }
 
         private string GetAllAudioTracks()
         {
-            if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
+            if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused)
             {
                 MediaTrack activeTrack = null;
-                if (PlayerControl.ActiveAudioTrack != null)
-                    activeTrack = PlayerControl.ActiveAudioTrack;
-                var audioTracks = PlayerControl.AudioTracks;
+                if (Media.AudioTrack != null)
+                    activeTrack = Media.AudioTrack;
+                var audioTracks = Media.AudioTracks;
                 int counter = 1;
                 StringBuilder audioStringBuilder = new StringBuilder();
                 foreach (var track in audioTracks)
@@ -249,12 +249,12 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private string GetAllSubtitleTracks()
         {
-            if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
+            if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused)
             {
                 MediaTrack activeSub = null;
-                if (PlayerControl.ActiveSubtitleTrack != null)
-                    activeSub = PlayerControl.ActiveSubtitleTrack;
-                var subtitles = PlayerControl.SubtitleTracks;
+                if (Media.SubtitleTrack != null)
+                    activeSub = Media.SubtitleTrack;
+                var subtitles = Media.SubtitleTracks;
                 int counter = 1;
                 StringBuilder subSb = new StringBuilder();
                 foreach (var sub in subtitles)
@@ -278,9 +278,9 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private string GetAllChapters()
         {
-            if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
+            if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused)
             {
-                var chapters = PlayerControl.Chapters;
+                var chapters = Media.Chapters;
                 int counter = 1;
                 StringBuilder chapterSb = new StringBuilder();
                 foreach (var chapter in chapters)
@@ -300,7 +300,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         void m_PlayerControl_PlaybackCompleted(object sender, EventArgs e)
         {
-            PushToAllListeners("Finished|" + PlayerControl.MediaFilePath);
+            PushToAllListeners("Finished|" + Media.FilePath);
         }
 
         public override IList<Verb> Verbs
@@ -316,7 +316,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void Test1Click()
         {
-            _clientManager.ShowDialog(PlayerControl.VideoPanel);
+            _clientManager.ShowDialog(Gui.VideoBox);
         }
 
         private void Server()
@@ -389,7 +389,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ClientAuth(string msgValue, Guid clientGuid)
         {
             WriteToSpesificClient("AuthCode|" + msgValue, clientGuid.ToString());
-            if (MessageBox.Show(PlayerControl.VideoPanel, "Allow Remote Connection for " + msgValue, "Remote Authentication", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (MessageBox.Show(Gui.VideoBox, "Allow Remote Connection for " + msgValue, "Remote Authentication", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 DisplayTextMessage("Remote Connected");
                 WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
@@ -436,31 +436,31 @@ namespace Mpdn.Extensions.PlayerExtensions
                     RemoveWriter(command[1]);
                     break;
                 case "Open":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => OpenMedia(command[1])));
+                    GuiThread.DoAsync(() => OpenMedia(command[1]));
                     break;
                 case "Pause":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => PauseMedia(command[1])));
+                    GuiThread.DoAsync(() => PauseMedia(command[1]));
                     break;
                 case "Play":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => PlayMedia(command[1])));
+                    GuiThread.DoAsync(() => PlayMedia(command[1]));
                     break;
                 case "Stop":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => StopMedia(command[1])));
+                    GuiThread.DoAsync(() => StopMedia(command[1]));
                     break;
                 case "Seek":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SeekMedia(command[1])));
+                    GuiThread.DoAsync(() => SeekMedia(command[1]));
                     break;
                 case "GetDuration":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => GetFullDuration(command[1])));
+                    GuiThread.DoAsync(() => GetFullDuration(command[1]));
                     break;
                 case "GetCurrentState":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => GetCurrentState(command[1])));
+                    GuiThread.DoAsync(() => GetCurrentState(command[1]));
                     break;
                 case "FullScreen":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => FullScreen(command[1])));
+                    GuiThread.DoAsync(() => FullScreen(command[1]));
                     break;
                 case "MoveWindow":
-                    PlayerControl.Form.BeginInvoke((MethodInvoker)(() => MoveWindow(command[1])));
+                    GuiThread.DoAsync(() => MoveWindow(command[1]));
                     break;
                 case "WriteToScreen":
                     DisplayTextMessage(command[1]);
@@ -468,51 +468,51 @@ namespace Mpdn.Extensions.PlayerExtensions
                 case "Mute":
                     bool mute = false;
                     Boolean.TryParse(command[1], out mute);
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => Mute(mute)));
+                    GuiThread.DoAsync(() => Mute(mute));
                     break;
                 case "Volume":
                     int vol = 0;
                     int.TryParse(command[1], out vol);
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetVolume(vol)));
+                    GuiThread.DoAsync(() => SetVolume(vol));
                     break;
                 case "ActiveSubTrack":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetSubtitle(command[1])));
+                    GuiThread.DoAsync(() => SetSubtitle(command[1]));
                     break;
                 case "ActiveAudioTrack":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => SetAudioTrack(command[1])));
+                    GuiThread.DoAsync(() => SetAudioTrack(command[1]));
                     break;
                 case "AddFilesToPlaylist":
                     AddFilesToPlaylist(command[1]);
                     break;
                 case "InsertFileInPlaylist":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => InsertIntoPlaylist(command[1], command[2])));
+                    GuiThread.DoAsync(() => InsertIntoPlaylist(command[1], command[2]));
                     break;
                 case "ClearPlaylist":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(ClearPlaylist));
+                    GuiThread.DoAsync(ClearPlaylist);
                     break;
                 case "FocusPlayer":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(FocusMpdn));
+                    GuiThread.DoAsync(FocusMpdn);
                     break;
                 case "PlayNext":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)PlaylistPlayNext);
+                    GuiThread.DoAsync(PlaylistPlayNext);
                     break;
                 case "PlayPrevious":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)PlaylistPlayPrevious);
+                    GuiThread.DoAsync(PlaylistPlayPrevious);
                     break;
                 case "ShowPlaylist":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)ShowPlaylist);
+                    GuiThread.DoAsync(ShowPlaylist);
                     break;
                 case "HidePlaylist":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)HidePlaylist);
+                    GuiThread.DoAsync(HidePlaylist);
                     break;
                 case "GetPlaylist":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => GetPlaylist(command[1])));
+                    GuiThread.DoAsync(() => GetPlaylist(command[1]));
                     break;
                 case "PlaySelectedFile":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => PlaySelectedFile(command[1])));
+                    GuiThread.DoAsync(() => PlaySelectedFile(command[1]));
                     break;
                 case "RemoveFile":
-                    PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => RemoveFromPlaylist(command[1])));
+                    GuiThread.DoAsync(() => RemoveFromPlaylist(command[1]));
                     break;
             }
         }
@@ -583,7 +583,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void FocusMpdn()
         {
-            PlayerControl.Form.Focus();
+            Player.ActiveForm.Focus();
         }
 
         private void ClearPlaylist()
@@ -597,17 +597,11 @@ namespace Mpdn.Extensions.PlayerExtensions
             var filePaths = Regex.Split(files, ">>");
             if (filePaths.Any())
             {
-                foreach (var file in filePaths)
-                {
-                    if (File.Exists(file))
-                    {
-                        filesToAdd.Add(file);
-                    }
-                }
+                filesToAdd.AddRange(filePaths.Where(File.Exists));
             }
             if (filesToAdd.Any())
             {
-                PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => _playlistInstance.GetPlaylistForm.AddFiles(filesToAdd.ToArray())));
+                GuiThread.DoAsync(() => _playlistInstance.GetPlaylistForm.AddFiles(filesToAdd.ToArray()));
             }
         }
 
@@ -621,23 +615,23 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void OpenMedia(object file)
         {
-            PlayerControl.OpenMedia(file.ToString());
+            Media.Open(file.ToString());
         }
 
         private void PauseMedia(object showOsd)
         {
             bool dispOsd = false;
             Boolean.TryParse(showOsd.ToString(), out dispOsd);
-            PlayerControl.PauseMedia(dispOsd);
+            Media.Pause(dispOsd);
         }
 
         private void PlayMedia(object showOsd)
         {
             bool dispOsd = false;
             Boolean.TryParse(showOsd.ToString(), out dispOsd);
-            if (!String.IsNullOrEmpty(PlayerControl.MediaFilePath))
+            if (!String.IsNullOrEmpty(Media.FilePath))
             {
-                PlayerControl.PlayMedia(dispOsd);
+                Media.Play(dispOsd);
             }
             else
             {
@@ -648,7 +642,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void StopMedia(object blank)
         {
-            PlayerControl.StopMedia();
+            Media.Stop();
         }
 
         private void SeekMedia(object seekLocation)
@@ -657,52 +651,52 @@ namespace Mpdn.Extensions.PlayerExtensions
             double.TryParse(seekLocation.ToString(), out location);
             if (location != -1)
             {
-                PlayerControl.SeekMedia((long)location);
+                Media.Seek((long)location);
             }
         }
 
         private void SetVolume(int level)
         {
-            PlayerControl.Volume = level;
+            Player.Volume = level;
         }
 
         private void SetSubtitle(string subDescription)
         {
-            var selTrack = PlayerControl.SubtitleTracks.FirstOrDefault(t => t.Description == subDescription);
+            var selTrack = Media.SubtitleTracks.FirstOrDefault(t => t.Description == subDescription);
             if (selTrack != null)
-                PlayerControl.SelectSubtitleTrack(selTrack);
+                Media.SelectSubtitleTrack(selTrack);
         }
 
         private void SetAudioTrack(string audioDescription)
         {
-            var selTrack = PlayerControl.AudioTracks.FirstOrDefault(t => t.Description == audioDescription);
+            var selTrack = Media.AudioTracks.FirstOrDefault(t => t.Description == audioDescription);
             if (selTrack != null)
-                PlayerControl.SelectAudioTrack(selTrack);
+                Media.SelectAudioTrack(selTrack);
         }
 
         private void Mute(bool silence)
         {
-            PlayerControl.Mute = silence;
+            Player.Mute = silence;
             PushToAllListeners("Mute|" + silence);
         }
 
         private void GetFullDuration(object guid)
         {
-            WriteToSpesificClient("FullLength|" + PlayerControl.MediaDuration, guid.ToString());
+            WriteToSpesificClient("FullLength|" + Media.Duration, guid.ToString());
         }
 
         private void GetCurrentState(object guid)
         {
             WriteToSpesificClient(GetAllChapters(), guid.ToString());
-            WriteToSpesificClient(PlayerControl.PlayerState + "|" + PlayerControl.MediaFilePath, guid.ToString());
-            WriteToSpesificClient("Fullscreen|" + PlayerControl.InFullScreenMode, guid.ToString());
-            WriteToSpesificClient("Mute|" + PlayerControl.Mute, guid.ToString());
-            WriteToSpesificClient("Volume|" + PlayerControl.Volume, guid.ToString());
+            WriteToSpesificClient(Player.State + "|" + Media.FilePath, guid.ToString());
+            WriteToSpesificClient("Fullscreen|" + Player.FullScreenMode.Active, guid.ToString());
+            WriteToSpesificClient("Mute|" + Player.Mute, guid.ToString());
+            WriteToSpesificClient("Volume|" + Player.Volume, guid.ToString());
             GetPlaylist(guid);
-            if (PlayerControl.PlayerState == PlayerState.Playing || PlayerControl.PlayerState == PlayerState.Paused)
+            if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused)
             {
-                WriteToSpesificClient("FullLength|" + PlayerControl.MediaDuration, guid.ToString());
-                WriteToSpesificClient("Position|" + PlayerControl.MediaPosition, guid.ToString());
+                WriteToSpesificClient("FullLength|" + Media.Duration, guid.ToString());
+                WriteToSpesificClient("Position|" + Media.Position, guid.ToString());
             }
             if (_playlistInstance != null)
             {
@@ -716,14 +710,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             bool goFullscreen = false;
             Boolean.TryParse(fullScreen.ToString(), out goFullscreen);
-            if (goFullscreen)
-            {
-                PlayerControl.GoFullScreen();
-            }
-            else
-            {
-                PlayerControl.GoWindowed();
-            }
+            Player.FullScreenMode.Active = goFullscreen;
         }
 
         private void MoveWindow(string msg)
@@ -736,21 +723,21 @@ namespace Mpdn.Extensions.PlayerExtensions
                 int.TryParse(args[2], out width) &&
                 int.TryParse(args[3], out height))
             {
-                PlayerControl.Form.Left = left;
-                PlayerControl.Form.Top = top;
-                PlayerControl.Form.Width = width;
-                PlayerControl.Form.Height = height;
+                Player.ActiveForm.Left = left;
+                Player.ActiveForm.Top = top;
+                Player.ActiveForm.Width = width;
+                Player.ActiveForm.Height = height;
 
                 switch (args[4])
                 {
                     case "Normal":
-                        PlayerControl.Form.WindowState = FormWindowState.Normal;
+                        Player.ActiveForm.WindowState = FormWindowState.Normal;
                         break;
                     case "Maximized":
-                        PlayerControl.Form.WindowState = FormWindowState.Maximized;
+                        Player.ActiveForm.WindowState = FormWindowState.Maximized;
                         break;
                     case "Minimized":
-                        PlayerControl.Form.WindowState = FormWindowState.Minimized;
+                        Player.ActiveForm.WindowState = FormWindowState.Minimized;
                         break;
                 }
             }
@@ -772,7 +759,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void DisplayTextMessage(object msg)
         {
-            PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() => PlayerControl.ShowOsdText(msg.ToString())));
+            GuiThread.DoAsync(() => Player.OsdText.Show(msg.ToString()));
         }
 
         public void DisconnectClient(string guid)
@@ -786,7 +773,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             try
             {
-                PushToAllListeners("Postion|" + PlayerControl.MediaPosition);
+                PushToAllListeners("Postion|" + Media.Position);
             }
             catch (Exception)
             { }
@@ -867,10 +854,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public void OnPropertyChanged(PropertyChangedEventArgs e)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, e);
-            }
+            PropertyChanged.Handle(h => h(this, e));
         }
 
         #endregion

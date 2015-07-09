@@ -53,8 +53,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             base.Initialize();
 
-            PlayerControl.PlayerStateChanged += PlayerStateChanged;
-            PlayerControl.FormClosed += FormClosed;
+            Player.StateChanged += PlayerStateChanged;
+            Player.Closed += FormClosed;
 
             foreach (var screen in Screen.AllScreens)
             {
@@ -66,8 +66,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             base.Destroy();
 
-            PlayerControl.PlayerStateChanged -= PlayerStateChanged;
-            PlayerControl.FormClosed -= FormClosed;
+            Player.StateChanged -= PlayerStateChanged;
+            Player.Closed -= FormClosed;
         }
 
         public override IList<Verb> Verbs
@@ -91,7 +91,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
-            if (PlayerControl.VideoInfo == null) return;
+            if (Media.VideoInfo == null) return;
 
             if (e.NewState == PlayerState.Closed)
             {
@@ -107,14 +107,14 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             m_RestoreFrequency = 0;
 
-            var screen = Screen.FromControl(PlayerControl.VideoPanel);
+            var screen = Screen.FromControl(Gui.VideoBox);
 
             var frequencies = GetFrequencies(screen);
 
             if (!frequencies.Any())
                 return;
 
-            var timePerFrame = PlayerControl.VideoInfo.AvgTimePerFrame;
+            var timePerFrame = Media.VideoInfo.AvgTimePerFrame;
             if (Math.Abs(timePerFrame) < 1)
                 return;
 
@@ -185,11 +185,11 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ChangeRefreshRate(Screen screen, int frequency)
         {
             bool wasFullScreen = false;
-            if (PlayerControl.InFullScreenMode)
+            if (Player.FullScreenMode.Active)
             {
                 wasFullScreen = true;
                 // We can't change frequency in exclusive mode
-                PlayerControl.GoWindowed();
+                Player.FullScreenMode.Active = false;
             }
 
             var dm = NativeMethods.CreateDevmode(screen.DeviceName);
@@ -206,10 +206,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             dm.dmDisplayFrequency = frequency;
             dm.dmDeviceName = screen.DeviceName;
             bool continuePlaying = false;
-            if (PlayerControl.PlayerState == PlayerState.Playing)
+            if (Player.State == PlayerState.Playing)
             {
                 continuePlaying = true;
-                PlayerControl.PauseMedia(false);
+                Media.Pause(false);
             }
             if (ChangeSettings(dm))
             {
@@ -217,11 +217,11 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
             if (continuePlaying)
             {
-                PlayerControl.PlayMedia(false);
+                Media.Play(false);
             }
             if (wasFullScreen)
             {
-                PlayerControl.GoFullScreen();
+                Player.FullScreenMode.Active = true;
             }
         }
 

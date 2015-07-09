@@ -72,7 +72,7 @@ namespace Mpdn.Extensions.Framework.Controls
         {
             if (!DesignMode)
             {
-                var renderScripts = PlayerControl.RenderScripts
+                var renderScripts = Extension.RenderScripts
                     .Where(script => script is IRenderChainUi)
                     .Select(x => (x as IRenderChainUi).CreateNew())
                     .Concat(new[] { RenderChainUi.Identity })

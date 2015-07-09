@@ -49,16 +49,16 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             base.Initialize();
 
-            PlayerControl.MouseClick += PlayerMouseClick;
-            PlayerControl.MouseWheel += PlayerMouseWheel;
+            Player.MouseClick += PlayerMouseClick;
+            Player.MouseWheel += PlayerMouseWheel;
         }
 
         public override void Destroy()
         {
             base.Destroy();
 
-            PlayerControl.MouseClick -= PlayerMouseClick;
-            PlayerControl.MouseWheel -= PlayerMouseWheel;
+            Player.MouseClick -= PlayerMouseClick;
+            Player.MouseWheel -= PlayerMouseWheel;
         }
 
         public override IList<Verb> Verbs
@@ -71,10 +71,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (!Settings.EnableMouseWheelSeek)
                 return;
 
-            var pos = PlayerControl.MediaPosition;
+            var pos = Media.Position;
             pos += e.InputArgs.Delta*1000000/40;
             pos = Math.Max(pos, 0);
-            PlayerControl.SeekMedia(pos);
+            Media.Seek(pos);
             e.Handled = true;
         }
 
@@ -86,12 +86,12 @@ namespace Mpdn.Extensions.PlayerExtensions
                 return;
             }
 
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            var chapters = PlayerControl.Chapters.OrderBy(chapter => chapter.Position);
+            var chapters = Media.Chapters.OrderBy(chapter => chapter.Position);
 
-            var pos = PlayerControl.MediaPosition;
+            var pos = Media.Position;
 
             bool next;
             switch (e.InputArgs.Button)
@@ -111,7 +111,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 : chapters.TakeWhile(chapter => chapter.Position < Math.Max(pos - 1000000, 0)).LastOrDefault();
             if (nextChapter != null)
             {
-                PlayerControl.SeekMedia(nextChapter.Position);
+                Media.Seek(nextChapter.Position);
                 return;
             }
 
@@ -146,14 +146,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (!Settings.EnableMiddleClickFsToggle)
                 return;
 
-            if (PlayerControl.InFullScreenMode)
-            {
-                PlayerControl.GoWindowed();
-            }
-            else
-            {
-                PlayerControl.GoFullScreen();
-            }
+            Player.FullScreenMode.Active = !Player.FullScreenMode.Active;
         }
     }
 

@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
@@ -40,11 +41,13 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public WebFile(Uri fileUri, string filePath)
         {
             if (fileUri == null || filePath == null)
+            {
                 throw new ArgumentNullException();
+            }
             FileUri = fileUri;
             FilePath = filePath;
             m_WebClient.DownloadFileCompleted += WebClientOnDownloadFileCompleted;
-            m_WebClient.DownloadProgressChanged += (sender, args) => DownloadProgressChanged(sender,args);
+            m_WebClient.DownloadProgressChanged += (sender, args) => DownloadProgressChanged.Handle(h => h(sender, args));
             HttpHeaders = new NameValueCollection();
         }
 
@@ -66,14 +69,16 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             if (asyncCompletedEventArgs.Error != null)
             {
-                if (DownloadFailed != null) 
-                    DownloadFailed(this, asyncCompletedEventArgs.Error);
+                DownloadFailed.Handle(h => h(this, asyncCompletedEventArgs.Error));
 
                 Trace.Write(asyncCompletedEventArgs.Error);
                 return;
             }
-            if (Downloaded != null && Exists())
-                Downloaded(this);
+
+            if (Exists())
+            {
+                Downloaded.Handle(h => h(this));
+            }
         }
 
         protected void PrepareWebClientRequest()
@@ -88,8 +93,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         public Process Start()
         {
-            if(!Exists())
+            if (!Exists())
+            {
                 throw new InvalidOperationException("The file to be run doesn't exists");
+            }
             return Process.Start(FilePath);
         }
 
@@ -115,7 +122,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private static string GetTempFilePathWithExtension(string extension)
         {
             if (extension == null)
+            {
                 throw new ArgumentNullException();
+            }
 
             var path = Path.GetTempPath();
             var fileName = string.Format("{0}{1}", Guid.NewGuid(), extension);
@@ -126,11 +135,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             var fi = new FileInfo(fileUri.AbsolutePath);
             var ext = fi.Extension;
-            if (!string.IsNullOrWhiteSpace(ext))
-            {
-                return ext;
-            }
-            return null;
+            return !string.IsNullOrWhiteSpace(ext) ? ext : null;
         }
     }
 }

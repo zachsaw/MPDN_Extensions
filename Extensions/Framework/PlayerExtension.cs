@@ -41,13 +41,13 @@ namespace Mpdn.Extensions.Framework
         {
             base.Initialize();
 
-            PlayerControl.KeyDown += PlayerKeyDown;
+            Player.KeyDown += PlayerKeyDown;
             LoadVerbs();
         }
 
         public override void Destroy()
         {
-            PlayerControl.KeyDown -= PlayerKeyDown;
+            Player.KeyDown -= PlayerKeyDown;
 
             base.Destroy();
         }
