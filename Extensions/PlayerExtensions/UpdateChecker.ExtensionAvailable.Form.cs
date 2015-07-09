@@ -1,21 +1,4 @@
-﻿// This file is a part of MPDN Extensions.
-// https://github.com/zachsaw/MPDN_Extensions
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3.0 of the License, or (at your option) any later version.
-// 
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library.
-// 
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -35,7 +18,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public UpdateCheckerNewExtensionForm(ExtensionVersion version, UpdateCheckerSettings settings)
         {
             InitializeComponent();
-            downloadProgressBar.DisplayStyle = CustomProgressBar.ProgressBarDisplayText.Percentage;
+            downloadProgressBar.DisplayStyle = CustomProgressBar.ProgressBarDisplayText.Both;
             Icon = Gui.Icon;
             downloadButton.ContextMenuStrip = new ContextMenuStrip();
             m_Files = version.Files;
@@ -68,6 +51,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     .FirstOrDefault();
             if (url != null)
             {
+                downloadProgressBar.CustomText = m_ChosenDownload;
                 DownloadFile(url);
             }
             else
@@ -143,7 +127,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             public enum ProgressBarDisplayText
             {
                 Percentage,
-                CustomText
+                CustomText,
+                Both
             }
 
             public CustomProgressBar()
@@ -174,7 +159,19 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 }
 
                 // Set the Display text (Either a % amount or our custom text
-                var text = DisplayStyle == ProgressBarDisplayText.Percentage ? Value.ToString() + '%' : CustomText;
+                string text = "";
+                switch (DisplayStyle)
+                {
+                    case ProgressBarDisplayText.Both:
+                        text = string.Format("{0}: {1}%", CustomText, Value);
+                        break;
+                    case ProgressBarDisplayText.CustomText:
+                        text = CustomText;
+                        break;
+                    case ProgressBarDisplayText.Percentage:
+                        text = string.Format("{0}%", Value);
+                        break;
+                }
 
 
                 using (var f = new Font(FontFamily.GenericSansSerif, 8.25F))
@@ -192,7 +189,5 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         }
 
         #endregion
-
-
     }
 }
