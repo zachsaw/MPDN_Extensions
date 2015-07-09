@@ -190,20 +190,14 @@
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ConfigDialog.designer.cs">
       <DependentUpon>UpdateChecker.ConfigDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ExtensionAvailable.Form.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ExtensionAvailable.Form.Designer.cs">
-      <DependentUpon>UpdateChecker.ExtensionAvailable.Form.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.WebFile.cs" />
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.PlayerExtension.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.Designer.cs">
       <DependentUpon>UpdateChecker.UpdateAvailable.Form.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.WebFile.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.PlayerExtension.cs" />
     <Compile Include="Extensions\PlayerExtensions\Exceptions\Exceptions.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker.Version.cs" />
     <Compile Include="Extensions\PlayerExtensions\VideoSpecifier.cs" />
