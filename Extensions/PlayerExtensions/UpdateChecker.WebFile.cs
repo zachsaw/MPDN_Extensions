@@ -28,7 +28,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     public class WebFile
     {
-        public delegate void FileDownloadedHandler(object sender);
+        public delegate void FileDownloadHandler(object sender);
 
         public delegate void FileDownloadErrorHandler(object sender, Exception error);
 
@@ -47,7 +47,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             FileUri = fileUri;
             FilePath = filePath;
             m_WebClient.DownloadFileCompleted += WebClientOnDownloadFileCompleted;
-            m_WebClient.DownloadProgressChanged += (sender, args) => DownloadProgressChanged.Handle(h => h(sender, args));
+            m_WebClient.DownloadProgressChanged +=
+                (sender, args) => DownloadProgressChanged.Handle(h => h(sender, args));
             HttpHeaders = new NameValueCollection();
         }
 
@@ -61,12 +62,23 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             return AppPath.GetUserDataFilePath(fi.Name, "Downloads");
         }
 
-        public event FileDownloadedHandler Downloaded;
+        public event FileDownloadHandler Downloaded;
+        public event FileDownloadHandler Cancelled;
         public event FileDownloadErrorHandler DownloadFailed;
         public event DownloadProgressChangedEventHandler DownloadProgressChanged;
 
         private void WebClientOnDownloadFileCompleted(object sender, AsyncCompletedEventArgs asyncCompletedEventArgs)
         {
+            if (asyncCompletedEventArgs.Cancelled)
+            {
+                if (Exists())
+                {
+                    Delete();
+                }
+                Cancelled.Handle(h => h(this));
+                return;
+            }
+
             if (asyncCompletedEventArgs.Error != null)
             {
                 DownloadFailed.Handle(h => h(this, asyncCompletedEventArgs.Error));
@@ -74,6 +86,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 Trace.Write(asyncCompletedEventArgs.Error);
                 return;
             }
+           
 
             if (Exists())
             {
@@ -91,6 +104,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             return File.Exists(FilePath);
         }
 
+        public void Delete()
+        {
+            File.Delete(FilePath);
+        }
+
         public Process Start()
         {
             if (!Exists())
@@ -104,6 +122,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             PrepareWebClientRequest();
             Task.Factory.StartNew(() => m_WebClient.DownloadFileAsync(FileUri, FilePath));
+        }
+
+        public void CancelDownload()
+        {
+            m_WebClient.CancelAsync();
         }
     }
 

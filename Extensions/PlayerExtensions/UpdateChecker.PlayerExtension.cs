@@ -69,13 +69,13 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
             if (Settings.MpdnVersionOnServer > m_CurrentVersion)
             {
-                new UpdateCheckerNewVersionForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(Gui.VideoBox);
+                new UpdateAvailableForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(Gui.VideoBox);
                 newVersion = true;
             }
 
             if (Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion())
             {
-                new UpdateCheckerNewExtensionForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
+                new ExtensionUpdateAvailableForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
                     Gui.VideoBox);
                 newVersion = true;
             }
@@ -102,12 +102,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             m_CurrentVersion = new Version(Application.ProductVersion);
             if (!Settings.ForgetMpdnVersion && Settings.MpdnVersionOnServer > m_CurrentVersion)
             {
-                new UpdateCheckerNewVersionForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(Gui.VideoBox);
+                new UpdateAvailableForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(Gui.VideoBox);
             }
             if (!Settings.ForgetExtensionVersion &&
                 Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion())
             {
-                new UpdateCheckerNewExtensionForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
+                new ExtensionUpdateAvailableForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
                     Gui.VideoBox);
             }
             m_Checker.CheckVersionAsync();
@@ -135,6 +135,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public ExtensionVersion ExtensionVersionOnServer { get; set; }
         public bool ForgetMpdnVersion { get; set; }
         public bool ForgetExtensionVersion { get; set; }
+        public string LastMpdnReleaseChosen { get; set; }
     }
 
     public class UpdateChecker
