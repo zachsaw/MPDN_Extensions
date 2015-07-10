@@ -51,12 +51,12 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            PlayerControl.PlayerStateChanged += PlayerStateChanged;
+            Player.StateChanged += PlayerStateChanged;
         }
 
         public override void Destroy()
         {
-            PlayerControl.PlayerStateChanged -= PlayerStateChanged;
+            Player.StateChanged -= PlayerStateChanged;
             base.Destroy();
         }
 
@@ -67,12 +67,12 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static void ShowMediaInfoDialog()
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            using (var form = new ViewMediaInfoForm(PlayerControl.MediaFilePath))
+            using (var form = new ViewMediaInfoForm(Media.FilePath))
             {
-                form.ShowDialog(PlayerControl.VideoPanel);
+                form.ShowDialog(Gui.VideoBox);
             }
         }
     }

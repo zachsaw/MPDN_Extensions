@@ -69,20 +69,20 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
             if (Settings.MpdnVersionOnServer > m_CurrentVersion)
             {
-                new UpdateCheckerNewVersionForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(PlayerControl.VideoPanel);
+                new UpdateAvailableForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(Gui.VideoBox);
                 newVersion = true;
             }
 
             if (Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion())
             {
-                new UpdateCheckerNewExtensionForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
-                    PlayerControl.VideoPanel);
+                new ExtensionUpdateAvailableForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
+                    Gui.VideoBox);
                 newVersion = true;
             }
             
             if (!newVersion)
             {
-                MessageBox.Show(PlayerControl.VideoPanel, "You have the latest release.");
+                MessageBox.Show(Gui.VideoBox, "You have the latest release.");
             }
         }
 
@@ -91,7 +91,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             base.Initialize();
             m_Checker = new UpdateChecker(Settings, new Uri("http://mpdn.zachsaw.com/LatestVersion.txt"));
             m_ExtChecker = new ExtensionUpdateChecker(Settings, new Uri("https://api.github.com/repos/zachsaw/MPDN_Extensions/releases/latest"));
-            PlayerControl.PlayerLoaded += PlayerControlPlayerLoaded;
+            Player.Loaded += PlayerControlPlayerLoaded;
         }
 
         private void PlayerControlPlayerLoaded(object sender, EventArgs e)
@@ -102,13 +102,13 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             m_CurrentVersion = new Version(Application.ProductVersion);
             if (!Settings.ForgetMpdnVersion && Settings.MpdnVersionOnServer > m_CurrentVersion)
             {
-                new UpdateCheckerNewVersionForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(PlayerControl.VideoPanel);
+                new UpdateAvailableForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(Gui.VideoBox);
             }
             if (!Settings.ForgetExtensionVersion &&
                 Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion())
             {
-                new UpdateCheckerNewExtensionForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
-                    PlayerControl.VideoPanel);
+                new ExtensionUpdateAvailableForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
+                    Gui.VideoBox);
             }
             m_Checker.CheckVersionAsync();
             m_ExtChecker.CheckVersionAsync();
@@ -118,7 +118,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public override void Destroy()
         {
             base.Destroy();
-            PlayerControl.PlayerLoaded -= PlayerControlPlayerLoaded;
+            Player.Loaded -= PlayerControlPlayerLoaded;
         }
     }
 
@@ -135,6 +135,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public ExtensionVersion ExtensionVersionOnServer { get; set; }
         public bool ForgetMpdnVersion { get; set; }
         public bool ForgetExtensionVersion { get; set; }
+        public string LastMpdnReleaseChosen { get; set; }
     }
 
     public class UpdateChecker
@@ -198,14 +199,14 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 }
             }
 
-            PlayerControl.VideoPanel.BeginInvoke((MethodInvoker) (() =>
+            GuiThread.DoAsync(() =>
             {
                 if (Settings.MpdnVersionOnServer == serverVersion)
                     return;
 
                 Settings.MpdnVersionOnServer = serverVersion;
                 Settings.ForgetMpdnVersion = false;
-            }));
+            });
         }
 
         public void CheckVersion()
@@ -256,14 +257,14 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             }
             version.Files = result.assets;
 
-            PlayerControl.VideoPanel.BeginInvoke((MethodInvoker)(() =>
+            GuiThread.DoAsync(() =>
             {
                 if (Settings.ExtensionVersionOnServer == version)
                     return;
 
                 Settings.ExtensionVersionOnServer = version;
                 Settings.ForgetExtensionVersion = false;
-            }));
+            });
         }
     }
 }

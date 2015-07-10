@@ -49,20 +49,20 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            PlayerControl.PlayerStateChanged += OnPlayerStateChanged;
-            PlayerControl.SettingsChanged += OnSettingsChanged;
+            Player.StateChanged += OnPlayerStateChanged;
+            Player.Config.Changed += OnSettingsChanged;
         }
 
         public override void Destroy()
         {
-            PlayerControl.SettingsChanged -= OnSettingsChanged;
-            PlayerControl.PlayerStateChanged -= OnPlayerStateChanged;
+            Player.Config.Changed -= OnSettingsChanged;
+            Player.StateChanged -= OnPlayerStateChanged;
             base.Destroy();
         }
 
         protected static VideoRendererSettings RendererSettings
         {
-            get { return PlayerControl.PlayerSettings.VideoRendererSettings;  }
+            get { return Player.Config.Settings.VideoRendererSettings;  }
         }
 
         public override ExtensionUiDescriptor Descriptor
@@ -264,14 +264,14 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void Apply()
         {
-            PlayerControl.ShowOsdText("Colour space: " + RendererSettings.OutputLevels.ToDescription());
-            PlayerControl.RefreshSettings();
+            Player.OsdText.Show("Colour space: " + RendererSettings.OutputLevels.ToDescription());
+            Player.Config.Refresh();
         }
 
         private void UpdateControls()
         {
             ClearSelections();
-            if (PlayerControl.PlayerState != PlayerState.Playing && PlayerControl.PlayerState != PlayerState.Paused)
+            if (Player.State != PlayerState.Playing && Player.State != PlayerState.Paused)
                 return;
 
             switch (Renderer.Colorimetric)

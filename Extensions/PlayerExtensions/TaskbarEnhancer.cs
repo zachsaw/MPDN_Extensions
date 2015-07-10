@@ -79,28 +79,28 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             base.Initialize();
 
-            m_MpdnFormHandle = PlayerControl.Form.Handle;
+            m_MpdnFormHandle = Player.ActiveForm.Handle;
 
             m_UpdateTimer = new Timer();
             m_UpdateTimer.Tick += UpdateTimerTick;
             m_Playlist = GetPlaylistInstance();
 
-            PlayerControl.PlayerStateChanged += PlayerStateChanged;
-            PlayerControl.MediaLoaded += MediaLoaded;
+            Player.StateChanged += PlayerStateChanged;
+            Media.Loaded += MediaLoaded;
 
             CreateToolBarButtons();
         }
 
         private Playlist.Playlist GetPlaylistInstance()
         {
-            return PlayerControl.PlayerExtensions.FirstOrDefault(t => t.Descriptor.Guid == m_PlaylistGuid) 
+            return Extension.PlayerExtensions.FirstOrDefault(t => t.Descriptor.Guid == m_PlaylistGuid) 
                 as Playlist.Playlist;
         }
 
         public override void Destroy()
         {
-            PlayerControl.MediaLoaded -= MediaLoaded;
-            PlayerControl.PlayerStateChanged -= PlayerStateChanged;
+            Media.Loaded -= MediaLoaded;
+            Player.StateChanged -= PlayerStateChanged;
 
             DisposeHelper.Dispose(ref m_UpdateTimer);
 
@@ -158,11 +158,11 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void UpdateTimerTick(object sender, EventArgs eventArgs)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed || PlayerControl.PlayerState == PlayerState.Stopped)
+            if (Player.State == PlayerState.Closed || Player.State == PlayerState.Stopped)
                 return;
 
-            var duration = Math.Max(1, PlayerControl.MediaDuration);
-            Taskbar.SetProgressValue((int) (PlayerControl.MediaPosition*1000/duration), 1000);
+            var duration = Math.Max(1, Media.Duration);
+            Taskbar.SetProgressValue((int) (Media.Position*1000/duration), 1000);
         }
 
         private static TaskbarManager Taskbar
@@ -234,29 +234,29 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static void StopClick(object sender, ThumbnailButtonClickedEventArgs e)
         {
-            switch (PlayerControl.PlayerState)
+            switch (Player.State)
             {
                 case PlayerState.Paused:
                 case PlayerState.Playing:
-                    PlayerControl.StopMedia();
+                    Media.Stop();
                     break;
             }
         }
 
         private static void PlayPauseClick(object sender, ThumbnailButtonClickedEventArgs e)
         {
-            switch (PlayerControl.PlayerState)
+            switch (Player.State)
             {
                 case PlayerState.Closed:
                     return;
                 case PlayerState.Stopped:
                 case PlayerState.Paused:
-                    PlayerControl.PlayMedia();
+                    Media.Play();
                     s_PlayPauseButton.Icon = s_PauseIcon;
                     s_PlayPauseButton.Tooltip = TEXT_PAUSE;
                     return;
                 case PlayerState.Playing:
-                    PlayerControl.PauseMedia();
+                    Media.Pause();
                     s_PlayPauseButton.Icon = s_PlayIcon;
                     s_PlayPauseButton.Tooltip = TEXT_PLAY;
                     return;
@@ -267,13 +267,13 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static void Jump(double time)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            var pos = PlayerControl.MediaPosition;
+            var pos = Media.Position;
             var nextPos = pos + (long)Math.Round(time * 1000 * 1000);
-            nextPos = Math.Max(0, Math.Min(PlayerControl.MediaDuration, nextPos));
-            PlayerControl.SeekMedia(nextPos);
+            nextPos = Math.Max(0, Math.Min(Media.Duration, nextPos));
+            Media.Seek(nextPos);
         }
     }
 }

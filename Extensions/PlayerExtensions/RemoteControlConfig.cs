@@ -16,6 +16,7 @@
 // 
 using System;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -75,7 +76,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             int.TryParse(portString, out port);
             if(port < 0 || port > 65535)
             {
-                MessageBox.Show(PlayerControl.VideoPanel, "Please enter a port between 1 and 65535", "Invalid Port Number", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(Gui.VideoBox, "Please enter a port between 1 and 65535", "Invalid Port Number", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txbPort.Text = Settings.ConnectionPort.ToString();
             }
         }
@@ -86,8 +87,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             validatePortNumber();
         }
         #endregion
-
-
     }
 
     public class RemoteControlConfigBase : ScriptConfigDialog<RemoteControlSettings>

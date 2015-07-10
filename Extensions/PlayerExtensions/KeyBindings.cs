@@ -40,12 +40,12 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            PlayerControl.KeyDown += PlayerKeyDown;
+            Player.KeyDown += PlayerKeyDown;
         }
 
         public override void Destroy()
         {
-            PlayerControl.KeyDown -= PlayerKeyDown;
+            Player.KeyDown -= PlayerKeyDown;
             base.Destroy();
         }
 
@@ -62,9 +62,9 @@ namespace Mpdn.Extensions.PlayerExtensions
                     e.OutputArgs = new KeyEventArgs(Keys.Alt | Keys.Enter);
                     break;
                 case Keys.Escape:
-                    if (PlayerControl.InFullScreenMode)
+                    if (Player.FullScreenMode.Active)
                     {
-                        PlayerControl.GoWindowed();
+                        Player.FullScreenMode.Active = false;
                     }
                     break;
                 case Keys.F11:
@@ -87,52 +87,45 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void SelectAudioTrack(bool next)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            var activeTrack = PlayerControl.ActiveAudioTrack;
+            var activeTrack = Media.AudioTrack;
             if (activeTrack == null)
                 return;
 
-            var tracks = PlayerControl.AudioTracks;
+            var tracks = Media.AudioTracks;
             var audioTrack = next
                 ? tracks.SkipWhile(track => !track.Equals(activeTrack)).Skip(1).FirstOrDefault()
                 : tracks.TakeWhile(track => !track.Equals(activeTrack)).LastOrDefault();
             if (audioTrack != null)
             {
-                PlayerControl.SelectAudioTrack(audioTrack);
+                Media.SelectAudioTrack(audioTrack);
             }
         }
 
         private void SelectSubtitleTrack(bool next)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            var activeTrack = PlayerControl.ActiveSubtitleTrack;
+            var activeTrack = Media.SubtitleTrack;
             if (activeTrack == null)
                 return;
 
-            var tracks = PlayerControl.SubtitleTracks;
+            var tracks = Media.SubtitleTracks;
             var subtitleTrack = next
                 ? tracks.SkipWhile(track => !track.Equals(activeTrack)).Skip(1).FirstOrDefault()
                 : tracks.TakeWhile(track => !track.Equals(activeTrack)).LastOrDefault();
             if (subtitleTrack != null)
             {
-                PlayerControl.SelectSubtitleTrack(subtitleTrack);
+                Media.SelectSubtitleTrack(subtitleTrack);
             }
         }
 
         private void ToggleMode()
         {
-            if (PlayerControl.InFullScreenMode)
-            {
-                PlayerControl.GoWindowed();
-            }
-            else
-            {
-                PlayerControl.GoFullScreen();
-            }
+            Player.FullScreenMode.Active = !Player.FullScreenMode.Active;
         }
     }
 }

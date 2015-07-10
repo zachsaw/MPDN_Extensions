@@ -20,6 +20,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.PlayerExtensions.GitHub;
 using Control = System.Windows.Forms.Control;
@@ -174,14 +175,14 @@ with your display refresh rate (+refclock).
             using (var form = new PlayrateTunerCalculatorDialog())
             {
                 const int oneSecond = 1000000;
-                var videoHz = PlayerControl.PlayerState == PlayerState.Closed
+                var videoHz = Player.State == PlayerState.Closed
                     ? 0
-                    : oneSecond/PlayerControl.PlayerStats.ActualSourceVideoIntervalUsec;
-                var displayHz = oneSecond/PlayerControl.PlayerStats.DisplayRefreshIntervalUsec;
-                var refclk = PlayerControl.PlayerState == PlayerState.Closed ||
-                             PlayerControl.PlayerState == PlayerState.Stopped
+                    : oneSecond/Stats.ActualSourceVideoIntervalUsec;
+                var displayHz = oneSecond/Stats.DisplayRefreshIntervalUsec;
+                var refclk = Player.State == PlayerState.Closed ||
+                             Player.State == PlayerState.Stopped
                     ? 0
-                    : PlayerControl.PlayerStats.RefClockDeviation;
+                    : Stats.RefClockDeviation;
                 if (refclk > 10) // no data
                 {
                     refclk = 0;
@@ -189,6 +190,11 @@ with your display refresh rate (+refclock).
                 form.SetInputs(displayHz, videoHz, refclk);
                 form.ShowDialog(this);
             }
+        }
+
+        private static IPlayerStats Stats
+        {
+            get { return Player.Stats.Details; }
         }
     }
 

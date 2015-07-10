@@ -83,12 +83,12 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            PlayerControl.PlayerStateChanged += PlayerStateChanged;
+            Player.StateChanged += PlayerStateChanged;
         }
 
         public override void Destroy()
         {
-            PlayerControl.PlayerStateChanged -= PlayerStateChanged;
+            Player.StateChanged -= PlayerStateChanged;
             base.Destroy();
         }
 
@@ -112,19 +112,19 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void SelectChapter(bool next)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            var chapters = PlayerControl.Chapters.OrderBy(chapter => chapter.Position);
-            var pos = PlayerControl.MediaPosition;
+            var chapters = Media.Chapters.OrderBy(chapter => chapter.Position);
+            var pos = Media.Position;
             var nextChapter = next
                 ? chapters.SkipWhile(chapter => chapter.Position < pos+1).FirstOrDefault()
                 : chapters.TakeWhile(chapter => chapter.Position < Math.Max(pos-1000000, 0)).LastOrDefault();
 
             if (nextChapter != null)
             {
-                PlayerControl.SeekMedia(nextChapter.Position);
-                PlayerControl.ShowOsdText(nextChapter.Name);
+                Media.Seek(nextChapter.Position);
+                Player.OsdText.Show(nextChapter.Name);
             }
         }
 
@@ -135,10 +135,10 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void PlayFile(bool next)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            var mediaPath = PlayerControl.MediaFilePath;
+            var mediaPath = Media.FilePath;
             var mediaDir = GetDirectoryName(mediaPath);
             var mediaFiles = GetMediaFiles(mediaDir);
             var nextFile = next
@@ -146,7 +146,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 : mediaFiles.TakeWhile(file => file != mediaPath).LastOrDefault();
             if (nextFile != null)
             {
-                PlayerControl.OpenMedia(nextFile);
+                Media.Open(nextFile);
             }
         }
 
@@ -171,10 +171,10 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             return delegate
             {
-                if (PlayerControl.PlayerState == PlayerState.Closed)
+                if (Player.State == PlayerState.Closed)
                     return;
 
-                PlayerControl.StepMedia();
+                Media.Step();
             };
         }
 
@@ -182,14 +182,14 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             return delegate
             {
-                if (PlayerControl.PlayerState == PlayerState.Closed)
+                if (Player.State == PlayerState.Closed)
                     return;
 
-                PlayerControl.PauseMedia(false);
-                var pos = PlayerControl.MediaPosition;
-                var nextPos = pos + (long) Math.Round(frames*PlayerControl.VideoInfo.AvgTimePerFrame);
-                nextPos = Math.Max(0, Math.Min(PlayerControl.MediaDuration, nextPos));
-                PlayerControl.SeekMedia(nextPos);
+                Media.Pause(false);
+                var pos = Media.Position;
+                var nextPos = pos + (long) Math.Round(frames*Media.VideoInfo.AvgTimePerFrame);
+                nextPos = Math.Max(0, Math.Min(Media.Duration, nextPos));
+                Media.Seek(nextPos);
             };
         }
 
@@ -197,13 +197,13 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             return delegate
             {
-                if (PlayerControl.PlayerState == PlayerState.Closed)
+                if (Player.State == PlayerState.Closed)
                     return;
 
-                var pos = PlayerControl.MediaPosition;
+                var pos = Media.Position;
                 var nextPos = pos + (long) Math.Round(time*1000*1000);
-                nextPos = Math.Max(0, Math.Min(PlayerControl.MediaDuration, nextPos));
-                PlayerControl.SeekMedia(nextPos);
+                nextPos = Math.Max(0, Math.Min(Media.Duration, nextPos));
+                Media.Seek(nextPos);
             };
         }
     }

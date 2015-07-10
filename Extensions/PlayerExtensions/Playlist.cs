@@ -80,13 +80,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             base.Initialize();
             form.Setup(this);
 
-            PlayerControl.PlayerStateChanged += OnPlayerStateChanged;
-            PlayerControl.PlaybackCompleted += OnPlaybackCompleted;
-            PlayerControl.FormClosed += OnMpdnFormClosed;
-            PlayerControl.DragEnter += OnDragEnter;
-            PlayerControl.DragDrop += OnDragDrop;
-            PlayerControl.CommandLineFileOpen += OnCommandLineFileOpen;
-            mpdnForm = PlayerControl.Form;
+            Player.StateChanged += OnPlayerStateChanged;
+            Player.Playback.Completed += OnPlaybackCompleted;
+            Player.Closed += OnMpdnFormClosed;
+            Player.DragEnter += OnDragEnter;
+            Player.DragDrop += OnDragDrop;
+            Player.CommandLineFileOpen += OnCommandLineFileOpen;
+            mpdnForm = Player.ActiveForm;
             mpdnForm.Move += OnMpdnFormMove;
             mpdnForm.KeyDown += OnMpdnFormKeyDown;
             mpdnForm.MainMenuStrip.MenuActivate += OnMpdnFormMainMenuActivated;
@@ -190,12 +190,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public override void Destroy()
         {
-            PlayerControl.PlayerStateChanged -= OnPlayerStateChanged;
-            PlayerControl.PlaybackCompleted -= OnPlaybackCompleted;
-            PlayerControl.FormClosed -= OnMpdnFormClosed;
-            PlayerControl.DragEnter -= OnDragEnter;
-            PlayerControl.DragDrop -= OnDragDrop;
-            PlayerControl.CommandLineFileOpen -= OnCommandLineFileOpen;
+            Player.StateChanged -= OnPlayerStateChanged;
+            Player.Playback.Completed -= OnPlaybackCompleted;
+            Player.Closed -= OnMpdnFormClosed;
+            Player.DragEnter -= OnDragEnter;
+            Player.DragDrop -= OnDragDrop;
+            Player.CommandLineFileOpen -= OnCommandLineFileOpen;
             mpdnForm.Move -= OnMpdnFormMove;
             mpdnForm.KeyDown -= OnMpdnFormKeyDown;
             mpdnForm.MainMenuStrip.MenuActivate -= OnMpdnFormMainMenuActivated;
@@ -238,7 +238,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (form.Visible)
                 form.Hide();
             else
-                form.Show(PlayerControl.VideoPanel);
+                form.Show(Gui.VideoBox);
         }
 
         private void NewPlaylist()
@@ -248,28 +248,28 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OpenPlaylist()
         {
-            form.Show(PlayerControl.VideoPanel);
+            form.Show(Gui.VideoBox);
             form.OpenPlaylist();
         }
 
         private void SetActiveFile()
         {
-            if (PlayerControl.PlayerState != PlayerState.Playing || form.Playlist.Count > 1) return;
-            if (string.IsNullOrEmpty(PlayerControl.MediaFilePath)) return;
+            if (Player.State != PlayerState.Playing || form.Playlist.Count > 1) return;
+            if (string.IsNullOrEmpty(Media.FilePath)) return;
 
-            if (form.CurrentItem != null && form.CurrentItem.FilePath != PlayerControl.MediaFilePath)
+            if (form.CurrentItem != null && form.CurrentItem.FilePath != Media.FilePath)
             {
-                form.ActiveFile(PlayerControl.MediaFilePath);
+                form.ActiveFile(Media.FilePath);
             }
             else if (form.CurrentItem == null)
             {
-                form.ActiveFile(PlayerControl.MediaFilePath);
+                form.ActiveFile(Media.FilePath);
             }
         }
 
         private void PlayNextInFolder()
         {
-            if (PlayerControl.MediaPosition != PlayerControl.MediaDuration) return;
+            if (Media.Position != Media.Duration) return;
             form.PlayNextFileInDirectory();
         }
 
@@ -412,8 +412,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void CloseMpdn()
         {
-            if (String.IsNullOrEmpty(PlayerControl.MediaFilePath)) return;
-            if (PlayerControl.MediaPosition < PlayerControl.MediaDuration) return;
+            if (String.IsNullOrEmpty(Media.FilePath)) return;
+            if (Media.Position < Media.Duration) return;
             var row = form.GetDgvPlaylist().CurrentRow;
             if (row == null) return;
             if (row.Index < form.Playlist.Count - 1) return;
@@ -655,7 +655,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Tab)
             {
-                if (!PlayerControl.InFullScreenMode && form.Visible && !form.ContainsFocus)
+                if (!Player.FullScreenMode.Active && form.Visible && !form.ContainsFocus)
                 {
                     form.Activate();
                     Cursor.Position = new Point(form.Location.X + 100, form.Location.Y + 100);
