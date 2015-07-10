@@ -156,6 +156,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                         var s = f.Split('|');
                         string filePath = s[0];
                         var skipChapters = new List<int>();
+
                         if (s[1].Length > 0)
                         {
                             if (s[1].Contains(","))
@@ -167,6 +168,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                                 skipChapters.Add(int.Parse(s[1]));
                             }
                         }
+
                         int endChapter = int.Parse(s[2]);
                         bool active = Boolean.Parse(s[3]);
                         string duration = s[4];
@@ -629,7 +631,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
                 else
                 {
-                    form.Left = mpdnForm.Right;
+                    form.Left = form.Left < mpdnForm.Left ? mpdnForm.Left - form.Width : mpdnForm.Right;
                     form.Top = mpdnForm.Top;
                 }
             }
