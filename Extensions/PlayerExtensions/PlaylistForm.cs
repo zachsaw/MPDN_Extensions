@@ -196,8 +196,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (RememberWindowPosition && RememberWindowSize)
             {
-                Location = WindowPosition;
-                Size = WindowSize;
+                if (firstShow)
+                {
+                    Location = WindowPosition;
+                    Size = WindowSize;
+                    firstShow = false;
+                }
             }
             else
             {

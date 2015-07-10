@@ -699,6 +699,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.SkipChapters.MinimumWidth = 50;
             this.SkipChapters.Name = "SkipChapters";
             this.SkipChapters.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.SkipChapters.Visible = false;
             this.SkipChapters.Width = 110;
             // 
             // EndChapter
@@ -712,6 +713,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.EndChapter.MinimumWidth = 50;
             this.EndChapter.Name = "EndChapter";
             this.EndChapter.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.EndChapter.Visible = false;
             // 
             // Duration
             // 
@@ -722,7 +724,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.Duration.Name = "Duration";
             this.Duration.ReadOnly = true;
             this.Duration.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.Duration.Visible = false;
             // 
             // dgv_PlaylistContextMenu
             // 
@@ -1119,6 +1120,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private ToolStripMenuItem removeUnselectedItemsToolStripMenuItem;
         private ToolStripMenuItem removeNonExistentItemsToolStripMenuItem;
         private ToolStripMenuItem durationToolStripMenuItem;
+        private ToolStripMenuItem addPlaylistToolStripMenuItem;
         private DataGridViewImageColumn Playing;
         private DataGridViewTextBoxColumn Number;
         private DataGridViewTextBoxColumn FullPath;
@@ -1127,6 +1129,5 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private DataGridViewTextBoxColumn SkipChapters;
         private DataGridViewTextBoxColumn EndChapter;
         private DataGridViewTextBoxColumn Duration;
-        private ToolStripMenuItem addPlaylistToolStripMenuItem;
     }
 }
