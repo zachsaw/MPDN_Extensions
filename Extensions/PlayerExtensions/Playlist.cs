@@ -185,7 +185,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
             }
 
-            //FixFormLocationBounds();
+            FixFormLocationBounds();
         }
 
         public override void Destroy()
@@ -382,11 +382,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             var screenBounds = screen.WorkingArea;
             if (form.Left < 0)
                 form.Left = 0;
-            if (form.Left + form.Width > screenBounds.Width)
+            if (form.Left > screenBounds.Width)
                 form.Left = screenBounds.Width - form.Width;
             if (form.Top < 0)
                 form.Top = 0;
-            if (form.Top + form.Height > screenBounds.Height)
+            if (form.Top > screenBounds.Height)
                 form.Top = screenBounds.Height - form.Height;
         }
 
