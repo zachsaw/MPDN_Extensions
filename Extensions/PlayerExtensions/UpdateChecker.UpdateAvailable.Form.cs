@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 
@@ -105,9 +106,21 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 return SplitMenuChoices.First(file => file.Name == Settings.LastMpdnReleaseChosen);
             }
 
-            //Coudln't find how to get the version of MPDN Used
-            //use the OS version then
-            var arch = Environment.Is64BitOperatingSystem ? "x64" : "x86";
+            var appArch = Assembly.GetEntryAssembly().GetName().ProcessorArchitecture;
+            string arch;
+            switch (appArch)
+            {
+                case ProcessorArchitecture.MSIL:
+                    arch = "AnyCPU";
+                    break;
+                case ProcessorArchitecture.Amd64:
+                case ProcessorArchitecture.IA64:
+                    arch = "x64";
+                    break;
+                default:
+                    arch = "x86";
+                    break;
+            }
 
             return SplitMenuChoices.First(file => file.Name.Contains(arch)) ?? SplitMenuChoices[0];
         }
