@@ -681,13 +681,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             Media.Open(nextFile);
 
-            if (Playlist.Count > 1) ActiveFile(nextFile);
-            else
-            {
-                CurrentItem = null;
-                currentPlayIndex = -1;
-                dgv_PlayList.Invalidate();
-            }
+            if (Playlist.Count == 1) ActiveFile(nextFile);
+            else OpenFiles(new[]{nextFile});
+
+            Task.Factory.StartNew(GetCurrentMediaDuration);
         }
 
         private void OpenMedia(bool queue = false)
