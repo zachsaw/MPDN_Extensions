@@ -1026,7 +1026,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.Controls.Add(this.dgv_PlayList);
             this.Controls.Add(this.statusStrip1);
             this.KeyPreview = true;
-            this.MinimumSize = new System.Drawing.Size(369, 258);
+            this.MinimumSize = new System.Drawing.Size(369, 119);
             this.Name = "PlaylistForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Playlist";

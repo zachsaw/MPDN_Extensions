@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 
@@ -160,6 +161,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     form.Playlist = playList;
                     form.PopulatePlaylist();
                     form.RefreshPlaylist();
+                    Task.Factory.StartNew(form.GetMediaDuration);
 
                     if (Settings.BeginPlaybackOnStartup) form.PlayActive();
                 }

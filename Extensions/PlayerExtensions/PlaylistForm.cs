@@ -1865,7 +1865,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #region Threaded Methods
 
-        private void GetCurrentMediaDuration()
+        public void GetCurrentMediaDuration()
         {
             try
             {
@@ -1884,13 +1884,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
-        private void GetMediaDuration()
+        public void GetMediaDuration()
         {
             try
             {
                 for (var i = 0; i < Playlist.Count; i++)
                 {
                     var item = Playlist[i];
+                    if (!String.IsNullOrEmpty(item.Duration)) continue;
                     var media = new MediaFile(item.FilePath);
                     var time = TimeSpan.FromMilliseconds(media.duration);
                     item.Duration = time.ToString(@"hh\:mm\:ss");
