@@ -682,8 +682,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (Playlist.Count == 1) ActiveFile(nextFile);
             else OpenFiles(new[] {nextFile});
-
-            Task.Factory.StartNew(GetCurrentMediaDuration);
         }
 
         private void OpenMedia(bool queue = false)
@@ -771,6 +769,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             PopulatePlaylist();
 
             Text = Player.State + " ─ " + CurrentItem.FilePath;
+
+            Task.Factory.StartNew(GetCurrentMediaDuration);
         }
 
         private void AddFilesToPlaylist(string[] fileNames)
