@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 
@@ -26,6 +27,37 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 {
     public class Playlist : PlayerExtension<PlaylistSettings, PlaylistConfigDialog>
     {
+        public override ExtensionUiDescriptor Descriptor
+        {
+            get
+            {
+                return new ExtensionUiDescriptor
+                {
+                    Guid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B"),
+                    Name = "Playlist",
+                    Description = "Adds playlist support with advanced capabilities",
+                    Copyright = "Enhanced by Garteal"
+                };
+            }
+        }
+
+        public override IList<Verb> Verbs
+        {
+            get
+            {
+                return new[]
+                {
+                    new Verb(Category.File, string.Empty, "Open Playlist", "Ctrl+Alt+O", string.Empty, OpenPlaylist),
+                    new Verb(Category.View, string.Empty, "Playlist", "Ctrl+Alt+P", string.Empty, ViewPlaylist, menuItem),
+                    new Verb(Category.Play, Subcategory, "Next", "Ctrl+Alt+N", string.Empty, () => form.PlayNext()),
+                    new Verb(Category.Play, Subcategory, "Previous", "Ctrl+Alt+B", string.Empty,
+                        () => form.PlayPrevious())
+                };
+            }
+        }
+
+        #region Fields
+
         private const string Subcategory = "Playlist";
 
         private readonly PlaylistForm form = new PlaylistForm();
@@ -41,24 +73,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private bool moving;
         private bool resizing;
 
-        public PlaylistForm GetPlaylistForm
-        {
-            get { return form; }
-        }
+        #endregion
 
-        public override ExtensionUiDescriptor Descriptor
-        {
-            get
-            {
-                return new ExtensionUiDescriptor
-                {
-                    Guid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B"),
-                    Name = "Playlist",
-                    Description = "Adds playlist support with advanced capabilities",
-                    Copyright = "Enhanced by Garteal"
-                };
-            }
-        }
+        #region Playlist (re)init and dispose
 
         public override void Initialize()
         {
@@ -107,38 +124,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 SnapPlayer();
             }
 
-            if (Settings.StaySnapped)
-            {
-                form.KeepSnapped = Settings.StaySnapped;
-            }
+            if (Settings.StaySnapped) form.KeepSnapped = Settings.StaySnapped;
 
-            if (Settings.RememberColumns)
-            {
-                if (Settings.Columns != null && Settings.Columns.Count > 0)
-                {
-                    form.Columns = Settings.Columns;
-                }
-            }
+            if (Settings.RememberColumns) if (Settings.Columns != null && Settings.Columns.Count > 0) form.Columns = Settings.Columns;
 
-            if (Settings.ShowPlaylistOnStartup)
-            {
-                ViewPlaylist();
-            }
+            if (Settings.ShowPlaylistOnStartup) ViewPlaylist();
 
-            if (Settings.BeginPlaybackOnStartup)
-            {
-                form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
-            }
-
-            if (Settings.BeginPlaybackWhenFileIsAdded)
-            {
-                form.BeginPlaybackWhenFileIsAdded = Settings.BeginPlaybackWhenFileIsAdded;
-            }
-
-            if (Settings.BeginPlaybackWhenPlaylistFileIsOpened)
-            {
-                form.BeginPlaybackWhenPlaylistFileIsOpened = Settings.BeginPlaybackWhenPlaylistFileIsOpened;
-            }
+            if (Settings.BeginPlaybackOnStartup) form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
 
             if (Settings.RememberPlaylist)
             {
@@ -146,59 +138,35 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     var playList = new List<PlaylistItem>();
 
-                    foreach (var f in Settings.RememberedFiles)
+                    foreach (string f in Settings.RememberedFiles)
                     {
-                        string[] s = f.Split('|');
+                        var s = f.Split('|');
                         string filePath = s[0];
                         var skipChapters = new List<int>();
+
                         if (s[1].Length > 0)
                         {
-                            if (s[1].Contains(","))
-                            {
-                                skipChapters = s[1].Split(',').Select(int.Parse).ToList();
-                            }
-                            else
-                            {
-                                skipChapters.Add(int.Parse(s[1]));
-                            }
+                            if (s[1].Contains(",")) skipChapters = s[1].Split(',').Select(int.Parse).ToList();
+                            else skipChapters.Add(int.Parse(s[1]));
                         }
+
                         int endChapter = int.Parse(s[2]);
                         bool active = Boolean.Parse(s[3]);
+                        string duration = s[4];
 
-                        playList.Add(new PlaylistItem(filePath, skipChapters, endChapter, active));
+                        playList.Add(new PlaylistItem(filePath, skipChapters, endChapter, active, duration));
                     }
-
-                    int activeItem = (playList.FindIndex(i => i.Active) > -1) ? playList.FindIndex(i => i.Active) : 0;
 
                     form.Playlist = playList;
                     form.PopulatePlaylist();
                     form.RefreshPlaylist();
-                    form.FocusPlaylistItem(activeItem);
+                    Task.Factory.StartNew(form.GetMediaDuration);
 
-                    if (Settings.BeginPlaybackOnStartup)
-                    {
-                        form.PlayActive();
-                    }
+                    if (Settings.BeginPlaybackOnStartup) form.PlayActive();
                 }
             }
 
             FixFormLocationBounds();
-        }
-
-        public void Reinitialize()
-        {
-            if (Settings.LockWindowSize) SetFormToFixed();
-            else SetFormToSizable();
-            if (Settings.SnapWithPlayer) SnapPlayer();
-
-            form.RememberWindowPosition = Settings.RememberWindowPosition;
-            form.RememberWindowSize = Settings.RememberWindowSize;
-            form.SnapWithPlayer = Settings.SnapWithPlayer;
-            form.KeepSnapped = Settings.StaySnapped;
-            form.LockWindowSize = Settings.LockWindowSize;
-            form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
-            form.BeginPlaybackWhenPlaylistFileIsOpened = Settings.BeginPlaybackWhenPlaylistFileIsOpened;
-            form.BeginPlaybackWhenFileIsAdded = Settings.BeginPlaybackWhenFileIsAdded;
         }
 
         public override void Destroy()
@@ -223,90 +191,88 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             form.Dispose();
         }
 
-        private void OnMpdnFormMainMenuActivated(object sender, EventArgs e)
+        public void Reinitialize()
         {
-            foreach (ToolStripMenuItem item in mpdnForm.MainMenuStrip.Items)
-            {
-                if (item.DropDownItems[0].Name == "mmenuQuickOpen")
-                {
-                    item.DropDownItems[0].Click -= OnMpdnFormOpenClick;
-                    item.DropDownItems[0].Click += OnMpdnFormOpenClick;
-                }
+            if (Settings.LockWindowSize) SetFormToFixed();
+            else SetFormToSizable();
+            if (Settings.SnapWithPlayer) SnapPlayer();
 
-                if (item.DropDownItems[1].Name == "openToolStripMenuItem")
-                {
-                    item.DropDownItems[1].Click -= OnMpdnFormOpenClick;
-                    item.DropDownItems[1].Click += OnMpdnFormOpenClick;
-                }
-
-                if (item.DropDownItems[2].Name == "mmenuClose")
-                {
-                    item.DropDownItems[2].Click -= OnFormCloseMedia;
-                    item.DropDownItems[2].Click += OnFormCloseMedia;
-                }
-            }
+            form.RememberWindowPosition = Settings.RememberWindowPosition;
+            form.RememberWindowSize = Settings.RememberWindowSize;
+            form.SnapWithPlayer = Settings.SnapWithPlayer;
+            form.KeepSnapped = Settings.StaySnapped;
+            form.LockWindowSize = Settings.LockWindowSize;
+            form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
         }
 
-        private void OnMpdnFormKeyDown(object sender, KeyEventArgs e)
+        public PlaylistForm GetPlaylistForm
         {
-            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.C)
-            {
-                CloseMedia();
-            }
-
-            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Tab)
-            {
-                if (!Player.FullScreenMode.Active && form.Visible && !form.ContainsFocus)
-                {
-                    form.Activate();
-                    form.FocusPlaylist();
-                    Cursor.Position = new Point(form.Location.X + 100, form.Location.Y + 100);
-                    e.SuppressKeyPress = true;
-                }
-            }
+            get { return form; }
         }
 
-        private void OnFormCloseMedia(object sender, EventArgs e)
+        #endregion
+
+        #region The Methods
+
+        public void ViewPlaylist()
         {
-            CloseMedia();
+            if (form.Visible) form.Hide();
+            else form.Show(Gui.VideoBox);
         }
 
-        private void OnMpdnFormOpenClick(object sender, EventArgs e)
+        private void NewPlaylist()
         {
-            NewPlaylist();
+            form.NewPlaylist();
         }
 
-        private void OnPlayerStateChanged(object sender, EventArgs e)
+        private void OpenPlaylist()
         {
-            SetActiveFile();
+            form.Show(Gui.VideoBox);
+            form.OpenPlaylist();
         }
 
-        private void OnPlaybackCompleted(object sender, EventArgs e)
+        private void SetActiveFile()
         {
-            if (Settings.AddToPlaylistOnFileOpen && form.Playlist.Count > 1)
-            {
-                AddFileToPlaylist();
-            }
-            if (Settings.AfterPlaybackOpt == AfterPlaybackSettingsOpt.PlayNextFileInFolder)
-            {
-                PlayNextInFolder();
-            }
-            if (Settings.AfterPlaybackOpt == AfterPlaybackSettingsOpt.ClosePlayer)
-            {
-                CloseMpdn();
-            }
+            if (!File.Exists(Media.FilePath)) return;
+            if (Player.State != PlayerState.Playing || form.Playlist.Count > 1) return;
+            if (string.IsNullOrEmpty(Media.FilePath)) return;
+
+            if (form.CurrentItem != null && form.CurrentItem.FilePath != Media.FilePath) form.ActiveFile(Media.FilePath);
+            else if (form.CurrentItem == null) form.ActiveFile(Media.FilePath);
         }
 
-        private void OnFormVisibilityChanged(object sender, EventArgs e)
+        private void PlayNextInFolder()
         {
-            mpdnForm.BringToFront();
-
-            menuItem.Checked = form.Visible;
+            if (Media.Position != Media.Duration) return;
+            form.PlayNextFileInDirectory();
         }
 
-        private void OnMpdnFormClosed(object sender, EventArgs e)
+        public IEnumerable<string> GetAllMediaFiles(string mediaDir)
         {
-            RememberSettings();
+            var filter = form.openFileDialog.Filter.Split('|');
+            var extensions = filter[1].Replace(";", string.Empty).Replace(" ", string.Empty).Split('*');
+
+            var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.AllDirectories)
+                .OrderBy(Path.GetDirectoryName, new NaturalSortComparer())
+                .ThenBy(Path.GetFileName, new NaturalSortComparer())
+                .Where(Path.HasExtension)
+                .Where(f => extensions.Contains(Path.GetExtension(f.ToLower())));
+
+            return files;
+        }
+
+        public IEnumerable<string> GetMediaFiles(string mediaDir)
+        {
+            var filter = form.openFileDialog.Filter.Split('|');
+            var extensions = filter[1].Replace(";", string.Empty).Replace(" ", string.Empty).Split('*');
+
+            var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.TopDirectoryOnly)
+                .OrderBy(Path.GetDirectoryName, new NaturalSortComparer())
+                .ThenBy(Path.GetFileName, new NaturalSortComparer())
+                .Where(Path.HasExtension)
+                .Where(f => extensions.Contains(Path.GetExtension(f.ToLower())));
+
+            return files;
         }
 
         private void RememberSettings()
@@ -316,113 +282,26 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             Settings.Columns.Clear();
 
-            for (int i = 0; i < form.GetDgvPlaylist().Columns.Count; i++)
+            for (var i = 0; i < form.GetDgvPlaylist().Columns.Count; i++)
             {
                 var c = form.GetDgvPlaylist().Columns[i];
                 Settings.Columns.Add(c.Name + "|"
-                    + c.Visible + "|" + c.Width);
+                                     + c.Visible + "|" + c.Width);
             }
 
             if (Settings.RememberPlaylist)
             {
                 Settings.RememberedFiles.Clear();
+                if (form.Playlist.Count <= 0) return;
 
-                if (form.Playlist.Count > 0)
+                foreach (var i in form.Playlist)
                 {
-                    foreach (PlaylistItem i in form.Playlist)
-                    {
-                        string skipChapters = "";
+                    string skipChapters = string.Empty;
 
-                        if (i.SkipChapters != null && i.SkipChapters.Count > 0)
-                        {
-                            skipChapters = string.Join(",", i.SkipChapters);
-                        }
+                    if (i.SkipChapters != null && i.SkipChapters.Count > 0) skipChapters = string.Join(",", i.SkipChapters);
 
-                        Settings.RememberedFiles.Add(i.FilePath + "|" + skipChapters + "|" + i.EndChapter + "|" +
-                                                     i.Active);
-                    }
-                }
-            }
-        }
-
-        private void OnFormMove(object sender, EventArgs e)
-        {
-            if (!IsOnScreen()) form.GetDgvPlaylist().Invalidate();
-
-            if (moving)
-                return;
-
-            if (mpdnForm.WindowState != FormWindowState.Minimized || form.WindowState != FormWindowState.Minimized)
-            {
-                mpdnStartLocation = mpdnForm.Location;
-                formStartLocation = form.Location;
-            }
-        }
-
-        private void OnMpdnFormMove(object sender, EventArgs e)
-        {
-            if (form.WindowState != FormWindowState.Minimized)
-            {
-                if (CursorIsOnResizeAnchor()) return;
-                moving = true;
-                if (Settings.SnapWithPlayer)
-                {
-                    form.Left = formStartLocation.X + mpdnForm.Location.X - mpdnStartLocation.X;
-                    form.Top = formStartLocation.Y + mpdnForm.Location.Y - mpdnStartLocation.Y;
-                }
-                moving = false;
-            }
-        }
-
-        void OnMpdnFormSizeChanged(object sender, EventArgs e)
-        {
-            Screen scn = Screen.FromPoint(mpdnForm.Location);
-
-            if (Settings.SnapWithPlayer) SnapPlayer();
-
-            if (mpdnForm.WindowState == FormWindowState.Minimized)
-            {
-                form.Bounds = form.RestoreBounds;
-            }
-
-            if (mpdnForm.Left == 0 && mpdnForm.Height == scn.WorkingArea.Height)
-            {
-                int borderWidth = SystemInformation.SizingBorderWidth;
-
-                docked = true;
-                form.Width = scn.WorkingArea.Width / 2;
-                form.Height = scn.WorkingArea.Height;
-                if (Settings.LockWindowSize) form.Left = scn.WorkingArea.Right - form.Width + borderWidth;
-                else form.Left = scn.WorkingArea.Right - form.Width;
-                form.Top = scn.WorkingArea.Top;
-            }
-            else if (mpdnForm.Left == scn.WorkingArea.Width - mpdnForm.Width && mpdnForm.Height == scn.WorkingArea.Height)
-            {
-                int borderWidth = SystemInformation.SizingBorderWidth;
-
-                docked = true;
-                form.Width = scn.WorkingArea.Width / 2;
-                form.Height = scn.WorkingArea.Height;
-                if (Settings.LockWindowSize) form.Left = scn.WorkingArea.Left - borderWidth;
-                else form.Left = scn.WorkingArea.Left;
-                form.Top = scn.WorkingArea.Top;
-            }
-            else
-            {
-                if (!docked) return;
-                docked = false;
-                form.Size = formStartSize;
-
-                if (Settings.LockWindowSize)
-                {
-                    int borderWidth = SystemInformation.SizingBorderWidth;
-                    form.Left = mpdnForm.Right + borderWidth;
-                    form.Top = mpdnForm.Top + borderWidth;
-                }
-                else
-                {
-                    form.Left = mpdnForm.Right;
-                    form.Top = mpdnForm.Top;
+                    Settings.RememberedFiles.Add(i.FilePath + "|" + skipChapters + "|" + i.EndChapter + "|" +
+                                                 i.Active + "|" + i.Duration);
                 }
             }
         }
@@ -464,65 +343,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
-        private void OnMpdnFormResizeBegin(object sender, EventArgs e)
-        {
-            if (CursorIsOnResizeAnchor()) resizing = true;
-            if (!docked) formStartSize = form.Size;
-        }
+        #endregion
 
-        private void OnMpdnFormResizeEnd(object sender, EventArgs e)
-        {
-            resizing = false;
-        }
-        
-        private bool CursorIsOnResizeAnchor()
-        {
-            if (Cursor.Current == Cursors.SizeNWSE || Cursor.Current == Cursors.SizeNESW) return true;
-            return false;
-        }
+        #region Helper Methods
 
-        void OnFormSizeChanged(object sender, EventArgs e)
+        private void FixFormLocationBounds()
         {
-            if (form.WindowState == FormWindowState.Minimized)
-            {
-                form.Bounds = form.RestoreBounds;
-            }
-        }
-
-        public override IList<Verb> Verbs
-        {
-            get
-            {
-                return new[]
-                {
-                    new Verb(Category.File, string.Empty, "Open Playlist", "Ctrl+Alt+O", string.Empty, OpenPlaylist),
-                    new Verb(Category.View, string.Empty, "Playlist", "Ctrl+Alt+P", string.Empty, ViewPlaylist, menuItem),
-                    new Verb(Category.Play, Subcategory, "Next", "Ctrl+Alt+N", string.Empty, () => form.PlayNext()),
-                    new Verb(Category.Play, Subcategory, "Previous", "Ctrl+Alt+B", string.Empty, () => form.PlayPrevious())
-                };
-            }
-        }
-
-        public static bool IsPlaylistFile(string filename)
-        {
-            var extension = Path.GetExtension(filename);
-            return extension != null && extension.ToLower() == ".mpl";
-        }
-
-        private void CloseMedia()
-        {
-            form.CloseMedia();
-            form.SetPlayStyling();
-        }
-
-        private void CloseMpdn()
-        {
-            if (String.IsNullOrEmpty(Media.FilePath)) return;
-            if (Media.Position < Media.Duration) return;
-            var row = form.GetDgvPlaylist().CurrentRow;
-            if (row == null) return;
-            if (row.Index < form.Playlist.Count - 1) return;
-            mpdnForm.Close();
+            var screen = Screen.FromControl(mpdnForm);
+            var screenBounds = screen.WorkingArea;
+            if (form.Left < 0) form.Left = 0;
+            if (form.Left > screenBounds.Width) form.Left = screenBounds.Width - form.Width;
+            if (form.Top < 0) form.Top = 0;
+            if (form.Top > screenBounds.Height) form.Top = screenBounds.Height - form.Height;
         }
 
         private void SetFormToSizable()
@@ -539,112 +371,92 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             s.SizingGrip = false;
         }
 
-        private void FixFormLocationBounds()
+        private void CloseMedia()
         {
-            var screen = Screen.FromControl(mpdnForm);
-            var screenBounds = screen.WorkingArea;
-            if (form.Left < 0)
-                form.Left = 0;
-            if (form.Left + form.Width > screenBounds.Width)
-                form.Left = screenBounds.Width - form.Width;
-            if (form.Top < 0)
-                form.Top = 0;
-            if (form.Top + form.Height > screenBounds.Height)
-                form.Top = screenBounds.Height - form.Height;
+            form.CloseMedia();
+            form.SetPlayStyling();
+        }
+
+        private void CloseMpdn()
+        {
+            if (String.IsNullOrEmpty(Media.FilePath)) return;
+            if (Media.Position < Media.Duration) return;
+
+            var row = form.GetDgvPlaylist().CurrentRow;
+
+            if (row == null) return;
+            if (row.Index < form.Playlist.Count - 1) return;
+
+            mpdnForm.Close();
+        }
+
+        public static bool IsPlaylistFile(string filename)
+        {
+            string extension = Path.GetExtension(filename);
+            return extension != null && extension.ToLower() == ".mpl";
         }
 
         private bool IsOnScreen()
         {
             return (Screen.AllScreens.Select(
-                    screen => new {screen, formRectangle = new Rectangle(form.Left, form.Top, form.Width, form.Height)})
-                    .Where(t => t.screen.WorkingArea.Contains(t.formRectangle))
-                    .Select(t => t.screen)).Any();
+                screen => new {screen, formRectangle = new Rectangle(form.Left, form.Top, form.Width, form.Height)})
+                .Where(t => t.screen.WorkingArea.Contains(t.formRectangle))
+                .Select(t => t.screen)).Any();
         }
 
-        private void SetActiveFile()
+        private static bool CursorIsOnResizeAnchor()
         {
-            if (Player.State != PlayerState.Playing || form.Playlist.Count > 1) return;
-            if (string.IsNullOrEmpty(Media.FilePath)) return;
+            return Cursor.Current == Cursors.SizeNWSE || Cursor.Current == Cursors.SizeNESW;
+        }
 
-            if (form.CurrentItem != null && form.CurrentItem.FilePath != Media.FilePath)
+        #endregion
+
+        #region PlayerControl Events
+
+        private void OnFormCloseMedia(object sender, EventArgs e)
+        {
+            CloseMedia();
+        }
+
+        private void OnPlayerStateChanged(object sender, EventArgs e)
+        {
+            SetActiveFile();
+        }
+
+        private void OnPlaybackCompleted(object sender, EventArgs e)
+        {
+            switch (Settings.AfterPlaybackOpt)
             {
-                form.ActiveFile(Media.FilePath);
+                case AfterPlaybackSettingsOpt.PlayNextFileInFolder:
+                    PlayNextInFolder();
+                    break;
+                case AfterPlaybackSettingsOpt.ClosePlayer:
+                    CloseMpdn();
+                    break;
             }
-            else if (form.CurrentItem == null)
-            {
-                form.ActiveFile(Media.FilePath);
-            }
         }
 
-        private void PlayNextInFolder()
+        private void OnFormVisibilityChanged(object sender, EventArgs e)
         {
-            if (Media.Position != Media.Duration) return;
-            form.PlayNextFileInDirectory();
+            mpdnForm.BringToFront();
+            menuItem.Checked = form.Visible;
         }
 
-        private void AddFileToPlaylist()
+        private void OnFormMove(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(Media.FilePath)) return;
-            var foundFile = form.Playlist.Find(i => i.FilePath == Media.FilePath);
-            if (foundFile != null) return;
-            form.AddActiveFile(Media.FilePath);
+            if (!IsOnScreen()) form.GetDgvPlaylist().Invalidate();
+
+            if (moving) return;
+
+            if (mpdnForm.WindowState == FormWindowState.Minimized && form.WindowState == FormWindowState.Minimized) return;
+
+            mpdnStartLocation = mpdnForm.Location;
+            formStartLocation = form.Location;
         }
 
-        private void NewPlaylist()
+        private void OnFormSizeChanged(object sender, EventArgs e)
         {
-            form.NewPlaylist();
-        }
-
-        private void OpenPlaylist()
-        {
-            form.Show(Gui.VideoBox);
-            form.OpenPlaylist();
-        }
-
-        public void ViewPlaylist()
-        {
-            if (form.Visible)
-                form.Hide();
-            else
-                form.Show(Gui.VideoBox);
-        }
-
-        public string GetDirectoryName(string path)
-        {
-            if (path == null)
-            {
-                throw new ArgumentNullException("path");
-            }
-
-            return Path.GetDirectoryName(path) ?? Path.GetPathRoot(path);
-        }
-
-        public IEnumerable<string> GetAllMediaFiles(string mediaDir)
-        {
-            string[] filter = form.openFileDialog.Filter.Split('|');
-            string[] extensions = filter[1].Replace(";", "").Replace(" ", "").Split('*');
-
-            var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.AllDirectories)
-            .OrderBy(Path.GetDirectoryName, new NaturalSortComparer())
-            .ThenBy(Path.GetFileName, new NaturalSortComparer())
-            .Where(Path.HasExtension)
-            .Where(f => extensions.Contains(Path.GetExtension(f.ToLower())));
-
-            return files;
-        }
-
-        public IEnumerable<string> GetMediaFiles(string mediaDir)
-        {
-            string[] filter = form.openFileDialog.Filter.Split('|');
-            string[] extensions = filter[1].Replace(";", "").Replace(" ", "").Split('*');
-
-            var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.TopDirectoryOnly)
-            .OrderBy(Path.GetDirectoryName, new NaturalSortComparer())
-            .ThenBy(Path.GetFileName, new NaturalSortComparer())
-            .Where(Path.HasExtension)
-            .Where(f => extensions.Contains(Path.GetExtension(f.ToLower())));
-
-            return files;
+            if (form.WindowState == FormWindowState.Minimized) form.Bounds = form.RestoreBounds;
         }
 
         private void OnDragEnter(object sender, PlayerControlEventArgs<DragEventArgs> e)
@@ -655,16 +467,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnDragDrop(object sender, PlayerControlEventArgs<DragEventArgs> e)
         {
-            string[] filter = form.openFileDialog.Filter.Split('|');
-            string[] extensions = filter[1].Replace(";", "").Replace(" ", "").Split('*');
+            var filter = form.openFileDialog.Filter.Split('|');
+            var extensions = filter[1].Replace(";", string.Empty).Replace(" ", string.Empty).Split('*');
 
             var files = (string[])e.InputArgs.Data.GetData(DataFormats.FileDrop);
-            if (files == null)
-                return;
+            if (files == null) return;
 
             if (files.Length == 1)
             {
-                var filename = files[0];
+                string filename = files[0];
 
                 if (Directory.Exists(filename))
                 {
@@ -710,7 +521,139 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             e.Handled = true;
             form.OpenPlaylist(e.Filename);
         }
+
+        #endregion
+
+        #region MPDN Form Events
+
+        private void OnMpdnFormClosed(object sender, EventArgs e)
+        {
+            RememberSettings();
+        }
+
+        private void OnMpdnFormMove(object sender, EventArgs e)
+        {
+            if (form.WindowState == FormWindowState.Minimized) return;
+            if (CursorIsOnResizeAnchor()) return;
+
+            moving = true;
+
+            if (Settings.SnapWithPlayer)
+            {
+                form.Left = formStartLocation.X + mpdnForm.Location.X - mpdnStartLocation.X;
+                form.Top = formStartLocation.Y + mpdnForm.Location.Y - mpdnStartLocation.Y;
+            }
+
+            moving = false;
+        }
+
+        private void OnMpdnFormSizeChanged(object sender, EventArgs e)
+        {
+            var scn = Screen.FromPoint(mpdnForm.Location);
+
+            if (Settings.SnapWithPlayer) SnapPlayer();
+
+            if (mpdnForm.WindowState == FormWindowState.Minimized) form.Bounds = form.RestoreBounds;
+
+            if (mpdnForm.Left == 0 && mpdnForm.Height == scn.WorkingArea.Height)
+            {
+                int borderWidth = SystemInformation.SizingBorderWidth;
+
+                docked = true;
+                form.Width = scn.WorkingArea.Width / 2;
+                form.Height = scn.WorkingArea.Height;
+                if (Settings.LockWindowSize) form.Left = scn.WorkingArea.Right - form.Width + borderWidth;
+                else form.Left = scn.WorkingArea.Right - form.Width;
+                form.Top = scn.WorkingArea.Top;
+            }
+            else if (mpdnForm.Left == scn.WorkingArea.Width - mpdnForm.Width && mpdnForm.Height == scn.WorkingArea.Height)
+            {
+                int borderWidth = SystemInformation.SizingBorderWidth;
+
+                docked = true;
+                form.Width = scn.WorkingArea.Width / 2;
+                form.Height = scn.WorkingArea.Height;
+                if (Settings.LockWindowSize) form.Left = scn.WorkingArea.Left - borderWidth;
+                else form.Left = scn.WorkingArea.Left;
+                form.Top = scn.WorkingArea.Top;
+            }
+            else
+            {
+                if (!docked) return;
+                docked = false;
+                form.Size = formStartSize;
+
+                if (Settings.LockWindowSize)
+                {
+                    int borderWidth = SystemInformation.SizingBorderWidth;
+                    form.Left = mpdnForm.Right + borderWidth;
+                    form.Top = mpdnForm.Top + borderWidth;
+                }
+                else
+                {
+                    form.Left = form.Left < mpdnForm.Left ? mpdnForm.Left - form.Width : mpdnForm.Right;
+                    form.Top = mpdnForm.Top;
+                }
+            }
+        }
+
+        private void OnMpdnFormResizeBegin(object sender, EventArgs e)
+        {
+            if (CursorIsOnResizeAnchor()) resizing = true;
+            if (!docked) formStartSize = form.Size;
+        }
+
+        private void OnMpdnFormResizeEnd(object sender, EventArgs e)
+        {
+            resizing = false;
+        }
+
+        private void OnMpdnFormKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.C) CloseMedia();
+
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Tab)
+            {
+                if (Player.FullScreenMode.Active || !form.Visible || form.ContainsFocus) return;
+                form.Activate();
+                Cursor.Position = new Point(form.Location.X + 100, form.Location.Y + 100);
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private void OnMpdnFormOpenClick(object sender, EventArgs e)
+        {
+            NewPlaylist();
+        }
+
+        private void OnMpdnFormMainMenuActivated(object sender, EventArgs e)
+        {
+            foreach (ToolStripMenuItem item in mpdnForm.MainMenuStrip.Items)
+            {
+                if (item.DropDownItems[0].Name == "mmenuQuickOpen")
+                {
+                    item.DropDownItems[0].Click -= OnMpdnFormOpenClick;
+                    item.DropDownItems[0].Click += OnMpdnFormOpenClick;
+                }
+
+                if (item.DropDownItems[1].Name == "openToolStripMenuItem")
+                {
+                    item.DropDownItems[1].Click -= OnMpdnFormOpenClick;
+                    item.DropDownItems[1].Click += OnMpdnFormOpenClick;
+                }
+
+                if (item.DropDownItems[2].Name == "mmenuClose")
+                {
+                    item.DropDownItems[2].Click -= OnFormCloseMedia;
+                    item.DropDownItems[2].Click += OnFormCloseMedia;
+                }
+            }
+        }
+
+        #endregion
     }
+
+    #region AfterPlaybackSettingsOpt
 
     public enum AfterPlaybackSettingsOpt
     {
@@ -719,14 +662,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         ClosePlayer
     }
 
+    #endregion
+
+    #region PlaylistSettings
+
     public class PlaylistSettings
     {
         public bool ShowPlaylistOnStartup { get; set; }
         public AfterPlaybackSettingsOpt AfterPlaybackOpt { get; set; }
         public bool BeginPlaybackOnStartup { get; set; }
-        public bool BeginPlaybackWhenFileIsAdded { get; set; }
-        public bool BeginPlaybackWhenPlaylistFileIsOpened { get; set; }
-        public bool AddToPlaylistOnFileOpen { get; set; }
         public bool RememberWindowSize { get; set; }
         public bool RememberWindowPosition { get; set; }
         public bool SnapWithPlayer { get; set; }
@@ -745,9 +689,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             ShowPlaylistOnStartup = false;
             AfterPlaybackOpt = AfterPlaybackSettingsOpt.DoNothing;
             BeginPlaybackOnStartup = false;
-            BeginPlaybackWhenFileIsAdded = false;
-            BeginPlaybackWhenPlaylistFileIsOpened = false;
-            AddToPlaylistOnFileOpen = false;
             SnapWithPlayer = true;
             StaySnapped = false;
             RememberColumns = false;
@@ -759,4 +700,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             RememberedFiles = new List<string>();
         }
     }
+
+    #endregion
 }
