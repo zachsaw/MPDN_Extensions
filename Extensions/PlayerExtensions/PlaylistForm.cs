@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -682,7 +681,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Media.Open(nextFile);
 
             if (Playlist.Count == 1) ActiveFile(nextFile);
-            else OpenFiles(new[]{nextFile});
+            else OpenFiles(new[] {nextFile});
 
             Task.Factory.StartNew(GetCurrentMediaDuration);
         }

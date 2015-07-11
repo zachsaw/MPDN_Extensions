@@ -176,7 +176,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
             this.statusStrip1.ShowItemToolTips = true;
-            this.statusStrip1.Size = new System.Drawing.Size(795, 27);
+            this.statusStrip1.Size = new System.Drawing.Size(684, 27);
             this.statusStrip1.TabIndex = 0;
             this.statusStrip1.TabStop = true;
             this.statusStrip1.Text = "statusStrip1";
@@ -389,7 +389,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(448, 22);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(337, 22);
             this.toolStripStatusLabel1.Spring = true;
             // 
             // buttonRightEnabled
@@ -627,7 +627,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.ShowCellToolTips = false;
             this.dgv_PlayList.ShowEditingIcon = false;
             this.dgv_PlayList.ShowRowErrors = false;
-            this.dgv_PlayList.Size = new System.Drawing.Size(795, 206);
+            this.dgv_PlayList.Size = new System.Drawing.Size(684, 206);
             this.dgv_PlayList.TabIndex = 1;
             this.dgv_PlayList.TabStop = false;
             // 
@@ -1022,7 +1022,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
-            this.ClientSize = new System.Drawing.Size(795, 233);
+            this.ClientSize = new System.Drawing.Size(684, 233);
             this.Controls.Add(this.dgv_PlayList);
             this.Controls.Add(this.statusStrip1);
             this.KeyPreview = true;
