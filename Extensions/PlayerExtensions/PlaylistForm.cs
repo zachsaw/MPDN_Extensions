@@ -702,8 +702,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (File.Exists(item.FilePath))
                 {
                     SetPlayStyling();
-                    Media.Open(item.FilePath);
-                    if (queue) Media.Stop();
+
+                    if (queue)
+                    {
+                        Media.Open(item.FilePath, false);
+                        Media.Stop();
+                    }
+                    else Media.Open(item.FilePath);
                 }
                 else
                 {
