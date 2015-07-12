@@ -137,6 +137,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             dgv_PlayList.RowsAdded += dgv_PlayList_RowsAdded;
             dgv_PlayList.RowsRemoved += dgv_PlayList_RowsRemoved;
             dgv_PlayList.SelectionChanged += dgv_PlayList_SelectionChanged;
+            dgv_PlayList.ColumnStateChanged += dgv_PlayList_ColumnStateChanged;
 
             Player.StateChanged += PlayerStateChanged;
             Player.Playback.Completed += PlaybackCompleted;
@@ -539,6 +540,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             var item = new PlaylistItem(title, isActive);
             Playlist.Add(item);
 
+            if (!Duration.Visible) return;
             Task.Factory.StartNew(GetMediaDuration);
         }
 
@@ -570,6 +572,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             int endChapter = int.Parse(splitLine[2].Substring(splitLine[2].IndexOf(':') + 1).Trim());
             Playlist.Add(new PlaylistItem(title, skipChapters, endChapter, isActive));
 
+            if (!Duration.Visible) return;
             Task.Factory.StartNew(GetMediaDuration);
         }
 
@@ -727,8 +730,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 PlayNext();
             }
 
-            Task.Factory.StartNew(GetCurrentMediaDuration);
             dgv_PlayList.Invalidate();
+
+            if (!Duration.Visible) return;
+            Task.Factory.StartNew(GetCurrentMediaDuration);
         }
 
         public void CloseMedia()
@@ -770,6 +775,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             Text = Player.State + " ─ " + CurrentItem.FilePath;
 
+            if (!Duration.Visible) return;
             Task.Factory.StartNew(GetCurrentMediaDuration);
         }
 
@@ -789,6 +795,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             dgv_PlayList.CurrentCell = dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex];
 
+            if (!Duration.Visible) return;
             Task.Factory.StartNew(GetMediaDuration);
         }
 
@@ -1498,6 +1505,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             ParseChapterInput();
         }
 
+        private void dgv_PlayList_ColumnStateChanged(object sender, DataGridViewColumnStateChangedEventArgs e)
+        {
+            if (e.Column.Name == "Duration" && e.Column.Visible)
+            {
+                Task.Factory.StartNew(GetMediaDuration);
+                if (CurrentItem != null) Task.Factory.StartNew(GetCurrentMediaDuration);
+            }
+        }
+
         private void dgv_PlayList_SelectionChanged(object sender, EventArgs e)
         {
             if (Playlist.Count == 0) return;
@@ -1886,6 +1902,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             catch (Exception ex)
             {
+                //silently fails
                 Player.HandleException(ex);
             }
         }
@@ -1904,7 +1921,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     Invoke((Action)(() =>
                     {
                         if (dgv_PlayList.Rows.Count < 1) return;
-                        if (i != currentPlayIndex)
+                        if (i != currentPlayIndex || !string.IsNullOrEmpty(item.Duration))
                         {
                             dgv_PlayList.Rows[i].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
                             dgv_PlayList.InvalidateRow(i);
@@ -1914,6 +1931,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             catch (Exception ex)
             {
+                //silently fails
                 Player.HandleException(ex);
             }
         }
