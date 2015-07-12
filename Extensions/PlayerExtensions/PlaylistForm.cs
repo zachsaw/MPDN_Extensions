@@ -832,7 +832,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OpenFolder()
         {
-            ClearPlaylist();
 
             using (var fd = new VistaFolderBrowserDialog())
             {
@@ -841,6 +840,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 fd.ShowNewFolderButton = true;
 
                 if (fd.ShowDialog(this) != DialogResult.OK) return;
+
+                ClearPlaylist();
 
                 var media = playListUi.GetAllMediaFiles(fd.SelectedPath);
                 if (media.ToArray().Length == 0)
@@ -1711,9 +1712,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ButtonOpenFilesClick(object sender, EventArgs e)
         {
-            ClearPlaylist();
-
             if (openFileDialog.ShowDialog(this) != DialogResult.OK) return;
+            
+            ClearPlaylist();
 
             var fileNames = openFileDialog.FileNames;
 
