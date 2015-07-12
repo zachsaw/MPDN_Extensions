@@ -233,9 +233,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void SetActiveFile()
         {
+            if (String.IsNullOrEmpty(Media.FilePath)) return;
             if (!File.Exists(Media.FilePath)) return;
             if (Player.State != PlayerState.Playing || form.Playlist.Count > 1) return;
-            if (string.IsNullOrEmpty(Media.FilePath)) return;
 
             if (form.CurrentItem != null && form.CurrentItem.FilePath != Media.FilePath) form.ActiveFile(Media.FilePath);
             else if (form.CurrentItem == null) form.ActiveFile(Media.FilePath);

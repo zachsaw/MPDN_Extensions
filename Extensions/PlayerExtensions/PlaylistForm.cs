@@ -1355,6 +1355,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
+            if (String.IsNullOrEmpty(Media.FilePath)) return;
+            if (!File.Exists(Media.FilePath))
+            {
+                currentPlayIndex = -1;
+                Text = "Playlist";
+                RefreshPlaylist();
+                return;
+            }
+
             if (CurrentItem == null) return;
             Text = Player.State + " - " + CurrentItem.FilePath;
 
