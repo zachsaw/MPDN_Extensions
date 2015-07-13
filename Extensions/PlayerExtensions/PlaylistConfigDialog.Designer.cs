@@ -68,6 +68,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.cb_rememberColumns = new System.Windows.Forms.CheckBox();
             this.cb_rememberWindowSize = new System.Windows.Forms.CheckBox();
+            this.btn_configRegex = new System.Windows.Forms.Button();
             this.groupBox2.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -316,6 +317,18 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_rememberWindowSize.Text = "Remember window size";
             this.cb_rememberWindowSize.UseVisualStyleBackColor = true;
             // 
+            // btn_configRegex
+            // 
+            this.btn_configRegex.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.btn_configRegex.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btn_configRegex.Location = new System.Drawing.Point(226, 181);
+            this.btn_configRegex.Name = "btn_configRegex";
+            this.btn_configRegex.Size = new System.Drawing.Size(75, 23);
+            this.btn_configRegex.TabIndex = 17;
+            this.btn_configRegex.Text = "Config regex";
+            this.btn_configRegex.UseVisualStyleBackColor = false;
+            this.btn_configRegex.Click += new System.EventHandler(this.btn_configRegex_Clicked);
+            // 
             // PlaylistConfigDialog
             // 
             this.AcceptButton = this.btn_save;
@@ -323,6 +336,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
             this.ClientSize = new System.Drawing.Size(456, 261);
+            this.Controls.Add(this.btn_configRegex);
             this.Controls.Add(this.groupBox6);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.panel1);
@@ -375,5 +389,6 @@ namespace Mpdn.Extensions.PlayerExtensions
         private CheckBox cb_lockWindowSize;
         private CheckBox cb_scaleWithPlayer;
         private CheckBox cb_staySnapped;
+        private Button btn_configRegex;
     }
 }

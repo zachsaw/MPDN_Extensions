@@ -132,6 +132,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (Settings.BeginPlaybackOnStartup) form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
 
+            if (Settings.RegexList != null && Settings.RegexList.Count > 0)
+            {
+                form.RegexList = Settings.RegexList;
+            }
+
+            if (Settings.StripDirectoryInFileName) form.StripDirectoryInFileName = Settings.StripDirectoryInFileName;
+
             if (Settings.RememberPlaylist)
             {
                 if (Settings.RememberedFiles.Count > 0)
@@ -203,6 +210,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             form.KeepSnapped = Settings.StaySnapped;
             form.LockWindowSize = Settings.LockWindowSize;
             form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
+        }
+
+        public void SyncSettings()
+        {
+            Settings.RegexList = form.RegexList;
         }
 
         public PlaylistForm GetPlaylistForm
@@ -292,7 +304,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (Settings.RememberPlaylist)
             {
                 Settings.RememberedFiles.Clear();
-                if (form.Playlist.Count <= 0) return;
+                if (form.Playlist.Count == 0) return;
 
                 foreach (var i in form.Playlist)
                 {
@@ -304,6 +316,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                                                  i.Active + "|" + i.Duration);
                 }
             }
+
+            if (form.RegexList == null || form.RegexList.Count == 0) return;
+            Settings.RegexList = form.RegexList;
         }
 
         public void SnapPlayer()
@@ -677,12 +692,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public bool ScaleWithPlayer { get; set; }
         public bool StaySnapped { get; set; }
         public bool RememberPlaylist { get; set; }
+        public bool StripDirectoryInFileName { get; set; }
         public Point WindowPosition { get; set; }
         public Size WindowSize { get; set; }
         public bool LockWindowSize { get; set; }
         public bool RememberColumns { get; set; }
         public List<string> Columns { get; set; }
         public List<string> RememberedFiles { get; set; }
+        public List<string> RegexList { get; set; }
 
         public PlaylistSettings()
         {
@@ -696,8 +713,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             RememberWindowSize = false;
             LockWindowSize = false;
             RememberPlaylist = false;
+            StripDirectoryInFileName = false;
             Columns = new List<string>();
             RememberedFiles = new List<string>();
+            RegexList = new List<string>();
         }
     }
 

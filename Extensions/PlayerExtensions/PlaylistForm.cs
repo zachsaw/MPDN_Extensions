@@ -49,6 +49,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             PlaylistChanged.Handle(h => h(this, EventArgs.Empty));
         }
 
+        public delegate void RegexHandler(object sender, RegexEventArgs e);
+        public static event RegexHandler OnRegexChange = delegate { };
+
         #endregion
 
         #region Fields
@@ -90,6 +93,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public PlaylistItem CurrentItem { get; set; }
         public static int PlaylistCount { get; set; }
 
+        public List<string> RegexList { get; set; }
+
+        public static bool HasRegex { get; set; }
+
         public Point WindowPosition { get; set; }
         public Size WindowSize { get; set; }
         public bool RememberWindowPosition { get; set; }
@@ -98,6 +105,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public bool KeepSnapped { get; set; }
         public bool LockWindowSize { get; set; }
         public bool BeginPlaybackOnStartup { get; set; }
+        public bool StripDirectoryInFileName { get; set; }
         public List<string> Columns { get; set; }
         public List<string> TempRememberedFiles { get; set; }
 
@@ -122,6 +130,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Load += PlaylistForm_Load;
             Shown += PlaylistForm_Shown;
             Resize += PlaylistForm_Resize;
+
+            OnRegexChange += PlaylistForm_OnRegexChange;
 
             dgv_PlayList.CellFormatting += dgv_PlayList_CellFormatting;
             dgv_PlayList.CellPainting += dgv_PlayList_CellPainting;
@@ -300,6 +310,27 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 string path = Path.GetDirectoryName(i.FilePath);
                 string directory = path.Substring(path.LastIndexOf("\\") + 1);
                 string file = Path.GetFileName(i.FilePath);
+
+                if (StripDirectoryInFileName)
+                {
+                    if (file.Contains(directory)) file = file.Replace(directory, string.Empty);
+                }
+
+                if (RegexList != null && RegexList.Count > 0)
+                {
+                    try
+                    {
+                        for (int x = 0; x < RegexList.Count; x++)
+                        {
+                            if (RegexList[x].Equals("-") || RegexList[x].Equals("_") || RegexList[x].Equals(".")) file = Regex.Replace(file, RegexList[x], " ").Trim();
+                            else file = Regex.Replace(file, RegexList[x], "");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Player.HandleException(ex);
+                    }
+                }
 
                 if (i.SkipChapters != null)
                 {
@@ -1162,6 +1193,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #region Column Handling Methods
 
+        public static void UpdatePlaylistWithRegexFilter(List<string> regexList, bool stripDirectory)
+        {
+            var args = new RegexEventArgs(regexList, stripDirectory);
+            OnRegexChange(null, args);
+        }
+
         private void SetColumnSize()
         {
             if (columnsFixed) return;
@@ -1348,6 +1385,19 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 cellDisplayRect.X + cell.Size.Width / 2,
                 cellDisplayRect.Y + cell.Size.Height / 2,
                 2000);
+        }
+
+        #endregion
+
+        #region Playlist Events
+
+        public void PlaylistForm_OnRegexChange(object sender, RegexEventArgs e)
+        {
+            RegexList = e.RegexList;
+            StripDirectoryInFileName = e.StripDirectoryInFileName;
+            playListUi.SyncSettings();
+
+            PopulatePlaylist();
         }
 
         #endregion
@@ -2012,6 +2062,22 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
 
             return Path.GetFileName(FilePath) ?? "???";
+        }
+    }
+
+    #endregion
+
+    #region CustomEventArgs
+
+    public class RegexEventArgs : EventArgs
+    {
+        public List<string> RegexList { get; internal set; }
+        public bool StripDirectoryInFileName { get; internal set; }
+
+        public RegexEventArgs(List<string> regexList, bool stripDirectory)
+        {
+            RegexList = regexList;
+            StripDirectoryInFileName = stripDirectory;
         }
     }
 
