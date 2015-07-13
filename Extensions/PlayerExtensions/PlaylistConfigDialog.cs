@@ -118,7 +118,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 Location = new Point(btn_apply.Location.X + btn_apply.Size.Width + 2, btn_apply.Location.Y)
             };
 
-            var btn_add = new Button()
+            var btn_add = new Button
             {
                 Name = "btn_add",
                 Text = "Add regex",
@@ -183,7 +183,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 Size = new Size(190, 30)
             };
 
-            panel.Controls.AddRange(new Control[] { label, txtBox });
+            panel.Controls.AddRange(new Control[] {label, txtBox});
             return panel;
         }
 
@@ -209,10 +209,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 Size = new Size(190, 30)
             };
 
-            if (Settings.RegexList != null && Settings.RegexList.Count > 0)
-            {
-                if (i < Settings.RegexList.Count) txtBox.Text = Settings.RegexList[i];
-            }
+            if (Settings.RegexList != null && Settings.RegexList.Count > 0) if (i < Settings.RegexList.Count) txtBox.Text = Settings.RegexList[i];
 
             panel.Controls.AddRange(new Control[] {label, txtBox});
             return panel;
@@ -250,6 +247,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             PlaylistForm.UpdatePlaylistWithRegexFilter(regexList, Settings.StripDirectoryInFileName);
         }
+
         private void btn_close_Click(object sender, EventArgs e)
         {
             regexForm.Close();

@@ -42,6 +42,19 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #endregion
 
+        #region Playlist Events
+
+        public void PlaylistForm_OnRegexChange(object sender, RegexEventArgs e)
+        {
+            RegexList = e.RegexList;
+            StripDirectoryInFileName = e.StripDirectoryInFileName;
+            playListUi.SyncSettings();
+
+            PopulatePlaylist();
+        }
+
+        #endregion
+
         #region Eventhandler Methods
 
         private void NotifyPlaylistChanged()
@@ -50,6 +63,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         }
 
         public delegate void RegexHandler(object sender, RegexEventArgs e);
+
         public static event RegexHandler OnRegexChange = delegate { };
 
         #endregion
@@ -311,25 +325,30 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 string directory = path.Substring(path.LastIndexOf("\\") + 1);
                 string file = Path.GetFileName(i.FilePath);
 
-                if (StripDirectoryInFileName)
-                {
-                    if (file.Contains(directory)) file = file.Replace(directory, string.Empty);
-                }
-
                 if (RegexList != null && RegexList.Count > 0)
                 {
                     try
                     {
-                        for (int x = 0; x < RegexList.Count; x++)
+                        foreach (string t in RegexList)
                         {
-                            if (RegexList[x].Equals("-") || RegexList[x].Equals("_") || RegexList[x].Equals("."))
+                            if (t.Equals("-") || t.Equals("_") || t.Equals("."))
                             {
-                                file = Regex.Replace(file, RegexList[x], " ", RegexOptions.Compiled);
-                                file = Regex.Replace(file, @"\s+", " ", RegexOptions.Compiled);
+                                file = Regex.Replace(file, t, " ", RegexOptions.Compiled);
+                                file = Regex.Replace(file, @"\s+", " ", RegexOptions.Compiled).Trim();
                             }
                             else
                             {
-                                file = Regex.Replace(file, RegexList[x], string.Empty, RegexOptions.Compiled);
+                                var matches = Regex.Matches(file, t, RegexOptions.Compiled);
+                                var offset = 1;
+
+                                foreach (Match match in matches)
+                                {
+                                    offset = match.Index == 0 ? 0 : 1;
+
+                                    if (file.Substring(match.Index - offset, 1).Contains(" ")) file = file.Remove(match.Index - offset, 1);
+                                }
+
+                                file = Regex.Replace(file, t, string.Empty, RegexOptions.Compiled).Trim();
                             }
                         }
                     }
@@ -338,6 +357,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                         Player.HandleException(ex);
                     }
                 }
+
+                if (StripDirectoryInFileName) if (file.Contains(directory)) file = file.Replace(directory, string.Empty).Trim();
 
                 if (i.SkipChapters != null)
                 {
@@ -878,7 +899,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OpenFolder()
         {
-
             using (var fd = new VistaFolderBrowserDialog())
             {
                 fd.Description = "Open and play folder";
@@ -1396,19 +1416,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #endregion
 
-        #region Playlist Events
-
-        public void PlaylistForm_OnRegexChange(object sender, RegexEventArgs e)
-        {
-            RegexList = e.RegexList;
-            StripDirectoryInFileName = e.StripDirectoryInFileName;
-            playListUi.SyncSettings();
-
-            PopulatePlaylist();
-        }
-
-        #endregion
-
         #region PlayerControl Events
 
         private void PlaylistFormClosing(object sender, FormClosingEventArgs e)
@@ -1787,7 +1794,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void ButtonOpenFilesClick(object sender, EventArgs e)
         {
             if (openFileDialog.ShowDialog(this) != DialogResult.OK) return;
-            
+
             ClearPlaylist();
 
             var fileNames = openFileDialog.FileNames;

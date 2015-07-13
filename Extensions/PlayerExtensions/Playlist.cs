@@ -132,10 +132,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (Settings.BeginPlaybackOnStartup) form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
 
-            if (Settings.RegexList != null && Settings.RegexList.Count > 0)
-            {
-                form.RegexList = Settings.RegexList;
-            }
+            if (Settings.RegexList != null && Settings.RegexList.Count > 0) form.RegexList = Settings.RegexList;
 
             if (Settings.StripDirectoryInFileName) form.StripDirectoryInFileName = Settings.StripDirectoryInFileName;
 
@@ -317,8 +314,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
             }
 
-            if (form.RegexList == null || form.RegexList.Count == 0) return;
-            Settings.RegexList = form.RegexList;
+            if (form.RegexList != null || form.RegexList.Count > 0) Settings.RegexList = form.RegexList;
         }
 
         public void SnapPlayer()
