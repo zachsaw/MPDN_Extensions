@@ -1078,7 +1078,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (i.SkipChapters != null && i.SkipChapters.Count > 0) skipChapters = string.Join(",", i.SkipChapters);
 
                 TempRememberedFiles.Add(i.FilePath + "|" + skipChapters + "|" + i.EndChapter + "|" +
-                                        i.Active);
+                                        i.Active + "|" + i.Duration);
             }
         }
 
@@ -1098,8 +1098,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
                 int endChapter = int.Parse(s[2]);
                 bool active = Boolean.Parse(s[3]);
+                string duration = s[4];
 
-                playList.Add(new PlaylistItem(filePath, skipChapters, endChapter, active));
+                playList.Add(new PlaylistItem(filePath, skipChapters, endChapter, active, duration));
             }
 
             Playlist = playList;
