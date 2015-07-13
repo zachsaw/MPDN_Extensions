@@ -16,6 +16,7 @@
 // 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
@@ -26,6 +27,7 @@ namespace Mpdn.Extensions.PlayerExtensions
     public partial class PlaylistConfigDialog : PlaylistConfigBase
     {
         private static Form regexForm;
+        private int regexCount;
 
         public PlaylistConfigDialog()
         {
@@ -88,17 +90,25 @@ namespace Mpdn.Extensions.PlayerExtensions
             regexForm = new Form
             {
                 Text = "Configure regex",
-                Size = new Size(280, 230),
+                Size = new Size(280, 270),
                 ControlBox = false,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 StartPosition = FormStartPosition.CenterScreen
+            };
+
+            var label = new Label
+            {
+                Text =
+                    "Use regular expressions to filter out patterns or literal\nstrings you don't want to see in the Playlist.",
+                Location = new Point(5, 5),
+                AutoSize = true
             };
 
             var flowPanel = new FlowLayoutPanel
             {
                 Size = new Size(274, 130),
                 AutoSize = false,
-                Location = new Point(0, 10),
+                Location = new Point(0, 35),
                 FlowDirection = FlowDirection.TopDown,
                 AutoScroll = true,
                 WrapContents = false
@@ -106,37 +116,47 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             var btn_apply = new Button
             {
-                Name = "btn_apply",
                 Text = "Apply",
                 Location = new Point(regexForm.Width - 160, regexForm.Height - 55)
             };
 
             var btn_close = new Button
             {
-                Name = "btn_close",
                 Text = "Close",
                 Location = new Point(btn_apply.Location.X + btn_apply.Size.Width + 2, btn_apply.Location.Y)
             };
 
             var btn_add = new Button
             {
-                Name = "btn_add",
                 Text = "Add regex",
-                Location = new Point(regexForm.Left + 3, btn_apply.Location.Y)
+                Location = new Point(2, btn_apply.Location.Y)
             };
 
             var cb_stripDirectory = new CheckBox
             {
-                Name = "cb_stripDirectory",
                 Text = "Strip directory in filename",
                 AutoSize = true,
-                Location = new Point(5, flowPanel.Height + 15)
+                Location = new Point(3, flowPanel.Location.Y + flowPanel.Height + 5)
+            };
+
+            var link = new LinkLabel.Link
+            {
+                LinkData = "https://regex101.com/"
+            };
+
+            var linkLabel = new LinkLabel
+            {
+                Text = "Online Regex Building Tool",
+                AutoSize = true,
+                Links = {link},
+                Location = new Point(2, cb_stripDirectory.Location.Y + cb_stripDirectory.Size.Height + 3)
             };
 
             if (Settings.RegexList != null && Settings.RegexList.Count > 0)
             {
                 for (var i = 0; i < Settings.RegexList.Count; i++)
                 {
+                    regexCount++;
                     flowPanel.Controls.Add(CreateRegexControls(i));
                 }
             }
@@ -144,6 +164,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 for (var i = 0; i < 4; i++)
                 {
+                    regexCount++;
                     flowPanel.Controls.Add(CreateRegexControls(i));
                 }
             }
@@ -153,12 +174,15 @@ namespace Mpdn.Extensions.PlayerExtensions
             btn_apply.Click += btn_apply_Click;
             btn_close.Click += btn_close_Click;
             btn_add.Click += btn_add_Click;
+            linkLabel.LinkClicked += linkLabel_LinkClicked;
 
+            regexForm.Controls.Add(label);
             regexForm.Controls.Add(flowPanel);
             regexForm.Controls.Add(btn_apply);
             regexForm.Controls.Add(btn_close);
             regexForm.Controls.Add(btn_add);
             regexForm.Controls.Add(cb_stripDirectory);
+            regexForm.Controls.Add(linkLabel);
             regexForm.ShowDialog();
         }
 
@@ -166,20 +190,20 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             var panel = new Panel
             {
-                Size = new Size(245, 24)
+                Size = new Size(250, 24)
             };
 
             var label = new Label
             {
-                Text = "Regex:",
-                Location = new Point(3, 3),
-                Size = new Size(42, 30),
+                Text = "Regex " + regexCount + ":",
+                Location = new Point(0, 3),
+                Size = new Size(57, 30),
                 AutoSize = false
             };
 
             var txtBox = new TextBox
             {
-                Location = new Point(label.Location.X + label.Size.Width + 10, label.Location.Y - 3),
+                Location = new Point(label.Location.X + label.Size.Width + 2, label.Location.Y - 3),
                 Size = new Size(190, 30)
             };
 
@@ -191,21 +215,20 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             var panel = new Panel
             {
-                Size = new Size(245, 24)
+                Size = new Size(250, 24)
             };
 
             var label = new Label
             {
-                Text = "Regex:",
-                Location = new Point(3, 3),
-                Size = new Size(42, 30),
+                Text = "Regex " + regexCount + ":",
+                Location = new Point(0, 3),
+                Size = new Size(57, 30),
                 AutoSize = false
             };
 
             var txtBox = new TextBox
             {
-                Name = "tb_regex" + i,
-                Location = new Point(label.Location.X + label.Size.Width + 10, label.Location.Y - 3),
+                Location = new Point(label.Location.X + label.Size.Width + 2, label.Location.Y - 3),
                 Size = new Size(190, 30)
             };
 
@@ -255,6 +278,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void btn_add_Click(object sender, EventArgs e)
         {
+            regexCount++;
+
             foreach (var c in regexForm.Controls)
             {
                 var flowPanel = c as FlowLayoutPanel;
@@ -264,6 +289,11 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
 
             regexForm.Invalidate();
+        }
+
+        private void linkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start(e.Link.LinkData as string);
         }
 
         private void cb_snapWithPlayer_CheckedChanged(object sender, EventArgs e)

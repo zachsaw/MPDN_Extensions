@@ -322,11 +322,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             foreach (var i in Playlist)
             {
                 string path = Path.GetDirectoryName(i.FilePath);
-                string directory = path.Substring(path.LastIndexOf("\\") + 1);
+                string directory = path.Substring(path.LastIndexOf("\\", StringComparison.Ordinal) + 1);
                 string file = Path.GetFileName(i.FilePath);
 
                 if (RegexList != null && RegexList.Count > 0)
                 {
+                    var count = 1;
+
                     try
                     {
                         foreach (string t in RegexList)
@@ -339,22 +341,23 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                             else
                             {
                                 var matches = Regex.Matches(file, t, RegexOptions.Compiled);
-                                var offset = 1;
 
                                 foreach (Match match in matches)
                                 {
-                                    offset = match.Index == 0 ? 0 : 1;
-
+                                    int offset = match.Index == 0 ? 0 : 1;
                                     if (file.Substring(match.Index - offset, 1).Contains(" ")) file = file.Remove(match.Index - offset, 1);
                                 }
 
                                 file = Regex.Replace(file, t, string.Empty, RegexOptions.Compiled).Trim();
                             }
+
+                            count++;
                         }
                     }
                     catch (Exception ex)
                     {
-                        Player.HandleException(ex);
+                        MessageBox.Show("Error evaluating expression at 'Regex " + count + "'", "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
 
