@@ -322,8 +322,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     {
                         for (int x = 0; x < RegexList.Count; x++)
                         {
-                            if (RegexList[x].Equals("-") || RegexList[x].Equals("_") || RegexList[x].Equals(".")) file = Regex.Replace(file, RegexList[x], " ").Trim();
-                            else file = Regex.Replace(file, RegexList[x], "");
+                            if (RegexList[x].Equals("-") || RegexList[x].Equals("_") || RegexList[x].Equals("."))
+                            {
+                                file = Regex.Replace(file, RegexList[x], " ", RegexOptions.Compiled);
+                                file = Regex.Replace(file, @"\s+", " ", RegexOptions.Compiled);
+                            }
+                            else
+                            {
+                                file = Regex.Replace(file, RegexList[x], string.Empty, RegexOptions.Compiled);
+                            }
                         }
                     }
                     catch (Exception ex)
