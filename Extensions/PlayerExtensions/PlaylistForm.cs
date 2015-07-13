@@ -703,11 +703,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     SetPlayStyling();
 
-                    if (queue)
-                    {
-                        Media.Open(item.FilePath, false);
-                        Media.Stop();
-                    }
+                    if (queue) Media.Open(item.FilePath, false);
                     else Media.Open(item.FilePath);
                 }
                 else
@@ -764,7 +760,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public void AddFiles(string[] fileNames)
         {
             AddFilesToPlaylist(fileNames);
-            if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused) return;
+            if (Player.State == PlayerState.Playing) return;
             currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
             OpenMedia(true);
         }
