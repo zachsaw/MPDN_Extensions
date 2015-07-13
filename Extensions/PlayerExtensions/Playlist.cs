@@ -171,6 +171,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
 
             FixFormLocationBounds();
+            BindContextMenu(mpdnForm);
         }
 
         public override void Destroy()
@@ -314,7 +315,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
             }
 
-            if (form.RegexList != null || form.RegexList.Count > 0) Settings.RegexList = form.RegexList;
+            if (form.RegexList != null && form.RegexList.Count > 0) Settings.RegexList = form.RegexList;
         }
 
         public void SnapPlayer()
@@ -357,6 +358,16 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         #endregion
 
         #region Helper Methods
+
+        private void BindContextMenu(Control ctrl)
+        {
+            foreach (Control c in ctrl.Controls)
+            {
+                if (c.ContextMenuStrip != null) c.ContextMenuStrip.Opened += OnMpdnFormContextMenuOpened;
+
+                if (c.Controls.Count > 0) BindContextMenu(c);
+            }
+        }
 
         private void FixFormLocationBounds()
         {
@@ -621,8 +632,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnMpdnFormKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.C) CloseMedia();
-
             if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Tab)
             {
                 if (Player.FullScreenMode.Active || !form.Visible || form.ContainsFocus) return;
@@ -654,6 +663,32 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
 
                 if (item.DropDownItems[2].Name == "mmenuClose")
+                {
+                    item.DropDownItems[2].Click -= OnFormCloseMedia;
+                    item.DropDownItems[2].Click += OnFormCloseMedia;
+                }
+            }
+        }
+
+        private void OnMpdnFormContextMenuOpened(object sender, EventArgs e)
+        {
+            var s = sender as ContextMenuStrip;
+
+            foreach (var item in s.Items.OfType<ToolStripMenuItem>().Where(item => item.Name == "menuFile"))
+            {
+                if (item.DropDownItems[0].Name == "menuQuickOpen")
+                {
+                    item.DropDownItems[0].Click -= OnMpdnFormOpenClick;
+                    item.DropDownItems[0].Click += OnMpdnFormOpenClick;
+                }
+
+                if (item.DropDownItems[1].Name == "openToolStripMenuItem1")
+                {
+                    item.DropDownItems[1].Click -= OnMpdnFormOpenClick;
+                    item.DropDownItems[1].Click += OnMpdnFormOpenClick;
+                }
+
+                if (item.DropDownItems[2].Name == "menuClose")
                 {
                     item.DropDownItems[2].Click -= OnFormCloseMedia;
                     item.DropDownItems[2].Click += OnFormCloseMedia;
