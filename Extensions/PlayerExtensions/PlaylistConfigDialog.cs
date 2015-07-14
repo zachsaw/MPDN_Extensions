@@ -286,6 +286,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                 if (flowPanel == null) continue;
 
                 flowPanel.Controls.Add(CreateRegexControls());
+                flowPanel.VerticalScroll.Value = flowPanel.VerticalScroll.Maximum;
+                flowPanel.PerformLayout();
             }
 
             regexForm.Invalidate();
