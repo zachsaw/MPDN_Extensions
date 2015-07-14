@@ -333,7 +333,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     {
                         foreach (string t in RegexList)
                         {
-                            if (t.Equals("-") || t.Equals("_") || t.Equals("."))
+                            if (t.Equals("-") || t.Equals("_") || t.Equals("\\."))
                             {
                                 file = Regex.Replace(file, t, " ", RegexOptions.Compiled);
                                 file = Regex.Replace(file, @"\s+", " ", RegexOptions.Compiled).Trim();
