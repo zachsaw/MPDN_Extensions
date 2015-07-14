@@ -356,7 +356,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error evaluating expression at 'Regex " + count + "'", "Error",
+                        MessageBox.Show("Error evaluating expression at 'Regex " + count + "'!\nMessage: " + ex.Message, "Error",
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
