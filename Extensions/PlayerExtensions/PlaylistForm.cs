@@ -314,6 +314,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void PopulatePlaylist()
         {
+            int prevScrollIndex = dgv_PlayList.FirstDisplayedScrollingRowIndex;
+
             dgv_PlayList.Rows.Clear();
             if (Playlist.Count == 0) return;
 
@@ -389,6 +391,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 fileCount++;
             }
 
+            if (prevScrollIndex > -1) dgv_PlayList.FirstDisplayedScrollingRowIndex = prevScrollIndex;
             currentPlayIndex = (Playlist.FindIndex(i => i.Active) > -1) ? Playlist.FindIndex(i => i.Active) : -1;
 
             if (CurrentItem != null && CurrentItem.Active) if (File.Exists(CurrentItem.FilePath)) SetPlayStyling();
