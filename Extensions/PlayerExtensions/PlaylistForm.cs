@@ -363,7 +363,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     }
                 }
 
-                if (StripDirectoryInFileName) if (file.Contains(directory)) file = file.Replace(directory, string.Empty).Trim();
+                if (StripDirectoryInFileName && Playlist.Count > 1) if (file.Contains(directory)) file = file.Replace(directory, string.Empty).Trim();
 
                 if (i.SkipChapters != null)
                 {
