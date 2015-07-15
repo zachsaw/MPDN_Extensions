@@ -749,12 +749,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                     if (queue) Media.Open(item.FilePath, false);
                     else Media.Open(item.FilePath);
-
-                    item.PlayCount++;
-
-                    if (item.PlayCount < 4) dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex].ToolTipText = "Played " + item.PlayCount + " times!";
-                    else if (item.PlayCount >= 4 && item.PlayCount <= 7) dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex].ToolTipText = "You've played this too many times. (" + item.PlayCount + ")";
-                    else dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex].ToolTipText = "What are you doing with your life. (" + item.PlayCount + ")";
                 }
                 else
                 {
@@ -1073,6 +1067,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void RestoreRememberedPlaylist()
         {
+            if (TempRememberedFiles.Count == 0) return;
+
             var playList = new List<PlaylistItem>();
 
             foreach (string f in TempRememberedFiles)
@@ -1467,6 +1463,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (Player.State == PlayerState.Closed) return;
             if (Media.Position == Media.Duration)
             {
+                CurrentItem.PlayCount++;
+
+                if (CurrentItem.PlayCount < 4) dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex].ToolTipText = "Played " + CurrentItem.PlayCount + " times!";
+                else if (CurrentItem.PlayCount >= 4 && CurrentItem.PlayCount <= 7) dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex].ToolTipText = "You've played this too many times. (" + CurrentItem.PlayCount + ")";
+                else dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex].ToolTipText = "What are you doing with your life. (" + CurrentItem.PlayCount + ")";
+
                 if (AfterPlaybackAction == AfterPlaybackSettingsAction.RemoveFile)
                 {
                     RemoveFile(currentPlayIndex);
