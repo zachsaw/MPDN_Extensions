@@ -624,7 +624,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.dgv_PlayList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgv_PlayList.ShowCellErrors = false;
-            this.dgv_PlayList.ShowCellToolTips = false;
             this.dgv_PlayList.ShowEditingIcon = false;
             this.dgv_PlayList.ShowRowErrors = false;
             this.dgv_PlayList.Size = new System.Drawing.Size(684, 206);

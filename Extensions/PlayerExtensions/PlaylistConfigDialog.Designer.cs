@@ -69,6 +69,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_rememberColumns = new System.Windows.Forms.CheckBox();
             this.cb_rememberWindowSize = new System.Windows.Forms.CheckBox();
             this.btn_configRegex = new System.Windows.Forms.Button();
+            this.cb_afterPlaybackAction = new System.Windows.Forms.ComboBox();
             this.groupBox2.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -146,17 +147,18 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox2.Controls.Add(this.groupBox3);
             this.groupBox2.Location = new System.Drawing.Point(226, 51);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(224, 124);
+            this.groupBox2.Size = new System.Drawing.Size(224, 157);
             this.groupBox2.TabIndex = 8;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Playback";
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.cb_afterPlaybackAction);
             this.groupBox4.Controls.Add(this.cb_afterPlaybackOpt);
-            this.groupBox4.Location = new System.Drawing.Point(6, 72);
+            this.groupBox4.Location = new System.Drawing.Point(6, 75);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(212, 45);
+            this.groupBox4.Size = new System.Drawing.Size(212, 74);
             this.groupBox4.TabIndex = 13;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "After playback";
@@ -321,13 +323,26 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.btn_configRegex.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_configRegex.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btn_configRegex.Location = new System.Drawing.Point(225, 181);
+            this.btn_configRegex.Location = new System.Drawing.Point(221, 231);
             this.btn_configRegex.Name = "btn_configRegex";
             this.btn_configRegex.Size = new System.Drawing.Size(75, 23);
             this.btn_configRegex.TabIndex = 17;
             this.btn_configRegex.Text = "Config regex";
             this.btn_configRegex.UseVisualStyleBackColor = false;
             this.btn_configRegex.Click += new System.EventHandler(this.btn_configRegex_Clicked);
+            // 
+            // cb_afterPlaybackAction
+            // 
+            this.cb_afterPlaybackAction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_afterPlaybackAction.FormattingEnabled = true;
+            this.cb_afterPlaybackAction.Items.AddRange(new object[] {
+            "Do nothing",
+            "Remove file",
+            "Strike out file"});
+            this.cb_afterPlaybackAction.Location = new System.Drawing.Point(6, 46);
+            this.cb_afterPlaybackAction.Name = "cb_afterPlaybackAction";
+            this.cb_afterPlaybackAction.Size = new System.Drawing.Size(200, 21);
+            this.cb_afterPlaybackAction.TabIndex = 15;
             // 
             // PlaylistConfigDialog
             // 
@@ -390,5 +405,6 @@ namespace Mpdn.Extensions.PlayerExtensions
         private CheckBox cb_scaleWithPlayer;
         private CheckBox cb_staySnapped;
         private Button btn_configRegex;
+        private ComboBox cb_afterPlaybackAction;
     }
 }

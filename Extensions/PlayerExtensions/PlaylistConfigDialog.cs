@@ -39,6 +39,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             cb_showPlaylistOnStartup.Checked = Settings.ShowPlaylistOnStartup;
             cb_afterPlaybackOpt.SelectedIndex = (int)Settings.AfterPlaybackOpt;
+            cb_afterPlaybackAction.SelectedIndex = (int)Settings.AfterPlaybackAction;
             cb_onStartup.Checked = Settings.BeginPlaybackOnStartup;
             cb_scaleWithPlayer.Checked = Settings.ScaleWithPlayer;
             cb_snapWithPlayer.Checked = Settings.SnapWithPlayer;
@@ -54,6 +55,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             Settings.ShowPlaylistOnStartup = cb_showPlaylistOnStartup.Checked;
             Settings.AfterPlaybackOpt = (AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex;
+            Settings.AfterPlaybackAction = (AfterPlaybackSettingsAction)cb_afterPlaybackAction.SelectedIndex;
             Settings.BeginPlaybackOnStartup = cb_onStartup.Checked;
             Settings.ScaleWithPlayer = cb_scaleWithPlayer.Checked;
             Settings.SnapWithPlayer = cb_snapWithPlayer.Checked;
@@ -299,6 +301,16 @@ namespace Mpdn.Extensions.PlayerExtensions
         }
 
         private void cb_snapWithPlayer_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateControls();
+        }
+
+        private void cb_afterPlayBackRemoveFile_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateControls();
+        }
+
+        private void cb_afterPlayBackStrikeOutFile_CheckedChanged(object sender, EventArgs e)
         {
             UpdateControls();
         }

@@ -136,6 +136,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (Settings.StripDirectoryInFileName) form.StripDirectoryInFileName = Settings.StripDirectoryInFileName;
 
+            form.AfterPlaybackAction = Settings.AfterPlaybackAction;
+
             if (Settings.RememberPlaylist)
             {
                 if (Settings.RememberedFiles.Count > 0)
@@ -208,6 +210,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             form.KeepSnapped = Settings.StaySnapped;
             form.LockWindowSize = Settings.LockWindowSize;
             form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
+            form.AfterPlaybackAction = Settings.AfterPlaybackAction;
         }
 
         public void SyncSettings()
@@ -699,13 +702,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         #endregion
     }
 
-    #region AfterPlaybackSettingsOpt
+    #region Enums
 
     public enum AfterPlaybackSettingsOpt
     {
         DoNothing = 0,
         PlayNextFileInFolder,
         ClosePlayer
+    }
+
+    public enum AfterPlaybackSettingsAction
+    {
+        DoNothing = 0,
+        RemoveFile,
+        StrikeOutFile
     }
 
     #endregion
@@ -716,6 +726,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
     {
         public bool ShowPlaylistOnStartup { get; set; }
         public AfterPlaybackSettingsOpt AfterPlaybackOpt { get; set; }
+        public AfterPlaybackSettingsAction AfterPlaybackAction { get; set; }
         public bool BeginPlaybackOnStartup { get; set; }
         public bool RememberWindowSize { get; set; }
         public bool RememberWindowPosition { get; set; }
@@ -736,6 +747,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             ShowPlaylistOnStartup = false;
             AfterPlaybackOpt = AfterPlaybackSettingsOpt.DoNothing;
+            AfterPlaybackAction = AfterPlaybackSettingsAction.DoNothing;
             BeginPlaybackOnStartup = false;
             SnapWithPlayer = true;
             StaySnapped = false;
