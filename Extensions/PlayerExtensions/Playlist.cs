@@ -128,6 +128,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (Settings.RememberColumns) if (Settings.Columns != null && Settings.Columns.Count > 0) form.Columns = Settings.Columns;
 
+            if (Settings.ShowToolTips) form.ShowToolTips = Settings.ShowToolTips;
+
             if (Settings.ShowPlaylistOnStartup) ViewPlaylist();
 
             if (Settings.BeginPlaybackOnStartup) form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
@@ -211,6 +213,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             form.LockWindowSize = Settings.LockWindowSize;
             form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
             form.AfterPlaybackAction = Settings.AfterPlaybackAction;
+            form.ShowToolTips = Settings.ShowToolTips;
         }
 
         public void SyncSettings()
@@ -730,6 +733,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public bool BeginPlaybackOnStartup { get; set; }
         public bool RememberWindowSize { get; set; }
         public bool RememberWindowPosition { get; set; }
+        public bool ShowToolTips { get; set; }
         public bool SnapWithPlayer { get; set; }
         public bool ScaleWithPlayer { get; set; }
         public bool StaySnapped { get; set; }
@@ -749,6 +753,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             AfterPlaybackOpt = AfterPlaybackSettingsOpt.DoNothing;
             AfterPlaybackAction = AfterPlaybackSettingsAction.DoNothing;
             BeginPlaybackOnStartup = false;
+            ShowToolTips = true;
             SnapWithPlayer = true;
             StaySnapped = false;
             RememberColumns = false;

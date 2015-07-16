@@ -41,6 +41,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             cb_afterPlaybackOpt.SelectedIndex = (int)Settings.AfterPlaybackOpt;
             cb_afterPlaybackAction.SelectedIndex = (int)Settings.AfterPlaybackAction;
             cb_onStartup.Checked = Settings.BeginPlaybackOnStartup;
+            cb_showToolTips.Checked = Settings.ShowToolTips;
             cb_scaleWithPlayer.Checked = Settings.ScaleWithPlayer;
             cb_snapWithPlayer.Checked = Settings.SnapWithPlayer;
             cb_staySnapped.Checked = Settings.StaySnapped;
@@ -57,6 +58,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.AfterPlaybackOpt = (AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex;
             Settings.AfterPlaybackAction = (AfterPlaybackSettingsAction)cb_afterPlaybackAction.SelectedIndex;
             Settings.BeginPlaybackOnStartup = cb_onStartup.Checked;
+            Settings.ShowToolTips = cb_showToolTips.Checked;
             Settings.ScaleWithPlayer = cb_scaleWithPlayer.Checked;
             Settings.SnapWithPlayer = cb_snapWithPlayer.Checked;
             Settings.StaySnapped = cb_staySnapped.Checked;

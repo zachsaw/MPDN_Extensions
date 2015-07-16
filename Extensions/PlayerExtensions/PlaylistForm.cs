@@ -113,6 +113,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public Size WindowSize { get; set; }
         public bool RememberWindowPosition { get; set; }
         public bool RememberWindowSize { get; set; }
+        public bool ShowToolTips { get; set; }
         public bool SnapWithPlayer { get; set; }
         public bool KeepSnapped { get; set; }
         public bool LockWindowSize { get; set; }
@@ -1067,7 +1068,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (i.SkipChapters != null && i.SkipChapters.Count > 0) skipChapters = string.Join(",", i.SkipChapters);
 
                 TempRememberedFiles.Add(i.FilePath + "|" + skipChapters + "|" + i.EndChapter + "|" +
-                                        i.Active + "|" + i.Duration);
+                                        i.Active + "|" + i.Duration + "|" + i.PlayCount);
             }
         }
 
@@ -1090,8 +1091,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 int endChapter = int.Parse(s[2]);
                 bool active = Boolean.Parse(s[3]);
                 string duration = s[4];
+                int playCount = int.Parse(s[5]);
 
-                playList.Add(new PlaylistItem(filePath, skipChapters, endChapter, active, duration));
+                playList.Add(new PlaylistItem(filePath, skipChapters, endChapter, active, duration, playCount));
             }
 
             Playlist = playList;
@@ -1617,6 +1619,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void dgv_PlayList_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
+            if (!ShowToolTips) return;
             int row = e.RowIndex;
             if (row == -1) return;
             var item = Playlist[row];
@@ -1624,7 +1627,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             playCountToolTip = new ToolTip
             {
-                InitialDelay = 150
+                InitialDelay = 475
             };
 
             row++;
@@ -1638,6 +1641,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void dgv_PlayList_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
         {
+            if (!ShowToolTips) return;
             if (playCountToolTip != null) playCountToolTip.Dispose();
         }
 
@@ -2102,6 +2106,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             HasChapter = true;
             Duration = duration;
             PlayCount = 0;
+        }
+        public PlaylistItem(string filePath, List<int> skipChapter, int endChapter, bool isActive, string duration, int playCount)
+        {
+            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException("filePath");
+
+            FilePath = filePath;
+            Active = isActive;
+            SkipChapters = skipChapter;
+            EndChapter = endChapter;
+            HasChapter = true;
+            Duration = duration;
+            PlayCount = playCount;
         }
 
         public override string ToString()
