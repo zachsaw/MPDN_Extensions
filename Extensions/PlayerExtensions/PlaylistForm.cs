@@ -1995,16 +1995,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 var time = TimeSpan.FromMilliseconds(Media.Duration / 1000);
                 CurrentItem.Duration = time.ToString(@"hh\:mm\:ss");
-                Invoke((Action)(() =>
+                GuiThread.DoAsync(() =>
                 {
                     if (dgv_PlayList.Rows.Count < 1) return;
                     dgv_PlayList.Rows[currentPlayIndex].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
                     dgv_PlayList.InvalidateRow(currentPlayIndex);
-                }));
+                });
             }
             catch (Exception ex)
             {
-                //silently fails
                 Player.HandleException(ex);
             }
         }
@@ -2020,7 +2019,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     var media = new MediaFile(item.FilePath);
                     var time = TimeSpan.FromMilliseconds(media.duration);
                     item.Duration = time.ToString(@"hh\:mm\:ss");
-                    Invoke((Action)(() =>
+                    GuiThread.Do(() =>
                     {
                         if (dgv_PlayList.Rows.Count < 1) return;
                         if (i != currentPlayIndex || !string.IsNullOrEmpty(item.Duration))
@@ -2028,7 +2027,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                             dgv_PlayList.Rows[i].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
                             dgv_PlayList.InvalidateRow(i);
                         }
-                    }));
+                    });
                 }
             }
             catch (Exception ex)
