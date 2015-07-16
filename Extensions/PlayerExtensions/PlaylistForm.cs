@@ -99,6 +99,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private int minWorker;
         private int minIoc;
 
+        private ToolTip playCountToolTip;
+
         #endregion
 
         #region Properties
@@ -148,6 +150,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             dgv_PlayList.CellDoubleClick += dgv_PlayList_CellDoubleClick;
             dgv_PlayList.CellEndEdit += dgv_PlayList_CellEndEdit;
             dgv_PlayList.EditingControlShowing += dgv_PlayList_EditingControlShowing;
+            dgv_PlayList.CellMouseEnter += dgv_PlayList_CellMouseEnter;
+            dgv_PlayList.CellMouseLeave += dgv_PlayList_CellMouseLeave;
             dgv_PlayList.MouseMove += dgv_PlayList_MouseMove;
             dgv_PlayList.MouseDown += dgv_PlayList_MouseDown;
             dgv_PlayList.MouseUp += dgv_PlayList_MouseUp;
@@ -354,7 +358,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error evaluating expression at 'Regex " + count + "'!\nMessage: " + ex.Message, "Error",
+                        MessageBox.Show(
+                            "Error evaluating expression at 'Regex " + count + "'!\nMessage: " + ex.Message, "Error",
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
@@ -381,7 +386,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
 
             if (prevScrollIndex > -1) dgv_PlayList.FirstDisplayedScrollingRowIndex = prevScrollIndex;
-            currentPlayIndex = (Playlist.FindIndex(i => i.Active) > -1) ? Playlist.FindIndex(i => i.Active) : currentPlayIndex != -1 && currentPlayIndex < Playlist.Count ? currentPlayIndex : -1;
+            currentPlayIndex = (Playlist.FindIndex(i => i.Active) > -1)
+                ? Playlist.FindIndex(i => i.Active)
+                : currentPlayIndex != -1 && currentPlayIndex < Playlist.Count ? currentPlayIndex : -1;
 
             SetPlayStyling();
 
@@ -1298,13 +1305,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 if (File.Exists(Playlist[r.Index].FilePath))
                 {
-                    if (AfterPlaybackAction == AfterPlaybackSettingsAction.GreyOutFile && Playlist[r.Index].PlayCount > 0 && r.Index != currentPlayIndex)
+                    if (AfterPlaybackAction == AfterPlaybackSettingsAction.GreyOutFile &&
+                        Playlist[r.Index].PlayCount > 0 && r.Index != currentPlayIndex)
                     {
                         var item = Playlist[r.Index];
-                        if (20 + (item.PlayCount * 70) >= 180)
-                        {
-                            r.DefaultCellStyle.ForeColor = Color.FromArgb(180, 180, 180);
-                        }
+                        if (20 + (item.PlayCount * 70) >= 180) r.DefaultCellStyle.ForeColor = Color.FromArgb(180, 180, 180);
                         else
                         {
                             r.DefaultCellStyle.ForeColor = Color.FromArgb(20 + (item.PlayCount * 70),
@@ -1451,10 +1456,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (Media.Position == Media.Duration)
             {
                 CurrentItem.PlayCount++;
-
-                if (CurrentItem.PlayCount < 4) dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex].ToolTipText = "Played " + CurrentItem.PlayCount + " times!";
-                else if (CurrentItem.PlayCount >= 4 && CurrentItem.PlayCount <= 7) dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex].ToolTipText = "You've played this too many times. (" + CurrentItem.PlayCount + ")";
-                else dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex].ToolTipText = "What are you doing with your life. (" + CurrentItem.PlayCount + ")";
 
                 if (AfterPlaybackAction == AfterPlaybackSettingsAction.RemoveFile)
                 {
@@ -1614,6 +1615,32 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (tb != null) tb.KeyPress += dgv_PlayList_HandleInput;
         }
 
+        private void dgv_PlayList_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            int row = e.RowIndex;
+            if (row == -1) return;
+            var item = Playlist[row];
+            if (item == null) return;
+
+            playCountToolTip = new ToolTip
+            {
+                InitialDelay = 150
+            };
+
+            row++;
+            if (item.PlayCount < 4) playCountToolTip.SetToolTip(dgv_PlayList, "[" + row + "] Played " + item.PlayCount + " times!");
+            else
+            {
+                playCountToolTip.SetToolTip(dgv_PlayList,
+                    "[" + row + "] Played " + item.PlayCount + " times!\nHow many times are you going to play this?");
+            }
+        }
+
+        private void dgv_PlayList_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            if (playCountToolTip != null) playCountToolTip.Dispose();
+        }
+
         private void dgv_PlayList_HandleInput(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != ',' && e.KeyChar != ' ' &&
@@ -1667,10 +1694,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 var dragSize = SystemInformation.DragSize;
                 dragRowRect = new Rectangle(new Point(e.X - (dragSize.Width / 2), e.Y - (dragSize.Height / 2)), dragSize);
             }
-            else
-            {
-                dragRowRect = Rectangle.Empty;
-            }
+            else dragRowRect = Rectangle.Empty;
 
             if (e.Button == MouseButtons.Right)
             {
