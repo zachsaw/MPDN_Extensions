@@ -1194,7 +1194,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void HandleContextMenu()
         {
             if (dgv_PlayList.Rows.Count < 1) return;
-
+            if (dgv_PlayList.CurrentCell == null) return;
             if (dgv_PlayList.CurrentCell.RowIndex != currentPlayIndex) playToolStripMenuItem.Text = "Play";
             else
             {
