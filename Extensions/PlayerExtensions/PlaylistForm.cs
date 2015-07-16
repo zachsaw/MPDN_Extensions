@@ -1242,6 +1242,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 c.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
+
+            SetColumnSize();
         }
 
         private void FitColumnsToHeader()

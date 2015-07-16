@@ -717,7 +717,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // Duration
             // 
             this.Duration.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.Duration.FillWeight = 10F;
+            this.Duration.FillWeight = 1F;
             this.Duration.HeaderText = "Duration";
             this.Duration.MinimumWidth = 40;
             this.Duration.Name = "Duration";
