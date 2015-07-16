@@ -1628,7 +1628,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             };
 
             row++;
-            if (item.PlayCount < 4) playCountToolTip.SetToolTip(dgv_PlayList, "[" + row + "] Played " + item.PlayCount + " times!");
+            if (item.PlayCount < 4) playCountToolTip.SetToolTip(dgv_PlayList, "[" + row + "] Played " + item.PlayCount + (item.PlayCount == 1 ? " time!" : " times!"));
             else
             {
                 playCountToolTip.SetToolTip(dgv_PlayList,
