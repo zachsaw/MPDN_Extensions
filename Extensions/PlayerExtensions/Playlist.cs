@@ -715,7 +715,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
     {
         DoNothing = 0,
         RemoveFile,
-        StrikeOutFile
+        GreyOutFile
     }
 
     #endregion

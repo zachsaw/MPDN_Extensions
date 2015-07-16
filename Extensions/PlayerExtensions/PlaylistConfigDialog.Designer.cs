@@ -54,6 +54,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.cb_afterPlaybackAction = new System.Windows.Forms.ComboBox();
             this.cb_afterPlaybackOpt = new System.Windows.Forms.ComboBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.cb_onStartup = new System.Windows.Forms.CheckBox();
@@ -69,7 +70,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_rememberColumns = new System.Windows.Forms.CheckBox();
             this.cb_rememberWindowSize = new System.Windows.Forms.CheckBox();
             this.btn_configRegex = new System.Windows.Forms.Button();
-            this.cb_afterPlaybackAction = new System.Windows.Forms.ComboBox();
             this.groupBox2.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -162,6 +162,19 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox4.TabIndex = 13;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "After playback";
+            // 
+            // cb_afterPlaybackAction
+            // 
+            this.cb_afterPlaybackAction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_afterPlaybackAction.FormattingEnabled = true;
+            this.cb_afterPlaybackAction.Items.AddRange(new object[] {
+            "Do nothing",
+            "Remove file",
+            "Grey out file"});
+            this.cb_afterPlaybackAction.Location = new System.Drawing.Point(6, 46);
+            this.cb_afterPlaybackAction.Name = "cb_afterPlaybackAction";
+            this.cb_afterPlaybackAction.Size = new System.Drawing.Size(200, 21);
+            this.cb_afterPlaybackAction.TabIndex = 15;
             // 
             // cb_afterPlaybackOpt
             // 
@@ -330,19 +343,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.btn_configRegex.Text = "Config regex";
             this.btn_configRegex.UseVisualStyleBackColor = false;
             this.btn_configRegex.Click += new System.EventHandler(this.btn_configRegex_Clicked);
-            // 
-            // cb_afterPlaybackAction
-            // 
-            this.cb_afterPlaybackAction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cb_afterPlaybackAction.FormattingEnabled = true;
-            this.cb_afterPlaybackAction.Items.AddRange(new object[] {
-            "Do nothing",
-            "Remove file",
-            "Strike out file"});
-            this.cb_afterPlaybackAction.Location = new System.Drawing.Point(6, 46);
-            this.cb_afterPlaybackAction.Name = "cb_afterPlaybackAction";
-            this.cb_afterPlaybackAction.Size = new System.Drawing.Size(200, 21);
-            this.cb_afterPlaybackAction.TabIndex = 15;
             // 
             // PlaylistConfigDialog
             // 

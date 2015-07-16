@@ -804,7 +804,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public void AddFiles(string[] fileNames)
         {
             AddFilesToPlaylist(fileNames);
-            if (Player.State == PlayerState.Playing) return;
+            if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused) return;
             currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
             OpenMedia(true);
         }
@@ -1309,11 +1309,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 if (File.Exists(Playlist[r.Index].FilePath))
                 {
-                    if (AfterPlaybackAction == AfterPlaybackSettingsAction.StrikeOutFile && Playlist[r.Index].PlayCount > 0 && r.Index != currentPlayIndex)
+                    if (AfterPlaybackAction == AfterPlaybackSettingsAction.GreyOutFile && Playlist[r.Index].PlayCount > 0 && r.Index != currentPlayIndex)
                     {
                         var item = Playlist[r.Index];
-                        var f = new Font(dgv_PlayList.DefaultCellStyle.Font, FontStyle.Strikeout);
-                        r.DefaultCellStyle.Font = f;
                         if (20 + (item.PlayCount * 70) >= 180)
                         {
                             r.DefaultCellStyle.ForeColor = Color.FromArgb(180, 180, 180);
