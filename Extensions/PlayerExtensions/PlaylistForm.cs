@@ -1228,7 +1228,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (split[0] != "Title") c.Visible = Convert.ToBoolean(split[1]);
 
                 c.Width = int.Parse(split[2]);
-                c.FillWeight = int.Parse(split[2]);
             }
 
             columnsFixed = true;
