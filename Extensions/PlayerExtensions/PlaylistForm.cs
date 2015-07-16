@@ -140,7 +140,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             Load += PlaylistForm_Load;
             Shown += PlaylistForm_Shown;
-            Resize += PlaylistForm_Resize;
 
             OnRegexChange += PlaylistForm_OnRegexChange;
 
@@ -1228,21 +1227,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (split[0] != "Title") c.Visible = Convert.ToBoolean(split[1]);
 
                 c.Width = int.Parse(split[2]);
+                c.FillWeight = int.Parse(split[2]);
             }
 
             columnsFixed = true;
-        }
-
-        private void SetPlaylistToFill()
-        {
-            foreach (
-                var c in
-                    from DataGridViewColumn c in dgv_PlayList.Columns where c.Name != "Playing" select c)
-            {
-                c.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            }
-
-            SetColumnSize();
         }
 
         private void FitColumnsToHeader()
@@ -1682,7 +1670,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             else
             {
                 dragRowRect = Rectangle.Empty;
-                SetPlaylistToFill();
             }
 
             if (e.Button == MouseButtons.Right)
@@ -1944,11 +1931,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             SetColumnSize();
             FitColumnsToHeader();
-        }
-
-        private void PlaylistForm_Resize(object sender, EventArgs e)
-        {
-            SetPlaylistToFill();
         }
 
         private void PlaylistForm_KeyDown(object sender, KeyEventArgs e)
