@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -296,7 +297,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             foreach (var i in Playlist)
             {
-                string path = Path.GetDirectoryName(i.FilePath);
+                string path = PathHelper.GetDirectoryName(i.FilePath);
                 string directory = path.Substring(path.LastIndexOf("\\") + 1);
                 string file = Path.GetFileName(i.FilePath);
 
@@ -506,7 +507,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                                         "Only numbers <= " + Media.Chapters.Count + " are allowed");
                                 }
 
-                                value = Media.Chapters.Count.ToString();
+                                value = Media.Chapters.Count.ToString(CultureInfo.CurrentUICulture);
                             }
                             if (Media.Chapters.Count == 0) value = string.Empty;
                         }
@@ -525,7 +526,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ParseWithoutChapters(string line)
         {
-            string title = string.Empty;
+            string title;
             var isActive = false;
 
             if (line.StartsWith(ActiveIndicator))
@@ -545,8 +546,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void ParseWithChapters(string line)
         {
             var splitLine = line.Split('|');
-            string title = string.Empty;
-            var isActive = false;
+            string title;
+            bool isActive;
             var skipChapters = new List<int>();
 
             if (splitLine[0].StartsWith(ActiveIndicator))
@@ -649,7 +650,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void PlaySelectedFile()
         {
-            if (dgv_PlayList.Rows.Count < 1) return;
+            if (dgv_PlayList.Rows.Count < 1 || dgv_PlayList.CurrentRow == null) return;
             if (File.Exists(Playlist[dgv_PlayList.CurrentRow.Index].FilePath))
             {
                 var f = new Font(dgv_PlayList.DefaultCellStyle.Font, FontStyle.Regular);
@@ -699,8 +700,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (File.Exists(item.FilePath))
                 {
                     SetPlayStyling();
-                    Media.Open(item.FilePath);
-                    if (queue) Media.Stop();
+                    Media.Open(item.FilePath, !queue);
                 }
                 else
                 {
@@ -773,7 +773,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Task.Factory.StartNew(GetCurrentMediaDuration);
         }
 
-        private void AddFilesToPlaylist(string[] fileNames)
+        private void AddFilesToPlaylist(IEnumerable<string> fileNames)
         {
             foreach (var item in fileNames.Select(s => new PlaylistItem(s, false) {EndChapter = -1}))
             {
@@ -802,15 +802,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (fd.ShowDialog(this) != DialogResult.OK) return;
 
-                var media = playListUi.GetAllMediaFiles(fd.SelectedPath);
-                if (media.ToArray().Length == 0)
+                var media = playListUi.GetAllMediaFiles(fd.SelectedPath).ToArray();
+                if (media.Length == 0)
                 {
                     MessageBox.Show("There are no files in the selected directory.", "Warning", MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
                     return;
                 }
 
-                AddFiles(media.ToArray());
+                AddFiles(media);
             }
         }
 
@@ -842,15 +842,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (fd.ShowDialog(this) != DialogResult.OK) return;
 
-                var media = playListUi.GetAllMediaFiles(fd.SelectedPath);
-                if (media.ToArray().Length == 0)
+                var media = playListUi.GetAllMediaFiles(fd.SelectedPath).ToArray();
+                if (media.Length == 0)
                 {
                     MessageBox.Show("There are no files in the selected directory.", "Warning", MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
                     return;
                 }
 
-                OpenFiles(media.ToArray());
+                OpenFiles(media);
             }
         }
 
@@ -968,11 +968,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void ViewFileLocation()
         {
             if (Playlist.Count == 0) return;
-            Process.Start(Path.GetDirectoryName(Playlist[dgv_PlayList.CurrentRow.Index].FilePath));
+            if (dgv_PlayList.CurrentRow == null) return;
+
+            Process.Start(PathHelper.GetDirectoryName(Playlist[dgv_PlayList.CurrentRow.Index].FilePath));
         }
 
         private void ViewMediaInfo()
         {
+            if (dgv_PlayList.CurrentRow == null) return;
             string media = Playlist[dgv_PlayList.CurrentRow.Index].FilePath;
             var mediaInfo = new ViewMediaInfoForm(media);
             mediaInfo.ShowDialog();
@@ -1131,7 +1134,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (dgv_PlayList.Rows.Count < 1) return;
 
-            if (dgv_PlayList.CurrentCell.RowIndex != currentPlayIndex) playToolStripMenuItem.Text = "Play";
+            if (dgv_PlayList.CurrentCell == null || dgv_PlayList.CurrentCell.RowIndex != currentPlayIndex) playToolStripMenuItem.Text = "Play";
             else
             {
                 switch (Player.State)
@@ -1269,7 +1272,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (Player.State == PlayerState.Closed) return;
 
-            var chapters = GetChapters();
+            var chapters = GetChapters().ToArray();
 
             if (chapters.ElementAt(chapterNum) == null) return;
             Media.Seek(chapters.ElementAt(chapterNum).Position);
@@ -1430,7 +1433,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (!paintPlayRow) return;
 
             var brush = new SolidBrush(Color.FromArgb(42, 127, 183));
-            var icon = new Bitmap(24, 24);
+            Bitmap icon;
 
             switch (Player.State)
             {
@@ -1631,7 +1634,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 var actualFiles =
                     files.Where(file => !Directory.Exists(file))
-                        .Where(f => Path.GetExtension(f).Length > 0)
+                        .Where(f => PathHelper.GetExtension(f).Length > 0)
                         .Where(file => openFileDialog.Filter.Contains(Path.GetExtension(file.ToLower())))
                         .OrderBy(f => f, new NaturalSortComparer()).ToList();
                 AddFiles(actualFiles.NaturalSort().ToArray());
@@ -1865,18 +1868,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             try
             {
-                var time = TimeSpan.FromMilliseconds(Media.Duration / 1000);
+                var time = TimeSpan.FromMilliseconds(Media.Duration / 1000.0);
                 CurrentItem.Duration = time.ToString(@"hh\:mm\:ss");
-                Invoke((Action)(() =>
+                GuiThread.DoAsync(() =>
                 {
                     if (dgv_PlayList.Rows.Count < 1) return;
                     dgv_PlayList.Rows[currentPlayIndex].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
                     dgv_PlayList.InvalidateRow(currentPlayIndex);
-                }));
+                });
             }
             catch (Exception ex)
             {
-                Player.HandleException(ex);
+                GuiThread.DoAsync(() => Player.HandleException(ex));
             }
         }
 
@@ -1891,20 +1894,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     var media = new MediaFile(item.FilePath);
                     var time = TimeSpan.FromMilliseconds(media.duration);
                     item.Duration = time.ToString(@"hh\:mm\:ss");
-                    Invoke((Action)(() =>
+                    var index = i;
+                    GuiThread.DoAsync(() =>
                     {
                         if (dgv_PlayList.Rows.Count < 1) return;
-                        if (i != currentPlayIndex)
+                        if (index != currentPlayIndex)
                         {
-                            dgv_PlayList.Rows[i].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
-                            dgv_PlayList.InvalidateRow(i);
+                            dgv_PlayList.Rows[index].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
+                            dgv_PlayList.InvalidateRow(index);
                         }
-                    }));
+                    });
                 }
             }
             catch (Exception ex)
             {
-                Player.HandleException(ex);
+                GuiThread.DoAsync(() =>Player.HandleException(ex));
             }
         }
 
@@ -1979,7 +1983,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (HasChapter)
             {
                 return Path.GetFileName(FilePath) + " | SkipChapter: " + String.Join(",", SkipChapters) +
-                       " | EndChapter: " + EndChapter ?? "???";
+                       " | EndChapter: " + EndChapter;
             }
 
             return Path.GetFileName(FilePath) ?? "???";
