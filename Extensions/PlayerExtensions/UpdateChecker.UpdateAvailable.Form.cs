@@ -114,7 +114,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     arch = "AnyCPU";
                     break;
                 case ProcessorArchitecture.Amd64:
-                case ProcessorArchitecture.IA64:
                     arch = "x64";
                     break;
                 default:
