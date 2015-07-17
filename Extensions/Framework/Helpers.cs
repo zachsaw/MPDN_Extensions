@@ -520,19 +520,19 @@ namespace Mpdn.Extensions.Framework
 
         public static void HandleException(Exception exception)
         {
-            Player.HandleException(exception);
+            PlayerControl.HandleException(exception);
         }
 
         public static class OsdText
         {
             public static void Show(string text, int durationMs = 1000)
             {
-                Player.OsdText.Show(text, durationMs);
+                PlayerControl.ShowOsdText(text, durationMs);
             }
 
             public static void Hide()
             {
-                Player.OsdText.Hide();
+                PlayerControl.HideOsdText();
             }
         }
 
