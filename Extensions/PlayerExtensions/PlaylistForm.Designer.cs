@@ -619,6 +619,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.Location = new System.Drawing.Point(0, 0);
             this.dgv_PlayList.Name = "dgv_PlayList";
             this.dgv_PlayList.RowHeadersVisible = false;
+            this.dgv_PlayList.RowHeadersWidth = 4;
             this.dgv_PlayList.RowTemplate.Height = 29;
             this.dgv_PlayList.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.dgv_PlayList.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -659,7 +660,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // FullPath
             // 
             this.FullPath.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.FullPath.FillWeight = 40F;
+            this.FullPath.FillWeight = 1F;
             this.FullPath.HeaderText = "Full Path";
             this.FullPath.MinimumWidth = 60;
             this.FullPath.Name = "FullPath";
@@ -670,7 +671,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // CurrentDirectory
             // 
             this.CurrentDirectory.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.CurrentDirectory.FillWeight = 45F;
+            this.CurrentDirectory.FillWeight = 1F;
             this.CurrentDirectory.HeaderText = "Directory";
             this.CurrentDirectory.MinimumWidth = 60;
             this.CurrentDirectory.Name = "CurrentDirectory";
@@ -681,7 +682,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // Title
             // 
             this.Title.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.Title.FillWeight = 50F;
+            this.Title.FillWeight = 1F;
             this.Title.HeaderText = "Title";
             this.Title.MinimumWidth = 60;
             this.Title.Name = "Title";
@@ -718,7 +719,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // Duration
             // 
             this.Duration.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.Duration.FillWeight = 10F;
+            this.Duration.FillWeight = 1F;
             this.Duration.HeaderText = "Duration";
             this.Duration.MinimumWidth = 40;
             this.Duration.Name = "Duration";
