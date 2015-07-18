@@ -77,26 +77,43 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
-        protected static bool TryDecodeKeyString(String keyString, out Keys keys)
+        protected static bool TryDecodeKeyString(string keyString, out Keys keys)
         {
-            var keyWords = Regex.Split(keyString ?? "", @"\W+");
-            keyString = String.Join(", ", keyWords.Select(DecodeKeyWord).ToArray());
+            keyString = keyString.ToLower().Trim();
+            var keyWords = Regex.Split(keyString, @"\W+");
+            var specialKeys = AddSpecialKeys(keyString);
+            keyString = String.Join(", ",
+                keyWords.Concat(specialKeys).Where(k => !string.IsNullOrWhiteSpace(k)).Select(DecodeKeyWord).ToArray());
 
             return (Enum.TryParse(keyString, true, out keys));
+        }
+
+        private static IEnumerable<string> AddSpecialKeys(string keyString)
+        {
+            var specialKeys = new List<string>();
+            if (keyString.Length >= 1)
+            {
+                var lastChar = keyString[keyString.Length - 1];
+                switch (lastChar)
+                {
+                    case '+':
+                    case '-':
+                        specialKeys.Add(new string(lastChar, 1));
+                        break;
+                }
+            }
+            return specialKeys;
         }
 
         private static Keys DecodeKeyString(String keyString)
         {
             Keys keys;
-            if (TryDecodeKeyString(keyString, out keys))
-                return keys;
-
-            return Keys.None;
+            return TryDecodeKeyString(keyString, out keys) ? keys : Keys.None;
         }
 
         private static String DecodeKeyWord(String keyWord)
         {
-            switch (keyWord.ToLower())
+            switch (keyWord)
             {
                 case "ctrl":
                     return "Control";
@@ -120,6 +137,10 @@ namespace Mpdn.Extensions.Framework
                     return "D8";
                 case "9":
                     return "D9";
+                case "+":
+                    return "Add";
+                case "-":
+                    return "Subtract";
                 default:
                     return keyWord;
             }

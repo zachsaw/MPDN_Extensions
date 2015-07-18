@@ -24,6 +24,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using DirectShowLib;
 using Mpdn.Config;
+using Mpdn.DirectShow;
 using Mpdn.RenderScript;
 using Control = System.Windows.Forms.Control;
 
@@ -240,6 +241,19 @@ namespace Mpdn.Extensions.Framework
         public static int FullScreenSeekBarHeight
         {
             get { return PlayerControl.FullScreenSeekBarHeight; }
+        }
+    }
+
+    public static class ComThread
+    {
+        public static void Do(Action action)
+        {
+            PlayerControl.ComInvoke(action);
+        }
+
+        public static void DoAsync(Action action)
+        {
+            PlayerControl.ComInvokeAsync(action);
         }
     }
 
@@ -544,6 +558,19 @@ namespace Mpdn.Extensions.Framework
         public static void ShowOptionsDialog()
         {
             PlayerControl.ShowOptionsDialog();
+        }
+
+        public static class Filters
+        {
+            public static IList<Filter> Audio
+            {
+                get { return PlayerControl.AudioFilters; }
+            }
+
+            public static IList<Filter> Video
+            {
+                get { return PlayerControl.VideoFilters; }
+            }
         }
     }
 
