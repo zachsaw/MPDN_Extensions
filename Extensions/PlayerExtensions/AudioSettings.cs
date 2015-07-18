@@ -31,6 +31,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private readonly PlayerMenuItem m_AddDelayMenu = new PlayerMenuItem(initiallyDisabled: true);
         private readonly PlayerMenuItem m_MinusDelayMenu = new PlayerMenuItem(initiallyDisabled: true);
+        private readonly PlayerMenuItem m_ResetDelayMenu = new PlayerMenuItem(initiallyDisabled: true);
+
         private ILAVAudioSettings m_LavAudioSettings;
 
         public override ExtensionUiDescriptor Descriptor
@@ -55,7 +57,6 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             base.Initialize();
 
-            Media.Loaded += MediaLoaded;
             Player.StateChanged += PlayerStateChanged;
         }
 
@@ -63,7 +64,6 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             base.Destroy();
 
-            Media.Loaded -= MediaLoaded;
             Player.StateChanged -= PlayerStateChanged;
         }
 
@@ -74,40 +74,57 @@ namespace Mpdn.Extensions.PlayerExtensions
                 return new[]
                 {
                     new Verb(CATEGORY, SUBCATEGORY, "Add 5ms", "+", string.Empty, () => AddDelay(5), m_AddDelayMenu),
-                    new Verb(CATEGORY, SUBCATEGORY, "Minus 5ms", "-", string.Empty, () => AddDelay(-5), m_MinusDelayMenu)
+                    new Verb(CATEGORY, SUBCATEGORY, "Minus 5ms", "-", string.Empty, () => AddDelay(-5), m_MinusDelayMenu),
+                    new Verb(CATEGORY, SUBCATEGORY, "Reset", ResetDelay, m_ResetDelayMenu)
                 };
             }
         }
 
-        private void MediaLoaded(object sender, EventArgs e)
-        {
-            var audioDecoder = Player.Filters.Audio.FirstOrDefault(f => f.ClsId == s_ClsIdLavAudioDecoder);
-            if (audioDecoder == null)
-                return;
-
-            ComThread.Do(() =>
-            {
-                var settings = (ILAVAudioSettings) audioDecoder.Base;
-                m_LavAudioSettings = settings;
-            });
-
-            m_AddDelayMenu.Enabled = true;
-            m_MinusDelayMenu.Enabled = true;
-        }
-
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
-            if (e.NewState != PlayerState.Closed)
+            if (e.OldState == PlayerState.Closed)
+            {
+                var audioDecoder = Player.Filters.Audio.FirstOrDefault(f => f.ClsId == s_ClsIdLavAudioDecoder);
+                if (audioDecoder == null)
+                    return;
+
+                ComThread.Do(() =>
+                {
+                    var settings = (ILAVAudioSettings)audioDecoder.Base;
+                    m_LavAudioSettings = settings;
+                });
+
+                m_AddDelayMenu.Enabled = true;
+                m_MinusDelayMenu.Enabled = true;
+                m_ResetDelayMenu.Enabled = true;
+            }
+            else if (e.NewState == PlayerState.Closed)
+            {
+                m_LavAudioSettings = null;
+                m_AddDelayMenu.Enabled = false;
+                m_MinusDelayMenu.Enabled = false;
+                m_ResetDelayMenu.Enabled = false;
+            }
+        }
+
+        private void ResetDelay()
+        {
+            if (m_LavAudioSettings == null)
                 return;
 
-            m_LavAudioSettings = null;
-            m_AddDelayMenu.Enabled = false;
-            m_MinusDelayMenu.Enabled = false;
+            ComThread.Do(() => m_LavAudioSettings.SetAudioDelay(false, 0));
+
+            ShowDelayText(0);
+        }
+
+        private static void ShowDelayText(int delay)
+        {
+            Player.OsdText.Show(string.Format("Audio Delay: {0}ms", delay));
         }
 
         private void AddDelay(int delayMs)
         {
-            if (Player.State == PlayerState.Closed)
+            if (m_LavAudioSettings == null)
                 return;
 
             int delay = 0;
@@ -125,7 +142,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 m_LavAudioSettings.SetAudioDelay(true, delay);
             });
 
-            Player.OsdText.Show(string.Format("Audio Delay: {0}ms", delay));
+            ShowDelayText(delay);
         }
     }
 }
