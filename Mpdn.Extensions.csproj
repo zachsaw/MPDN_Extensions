@@ -119,6 +119,8 @@
     <Compile Include="Extensions\PlayerExtensions\GoToTimeForm.Designer.cs">
       <DependentUpon>GoToTimeForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\Interfaces\ILavAudioSettings.cs" />
+    <Compile Include="Extensions\PlayerExtensions\AudioSettings.cs" />
     <Compile Include="Extensions\PlayerExtensions\TaskbarEnhancer.cs" />
     <Compile Include="Extensions\PlayerExtensions\KeyBindings.cs" />
     <Compile Include="Extensions\PlayerExtensions\MouseControl.ConfigDialog.cs">
