@@ -134,6 +134,26 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
+        public static bool PerformanceMode(this RenderQuality quality)
+        {
+            switch (quality)
+            {
+                case RenderQuality.MaxPerformance:
+                case RenderQuality.Performance:
+                    return true;
+                case RenderQuality.Quality:
+                case RenderQuality.MaxQuality:
+                    return false;
+                default:
+                    throw new ArgumentOutOfRangeException("quality");
+            }
+        }
+
+        public static bool QualityMode(this RenderQuality quality)
+        {
+            return !PerformanceMode(quality);
+        }
+
         public static bool IsFullRange(this YuvColorimetric colorimetric)
         {
             return !IsLimitedRange(colorimetric);

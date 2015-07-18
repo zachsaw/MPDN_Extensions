@@ -144,7 +144,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 DisposeHelper.Dispose(ref m_Buffer);
 
-                if (!Renderer.IsOpenClAvail || Renderer.RenderQuality == RenderQuality.MaxPerformance)
+                if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
                     return sourceFilter; // OpenCL is not available, or UNORM8 textures used (not supported); fallback
