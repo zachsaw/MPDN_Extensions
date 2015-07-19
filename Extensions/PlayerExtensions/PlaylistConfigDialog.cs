@@ -118,22 +118,22 @@ namespace Mpdn.Extensions.PlayerExtensions
                 WrapContents = false
             };
 
-            var btn_apply = new Button
+            var btn_clear = new Button
             {
-                Text = "Apply",
+                Text = "Clear",
                 Location = new Point(regexForm.Width - 160, regexForm.Height - 55)
             };
 
             var btn_close = new Button
             {
                 Text = "Close",
-                Location = new Point(btn_apply.Location.X + btn_apply.Size.Width + 2, btn_apply.Location.Y)
+                Location = new Point(btn_clear.Location.X + btn_clear.Size.Width + 2, btn_clear.Location.Y)
             };
 
             var btn_add = new Button
             {
                 Text = "Add regex",
-                Location = new Point(2, btn_apply.Location.Y)
+                Location = new Point(2, btn_clear.Location.Y)
             };
 
             var cb_stripDirectory = new CheckBox
@@ -175,14 +175,14 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             if (Settings.StripDirectoryInFileName) cb_stripDirectory.Checked = true;
 
-            btn_apply.Click += btn_apply_Click;
+            btn_clear.Click += btn_clear_Click;
             btn_close.Click += btn_close_Click;
             btn_add.Click += btn_add_Click;
             linkLabel.LinkClicked += linkLabel_LinkClicked;
 
             regexForm.Controls.Add(label);
             regexForm.Controls.Add(flowPanel);
-            regexForm.Controls.Add(btn_apply);
+            regexForm.Controls.Add(btn_clear);
             regexForm.Controls.Add(btn_close);
             regexForm.Controls.Add(btn_add);
             regexForm.Controls.Add(cb_stripDirectory);
@@ -241,8 +241,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             panel.Controls.AddRange(new Control[] {label, txtBox});
             return panel;
         }
-
-        private void btn_apply_Click(object sender, EventArgs e)
+        
+        private void SaveRegex()
         {
             var regexList = new List<string>();
 
@@ -275,8 +275,45 @@ namespace Mpdn.Extensions.PlayerExtensions
             PlaylistForm.UpdatePlaylistWithRegexFilter(regexList, Settings.StripDirectoryInFileName);
         }
 
+        private void ClearRegex()
+        {
+            foreach (var c in regexForm.Controls)
+            {
+                var cb = c as CheckBox;
+                if (cb == null) continue;
+
+                Settings.StripDirectoryInFileName = cb.Checked;
+            }
+
+            foreach (var c in regexForm.Controls)
+            {
+                var flowPanel = c as FlowLayoutPanel;
+                if (flowPanel == null) continue;
+
+                foreach (var c1 in flowPanel.Controls)
+                {
+                    var panel = c1 as Panel;
+                    if (panel == null) continue;
+
+                    foreach (var c2 in panel.Controls)
+                    {
+                        var t = c2 as TextBox;
+                        if (t != null) if (!string.IsNullOrEmpty(t.Text)) t.Text = "";
+                    }
+                }
+            }
+
+            PlaylistForm.UpdatePlaylistWithRegexFilter(new List<string>(), Settings.StripDirectoryInFileName);
+        }
+
+        private void btn_clear_Click(object sender, EventArgs e)
+        {
+            ClearRegex();
+        }
+
         private void btn_close_Click(object sender, EventArgs e)
         {
+            SaveRegex();
             regexForm.Close();
         }
 
