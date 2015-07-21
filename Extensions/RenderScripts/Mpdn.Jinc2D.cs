@@ -32,6 +32,11 @@ namespace Mpdn.Extensions.RenderScripts
 
             public ScalerTaps TapCount { get; set; }
 
+            public Jinc2D()
+            {
+                TapCount = ScalerTaps.Four;
+            }
+
             #endregion
 
             protected override string ShaderPath
@@ -105,7 +110,7 @@ namespace Mpdn.Extensions.RenderScripts
                 //    At 32 data points, you'll reduce the error to ~2% but it's probably not worth the GPU load overhead
 
                 // For 2 lobed Jinc, we need 4 2D LUTs
-                const int tapCount = 4;
+                int tapCount = TapCount.ToInt();
                 m_Weights = new ISourceTexture[tapCount];
                 var data = new float[dataPoints, dataPoints*4];
                 for (int z = 0; z < tapCount; z++)
@@ -116,7 +121,7 @@ namespace Mpdn.Extensions.RenderScripts
                         {
                             var offsetX = x/(float) dataPoints;
                             var offsetY = y/(float) dataPoints;
-                            const int topLeft = -tapCount/2 + 1;
+                            int topLeft = -tapCount/2 + 1;
                             data[y, x*4 + 0] = GetWeight(CalculateLength(topLeft + 0 - offsetX, topLeft + z - offsetY));
                             data[y, x*4 + 1] = GetWeight(CalculateLength(topLeft + 1 - offsetX, topLeft + z - offsetY));
                             data[y, x*4 + 2] = GetWeight(CalculateLength(topLeft + 2 - offsetX, topLeft + z - offsetY));
