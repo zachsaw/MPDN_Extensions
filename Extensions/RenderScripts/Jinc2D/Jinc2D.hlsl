@@ -32,7 +32,6 @@ float4  size0 : register(c2);
 #define py (p1[1])
 
 #define LOBES 2
-#define AR_STRENGTH 0.85
 
 #define Get(x,y)              (tex2D(s0, pos + inputTexelSize*int2(x,y)).rgb)
 #define Weights1(offset)      (tex2D(s1, offset))
