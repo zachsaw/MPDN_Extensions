@@ -57,6 +57,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonDown = new System.Windows.Forms.Button();
             this.buttonClear = new System.Windows.Forms.Button();
             this.buttonEdit = new System.Windows.Forms.Button();
+            this.checkBoxCompatibilityMode = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // buttonCancel
@@ -99,7 +100,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.listBox.IntegralHeight = false;
             this.listBox.Location = new System.Drawing.Point(13, 33);
             this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(357, 233);
+            this.listBox.Size = new System.Drawing.Size(357, 210);
             this.listBox.TabIndex = 0;
             this.listBox.SelectedIndexChanged += new System.EventHandler(this.ListBoxSelectedIndexChanged);
             this.listBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ListBoxMouseDoubleClick);
@@ -111,7 +112,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonAdd.Location = new System.Drawing.Point(230, 10);
             this.buttonAdd.Name = "buttonAdd";
             this.buttonAdd.Size = new System.Drawing.Size(25, 23);
-            this.buttonAdd.TabIndex = 2;
+            this.buttonAdd.TabIndex = 3;
             this.buttonAdd.Text = "+";
             this.buttonAdd.UseVisualStyleBackColor = true;
             this.buttonAdd.Click += new System.EventHandler(this.ButtonAddClick);
@@ -124,7 +125,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonRemove.Location = new System.Drawing.Point(254, 10);
             this.buttonRemove.Name = "buttonRemove";
             this.buttonRemove.Size = new System.Drawing.Size(25, 23);
-            this.buttonRemove.TabIndex = 3;
+            this.buttonRemove.TabIndex = 4;
             this.buttonRemove.Text = "-";
             this.buttonRemove.UseVisualStyleBackColor = true;
             this.buttonRemove.Click += new System.EventHandler(this.ButtonRemoveClick);
@@ -145,7 +146,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonUp.Location = new System.Drawing.Point(321, 10);
             this.buttonUp.Name = "buttonUp";
             this.buttonUp.Size = new System.Drawing.Size(25, 23);
-            this.buttonUp.TabIndex = 5;
+            this.buttonUp.TabIndex = 6;
             this.buttonUp.Text = "▲";
             this.buttonUp.UseVisualStyleBackColor = true;
             this.buttonUp.Click += new System.EventHandler(this.ButtonUpClick);
@@ -158,7 +159,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonDown.Location = new System.Drawing.Point(345, 10);
             this.buttonDown.Name = "buttonDown";
             this.buttonDown.Size = new System.Drawing.Size(25, 23);
-            this.buttonDown.TabIndex = 6;
+            this.buttonDown.TabIndex = 7;
             this.buttonDown.Text = "▼";
             this.buttonDown.UseVisualStyleBackColor = true;
             this.buttonDown.Click += new System.EventHandler(this.ButtonDownClick);
@@ -170,7 +171,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonClear.Location = new System.Drawing.Point(288, 10);
             this.buttonClear.Name = "buttonClear";
             this.buttonClear.Size = new System.Drawing.Size(25, 23);
-            this.buttonClear.TabIndex = 4;
+            this.buttonClear.TabIndex = 5;
             this.buttonClear.Text = "c";
             this.buttonClear.UseVisualStyleBackColor = true;
             this.buttonClear.Click += new System.EventHandler(this.ButtonClearClick);
@@ -181,10 +182,22 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonEdit.Location = new System.Drawing.Point(15, 272);
             this.buttonEdit.Name = "buttonEdit";
             this.buttonEdit.Size = new System.Drawing.Size(75, 23);
-            this.buttonEdit.TabIndex = 1;
+            this.buttonEdit.TabIndex = 2;
             this.buttonEdit.Text = "Edit...";
             this.buttonEdit.UseVisualStyleBackColor = true;
             this.buttonEdit.Click += new System.EventHandler(this.ButtonEditClick);
+            // 
+            // checkBoxCompatibilityMode
+            // 
+            this.checkBoxCompatibilityMode.AutoSize = true;
+            this.checkBoxCompatibilityMode.Checked = true;
+            this.checkBoxCompatibilityMode.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxCompatibilityMode.Location = new System.Drawing.Point(15, 249);
+            this.checkBoxCompatibilityMode.Name = "checkBoxCompatibilityMode";
+            this.checkBoxCompatibilityMode.Size = new System.Drawing.Size(148, 17);
+            this.checkBoxCompatibilityMode.TabIndex = 1;
+            this.checkBoxCompatibilityMode.Text = "Enable compatibility mode";
+            this.checkBoxCompatibilityMode.UseVisualStyleBackColor = true;
             // 
             // ImageProcessorConfigDialog
             // 
@@ -193,6 +206,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(384, 307);
+            this.Controls.Add(this.checkBoxCompatibilityMode);
             this.Controls.Add(this.buttonEdit);
             this.Controls.Add(this.buttonClear);
             this.Controls.Add(this.buttonDown);
@@ -229,6 +243,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button buttonDown;
             private System.Windows.Forms.Button buttonClear;
             private System.Windows.Forms.Button buttonEdit;
+            private System.Windows.Forms.CheckBox checkBoxCompatibilityMode;
 
         }
     }
