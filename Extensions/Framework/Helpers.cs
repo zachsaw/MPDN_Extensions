@@ -220,6 +220,25 @@ namespace Mpdn.Extensions.Framework
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        public static int ToInt(this ScalerTaps scalerTaps)
+        {
+            switch (scalerTaps)
+            {
+                case ScalerTaps.Four:
+                    return 4;
+                case ScalerTaps.Six:
+                    return 6;
+                case ScalerTaps.Eight:
+                    return 8;
+                case ScalerTaps.Twelve:
+                    return 12;
+                case ScalerTaps.Sixteen:
+                    return 16;
+                default:
+                    throw new ArgumentOutOfRangeException("scalerTaps");
+            }
+        }
     }
 
     public static class StringHelpers
