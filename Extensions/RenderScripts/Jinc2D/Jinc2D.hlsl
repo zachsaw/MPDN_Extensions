@@ -72,18 +72,17 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
     ws4[3] = Weights4(1-offset);
 
     {
-#if LOOP==1
-        [loop]
-#else
-        [unroll]
-#endif
-        for (int Y = -LOBES+1; Y<=LOBES; Y++)
-        [unroll] for (int X = -LOBES+1; X<=LOBES; X++)
         {
-            int2 XY = {X,Y};
-            float w;
-            if (Y <= 0)
+#if LOOP==1
+            [loop]
+#else
+            [unroll]
+#endif
+            for (int Y = -LOBES+1; Y<=0; Y++)
+            [unroll] for (int X = -LOBES+1; X<=LOBES; X++)
             {
+                int2 XY = {X,Y};
+                float w;
                 if (X <= 0)
                 {
                     w = ws1[-Y][-X];
@@ -92,9 +91,22 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
                 {
                     w = ws2[-Y][X-1];
                 }
+                avg += Get(X, Y)*w;
+                W += w;
             }
-            else
+        }
+        
+        {
+#if LOOP==1
+            [loop]
+#else
+            [unroll]
+#endif
+            for (int Y = 1; Y<=LOBES; Y++)
+            [unroll] for (int X = -LOBES+1; X<=LOBES; X++)
             {
+                int2 XY = {X,Y};
+                float w;
                 if (X <= 0)
                 {
                     w = ws3[Y-1][-X];
@@ -103,9 +115,9 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
                 {
                     w = ws4[Y-1][X-1];
                 }
+                avg += Get(X, Y)*w;
+                W += w;
             }
-            avg += Get(X, Y)*w;
-            W += w;
         }
     }
     
