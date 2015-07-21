@@ -35,7 +35,7 @@ The easiest way to develop or debug extensions is to use Microsoft Visual Studio
 
 Follow these simple steps:
 
-1. Copy any compatible version of MPDN (any edition is fine) into the `MPDN` folder.
+1. Copy any compatible version of MPDN (AnyCPU edition) into the `MPDN` folder.
     * The VS solution runs `MPDN\MediaPlayerDotNet.exe` when you start a debug session.
 1. Open `Mpdn.Extensions.sln`
 1. Rebuild the solution
