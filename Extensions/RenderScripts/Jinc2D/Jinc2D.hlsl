@@ -39,28 +39,7 @@ float4  size0 : register(c2);
 #define Weights3(offset)      (tex2D(s3, offset))
 #define Weights4(offset)      (tex2D(s4, offset))
 
-#define CALC_WEIGHTS 0
-
-// The calculate weights code path (taken from libretro)
-// is for comparison purposes only (CALC_WEIGHTS 1 vs 0)
-
-#define JINC2_WINDOW_SINC 0.44
-#define JINC2_SINC 0.82
-
-#define halfpi  1.5707963267948966192313216916398
-#define pi    3.1415926535897932384626433832795
-#define wa    (JINC2_WINDOW_SINC*pi)
-#define wb    (JINC2_SINC*pi)
-
-float wg(float x)
-{
-    if (x < 1e-6)
-        return wa*wb;
-        
-    return sin(x*wa)*sin(x*wb)/(x*x);
-}
-
-// libretro - END
+float3 ApplyAntiRinging(float2 pos, float3 color);
 
 float4 main(float2 tex : TEXCOORD0) : COLOR
 {
@@ -74,21 +53,10 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
     float W = 0;
     
     float4x4 ws;
-#if CALC_WEIGHTS==1
-    {
-        for (int Y = -LOBES+1; Y<=LOBES; Y++) 
-        for (int X = -LOBES+1; X<=LOBES; X++)
-        {
-            int2 XY = {X,Y};
-            ws[Y+LOBES-1][X+LOBES-1] = wg(length(XY-offset));
-        }
-    }
-#else
     ws[0] = Weights1(offset);
     ws[1] = Weights2(offset);
     ws[2] = Weights3(offset);
     ws[3] = Weights4(offset);
-#endif
 
     {
         [unroll] for (int Y = -LOBES+1; Y<=LOBES; Y++)
@@ -101,8 +69,11 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
         }
     }
     
-    float3 result = avg/W;
-    
+    return float4(ApplyAntiRinging(pos, avg/W), 1);
+}
+
+float3 ApplyAntiRinging(float2 pos, float3 color)
+{
 #if AR==1
     float3 sampleMin = 1e+8;
     float3 sampleMax = 1e-8;
@@ -118,10 +89,9 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
     }
     
     // Anti-ringing
-    float3 original = result;
-    result = clamp(result, sampleMin, sampleMax);
-    result = lerp(original, result, AR_STRENGTH);
+    float3 original = color;
+    color = clamp(color, sampleMin, sampleMax);
+    color = lerp(original, color, AR_STRENGTH);
 #endif
-
-    return float4(result, 1);
+    return color;
 }
