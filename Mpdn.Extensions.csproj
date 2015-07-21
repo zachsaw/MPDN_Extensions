@@ -404,9 +404,6 @@
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Extensions\RenderScripts\Mpdn.Jinc2D.ConfigDialog.resx">
-      <DependentUpon>Mpdn.Jinc2D.ConfigDialog.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Mpdn.Extensions.Framework.csproj">
