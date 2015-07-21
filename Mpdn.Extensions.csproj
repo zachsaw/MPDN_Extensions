@@ -284,7 +284,14 @@
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptParser.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptGroup.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Jinc2D.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ChromaScaler.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Jinc2D.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.Jinc2D.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.Jinc2D.ConfigDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>

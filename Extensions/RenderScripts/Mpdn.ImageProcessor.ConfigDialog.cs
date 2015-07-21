@@ -46,11 +46,14 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     listBox.SelectedIndex = 0;
                 }
+
+                checkBoxCompatibilityMode.Checked = Settings.CompatibilityMode;
             }
 
             protected override void SaveSettings()
             {
                 Settings.ShaderFileNames = listBox.Items.Cast<string>().ToArray();
+                Settings.CompatibilityMode = checkBoxCompatibilityMode.Checked;
             }
 
             private void ButtonAddClick(object sender, EventArgs e)

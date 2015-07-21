@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -34,6 +35,13 @@ namespace Mpdn.Extensions.RenderScripts
                 set { m_ShaderFileNames = value; }
             }
 
+            public bool CompatibilityMode { get; set; }
+
+            public ImageProcessor()
+            {
+                CompatibilityMode = true;
+            }
+
             #endregion
 
             protected override string ShaderPath
@@ -49,7 +57,17 @@ namespace Mpdn.Extensions.RenderScripts
             public override IFilter CreateFilter(IFilter input)
             {
                 return ShaderFileNames.Aggregate(input,
-                    (current, filename) => new ShaderFilter(CompileShader(filename), current));
+                    (current, filename) =>
+                        new ShaderFilter(CompileShader(filename).Configure(format: GetTextureFormat()), current));
+            }
+
+            private TextureFormat? GetTextureFormat()
+            {
+                return CompatibilityMode
+                    ? Renderer.RenderQuality == RenderQuality.MaxQuality
+                        ? TextureFormat.Float32
+                        : TextureFormat.Float16
+                    : (TextureFormat?) null;
             }
         }
 
