@@ -31,13 +31,11 @@ float4  size0 : register(c2);
 #define px (p1[0])
 #define py (p1[1])
 
-#define LOBES 2
-
 #define Get(x,y)              (tex2D(s0, pos + inputTexelSize*int2(x,y)).rgb)
-#define Weights1(offset)      (tex2D(s1, offset))
-#define Weights2(offset)      (tex2D(s2, offset))
-#define Weights3(offset)      (tex2D(s3, offset))
-#define Weights4(offset)      (tex2D(s4, offset))
+#define Weights1(offset)      (tex2D(s1,  offset))
+#define Weights2(offset)      (tex2D(s2,  offset))
+#define Weights3(offset)      (tex2D(s3,  offset))
+#define Weights4(offset)      (tex2D(s4,  offset))
 
 float3 ApplyAntiRinging(float2 pos, float3 color);
 
@@ -52,18 +50,60 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
     float3 avg = 0;
     float W = 0;
     
-    float4x4 ws;
-    ws[0] = Weights1(offset);
-    ws[1] = Weights2(offset);
-    ws[2] = Weights3(offset);
-    ws[3] = Weights4(offset);
+    float4 ws1[4];
+    float4 ws2[4];
+    float4 ws3[4];
+    float4 ws4[4];
+    ws1[0] = Weights1(offset);
+    ws1[1] = Weights2(offset);
+    ws1[2] = Weights3(offset);
+    ws1[3] = Weights4(offset);
+    ws2[0] = Weights1(float2(1-offset.x, offset.y));
+    ws2[1] = Weights2(float2(1-offset.x, offset.y));
+    ws2[2] = Weights3(float2(1-offset.x, offset.y));
+    ws2[3] = Weights4(float2(1-offset.x, offset.y));
+    ws3[0] = Weights1(float2(offset.x, 1-offset.y));
+    ws3[1] = Weights2(float2(offset.x, 1-offset.y));
+    ws3[2] = Weights3(float2(offset.x, 1-offset.y));
+    ws3[3] = Weights4(float2(offset.x, 1-offset.y));
+    ws4[0] = Weights1(1-offset);
+    ws4[1] = Weights2(1-offset);
+    ws4[2] = Weights3(1-offset);
+    ws4[3] = Weights4(1-offset);
 
     {
-        [unroll] for (int Y = -LOBES+1; Y<=LOBES; Y++)
+#if LOOP==1
+        [loop]
+#else
+        [unroll]
+#endif
+        for (int Y = -LOBES+1; Y<=LOBES; Y++)
         [unroll] for (int X = -LOBES+1; X<=LOBES; X++)
         {
             int2 XY = {X,Y};
-            float w = ws[Y+LOBES-1][X+LOBES-1];
+            float w;
+            if (Y <= 0)
+            {
+                if (X <= 0)
+                {
+                    w = ws1[-Y][-X];
+                }
+                else
+                {
+                    w = ws2[-Y][X-1];
+                }
+            }
+            else
+            {
+                if (X <= 0)
+                {
+                    w = ws3[Y-1][-X];
+                }
+                else
+                {
+                    w = ws4[Y-1][X-1];
+                }
+            }
             avg += Get(X, Y)*w;
             W += w;
         }

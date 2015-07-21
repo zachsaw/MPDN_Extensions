@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
+using System.Linq;
+using Mpdn.DxvaHd;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -25,16 +29,24 @@ namespace Mpdn.Extensions.RenderScripts
             public Jinc2DConfigDialog()
             {
                 InitializeComponent();
+
+                var descs = EnumHelpers.GetDescriptions<ScalerTaps>().Take(3);
+                foreach (var desc in descs)
+                {
+                    comboBoxTapCount.Items.Add(desc);
+                }
             }
 
             protected override void LoadSettings()
             {
+                comboBoxTapCount.SelectedIndex = (int) Settings.TapCount;
                 checkBoxAntiRinging.Checked = Settings.AntiRingingEnabled;
                 AntiRingingStrengthSetter.Value = (decimal) Settings.AntiRingingStrength;
             }
 
             protected override void SaveSettings()
             {
+                Settings.TapCount = (ScalerTaps) comboBoxTapCount.SelectedIndex;
                 Settings.AntiRingingEnabled = checkBoxAntiRinging.Checked;
                 Settings.AntiRingingStrength = (float)AntiRingingStrengthSetter.Value;
             }

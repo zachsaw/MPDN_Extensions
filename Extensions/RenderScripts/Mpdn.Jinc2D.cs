@@ -29,6 +29,8 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Jinc2D : RenderChain
         {
+            private const int DATA_POINTS = 24;
+
             private ISourceTexture[] m_Weights;
 
             #region Settings
@@ -53,6 +55,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
+                DiscardTextures();
+
                 var sourceSize = input.OutputSize;
                 if (!IsUpscalingFrom(sourceSize))
                     return input;
@@ -61,14 +65,33 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var shader = CompileShader("Jinc2D.hlsl",
                     macroDefinitions:
-                        string.Format("AR = {0}; AR_STRENGTH = {1}", AntiRingingEnabled ? 1 : 0, AntiRingingStrength))
-                    .Configure(linearSampling: false, transform: size => Renderer.TargetSize);
+                        string.Format("LOBES = {0}; AR = {1}; AR_STRENGTH = {2}; LOOP = {3}",
+                            TapCount.ToInt()/2, AntiRingingEnabled ? 1 : 0, AntiRingingStrength,
+                            TapCount == ScalerTaps.Eight ? 1 : 0))
+                    .Configure(
+                        transform: size => Renderer.TargetSize,
+                        linearSampling: false);
 
-                return new ShaderFilter(shader, input,
-                    new WeightFilter(m_Weights[0]),
-                    new WeightFilter(m_Weights[1]),
-                    new WeightFilter(m_Weights[2]),
-                    new WeightFilter(m_Weights[3]));
+                switch (TapCount)
+                {
+                    case ScalerTaps.Four:
+                        return new ShaderFilter(shader, input,
+                            new WeightFilter(m_Weights[0]),
+                            new WeightFilter(m_Weights[1]));
+                    case ScalerTaps.Six:
+                        return new ShaderFilter(shader, input,
+                            new WeightFilter(m_Weights[0]),
+                            new WeightFilter(m_Weights[1]),
+                            new WeightFilter(m_Weights[2]));
+                    case ScalerTaps.Eight:
+                        return new ShaderFilter(shader, input,
+                            new WeightFilter(m_Weights[0]),
+                            new WeightFilter(m_Weights[1]),
+                            new WeightFilter(m_Weights[2]),
+                            new WeightFilter(m_Weights[3]));
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
             public override void Reset()
@@ -80,14 +103,19 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void DiscardTextures()
             {
-                if (m_Weights == null)
+                DiscardWeights(ref m_Weights);
+            }
+
+            private static void DiscardWeights(ref ISourceTexture[] weights)
+            {
+                if (weights == null) 
                     return;
 
-                foreach (var w in m_Weights)
+                foreach (var w in weights)
                 {
                     DisposeHelper.Dispose(w);
                 }
-                m_Weights = null;
+                weights = null;
             }
 
 #if USE_LIBRETRO_APPROX_JINC
@@ -125,35 +153,31 @@ namespace Mpdn.Extensions.RenderScripts
                 if (m_Weights != null)
                     return;
 
-                const int dataPoints = 24; // ~2.5% error in high contrast edges
-                // Note: 
-                //    Increase by steps of 4 if you want better quality (less error vs mathematical model)
-                //    At 32 data points, you'll reduce the error to ~2% but it's probably not worth the GPU load overhead
-
-                // For 2 lobed Jinc, we need 4 2D LUTs
-                int tapCount = TapCount.ToInt();
-                m_Weights = new ISourceTexture[tapCount];
-                var data = new float[dataPoints, dataPoints*4];
-                for (int z = 0; z < tapCount; z++)
+                int lobes = TapCount.ToInt()/2;
+                m_Weights = new ISourceTexture[lobes];
+                var data1 = new float[DATA_POINTS, DATA_POINTS*4];
+                for (int z = 0; z < lobes; z++)
                 {
-                    for (int y = 0; y < dataPoints; y++)
+                    for (int y = 0; y < DATA_POINTS; y++)
                     {
-                        for (int x = 0; x < dataPoints; x++)
+                        for (int x = 0; x < DATA_POINTS; x++)
                         {
-                            var offsetX = x/(float) dataPoints;
-                            var offsetY = y/(float) dataPoints;
-                            int topLeft = -tapCount/2 + 1;
-                            data[y, x*4 + 0] = GetWeight(GetDistance(topLeft + 0 - offsetX, topLeft + z - offsetY));
-                            data[y, x*4 + 1] = GetWeight(GetDistance(topLeft + 1 - offsetX, topLeft + z - offsetY));
-                            data[y, x*4 + 2] = GetWeight(GetDistance(topLeft + 2 - offsetX, topLeft + z - offsetY));
-                            data[y, x*4 + 3] = GetWeight(GetDistance(topLeft + 3 - offsetX, topLeft + z - offsetY));
+                            var offsetX = x/(float) DATA_POINTS;
+                            var offsetY = y/(float) DATA_POINTS;
+
+                            for (int i = 0; i < 4; i++)
+                            {
+                                data1[y, x*4 + i] = GetWeight(GetDistance(i + offsetX, z + offsetY));
+                            }
                         }
                     }
-                    m_Weights[z] = Renderer.CreateTexture(dataPoints, dataPoints, TextureFormat.Float32);
-                    Renderer.UpdateTexture(m_Weights[z], data);
+                    m_Weights[z] = Renderer.CreateTexture(DATA_POINTS, DATA_POINTS, TextureFormat.Float32);
+                    Renderer.UpdateTexture(m_Weights[z], data1);
                 }
             }
         }
+
+        #region Jinc Function
 
         public class Jinc
         {
@@ -339,6 +363,8 @@ namespace Mpdn.Extensions.RenderScripts
                 return Jinc1(dist) * Jinc1(dist * JincWindowFactor(lobes));
             }
         }
+
+        #endregion
 
         public class ChromaScaler : RenderChainUi<Jinc2D, Jinc2DConfigDialog>
         {
