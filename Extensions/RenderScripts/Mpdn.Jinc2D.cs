@@ -107,7 +107,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (m_Weights != null)
                     return;
 
-                const int dataPoints = 20; // ~2.5% error in high contrast edges
+                const int dataPoints = 24; // ~2.5% error in high contrast edges
                 // Note: 
                 //    Increase by steps of 4 if you want better quality (less error vs mathematical model)
                 //    At 32 data points, you'll reduce the error to ~2% but it's probably not worth the GPU load overhead
