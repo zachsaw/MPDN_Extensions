@@ -48,6 +48,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
             this.ButtonOK = new System.Windows.Forms.Button();
             this.ButtonCancel = new System.Windows.Forms.Button();
+            this.checkBoxAntiRinging = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // ButtonOK
@@ -74,6 +75,16 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
             // 
+            // checkBoxAntiRinging
+            // 
+            this.checkBoxAntiRinging.AutoSize = true;
+            this.checkBoxAntiRinging.Location = new System.Drawing.Point(23, 26);
+            this.checkBoxAntiRinging.Name = "checkBoxAntiRinging";
+            this.checkBoxAntiRinging.Size = new System.Drawing.Size(120, 17);
+            this.checkBoxAntiRinging.TabIndex = 5;
+            this.checkBoxAntiRinging.Text = "Activate Anti-ringing";
+            this.checkBoxAntiRinging.UseVisualStyleBackColor = true;
+            // 
             // Jinc2DConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
@@ -81,6 +92,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(218, 141);
+            this.Controls.Add(this.checkBoxAntiRinging);
             this.Controls.Add(this.ButtonCancel);
             this.Controls.Add(this.ButtonOK);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -92,6 +104,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Jinc2D Settings";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
             }
 
@@ -99,6 +112,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private System.Windows.Forms.Button ButtonOK;
             private System.Windows.Forms.Button ButtonCancel;
+            private System.Windows.Forms.CheckBox checkBoxAntiRinging;
 
         }
     }

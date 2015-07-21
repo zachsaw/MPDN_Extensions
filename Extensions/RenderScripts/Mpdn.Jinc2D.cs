@@ -31,10 +31,12 @@ namespace Mpdn.Extensions.RenderScripts
             #region Settings
 
             public ScalerTaps TapCount { get; set; }
+            public bool EnableAntiRinging { get; set; }
 
             public Jinc2D()
             {
                 TapCount = ScalerTaps.Four;
+                EnableAntiRinging = false;
             }
 
             #endregion
@@ -52,7 +54,8 @@ namespace Mpdn.Extensions.RenderScripts
 
                 CreateWeights();
 
-                var shader = CompileShader("Jinc2D.hlsl")
+                var shader = CompileShader("Jinc2D.hlsl",
+                    macroDefinitions: string.Format("AR = {0}", EnableAntiRinging ? 1 : 0))
                     .Configure(linearSampling: false, transform: size => Renderer.TargetSize);
 
                 return new ShaderFilter(shader, input,

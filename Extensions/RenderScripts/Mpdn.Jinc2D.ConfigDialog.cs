@@ -29,10 +29,12 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
+                checkBoxAntiRinging.Checked = Settings.EnableAntiRinging;
             }
 
             protected override void SaveSettings()
             {
+                Settings.EnableAntiRinging = checkBoxAntiRinging.Checked;
             }
         }
 
