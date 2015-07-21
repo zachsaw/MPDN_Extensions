@@ -63,11 +63,12 @@ namespace Mpdn.Extensions.RenderScripts
 
                 CreateWeights();
 
+                int lobes = TapCount.ToInt()/2;
                 var shader = CompileShader("Jinc2D.hlsl",
                     macroDefinitions:
                         string.Format("LOBES = {0}; AR = {1}; AR_STRENGTH = {2}; LOOP = {3}",
-                            TapCount.ToInt()/2, AntiRingingEnabled ? 1 : 0, AntiRingingStrength,
-                            TapCount == ScalerTaps.Eight ? 1 : 0))
+                            lobes, AntiRingingEnabled ? 1 : 0, AntiRingingStrength,
+                            lobes > 2 ? 1 : 0))
                     .Configure(
                         transform: size => Renderer.TargetSize,
                         linearSampling: false);
