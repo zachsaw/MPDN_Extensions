@@ -15,6 +15,7 @@
 // License along with this library.
 
 //#define USE_LIBRETRO_APPROX_JINC
+//#define ENABLE_HQ_MODE
 
 using System;
 using Mpdn.Extensions.Framework;
@@ -29,7 +30,12 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Jinc2D : RenderChain
         {
-            private const int DATA_POINTS = 24;
+#if ENABLE_HQ_MODE
+            private const int DATA_POINTS = 12;
+#else
+            private const int DATA_POINTS = 24; // ~2.5% error vs mathematical model
+            // Note: You can increase this value to reduce the error but you incur higher GPU loads
+#endif
 
             private ISourceTexture[] m_Weights;
 
@@ -71,7 +77,11 @@ namespace Mpdn.Extensions.RenderScripts
                             lobes > 2 ? 1 : 0))
                     .Configure(
                         transform: size => Renderer.TargetSize,
-                        linearSampling: false);
+#if ENABLE_HQ_MODE
+                        perTextureLinearSampling: GetPerTextureLinearSampling(TapCount),
+#endif
+                        linearSampling: false
+                    );
 
                 switch (TapCount)
                 {
@@ -118,6 +128,23 @@ namespace Mpdn.Extensions.RenderScripts
                 }
                 weights = null;
             }
+
+#if ENABLE_HQ_MODE
+            private static bool[] GetPerTextureLinearSampling(ScalerTaps taps)
+            {
+                switch (taps)
+                {
+                    case ScalerTaps.Four:
+                        return new[] {false, true, true};
+                    case ScalerTaps.Six:
+                        return new[] {false, true, true, true};
+                    case ScalerTaps.Eight:
+                        return new[] {false, true, true, true, true};
+                    default:
+                        throw new ArgumentOutOfRangeException("taps");
+                }
+            }
+#endif
 
 #if USE_LIBRETRO_APPROX_JINC
             private double GetApproxJincWeight(double dist)
