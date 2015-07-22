@@ -1,19 +1,3 @@
-// This file is a part of MPDN Extensions.
-// https://github.com/zachsaw/MPDN_Extensions
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3.0 of the License, or (at your option) any later version.
-// 
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library.
-// 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -33,22 +17,10 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class AcmPlug : PlayerExtension<RemoteControlSettings, RemoteControlConfig>
     {
-        #region Variables
-        private Socket _serverSocket;
-        private readonly Dictionary<Guid, StreamWriter> _writers = new Dictionary<Guid, StreamWriter>();
-        private readonly Dictionary<Guid, Socket> _clients = new Dictionary<Guid, Socket>();
-        private readonly RemoteControl_AuthHandler _authHandler = new RemoteControl_AuthHandler();
-        private RemoteClients _clientManager;
-        private Timer _locationTimer;
-        private Guid _playlistGuid = Guid.Parse("A1997E34-D67B-43BB-8FE6-55A71AE7184B");
-        private Playlist.Playlist _playlistInstance;
-        #endregion
-
         #region Properties
-        public Dictionary<Guid, Socket> GetClients
-        {
-            get { return _clients; }
-        }
+
+        public Dictionary<Guid, Socket> GetClients { get; } = new Dictionary<Guid, Socket>();
+
         #endregion
 
         public override ExtensionUiDescriptor Descriptor
@@ -65,16 +37,27 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
-
         protected override string ConfigFileName
         {
             get { return "Example.RemoteSettings"; }
         }
 
+        public override IList<Verb> Verbs
+        {
+            get
+            {
+                return new[]
+                {
+                    new Verb(Category.Help, string.Empty, "Connected Clients", "Ctrl+Shift+R",
+                        "Show Remote Client connections", Test1Click)
+                };
+            }
+        }
+
         public override void Destroy()
         {
             base.Destroy();
-            if(Settings.IsActive)
+            if (Settings.IsActive)
                 ShutdownServer();
         }
 
@@ -82,9 +65,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             base.Initialize();
             Settings.PropertyChanged += Settings_PropertyChanged;
-            if(Settings.IsActive)
+            if (Settings.IsActive)
                 SetupServer();
-                 
         }
 
         private void ShutdownServer()
@@ -100,7 +82,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                     writer.Value.Flush();
                 }
                 catch
-                { }
+                {
+                }
             }
             if (_serverSocket != null)
                 _serverSocket.Close();
@@ -122,19 +105,18 @@ namespace Mpdn.Extensions.PlayerExtensions
                     _playlistInstance.GetPlaylistForm.PlaylistChanged += GetPlaylistForm_PlaylistChanged;
                 }
             }
-            Task.Factory.StartNew(Server);   
+            Task.Factory.StartNew(Server);
         }
 
-        void GetPlaylistForm_PlaylistChanged(object sender, EventArgs e)
+        private void GetPlaylistForm_PlaylistChanged(object sender, EventArgs e)
         {
             GetPlaylist(Guid.Empty, true);
         }
 
-        void GetPlaylistForm_VisibleChanged(object sender, EventArgs e)
+        private void GetPlaylistForm_VisibleChanged(object sender, EventArgs e)
         {
             PushToAllListeners("PlaylistShow|" + _playlistInstance.GetPlaylistForm.Visible);
         }
-
 
         private void Subscribe()
         {
@@ -144,10 +126,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.FullScreenMode.Exiting += m_PlayerControl_ExitingFullScreenMode;
             Player.VolumeChanged += PlayerControl_VolumeChanged;
             Media.SubtitleTrackChanged += PlayerControl_SubtitleTrackChanged;
-            Media.AudioTrackChanged += PlayerControl_AudioTrackChanged;            
+            Media.AudioTrackChanged += PlayerControl_AudioTrackChanged;
         }
 
-        void Settings_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void Settings_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "IsActive" && Settings.IsActive)
             {
@@ -170,34 +152,33 @@ namespace Mpdn.Extensions.PlayerExtensions
             Media.AudioTrackChanged -= PlayerControl_AudioTrackChanged;
         }
 
-        void PlayerControl_AudioTrackChanged(object sender, EventArgs e)
+        private void PlayerControl_AudioTrackChanged(object sender, EventArgs e)
         {
             PushToAllListeners("AudioChanged|" + Media.AudioTrack.Description);
         }
 
-        void PlayerControl_SubtitleTrackChanged(object sender, EventArgs e)
+        private void PlayerControl_SubtitleTrackChanged(object sender, EventArgs e)
         {
             PushToAllListeners("SubChanged|" + Media.SubtitleTrack.Description);
         }
 
-        void PlayerControl_VolumeChanged(object sender, EventArgs e)
+        private void PlayerControl_VolumeChanged(object sender, EventArgs e)
         {
-            PushToAllListeners("Volume|" + Player.Volume.ToString());
-            PushToAllListeners("Mute|" + Player.Mute.ToString());
+            PushToAllListeners("Volume|" + Player.Volume);
+            PushToAllListeners("Mute|" + Player.Mute);
         }
 
-        void m_PlayerControl_ExitingFullScreenMode(object sender, EventArgs e)
+        private void m_PlayerControl_ExitingFullScreenMode(object sender, EventArgs e)
         {
             PushToAllListeners("Fullscreen|False");
         }
 
-        void m_PlayerControl_EnteringFullScreenMode(object sender, EventArgs e)
+        private void m_PlayerControl_EnteringFullScreenMode(object sender, EventArgs e)
         {
             PushToAllListeners("Fullscreen|True");
         }
 
-
-        void m_PlayerControl_PlayerStateChanged(object sender, PlayerStateEventArgs e)
+        private void m_PlayerControl_PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
             switch (e.NewState)
             {
@@ -241,10 +222,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "AudioTracks|" + audioStringBuilder;
             }
-            else
-            {
-                return String.Empty;
-            }
+            return String.Empty;
         }
 
         private string GetAllSubtitleTracks()
@@ -270,10 +248,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "Subtitles|" + subSb;
             }
-            else
-            {
-                return String.Empty;
-            }
+            return String.Empty;
         }
 
         private string GetAllChapters()
@@ -292,26 +267,12 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "Chapters|" + chapterSb;
             }
-            else
-            {
-                return String.Empty;
-            }
+            return String.Empty;
         }
 
-        void m_PlayerControl_PlaybackCompleted(object sender, EventArgs e)
+        private void m_PlayerControl_PlaybackCompleted(object sender, EventArgs e)
         {
             PushToAllListeners("Finished|" + Media.FilePath);
-        }
-
-        public override IList<Verb> Verbs
-        {
-            get
-            {
-                return new[]
-                {
-                    new Verb(Category.Help, string.Empty, "Connected Clients", "Ctrl+Shift+R", "Show Remote Client connections", Test1Click),
-                };
-            }
         }
 
         private void Test1Click()
@@ -349,7 +310,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ClientHandler(Socket client)
         {
             Guid clientGuid = Guid.NewGuid();
-            _clients.Add(clientGuid, client);
+            GetClients.Add(clientGuid, client);
 
             NetworkStream nStream = new NetworkStream(client);
             StreamReader reader = new StreamReader(nStream);
@@ -358,13 +319,13 @@ namespace Mpdn.Extensions.PlayerExtensions
             var clientGUID = reader.ReadLine();
             if (!_authHandler.IsGUIDAuthed(clientGUID) && Settings.ValidateClients)
             {
-                ClientAuth(clientGUID.ToString(), clientGuid);
+                ClientAuth(clientGUID, clientGuid);
             }
             else
             {
                 DisplayTextMessage("Remote Connected");
                 WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
-                WriteToSpesificClient("ClientGUID|" + clientGuid.ToString(), clientGuid.ToString());
+                WriteToSpesificClient("ClientGUID|" + clientGuid, clientGuid.ToString());
                 if (!_authHandler.IsGUIDAuthed(clientGUID))
                     _authHandler.AddAuthedClient(clientGUID);
                 if (_clientManager.Visible)
@@ -381,10 +342,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                         client.Close();
                         break;
                     }
-                    else
-                    {
-                        HandleData(data);
-                    }
+                    HandleData(data);
                 }
                 catch
                 {
@@ -396,7 +354,9 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ClientAuth(string msgValue, Guid clientGuid)
         {
             WriteToSpesificClient("AuthCode|" + msgValue, clientGuid.ToString());
-            if (MessageBox.Show(Gui.VideoBox, "Allow Remote Connection for " + msgValue, "Remote Authentication", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (
+                MessageBox.Show(Gui.VideoBox, "Allow Remote Connection for " + msgValue, "Remote Authentication",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 DisplayTextMessage("Remote Connected");
                 WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
@@ -429,7 +389,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             WriteToSpesificClient("Exit|" + exitMessage, clientGuid.ToString());
 
-            _clients[clientGuid].Disconnect(true);
+            GetClients[clientGuid].Disconnect(true);
             RemoveWriter(clientGuid.ToString());
         }
 
@@ -556,7 +516,6 @@ namespace Mpdn.Extensions.PlayerExtensions
                 if (counter > 1)
                     sb.Append(">>");
                 sb.Append(item.FilePath + "]]" + item.Active);
-
             }
             if (!notify)
             {
@@ -616,7 +575,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             Guid callerGuid = Guid.Parse(guid);
             _writers.Remove(callerGuid);
-            _clients.Remove(callerGuid);
+            GetClients.Remove(callerGuid);
             _clientManager.ForceUpdate();
         }
 
@@ -644,7 +603,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 _playlistInstance.GetPlaylistForm.PlayActive();
             }
-
         }
 
         private void StopMedia(object blank)
@@ -658,7 +616,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             double.TryParse(seekLocation.ToString(), out location);
             if (location != -1)
             {
-                Media.Seek((long)location);
+                Media.Seek((long) location);
             }
         }
 
@@ -760,7 +718,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                     writer.Value.Flush();
                 }
                 catch
-                { }
+                {
+                }
             }
         }
 
@@ -776,19 +735,57 @@ namespace Mpdn.Extensions.PlayerExtensions
             DisconnectClient("Disconnected by User", clientGuid);
         }
 
-        void _locationTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void _locationTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             try
             {
                 PushToAllListeners("Postion|" + Media.Position);
             }
             catch (Exception)
-            { }
+            {
+            }
         }
+
+        #region Variables
+
+        private Socket _serverSocket;
+        private readonly Dictionary<Guid, StreamWriter> _writers = new Dictionary<Guid, StreamWriter>();
+        private readonly RemoteControl_AuthHandler _authHandler = new RemoteControl_AuthHandler();
+        private RemoteClients _clientManager;
+        private Timer _locationTimer;
+        private readonly Guid _playlistGuid = Guid.Parse("A1997E34-D67B-43BB-8FE6-55A71AE7184B");
+        private Playlist.Playlist _playlistInstance;
+
+        #endregion
     }
 
     public class RemoteControlSettings : INotifyPropertyChanged
     {
+        #region Public Methods
+
+        public RemoteControlSettings()
+        {
+            ConnectionPort = 6545;
+            ValidateClients = true;
+        }
+
+        #endregion
+
+        #region Events
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Private Methods
+
+        public void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            PropertyChanged.Handle(h => h(this, e));
+        }
+
+        #endregion
+
         #region Variables
 
         private int _connectionPort;
@@ -801,11 +798,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public int ConnectionPort
         {
-            get
-            {
-                return _connectionPort;
-                
-            }
+            get { return _connectionPort; }
             set
             {
                 _connectionPort = value;
@@ -815,10 +808,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public bool ValidateClients
         {
-            get
-            {
-              return _validateClients;  
-            }
+            get { return _validateClients; }
             set
             {
                 _validateClients = value;
@@ -828,40 +818,12 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public bool IsActive
         {
-            get
-            {
-                return _isActive;
-            }
+            get { return _isActive; }
             set
             {
                 _isActive = value;
                 OnPropertyChanged(new PropertyChangedEventArgs("IsActive"));
             }
-        }
-
-        #endregion
-
-        #region Events
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
-        #region Public Methods
-
-        public RemoteControlSettings()
-        {
-            ConnectionPort = 6545;
-            ValidateClients = true;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged.Handle(h => h(this, e));
         }
 
         #endregion
