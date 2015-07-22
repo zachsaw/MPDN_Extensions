@@ -25,7 +25,7 @@
 // -- Edge detection options -- 
 #define acuity 6.0
 #define radius 0.66
-#define power 3.0
+#define power 1.0
 
 // -- Misc --
 sampler s0 	  : register(s0);
