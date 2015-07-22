@@ -90,10 +90,12 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private bool HasExistingSubtitle(string mediaFilename)
         {
-            var subFile = string.Format(Subtitle.FILE_NAME_FORMAT, Path.GetFileNameWithoutExtension(mediaFilename),
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(mediaFilename);
+            var subFile = string.Format(Subtitle.FILE_NAME_FORMAT, fileNameWithoutExtension,
                 Settings.PreferedLanguage);
             var fullPath = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), subFile);
-            return File.Exists(fullPath);
+            var subFileSameName = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), $"{fileNameWithoutExtension}.srt");
+            return File.Exists(fullPath) || File.Exists(subFileSameName);
         }
     }
 
