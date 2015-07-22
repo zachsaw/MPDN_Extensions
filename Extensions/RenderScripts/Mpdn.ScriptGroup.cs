@@ -88,7 +88,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                return SelectedOption != null ? SelectedOption.CreateSafeFilter(input) : input;
+                return SelectedOption != null ? input + SelectedOption : input;
             }
 
             public override void Initialize()

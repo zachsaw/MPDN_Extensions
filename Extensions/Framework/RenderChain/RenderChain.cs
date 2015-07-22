@@ -16,7 +16,6 @@
 // 
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
@@ -36,7 +35,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         #region Operators
 
         public static RenderChain Identity = new StaticChain(x => x);
-        private TextFilter m_TextFilter;
 
         public static implicit operator Func<IFilter, IFilter>(RenderChain map)
         {
@@ -166,51 +164,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
         /// </summary>
         public virtual void Reset()
         {
-            DisposeHelper.Dispose(ref m_TextFilter);
         }
 
         #endregion
 
-        #region Error Handling
-
-        public IFilter CreateSafeFilter(IFilter input)
-        {
-            DisposeHelper.Dispose(ref m_TextFilter);
-            try
-            {
-                return CreateFilter(input);
-            }
-            catch (Exception ex)
-            {
-                return DisplayError(ex);
-            }
-        }
-
-        private IFilter DisplayError(Exception e)
-        {
-            var message = ErrorMessage(e);
-            Trace.WriteLine(message);
-            return m_TextFilter = new TextFilter(message);
-        }
-
-        protected static Exception InnerMostException(Exception e)
-        {
-            while (e.InnerException != null)
-            {
-                e = e.InnerException;
-            }
-
-            return e;
-        }
-
-        private string ErrorMessage(Exception e)
-        {
-            var ex = InnerMostException(e);
-            return string.Format("Error in {0}:\r\n\r\n{1}\r\n\r\n~\r\nStack Trace:\r\n{2}",
-                    GetType().Name, ex.Message, ex.StackTrace);
-        }
-
-        #endregion
     }
 
     public class StaticChain : RenderChain
