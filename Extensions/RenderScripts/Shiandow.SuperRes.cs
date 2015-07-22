@@ -80,7 +80,7 @@ namespace Mpdn.Extensions.RenderScripts
                 SelectedIndex = 0;
 
                 m_Upscaler = new Jinc(ScalerTaps.Four, false); // Deprecated
-                m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.66f, false) : new Bilinear();              
+                m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.66f, false) : new Bilinear();
             }
 
             public override IFilter CreateFilter(IFilter input)
@@ -110,13 +110,6 @@ namespace Mpdn.Extensions.RenderScripts
                 // Compile Shaders
                 var Diff = CompileShader("Diff.hlsl")
                     .Configure( format: TextureFormat.Float16 );
-
-                // Compile Shaders
-                var UpdateDiff = CompileShader("UpdateDiff.hlsl")
-                    .Configure(format: TextureFormat.Float16);
-
-                /*var Diff = CompileShader("BilateralDS.hlsl")
-                    .Configure(format: TextureFormat.Float16, sizeIndex: 1);*/
 
                 var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions)
                     .Configure(
