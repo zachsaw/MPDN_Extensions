@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-//#define USE_LIBRETRO_APPROX_JINC
 //#define ENABLE_HQ_MODE
 
 using System;
@@ -72,15 +71,14 @@ namespace Mpdn.Extensions.RenderScripts
                 int lobes = TapCount.ToInt()/2;
                 var shader = CompileShader("Jinc2D.hlsl",
                     macroDefinitions:
-                        string.Format("LOBES = {0}; AR = {1}; AR_STRENGTH = {2}; LOOP = {3}",
-                            lobes, AntiRingingEnabled ? 1 : 0, AntiRingingStrength,
-                            lobes > 2 ? 1 : 0))
+                        string.Format("LOBES = {0}; AR = {1}; LOOP = {2}",
+                            lobes, AntiRingingEnabled ? 1 : 0, lobes > 2 ? 1 : 0))
                     .Configure(
                         transform: size => Renderer.TargetSize,
+                        arguments: new []{ AntiRingingStrength }
 #if ENABLE_HQ_MODE
-                        perTextureLinearSampling: GetPerTextureLinearSampling(TapCount),
+                        , perTextureLinearSampling: GetPerTextureLinearSampling(TapCount)
 #endif
-                        linearSampling: false
                     );
 
                 switch (TapCount)
@@ -146,28 +144,9 @@ namespace Mpdn.Extensions.RenderScripts
             }
 #endif
 
-#if USE_LIBRETRO_APPROX_JINC
-            private double GetApproxJincWeight(double dist)
-            {
-                const double jinc2WindowSinc = 0.44;
-                const double jinc2Sinc = 0.82;
-                const double wa = jinc2WindowSinc*Math.PI;
-                const double wb = jinc2Sinc*Math.PI;
-
-                return dist < 1e-8 ? wa*wb : Math.Sin(dist*wa)*Math.Sin(dist*wb)/(dist*dist);
-            }
-#endif
-
             private float GetWeight(double dist)
             {
                 var lobes = TapCount.ToInt()/2;
-
-#if USE_LIBRETRO_APPROX_JINC
-                if (lobes == 2)
-                {
-                    return (float) GetApproxJincWeight(dist);
-                }
-#endif
                 return (float) Jinc.GetWeight(dist, lobes);
             }
 
@@ -394,7 +373,7 @@ namespace Mpdn.Extensions.RenderScripts
 
         #endregion
 
-        public class ChromaScaler : RenderChainUi<Jinc2D, Jinc2DConfigDialog>
+        public class Jinc2DScaler : RenderChainUi<Jinc2D, Jinc2DConfigDialog>
         {
             protected override string ConfigFileName
             {

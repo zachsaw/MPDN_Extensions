@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
+// TODO: Scale LUMA only
+
 sampler s0    : register(s0);
 sampler s1    : register(s1);
 sampler s2    : register(s2);
@@ -22,11 +25,13 @@ sampler s4    : register(s4);
 float4  p0    : register(c0);
 float2  p1    : register(c1);
 float4  size0 : register(c2);
+float4  args0 : register(c3);
 
 #define width  (p0[0])
 #define height (p0[1])
 
 #define inputTexelSize size0.zw
+#define antiRingingStrength args0[0]
 
 #define px (p1[0])
 #define py (p1[1])
@@ -143,7 +148,7 @@ float3 ApplyAntiRinging(float2 pos, float3 color)
     // Anti-ringing
     float3 original = color;
     color = clamp(color, sampleMin, sampleMax);
-    color = lerp(original, color, AR_STRENGTH);
+    color = lerp(original, color, antiRingingStrength);
 #endif
     return color;
 }
