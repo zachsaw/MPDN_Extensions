@@ -298,7 +298,7 @@ namespace Mpdn.Extensions.Framework
 
     public static class Extension
     {
-        public static int Version
+        public static int InterfaceVersion
         {
             get { return 1; }
         }

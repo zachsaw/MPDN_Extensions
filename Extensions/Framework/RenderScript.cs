@@ -31,7 +31,10 @@ namespace Mpdn.Extensions.Framework
 
         private class NullRenderScriptUi : IRenderScriptUi
         {
-            public int Version { get { return Extension.Version; } }
+            public int Version
+            {
+                get { return Extension.InterfaceVersion; }
+            }
 
             public ExtensionUiDescriptor Descriptor
             {

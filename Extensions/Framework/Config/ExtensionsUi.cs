@@ -83,7 +83,10 @@ namespace Mpdn.Extensions.Framework.Config
         where TSettings : class, new()
         where TDialog : IScriptConfigDialog<TSettings>, new()
     {
-        public int Version { get { return Extension.Version; } }
+        public int Version
+        {
+            get { return Extension.InterfaceVersion; }
+        }
 
         protected virtual string ConfigFileName
         {
