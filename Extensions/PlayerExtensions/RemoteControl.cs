@@ -28,6 +28,8 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
+using static System.Boolean;
+using static System.String;
 using Timer = System.Timers.Timer;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -40,36 +42,21 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         #endregion
 
-        public override ExtensionUiDescriptor Descriptor
+        public override ExtensionUiDescriptor Descriptor => new ExtensionUiDescriptor
         {
-            get
-            {
-                return new ExtensionUiDescriptor
-                {
-                    Guid = new Guid("C7FC1078-6471-409D-A2F1-34FF8903D6DA"),
-                    Name = "Remote Control",
-                    Description = "Remote Control extension to allow control of MPDN over the network.",
-                    Copyright = "Copyright DeadlyEmbrace © 2015. All rights reserved."
-                };
-            }
-        }
+            Guid = new Guid("C7FC1078-6471-409D-A2F1-34FF8903D6DA"),
+            Name = "Remote Control",
+            Description = "Remote Control extension to allow control of MPDN over the network.",
+            Copyright = "Copyright DeadlyEmbrace © 2015. All rights reserved."
+        };
 
-        protected override string ConfigFileName
-        {
-            get { return "Example.RemoteSettings"; }
-        }
+        protected override string ConfigFileName => "Example.RemoteSettings";
 
-        public override IList<Verb> Verbs
+        public override IList<Verb> Verbs => new[]
         {
-            get
-            {
-                return new[]
-                {
-                    new Verb(Category.Help, string.Empty, "Connected Clients", "Ctrl+Shift+R",
-                        "Show Remote Client connections", Test1Click)
-                };
-            }
-        }
+            new Verb(Category.Help, Empty, "Connected Clients", "Ctrl+Shift+R",
+                "Show Remote Client connections", ConnectedClientMenuClick)
+        };
 
         public override void Destroy()
         {
@@ -81,7 +68,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            Settings.PropertyChanged += Settings_PropertyChanged;
+            Settings.PropertyChanged += SettingsPropertyChanged;
             if (Settings.IsActive)
                 SetupServer();
         }
@@ -118,35 +105,35 @@ namespace Mpdn.Extensions.PlayerExtensions
                 _playlistInstance = playlist as Playlist.Playlist;
                 if (_playlistInstance != null)
                 {
-                    _playlistInstance.GetPlaylistForm.VisibleChanged += GetPlaylistForm_VisibleChanged;
-                    _playlistInstance.GetPlaylistForm.PlaylistChanged += GetPlaylistForm_PlaylistChanged;
+                    _playlistInstance.GetPlaylistForm.VisibleChanged += GetPlaylistFormVisibleChanged;
+                    _playlistInstance.GetPlaylistForm.PlaylistChanged += GetPlaylistFormPlaylistChanged;
                 }
             }
             Task.Factory.StartNew(Server);
         }
 
-        private void GetPlaylistForm_PlaylistChanged(object sender, EventArgs e)
+        private void GetPlaylistFormPlaylistChanged(object sender, EventArgs e)
         {
             GetPlaylist(Guid.Empty, true);
         }
 
-        private void GetPlaylistForm_VisibleChanged(object sender, EventArgs e)
+        private void GetPlaylistFormVisibleChanged(object sender, EventArgs e)
         {
             PushToAllListeners("PlaylistShow|" + _playlistInstance.GetPlaylistForm.Visible);
         }
 
         private void Subscribe()
         {
-            Player.Playback.Completed += m_PlayerControl_PlaybackCompleted;
+            Player.Playback.Completed += PlayerControlPlaybackCompleted;
             Player.StateChanged += m_PlayerControl_PlayerStateChanged;
-            Player.FullScreenMode.Entering += m_PlayerControl_EnteringFullScreenMode;
-            Player.FullScreenMode.Exiting += m_PlayerControl_ExitingFullScreenMode;
-            Player.VolumeChanged += PlayerControl_VolumeChanged;
-            Media.SubtitleTrackChanged += PlayerControl_SubtitleTrackChanged;
-            Media.AudioTrackChanged += PlayerControl_AudioTrackChanged;
+            Player.FullScreenMode.Entering += PlayerControlEnteringFullScreenMode;
+            Player.FullScreenMode.Exiting += PlayerControlExitingFullScreenMode;
+            Player.VolumeChanged += PlayerControlVolumeChanged;
+            Media.SubtitleTrackChanged += PlayerControlSubtitleTrackChanged;
+            Media.AudioTrackChanged += PlayerControlAudioTrackChanged;
         }
 
-        private void Settings_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void SettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "IsActive" && Settings.IsActive)
             {
@@ -160,37 +147,37 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void Unsubscribe()
         {
-            Player.Playback.Completed -= m_PlayerControl_PlaybackCompleted;
+            Player.Playback.Completed -= PlayerControlPlaybackCompleted;
             Player.StateChanged -= m_PlayerControl_PlayerStateChanged;
-            Player.FullScreenMode.Entering -= m_PlayerControl_EnteringFullScreenMode;
-            Player.FullScreenMode.Exiting -= m_PlayerControl_ExitingFullScreenMode;
-            Player.VolumeChanged -= PlayerControl_VolumeChanged;
-            Media.SubtitleTrackChanged -= PlayerControl_SubtitleTrackChanged;
-            Media.AudioTrackChanged -= PlayerControl_AudioTrackChanged;
+            Player.FullScreenMode.Entering -= PlayerControlEnteringFullScreenMode;
+            Player.FullScreenMode.Exiting -= PlayerControlExitingFullScreenMode;
+            Player.VolumeChanged -= PlayerControlVolumeChanged;
+            Media.SubtitleTrackChanged -= PlayerControlSubtitleTrackChanged;
+            Media.AudioTrackChanged -= PlayerControlAudioTrackChanged;
         }
 
-        private void PlayerControl_AudioTrackChanged(object sender, EventArgs e)
+        private void PlayerControlAudioTrackChanged(object sender, EventArgs e)
         {
             PushToAllListeners("AudioChanged|" + Media.AudioTrack.Description);
         }
 
-        private void PlayerControl_SubtitleTrackChanged(object sender, EventArgs e)
+        private void PlayerControlSubtitleTrackChanged(object sender, EventArgs e)
         {
             PushToAllListeners("SubChanged|" + Media.SubtitleTrack.Description);
         }
 
-        private void PlayerControl_VolumeChanged(object sender, EventArgs e)
+        private void PlayerControlVolumeChanged(object sender, EventArgs e)
         {
             PushToAllListeners("Volume|" + Player.Volume);
             PushToAllListeners("Mute|" + Player.Mute);
         }
 
-        private void m_PlayerControl_ExitingFullScreenMode(object sender, EventArgs e)
+        private void PlayerControlExitingFullScreenMode(object sender, EventArgs e)
         {
             PushToAllListeners("Fullscreen|False");
         }
 
-        private void m_PlayerControl_EnteringFullScreenMode(object sender, EventArgs e)
+        private void PlayerControlEnteringFullScreenMode(object sender, EventArgs e)
         {
             PushToAllListeners("Fullscreen|True");
         }
@@ -239,7 +226,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "AudioTracks|" + audioStringBuilder;
             }
-            return String.Empty;
+            return Empty;
         }
 
         private string GetAllSubtitleTracks()
@@ -265,7 +252,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "Subtitles|" + subSb;
             }
-            return String.Empty;
+            return Empty;
         }
 
         private string GetAllChapters()
@@ -284,15 +271,15 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "Chapters|" + chapterSb;
             }
-            return String.Empty;
+            return Empty;
         }
 
-        private void m_PlayerControl_PlaybackCompleted(object sender, EventArgs e)
+        private void PlayerControlPlaybackCompleted(object sender, EventArgs e)
         {
             PushToAllListeners("Finished|" + Media.FilePath);
         }
 
-        private void Test1Click()
+        private void ConnectedClientMenuClick()
         {
             if (_clientManager != null)
             {
@@ -334,6 +321,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             StreamWriter writer = new StreamWriter(nStream);
             _writers.Add(clientGuid, writer);
             var clientGUID = reader.ReadLine();
+            if (clientGUID == null) throw new ArgumentNullException(nameof(clientGUID));
             if (!_authHandler.IsGUIDAuthed(clientGUID) && Settings.ValidateClients)
             {
                 ClientAuth(clientGUID, clientGuid);
@@ -341,8 +329,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             else
             {
                 DisplayTextMessage("Remote Connected");
-                WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
-                WriteToSpesificClient("ClientGUID|" + clientGuid, clientGuid.ToString());
+                WriteToSpecificClient("Connected|Authorized", clientGuid.ToString());
+                WriteToSpecificClient("ClientGUID|" + clientGuid, clientGuid.ToString());
                 if (!_authHandler.IsGUIDAuthed(clientGUID))
                     _authHandler.AddAuthedClient(clientGUID);
                 if (_clientManager.Visible)
@@ -370,13 +358,13 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void ClientAuth(string msgValue, Guid clientGuid)
         {
-            WriteToSpesificClient("AuthCode|" + msgValue, clientGuid.ToString());
+            WriteToSpecificClient("AuthCode|" + msgValue, clientGuid.ToString());
             if (
                 MessageBox.Show(Gui.VideoBox, "Allow Remote Connection for " + msgValue, "Remote Authentication",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 DisplayTextMessage("Remote Connected");
-                WriteToSpesificClient("Connected|Authorized", clientGuid.ToString());
+                WriteToSpecificClient("Connected|Authorized", clientGuid.ToString());
                 _authHandler.AddAuthedClient(msgValue);
                 if (_clientManager.Visible)
                     _clientManager.ForceUpdate();
@@ -387,24 +375,21 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
-        private void WriteToSpesificClient(string msg, string clientGuid)
+        private void WriteToSpecificClient(string msg, string clientGuid)
         {
             Guid pushGuid;
             Guid.TryParse(clientGuid, out pushGuid);
 
-            if (pushGuid != null)
+            if (_writers.ContainsKey(pushGuid))
             {
-                if (_writers.ContainsKey(pushGuid))
-                {
-                    _writers[pushGuid].WriteLine(msg);
-                    _writers[pushGuid].Flush();
-                }
+                _writers[pushGuid].WriteLine(msg);
+                _writers[pushGuid].Flush();
             }
         }
 
         private void DisconnectClient(string exitMessage, Guid clientGuid)
         {
-            WriteToSpesificClient("Exit|" + exitMessage, clientGuid.ToString());
+            WriteToSpecificClient("Exit|" + exitMessage, clientGuid.ToString());
 
             GetClients[clientGuid].Disconnect(true);
             RemoveWriter(clientGuid.ToString());
@@ -451,7 +436,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                     break;
                 case "Mute":
                     bool mute = false;
-                    Boolean.TryParse(command[1], out mute);
+                    TryParse(command[1], out mute);
                     GuiThread.DoAsync(() => Mute(mute));
                     break;
                 case "Volume":
@@ -536,7 +521,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
             if (!notify)
             {
-                WriteToSpesificClient("PlaylistContent|" + sb, guid.ToString());
+                WriteToSpecificClient("PlaylistContent|" + sb, guid.ToString());
             }
             else
             {
@@ -564,7 +549,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             _playlistInstance.GetPlaylistForm.PlayPrevious();
         }
 
-        private void FocusMpdn()
+        public void FocusMpdn()
         {
             Player.ActiveForm.Focus();
         }
@@ -576,7 +561,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void AddFilesToPlaylist(string files)
         {
-            List<string> filesToAdd = new List<string>();
+            var filesToAdd = new List<string>();
             var filePaths = Regex.Split(files, ">>");
             if (filePaths.Any())
             {
@@ -590,7 +575,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void RemoveWriter(string guid)
         {
-            Guid callerGuid = Guid.Parse(guid);
+            var callerGuid = Guid.Parse(guid);
             _writers.Remove(callerGuid);
             GetClients.Remove(callerGuid);
             _clientManager.ForceUpdate();
@@ -603,16 +588,16 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void PauseMedia(object showOsd)
         {
-            bool dispOsd = false;
-            Boolean.TryParse(showOsd.ToString(), out dispOsd);
+            var dispOsd = false;
+            TryParse(showOsd.ToString(), out dispOsd);
             Media.Pause(dispOsd);
         }
 
         private void PlayMedia(object showOsd)
         {
             bool dispOsd = false;
-            Boolean.TryParse(showOsd.ToString(), out dispOsd);
-            if (!String.IsNullOrEmpty(Media.FilePath))
+            TryParse(showOsd.ToString(), out dispOsd);
+            if (!IsNullOrEmpty(Media.FilePath))
             {
                 Media.Play(dispOsd);
             }
@@ -664,34 +649,34 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void GetFullDuration(object guid)
         {
-            WriteToSpesificClient("FullLength|" + Media.Duration, guid.ToString());
+            WriteToSpecificClient("FullLength|" + Media.Duration, guid.ToString());
         }
 
         private void GetCurrentState(object guid)
         {
-            WriteToSpesificClient(GetAllChapters(), guid.ToString());
-            WriteToSpesificClient(Player.State + "|" + Media.FilePath, guid.ToString());
-            WriteToSpesificClient("Fullscreen|" + Player.FullScreenMode.Active, guid.ToString());
-            WriteToSpesificClient("Mute|" + Player.Mute, guid.ToString());
-            WriteToSpesificClient("Volume|" + Player.Volume, guid.ToString());
+            WriteToSpecificClient(GetAllChapters(), guid.ToString());
+            WriteToSpecificClient(Player.State + "|" + Media.FilePath, guid.ToString());
+            WriteToSpecificClient("Fullscreen|" + Player.FullScreenMode.Active, guid.ToString());
+            WriteToSpecificClient("Mute|" + Player.Mute, guid.ToString());
+            WriteToSpecificClient("Volume|" + Player.Volume, guid.ToString());
             GetPlaylist(guid);
             if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused)
             {
-                WriteToSpesificClient("FullLength|" + Media.Duration, guid.ToString());
-                WriteToSpesificClient("Position|" + Media.Position, guid.ToString());
+                WriteToSpecificClient("FullLength|" + Media.Duration, guid.ToString());
+                WriteToSpecificClient("Position|" + Media.Position, guid.ToString());
             }
             if (_playlistInstance != null)
             {
                 PushToAllListeners("PlaylistShow|" + _playlistInstance.GetPlaylistForm.Visible);
             }
-            WriteToSpesificClient(GetAllSubtitleTracks(), guid.ToString());
-            WriteToSpesificClient(GetAllAudioTracks(), guid.ToString());
+            WriteToSpecificClient(GetAllSubtitleTracks(), guid.ToString());
+            WriteToSpecificClient(GetAllAudioTracks(), guid.ToString());
         }
 
         private void FullScreen(object fullScreen)
         {
             bool goFullscreen = false;
-            Boolean.TryParse(fullScreen.ToString(), out goFullscreen);
+            TryParse(fullScreen.ToString(), out goFullscreen);
             Player.FullScreenMode.Active = goFullscreen;
         }
 
