@@ -25,6 +25,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         public GoToTimeForm()
         {
             InitializeComponent();
+            SetCurrentMediaPosition();
         }
 
         public long Position
@@ -37,6 +38,12 @@ namespace Mpdn.Extensions.PlayerExtensions
 
                 return -1;
             }
+        }
+
+        private void SetCurrentMediaPosition()
+        {
+            var timespan = TimeSpan.FromMilliseconds(Framework.Media.Position / 1000.0);
+            textBoxPos.Text = timespan.ToString(@"hh\:mm\:ss\.fff");
         }
 
         private void ButtonOkClick(object sender, EventArgs e)
