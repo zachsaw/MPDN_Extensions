@@ -33,9 +33,12 @@ namespace Mpdn.Extensions.Framework
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
-        public abstract IList<Verb> Verbs { get; }
-
         #region Implementation
+
+        public virtual IList<Verb> Verbs
+        {
+            get { return new Verb[0]; }
+        }
 
         public override void Initialize()
         {

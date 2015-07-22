@@ -53,11 +53,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             base.Destroy();
         }
 
-        public override IList<Verb> Verbs
-        {
-            get { return new Verb[0]; }
-        }
-
         private void MediaLoaded(object sender, EventArgs eventArgs)
         {
             Player.Playback.BaseRate = 1.0;

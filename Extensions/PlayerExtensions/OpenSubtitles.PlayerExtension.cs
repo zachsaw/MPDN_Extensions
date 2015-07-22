@@ -95,11 +95,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             var fullPath = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), subFile);
             return File.Exists(fullPath);
         }
-
-        public override IList<Verb> Verbs
-        {
-            get { return new Verb[0]; }
-        }
     }
 
     public class OpenSubtitlesSettings

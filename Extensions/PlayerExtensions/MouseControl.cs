@@ -61,11 +61,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.MouseWheel -= PlayerMouseWheel;
         }
 
-        public override IList<Verb> Verbs
-        {
-            get { return new Verb[0]; }
-        }
-
         private void PlayerMouseWheel(object sender, PlayerControlEventArgs<MouseEventArgs> e)
         {
             if (!Settings.EnableMouseWheelSeek)

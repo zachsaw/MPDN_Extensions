@@ -76,9 +76,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
         }
 
-        protected IShader CompileShader(string shaderFileName, string entryPoint = "main", string macroDefinitions = null)
+        protected IShader CompileShader(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
         {
-            return ShaderCache.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName), entryPoint, macroDefinitions);
+            return ShaderCache.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName), profile, entryPoint, macroDefinitions);
         }
 
         protected IShader11 CompileShader11(string shaderFileName, string profile, string entryPoint = "main", string macroDefinitions = null)

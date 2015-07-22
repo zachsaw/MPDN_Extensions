@@ -53,9 +53,9 @@ namespace Mpdn.Extensions.RenderScripts
                 float[] arguments = { EdgeStrength, Sharpness };
                 string fastToggle = FastMethod ? "FAST_METHOD=1;" : "";
 
-                var Pass0 = CompileShader("super-xbr.hlsl", "main_fragment", "Pass = 0;" + fastToggle).Configure(transform: transform, arguments: arguments);
-                var Pass1 = CompileShader("super-xbr.hlsl", "main_fragment", "Pass = 1;" + fastToggle).Configure(arguments: arguments);
-                var Pass2 = CompileShader("super-xbr.hlsl", "main_fragment", "Pass = 2;" + fastToggle).Configure(arguments: arguments);
+                var Pass0 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 0;" + fastToggle).Configure(transform: transform, arguments: arguments);
+                var Pass1 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 1;" + fastToggle).Configure(arguments: arguments);
+                var Pass2 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 2;" + fastToggle).Configure(arguments: arguments);
 
                 // Skip if downscaling
                 if (Renderer.TargetSize.Width  <= input.OutputSize.Width 

@@ -24,7 +24,7 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
-    public class FullScreenTextPainter : IPlayerExtension
+    public class FullScreenTextPainter : PlayerExtension
     {
         private const int TEXT_HEIGHT = 20;
         private Timer m_Timer;
@@ -35,7 +35,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private long m_Duration;
         private Size m_ScreenSize;
 
-        public ExtensionUiDescriptor Descriptor
+        public override ExtensionUiDescriptor Descriptor
         {
             get
             {
@@ -48,12 +48,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
-        public bool HasConfigDialog()
-        {
-            return false;
-        }
-
-        public void Initialize()
+        public override void Initialize()
         {
             m_Text = Player.CreateText("Verdana", TEXT_HEIGHT, TextFontStyle.Regular);
             m_Timer = new Timer {Interval = 100};
@@ -66,7 +61,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.FullScreenMode.Exited += ExitedFullScreenMode;
         }
 
-        public void Destroy()
+        public override void Destroy()
         {
             Gui.VideoBox.MouseMove -= MouseMove;
             Player.PaintOverlay -= OnPaintOverlay;
@@ -75,16 +70,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             m_Timer.Dispose();
             m_Text.Dispose();
-        }
-
-        public IList<Verb> Verbs
-        {
-            get { return new Verb[0]; }
-        }
-
-        public bool ShowConfigDialog(IWin32Window owner)
-        {
-            return false;
         }
 
         private void ExitedFullScreenMode(object sender, EventArgs e)

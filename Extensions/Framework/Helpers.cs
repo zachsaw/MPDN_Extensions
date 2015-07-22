@@ -298,6 +298,11 @@ namespace Mpdn.Extensions.Framework
 
     public static class Extension
     {
+        public static int Version
+        {
+            get { return 1; }
+        }
+
         public static IList<Assembly> Assemblies
         {
             get { return PlayerControl.ExtensionAssemblies; }

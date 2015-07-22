@@ -70,11 +70,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.Closed -= FormClosed;
         }
 
-        public override IList<Verb> Verbs
-        {
-            get { return new Verb[0]; }
-        }
-
         private void FormClosed(object sender, EventArgs eventArgs)
         {
             RestoreSettings();

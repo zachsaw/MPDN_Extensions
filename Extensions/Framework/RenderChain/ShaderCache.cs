@@ -214,11 +214,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return GetRelativePath(basePath, shaderFileName);
         }
 
-        public static IShader CompileShader(string shaderFileName, string entryPoint = "main", string macroDefinitions = null)
+        public static IShader CompileShader(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
         {
             var result = Cache<IShader>.AddCompiled(shaderFileName,
-                String.Format("\"{0}\" /E {1} /D {2}", GetRelative(shaderFileName), entryPoint, macroDefinitions),
-                () => Renderer.CompileShader(shaderFileName, entryPoint, macroDefinitions),
+                String.Format("\"{0}\" /E {1} /T {2} /D {3}", GetRelative(shaderFileName), entryPoint, profile, macroDefinitions),
+                () => Renderer.CompileShader(shaderFileName, entryPoint, profile, macroDefinitions),
                 Renderer.LoadShader);
 
             Cache<IShader>.Save(ShaderCachePath);
