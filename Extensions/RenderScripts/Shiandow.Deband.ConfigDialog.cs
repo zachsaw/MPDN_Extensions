@@ -31,7 +31,6 @@ namespace Mpdn.Extensions.RenderScripts
             protected override void LoadSettings()
             {
                 MaxBitdepthSetter.Value = (Decimal)Settings.maxbitdepth;
-                ThresholdSetter.Value = (Decimal)Settings.margin;
                 PowerSetter.Value = (Decimal)Settings.power;
                 GrainBox.Checked = Settings.grain;
 
@@ -41,7 +40,6 @@ namespace Mpdn.Extensions.RenderScripts
             protected override void SaveSettings()
             {
                 Settings.maxbitdepth = (int)MaxBitdepthSetter.Value;
-                Settings.margin = (float)ThresholdSetter.Value;
                 Settings.power = (float)PowerSetter.Value;
                 Settings.grain = GrainBox.Checked;
             }
