@@ -15,8 +15,6 @@
 // License along with this library.
 // 
 
-// TODO: Scale LUMA only
-
 sampler s0    : register(s0);
 sampler s1    : register(s1);
 sampler s2    : register(s2);
@@ -27,6 +25,12 @@ float2  p1    : register(c1);
 float4  size0 : register(c2);
 float4  args0 : register(c3);
 
+#if LOBES>2
+    #define LOOP 1
+#else
+    #define LOOP 0
+#endif
+
 #define width  (p0[0])
 #define height (p0[1])
 
@@ -36,13 +40,27 @@ float4  args0 : register(c3);
 #define px (p1[0])
 #define py (p1[1])
 
-#define Get(x,y)              (tex2D(s0, pos + inputTexelSize*int2(x,y)).rgb)
-#define Weights1(offset)      (tex2D(s1,  offset))
-#define Weights2(offset)      (tex2D(s2,  offset))
-#define Weights3(offset)      (tex2D(s3,  offset))
-#define Weights4(offset)      (tex2D(s4,  offset))
+#define Get2D(x,y)         (tex2D(s0, pos + inputTexelSize*int2((x),(y))))
+#define GetChroma          (tex2D(s0, tex).yz)
 
-float3 ApplyAntiRinging(float2 pos, float3 color);
+#define LUMA_ONLY 0 // Luma only is slower - so no point having it
+
+#if LUMA_ONLY==1
+    #define Get(x,y)       (Get2D(x,y)[0])
+    #define color_t float
+    #define GetResult(c)   (float4(c, GetChroma, 1))
+#else
+    #define Get(x,y)       (Get2D(x,y).rgb)
+    #define color_t float3
+    #define GetResult(c)   (float4(c, 1))
+#endif
+
+#define Weights1(x,y)      (tex2D(s1, float2(x,y)))
+#define Weights2(x,y)      (tex2D(s2, float2(x,y)))
+#define Weights3(x,y)      (tex2D(s3, float2(x,y)))
+#define Weights4(x,y)      (tex2D(s4, float2(x,y)))
+
+color_t ApplyAntiRinging(float2 pos, color_t color);
 
 float4 main(float2 tex : TEXCOORD0) : COLOR
 {
@@ -52,29 +70,31 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
     float2 texelTopLeft = pos - offset;
     pos = (texelTopLeft + 0.5f) * inputTexelSize;
     
-    float3 avg = 0;
+    color_t avg = 0;
     float W = 0;
     
     float4 ws1[4];
     float4 ws2[4];
     float4 ws3[4];
     float4 ws4[4];
-    ws1[0] = Weights1(offset);
-    ws1[1] = Weights2(offset);
-    ws1[2] = Weights3(offset);
-    ws1[3] = Weights4(offset);
-    ws2[0] = Weights1(float2(1-offset.x, offset.y));
-    ws2[1] = Weights2(float2(1-offset.x, offset.y));
-    ws2[2] = Weights3(float2(1-offset.x, offset.y));
-    ws2[3] = Weights4(float2(1-offset.x, offset.y));
-    ws3[0] = Weights1(float2(offset.x, 1-offset.y));
-    ws3[1] = Weights2(float2(offset.x, 1-offset.y));
-    ws3[2] = Weights3(float2(offset.x, 1-offset.y));
-    ws3[3] = Weights4(float2(offset.x, 1-offset.y));
-    ws4[0] = Weights1(1-offset);
-    ws4[1] = Weights2(1-offset);
-    ws4[2] = Weights3(1-offset);
-    ws4[3] = Weights4(1-offset);
+    float offsetmx = 1-offset.x;
+    float offsetmy = 1-offset.y;
+    ws1[0] = Weights1(offset.x, offset.y);
+    ws1[1] = Weights2(offset.x, offset.y);
+    ws1[2] = Weights3(offset.x, offset.y);
+    ws1[3] = Weights4(offset.x, offset.y);
+    ws2[0] = Weights1(offsetmx, offset.y);
+    ws2[1] = Weights2(offsetmx, offset.y);
+    ws2[2] = Weights3(offsetmx, offset.y);
+    ws2[3] = Weights4(offsetmx, offset.y);
+    ws3[0] = Weights1(offset.x, offsetmy);
+    ws3[1] = Weights2(offset.x, offsetmy);
+    ws3[2] = Weights3(offset.x, offsetmy);
+    ws3[3] = Weights4(offset.x, offsetmy);
+    ws4[0] = Weights1(offsetmx, offsetmy);
+    ws4[1] = Weights2(offsetmx, offsetmy);
+    ws4[2] = Weights3(offsetmx, offsetmy);
+    ws4[3] = Weights4(offsetmx, offsetmy);
 
     {
         {
@@ -84,7 +104,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
             [unroll]
 #endif
             for (int Y = -LOBES+1; Y<=0; Y++)
-            [unroll] for (int X = -LOBES+1; X<=LOBES; X++)
+            for (int X = -LOBES+1; X<=LOBES; X++)
             {
                 int2 XY = {X,Y};
                 float w;
@@ -108,7 +128,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
             [unroll]
 #endif
             for (int Y = 1; Y<=LOBES; Y++)
-            [unroll] for (int X = -LOBES+1; X<=LOBES; X++)
+            for (int X = -LOBES+1; X<=LOBES; X++)
             {
                 int2 XY = {X,Y};
                 float w;
@@ -126,27 +146,27 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
         }
     }
     
-    return float4(ApplyAntiRinging(pos, avg/W), 1);
+    return GetResult(ApplyAntiRinging(pos, avg/W));
 }
 
-float3 ApplyAntiRinging(float2 pos, float3 color)
+color_t ApplyAntiRinging(float2 pos, color_t color)
 {
 #if AR==1
-    float3 sampleMin = 1e+8;
-    float3 sampleMax = 1e-8;
+    color_t sampleMin = 1e+8;
+    color_t sampleMax = 1e-8;
     
     {
         [unroll] for (int Y = 0; Y<=1; Y++)
         [unroll] for (int X = 0; X<=1; X++)
         {
-            float3 c = Get(X, Y);
+            color_t c = Get(X, Y);
             sampleMin = min(sampleMin, c);
             sampleMax = max(sampleMax, c);
         }
     }
     
     // Anti-ringing
-    float3 original = color;
+    color_t original = color;
     color = clamp(color, sampleMin, sampleMax);
     color = lerp(original, color, antiRingingStrength);
 #endif

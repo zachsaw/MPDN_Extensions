@@ -16,7 +16,6 @@
 // 
 
 using System.Linq;
-using Mpdn.DxvaHd;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 
@@ -48,7 +47,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 Settings.TapCount = (ScalerTaps) comboBoxTapCount.SelectedIndex;
                 Settings.AntiRingingEnabled = checkBoxAntiRinging.Checked;
-                Settings.AntiRingingStrength = (float)AntiRingingStrengthSetter.Value;
+                Settings.AntiRingingStrength = (float) AntiRingingStrengthSetter.Value;
             }
         }
 

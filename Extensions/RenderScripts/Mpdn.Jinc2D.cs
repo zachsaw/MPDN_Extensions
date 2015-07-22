@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-//#define ENABLE_HQ_MODE
-
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
@@ -29,12 +27,7 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Jinc2D : RenderChain
         {
-#if ENABLE_HQ_MODE
             private const int DATA_POINTS = 12;
-#else
-            private const int DATA_POINTS = 24; // ~2.5% error vs mathematical model
-            // Note: You can increase this value to reduce the error but you incur higher GPU loads
-#endif
 
             private ISourceTexture[] m_Weights;
 
@@ -68,19 +61,23 @@ namespace Mpdn.Extensions.RenderScripts
 
                 CreateWeights();
 
+                var targetSize = Renderer.TargetSize;
                 int lobes = TapCount.ToInt()/2;
                 var shader = CompileShader("Jinc2D.hlsl",
                     macroDefinitions:
-                        string.Format("LOBES = {0}; AR = {1}; LOOP = {2}",
-                            lobes, AntiRingingEnabled ? 1 : 0, lobes > 2 ? 1 : 0))
+                        string.Format("LOBES = {0}; AR = {1}",
+                            lobes, AntiRingingEnabled ? 1 : 0))
                     .Configure(
-                        transform: size => Renderer.TargetSize,
-                        arguments: new []{ AntiRingingStrength }
-#if ENABLE_HQ_MODE
-                        , perTextureLinearSampling: GetPerTextureLinearSampling(TapCount)
-#endif
+                        transform: size => targetSize,
+                        arguments: new[] {AntiRingingStrength},
+                        linearSampling: true
                     );
 
+                return GetJincFilter(input, shader);
+            }
+
+            private IFilter GetJincFilter(IFilter input, ShaderFilterSettings<IShader> shader)
+            {
                 switch (TapCount)
                 {
                     case ScalerTaps.Four:
@@ -127,23 +124,6 @@ namespace Mpdn.Extensions.RenderScripts
                 weights = null;
             }
 
-#if ENABLE_HQ_MODE
-            private static bool[] GetPerTextureLinearSampling(ScalerTaps taps)
-            {
-                switch (taps)
-                {
-                    case ScalerTaps.Four:
-                        return new[] {false, true, true};
-                    case ScalerTaps.Six:
-                        return new[] {false, true, true, true};
-                    case ScalerTaps.Eight:
-                        return new[] {false, true, true, true, true};
-                    default:
-                        throw new ArgumentOutOfRangeException("taps");
-                }
-            }
-#endif
-
             private float GetWeight(double dist)
             {
                 var lobes = TapCount.ToInt()/2;
@@ -160,7 +140,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (m_Weights != null)
                     return;
 
-                int lobes = TapCount.ToInt()/2;
+                int lobes = TapCount.ToInt() / 2;
                 m_Weights = new ISourceTexture[lobes];
                 var data1 = new float[DATA_POINTS, DATA_POINTS*4];
                 for (int z = 0; z < lobes; z++)
