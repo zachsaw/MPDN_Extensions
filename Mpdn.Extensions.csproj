@@ -186,22 +186,22 @@
     </Compile>
     <Compile Include="Extensions\PlayerExtensions\RemoteControl_AuthHandler.cs" />
     <Compile Include="Extensions\PlayerExtensions\RendererControl.cs" />
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ConfigDialog.cs">
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.ConfigDialog.designer.cs">
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.ConfigDialog.designer.cs">
       <DependentUpon>UpdateChecker.ConfigDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.cs">
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.UpdateAvailable.Form.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.UpdateAvailable.Form.Designer.cs">
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.UpdateAvailable.Form.Designer.cs">
       <DependentUpon>UpdateChecker.UpdateAvailable.Form.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.WebFile.cs" />
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.PlayerExtension.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.WebFile.cs" />
     <Compile Include="Extensions\PlayerExtensions\Exceptions\Exceptions.cs" />
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker.Version.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.Version.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.PlayerExtension.cs" />
     <Compile Include="Extensions\PlayerExtensions\VideoSpecifier.cs" />
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfo.cs" />
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfoForm.cs">
