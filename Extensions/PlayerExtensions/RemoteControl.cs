@@ -28,8 +28,6 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
-using static System.Boolean;
-using static System.String;
 using Timer = System.Timers.Timer;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -42,21 +40,38 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         #endregion
 
-        public override ExtensionUiDescriptor Descriptor => new ExtensionUiDescriptor
+        public override ExtensionUiDescriptor Descriptor
+         {
+            get
+            {
+                return new ExtensionUiDescriptor
+                {
+                    Guid = new Guid("C7FC10786471409DA2F134FF8903D6DA"),
+                    Name = "Remote Control",
+                    Description = "Remote Control extension to allow control of MPDN over the network.",
+                    Copyright = "Copyright DeadlyEmbrace © 2015. All rights reserved."
+                };
+            }
+        }
+        protected override string ConfigFileName
         {
-            Guid = new Guid("C7FC1078-6471-409D-A2F1-34FF8903D6DA"),
-            Name = "Remote Control",
-            Description = "Remote Control extension to allow control of MPDN over the network.",
-            Copyright = "Copyright DeadlyEmbrace © 2015. All rights reserved."
-        };
+            get { return "Example.RemoteSettings"; }
+        }
 
-        protected override string ConfigFileName => "Example.RemoteSettings";
-
-        public override IList<Verb> Verbs => new[]
+        public override IList<Verb> Verbs
         {
-            new Verb(Category.Help, Empty, "Connected Clients", "Ctrl+Shift+R",
-                "Show Remote Client connections", ConnectedClientMenuClick)
-        };
+
+            get
+            {
+                return new[]
+                {
+                    new Verb(Category.Help, string.Empty, "Connected Clients", "Ctrl+Shift+R",
+                        "Show Remote Client connections", ConnectedClientMenuClick)
+                };
+
+
+            }
+        }
 
         public override void Destroy()
         {
@@ -226,7 +241,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "AudioTracks|" + audioStringBuilder;
             }
-            return Empty;
+            return String.Empty;
         }
 
         private string GetAllSubtitleTracks()
@@ -252,7 +267,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "Subtitles|" + subSb;
             }
-            return Empty;
+            return String.Empty;
         }
 
         private string GetAllChapters()
@@ -271,7 +286,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "Chapters|" + chapterSb;
             }
-            return Empty;
+            return String.Empty;
         }
 
         private void PlayerControlPlaybackCompleted(object sender, EventArgs e)
@@ -436,7 +451,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                     break;
                 case "Mute":
                     bool mute = false;
-                    TryParse(command[1], out mute);
+                    Boolean.TryParse(command[1], out mute);
                     GuiThread.DoAsync(() => Mute(mute));
                     break;
                 case "Volume":
@@ -589,15 +604,15 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void PauseMedia(object showOsd)
         {
             var dispOsd = false;
-            TryParse(showOsd.ToString(), out dispOsd);
+            Boolean.TryParse(showOsd.ToString(), out dispOsd);
             Media.Pause(dispOsd);
         }
 
         private void PlayMedia(object showOsd)
         {
             bool dispOsd = false;
-            TryParse(showOsd.ToString(), out dispOsd);
-            if (!IsNullOrEmpty(Media.FilePath))
+            Boolean.TryParse(showOsd.ToString(), out dispOsd);
+            if (!String.IsNullOrEmpty(Media.FilePath))
             {
                 Media.Play(dispOsd);
             }
@@ -676,7 +691,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void FullScreen(object fullScreen)
         {
             bool goFullscreen = false;
-            TryParse(fullScreen.ToString(), out goFullscreen);
+            Boolean.TryParse(fullScreen.ToString(), out goFullscreen);
             Player.FullScreenMode.Active = goFullscreen;
         }
 
