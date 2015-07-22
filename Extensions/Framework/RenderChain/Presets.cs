@@ -101,7 +101,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public override IFilter CreateFilter(IFilter input)
         {
-            return Script != null ? Chain.CreateSafeFilter(input) : input;
+            return Script != null ? input + Chain : input;
         }
 
         public override void Initialize()

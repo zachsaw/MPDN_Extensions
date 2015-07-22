@@ -95,8 +95,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public IFilter CreateFilter(IFilter original, IFilter initial)
             {
-                IFilter lab;
-                IFilter result = initial;
+                IFilter result;
 
                 // Calculate Sizes
                 var inputSize = original.OutputSize;
@@ -131,33 +130,32 @@ namespace Mpdn.Extensions.RenderScripts
                 // Initial scaling
                 if (initial != original)
                 {
-                    original = new ShaderFilter(GammaToLab, original);
+                    // original = new ShaderFilter(GammaToLinear, original);
 
                     // Always correct offset (if any)
                     var filter = initial as ResizeFilter;
                     if (filter != null)
                         filter.ForceOffsetCorrection();
 
-                    lab = new ShaderFilter(GammaToLab, initial.SetSize(targetSize));
+                    result = new ShaderFilter(GammaToLinear, initial.SetSize(targetSize));
                 }
                 else
                 {
-                    original = new ShaderFilter(GammaToLab, original);
-                    lab = new ResizeFilter(original, targetSize);
+                    // original = new ShaderFilter(GammaToLinear, original);
+                    result = new ResizeFilter(new ShaderFilter(GammaToLinear, original), targetSize);
                 }
 
+                IFilter diff = null;
                 for (int i = 1; i <= Passes; i++)
                 {
-                    IFilter diff, linear;
+                    IFilter loRes;
 
                     // Downscale and Subtract
-                    linear = new ShaderFilter(LabToLinear, lab);
-                    linear = new ResizeFilter(linear, inputSize, m_Upscaler, m_Downscaler); // Downscale result
-                    diff = new ShaderFilter(Diff, linear, original);                        // Compare with original
+                    loRes = new ResizeFilter(result, inputSize, m_Upscaler, m_Downscaler); // Downscale result
+                    diff = new ShaderFilter(Diff, loRes, original); // Compare with original  
 
                     // Update result
-                    lab = new ShaderFilter(SuperRes, lab, diff);
-                    result = new ShaderFilter(LabToGamma, lab);
+                    result = new ShaderFilter(SuperRes.Configure( arguments: new[] { Strength, Softness, i, Passes } ), result, diff, original);
                 }
 
                 return result;

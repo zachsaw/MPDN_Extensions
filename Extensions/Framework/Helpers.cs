@@ -239,6 +239,24 @@ namespace Mpdn.Extensions.Framework
                     throw new ArgumentOutOfRangeException("scalerTaps");
             }
         }
+        
+        public static float[] GetYuvConsts(this YuvColorimetric colorimetric) 
+        {
+            switch (colorimetric)
+            {
+                case YuvColorimetric.FullRangePc601:
+                case YuvColorimetric.ItuBt601:
+                    return new[] {0.114f, 0.299f};
+                case YuvColorimetric.FullRangePc709:
+                case YuvColorimetric.ItuBt709:
+                    return new[] {0.0722f, 0.2126f};
+                case YuvColorimetric.FullRangePc2020:
+                case YuvColorimetric.ItuBt2020:
+                    return new[] {0.0593f, 0.2627f};
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
     }
 
     public static class StringHelpers

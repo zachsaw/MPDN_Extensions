@@ -26,7 +26,7 @@ namespace Mpdn.Extensions.RenderScripts
         {
             public override IFilter CreateFilter(IFilter input)
             {
-                return Options.Aggregate(input, (result, chain) => chain.CreateSafeFilter(result));
+                return Options.Aggregate(input, (result, chain) => result + chain);
             }
         }
 

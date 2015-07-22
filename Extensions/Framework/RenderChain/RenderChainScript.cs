@@ -15,6 +15,7 @@
 // License along with this library.
 
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using Mpdn.RenderScript;
 
@@ -69,8 +70,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             m_SourceFilter = new SourceFilter();
             var rgbInput = m_SourceFilter.Transform(x => new RgbFilter(x));
-            m_Filter = Chain
-                .CreateSafeFilter(rgbInput)
+            m_Filter = CreateSafeFilter(Chain, rgbInput)
                 .SetSize(Renderer.TargetSize)
                 .Compile();
             m_Filter.Initialize();
@@ -92,5 +92,49 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }
+
+        #region Error Handling
+
+        private TextFilter m_TextFilter;
+
+        public IFilter CreateSafeFilter(RenderChain chain, IFilter input)
+        {
+            DisposeHelper.Dispose(ref m_TextFilter);
+            try
+            {
+                return Chain.CreateFilter(input);
+            }
+            catch (Exception ex)
+            {
+                return DisplayError(ex);
+            }
+        }
+
+        private IFilter DisplayError(Exception e)
+        {
+            var message = ErrorMessage(e);
+            Trace.WriteLine(message);
+            return m_TextFilter = new TextFilter(message);
+        }
+
+        protected static Exception InnerMostException(Exception e)
+        {
+            while (e.InnerException != null)
+            {
+                e = e.InnerException;
+            }
+
+            return e;
+        }
+
+        private string ErrorMessage(Exception e)
+        {
+            var ex = InnerMostException(e);
+            return string.Format("Error in {0}:\r\n\r\n{1}\r\n\r\n~\r\nStack Trace:\r\n{2}",
+                    GetType().Name, ex.Message, ex.StackTrace);
+        }
+
+        #endregion
+
     }
 }

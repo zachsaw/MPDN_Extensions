@@ -74,10 +74,12 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 
 	// Statistical analysis
 	X *= acuity;
-	float SSres = sqr(mul(float4(0.5,-0.5,-0.5,0.5),X).xyz);
-	float SStot = (sqr(X[0].xyz) + sqr(X[1].xyz) + sqr(X[2].xyz) + sqr(X[3].xyz)) - sqr(mul(float4(0.5,0.5,0.5,0.5),X).xyz);
-	float R = 1 - (SSres/SStot);
+	#define sqr(x) ((x)*(x))
+	float3 SSres = sqr(mul(float4(0.5,-0.5,-0.5,0.5),X).xyz);
+	float3 SStot = (sqr(X[0].xyz) + sqr(X[1].xyz) + sqr(X[2].xyz) + sqr(X[3].xyz)) - sqr(mul(float4(0.5,0.5,0.5,0.5),X).xyz);
+	float3 R = 1 - (SSres/SStot);
 	float3 p = saturate(abs(c0 - avg)*acuity);
+	SSres = (SSres + saturate(p - 0.5))/2.0; // 5 samples - 3 dof = 2.
 
 	// Merge with high res values
 	float3 str = p*(1-p)*power/(SSres*(1 - power) + p*(1-p)*power);
