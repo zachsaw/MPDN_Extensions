@@ -316,7 +316,14 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void Test1Click()
         {
-            _clientManager.ShowDialog(Gui.VideoBox);
+            if (_clientManager != null)
+            {
+                _clientManager.ShowDialog(Gui.VideoBox);
+            }
+            else
+            {
+                MessageBox.Show("The remote control is not activated.");
+            }
         }
 
         private void Server()
