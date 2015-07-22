@@ -14,9 +14,11 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using MediaInfoDotNet;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -26,81 +28,139 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             InitializeComponent();
 
+            Icon = Gui.Icon;
+
+            wb_info.PreviewKeyDown += OnBrowserPreviewKeyDown;
+
+            int trackId = 1;
             var mediaFile = new MediaFile(path);
+            var mediaDuration = TimeSpan.FromMilliseconds(mediaFile.duration);
+            long mediaSize = (mediaFile.size / 1024) / 1024;
 
             var lines = new List<string>();
             {
-                lines.Add(string.Format("Unique ID            : {0}", mediaFile.uniqueId));
-                lines.Add(string.Format("Complete name        : {0}", path));
-                lines.Add(string.Format("Format               : {0}", mediaFile.format));
-                lines.Add(string.Format("File size            : {0}", mediaFile.size));
-                lines.Add(string.Format("Duration             : {0}", mediaFile.duration));
-                lines.Add(string.Format("Overall bit rate     : {0}", mediaFile.bitRate));
-                lines.Add(string.Format("Encoded date         : {0}", mediaFile.encodedDate));
-                lines.Add(string.Format("Writing application  : {0}", mediaFile.miGetString("Encoded_Application")));
-                lines.Add(string.Format("Writing library      : {0}", mediaFile.encodedLibrary));
-            }                                                 
-                                                              
-            lines.Add(string.Empty);                          
-            lines.Add("Video");                               
+                lines.Add("<!doctype html>");
+                lines.Add("<html>");
+                lines.Add("<head>");
+                lines.Add("<style>* { padding: 0px; margin: 0px; font-family:tahoma; } body { width: 700px; background: #fff; margin: 0 auto; padding-bottom: 30px; } table { font-size: 12px; border-collapse: collapse; } td { padding: 5px; border-bottom: 1px dotted #1c7feb; } td:first-child { width: 100px; border-right: 1px solid #1c7feb; } .thead { font-size: 15px; color: #1c7feb; padding-top: 25px; border: 0px !important; border-bottom: 2px solid #1c7feb !important; }</style>");
+                lines.Add("</head>");
+                lines.Add("<body>");
+                lines.Add("<table border='0' cellspacing='0' cellpadding='0'>");
+                lines.Add("<tr><td class='thead' colspan='2'><b>General</b></td></tr>");
+                lines.Add(string.IsNullOrEmpty(mediaFile.uniqueId) ? string.Empty : string.Format("<tr><td>Unique ID:</td><td>{0}</td></tr>", mediaFile.uniqueId));
+                lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", trackId));
+                lines.Add(string.Format("<tr><td>Complete name:</td><td>{0}</td></tr>", path));
+                lines.Add(string.Format("<tr><td>Format:</td><td>{0}</td></tr>", mediaFile.format));
+                lines.Add(mediaSize == 0 ? string.Empty : mediaSize > 1024 ? string.Format("<tr><td>File size:</td><td>{0} GB</td></tr>", Math.Round((double)mediaSize / 1024, 2, MidpointRounding.ToEven).ToString("F")) : string.Format("<tr><td>File size:</td><td>{0} MB</td></tr>", mediaSize));
+                lines.Add(string.Format("<tr><td>Duration:</td><td>{0}</td></tr>", mediaDuration.ToString(@"hh\:mm\:ss")));
+                lines.Add(string.Format("<tr><td>Overall bit rate:</td><td>{0} Kbps</td></tr>", mediaFile.bitRate / 1000));
+                lines.Add(string.Format("<tr><td>Encoded date:</td><td>{0}</td></tr>", mediaFile.encodedDate));
+                lines.Add(string.Format("<tr><td>Writing application:</td><td>{0}</td></tr>", mediaFile.miGetString("Encoded_Application")));
+                lines.Add(string.IsNullOrEmpty(mediaFile.encodedLibrary) ? string.Empty : string.Format("<tr><td>Writing library:</td><td>{0}</td></tr>", mediaFile.encodedLibrary));
+            }
+
+            lines.Add("<tr><td class='thead' colspan='2'><b>Video</b></td></tr>");
             foreach (var info in mediaFile.Video)
             {
-                double bitPerFrame = info.Value.size*8/
-                                     ((double) info.Value.width*info.Value.height*info.Value.frameCount);
-                lines.Add(string.Format("ID                   : {0}", info.Value.uniqueId));
-                lines.Add(string.Format("Format               : {0}", info.Value.format));
-                lines.Add(string.Format("Format profile       : {0}", info.Value.miGetString("Format_Profile")));
-                lines.Add(string.Format("Format settings      : {0}", info.Value.miGetString("Format_Settings")));
-                lines.Add(string.Format("Codec ID             : {0}", info.Value.codecId));
-                lines.Add(string.Format("Duration             : {0}", info.Value.duration));
-                lines.Add(string.Format("Bit rate             : {0}", info.Value.bitRate));
-                lines.Add(string.Format("Width                : {0}", info.Value.width));
-                lines.Add(string.Format("Height               : {0}", info.Value.height));
-                lines.Add(string.Format("Display aspect ratio : {0}", info.Value.pixelAspectRatio));
-                lines.Add(string.Format("Frame rate mode      : {0}", info.Value.frameRateMode));
-                lines.Add(string.Format("Frame rate           : {0}", info.Value.frameRate));
-                lines.Add(string.Format("Chroma subsampling   : {0}", info.Value.miGetString("ChromaSubsampling")));
-                lines.Add(string.Format("Bit depth            : {0}", info.Value.bitDepth));
-                lines.Add(string.Format("Scan type            : {0}", info.Value.miGetString("ScanType")));
-                lines.Add(string.Format("Bits/(Pixel*Frame)   : {0}", bitPerFrame.ToString("0.#####")));
-                lines.Add(string.Format("Stream size          : {0}", info.Value.miGetString("StreamSize")));
-                lines.Add(string.Format("Writing library      : {0}", info.Value.encodedLibrary));
-                lines.Add(string.Format("Encoding settings    : {0}", info.Value.encoderSettingsRaw));
-                lines.Add(string.Format("Language             : {0}", info.Value.language));
+                trackId++;
+
+                long videoStreamSize;
+                long.TryParse(info.Value.miGetString("StreamSize"), out videoStreamSize);
+                long videoSize = videoStreamSize > 0 ? (videoStreamSize / 1024) / 1024 : 0;
+
+                var timespan = TimeSpan.FromMilliseconds(info.Value.duration);
+
+                int gcd = GreatestCommonDivisor(info.Value.width, info.Value.height);
+                string aspectRatio = info.Value.width / gcd + ":" + info.Value.height / gcd;
+
+                double bitPerFrame = info.Value.size * 8 /
+                                     ((double)info.Value.width * info.Value.height * info.Value.frameCount);
+                lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", trackId));
+                lines.Add(string.IsNullOrEmpty(info.Value.format) ? string.Empty : string.Format("<tr><td>Format:</td><td>{0}</td></tr>", info.Value.format));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Format_Profile")) ? string.Empty : string.Format("<tr><td>Format profile:</td><td>{0}</td></tr>", info.Value.miGetString("Format_Profile")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Format_Settings")) ? string.Empty : string.Format("<tr><td>Format settings:</td><td>{0}</td></tr>", info.Value.miGetString("Format_Settings")));
+                lines.Add(string.IsNullOrEmpty(info.Value.muxingMode) ? string.Empty : string.Format("<tr><td>Muxing mode:</td><td>{0}</td></tr>", info.Value.muxingMode));
+                lines.Add(string.IsNullOrEmpty(info.Value.codecId) ? string.Empty : string.Format("<tr><td>Codec ID:</td><td>{0}</td></tr>", info.Value.codecId));
+                lines.Add(string.Format("<tr><td>Duration:</td><td>{0}</td></tr>", timespan.ToString(@"hh\:mm\:ss")));
+                lines.Add(info.Value.bitRate == 0 ? string.Empty : string.Format("<tr><td>Bit rate:</td><td>{0} Kbps</td></tr>", info.Value.bitRate / 1000));
+                lines.Add(info.Value.bitRateNominal == 0 ? string.Empty : string.Format("<tr><td>Nominal bit rate:</td><td>{0} Kbps</td></tr>", info.Value.bitRateNominal / 1000));
+                lines.Add(info.Value.width == 0 ? string.Empty : string.Format("<tr><td>Width:</td><td>{0} pixels</td></tr>", info.Value.width));
+                lines.Add(info.Value.height == 0 ? string.Empty : string.Format("<tr><td>Height:</td><td>{0} pixels</td></tr>", info.Value.height));
+                lines.Add(string.IsNullOrEmpty(aspectRatio) ? string.Empty : string.Format("<tr><td>Aspect ratio:</td><td>{0}</td></tr>", aspectRatio));
+                lines.Add(string.IsNullOrEmpty(info.Value.frameRateMode) ? string.Empty : string.Format("<tr><td>Frame rate mode:</td><td>{0}</td></tr>", info.Value.frameRateMode));
+                lines.Add(info.Value.frameRate == 0 ? string.Empty : string.Format("<tr><td>Frame rate:</td><td>{0} fps</td></tr>", info.Value.frameRate));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("ChromaSubsampling")) ? string.Empty : string.Format("<tr><td>Chroma subsampling:</td><td>{0}</td></tr>", info.Value.miGetString("ChromaSubsampling")));
+                lines.Add(info.Value.bitDepth == 0 ? string.Empty : string.Format("<tr><td>Bit depth:</td><td>{0} bits</td></tr>", info.Value.bitDepth));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("ScanType")) ? string.Empty : string.Format("<tr><td>Scan type:</td><td>{0}</td></tr>", info.Value.miGetString("ScanType")));
+                lines.Add(bitPerFrame == 0 ? string.Empty : string.Format("<tr><td>Bits/(Pixel*Frame):</td><td>{0}</td></tr>", bitPerFrame.ToString("0.###")));
+                lines.Add(videoSize == 0 ? string.Empty : videoSize > 1024 ? string.Format("<tr><td>Stream size:</td><td>{0} GB</td></tr>", Math.Round((double)videoSize / 1024, 2, MidpointRounding.ToEven).ToString("F")) : string.Format("<tr><td>File size:</td><td>{0} MB</td></tr>", videoSize));
+                lines.Add(string.IsNullOrEmpty(info.Value.encodedLibrary) ? string.Empty : string.Format("<tr><td>Writing library:</td><td>{0}</td></tr>", info.Value.encodedLibrary));
+                lines.Add(string.IsNullOrEmpty(info.Value.encoderSettingsRaw) ? string.Empty : string.Format("<tr><td>Encoding settings:</td><td>{0}</td></tr>", info.Value.encoderSettingsRaw));
+                lines.Add(string.IsNullOrEmpty(info.Value.language) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.language));
             }
 
-            lines.Add(string.Empty);
-
-            lines.Add("Audio");
-            foreach (var info in mediaFile.Audio)
+            if (mediaFile.Audio.Count > 0)
             {
-                lines.Add(string.Format("ID                   : {0}", info.Value.uniqueId));
-                lines.Add(string.Format("Format               : {0}", info.Value.format));
-                lines.Add(string.Format("Codec ID             : {0}", info.Value.codecId));
-                lines.Add(string.Format("Duration             : {0}", info.Value.duration));
-                lines.Add(string.Format("Bit rate mode        : {0}", info.Value.bitRateMode));
-                lines.Add(string.Format("Bit rate             : {0}", info.Value.bitRate));
-                lines.Add(string.Format("Channel(s)           : {0}", info.Value.channels));
-                lines.Add(string.Format("Sampling rate        : {0}", info.Value.sampleRate));
-                lines.Add(string.Format("Bit depth            : {0}", info.Value.bitDepth));
-                lines.Add(string.Format("Compression mode     : {0}", info.Value.compressionMode));
-                lines.Add(string.Format("Stream size          : {0}", info.Value.size));
-                lines.Add(string.Format("Language             : {0}", info.Value.language));
+                int audioTracks = 1;
+
+                foreach (var info in mediaFile.Audio)
+                {
+                    trackId++;
+
+                    long audioStreamSize;
+                    long.TryParse(info.Value.miGetString("StreamSize"), out audioStreamSize);
+                    long audioSize = audioStreamSize > 0 ? (audioStreamSize / 1024) / 1024 : 0;
+
+                    var timespan = TimeSpan.FromMilliseconds(info.Value.duration);
+
+                    lines.Add(mediaFile.Audio.Count == 1
+                        ? "<tr><td class='thead' colspan='2'><b>Audio</b></td></tr>"
+                        : string.Format("<tr><td class='thead' colspan='2'><b>Audio #{0}</b></td></tr>", audioTracks));
+                    lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", trackId));
+                    lines.Add(string.IsNullOrEmpty(info.Value.format) ? string.Empty : string.Format("<tr><td>Format:</td><td>{0}</td></tr>", info.Value.format));
+                    lines.Add(string.IsNullOrEmpty(info.Value.codecId) ? string.Empty : string.Format("<tr><td>Codec ID:</td><td>{0}</td></tr>", info.Value.codecId));
+                    lines.Add(timespan.TotalMilliseconds == 0 ? string.Empty : string.Format("<tr><td>Duration:</td><td>{0}</td></tr>", timespan.ToString(@"hh\:mm\:ss")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.bitRateMode) ? string.Empty : string.Format("<tr><td>Bit rate mode:</td><td>{0}</td></tr>", info.Value.bitRateMode));
+                    lines.Add(info.Value.bitRate == 0 ? string.Empty : string.Format("<tr><td>Bit rate:</td><td>{0} Kbps</td></tr>", info.Value.bitRate / 1000));
+                    lines.Add(string.Format("<tr><td>Channel(s):</td><td>{0} channels</td></tr>", info.Value.channels));
+                    lines.Add(info.Value.sampleRate == 0 ? string.Empty : string.Format("<tr><td>Sampling rate:</td><td>{0} KHz</td></tr>", info.Value.sampleRate));
+                    lines.Add(info.Value.bitDepth == 0 ? string.Empty : string.Format("<tr><td>Bit depth:</td><td>{0} bits</td></tr>", info.Value.bitDepth));
+                    lines.Add(string.IsNullOrEmpty(info.Value.compressionMode) ? string.Empty : string.Format("<tr><td>Compression mode:</td><td>{0}</td></tr>", info.Value.compressionMode));
+                    lines.Add(audioSize == 0 ? string.Empty : audioSize > 1024 ? string.Format("<tr><td>Stream size:</td><td>{0} GB</td></tr>", Math.Round((double)audioSize / 1024, 2, MidpointRounding.ToEven).ToString("F")) : string.Format("<tr><td>Stream size:</td><td>{0} MB</td></tr>", audioSize));
+                    lines.Add(string.IsNullOrEmpty(info.Value.language) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.language));
+
+                    audioTracks++;
+                }
             }
 
-            lines.Add(string.Empty);
-
-            lines.Add("Subtitle");
-            foreach (var info in mediaFile.Text)
+            if (mediaFile.Text.Count > 0)
             {
-                lines.Add(string.Format("ID                   : {0}", info.Value.uniqueId));
-                lines.Add(string.Format("Format               : {0}", info.Value.format));
-                lines.Add(string.Format("Muxing Mode          : {0}", info.Value.muxingMode));
-                lines.Add(string.Format("Codec ID             : {0}", info.Value.codecId));
-                lines.Add(string.Format("Language             : {0}", info.Value.language));
+                lines.Add("<tr><td class='thead' colspan='2'><b>Subtitle</b></td></tr>");
+                foreach (var info in mediaFile.Text)
+                {
+                    trackId++;
+
+                    lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", trackId));
+                    lines.Add(string.IsNullOrEmpty(info.Value.format) ? string.Empty : string.Format("<tr><td>Format:</td><td>{0}</td></tr>", info.Value.format));
+                    lines.Add(string.IsNullOrEmpty(info.Value.codecId) ? string.Empty : string.Format("<tr><td>Codec ID:</td><td>{0}</td></tr>", info.Value.codecId));
+                    lines.Add(string.IsNullOrEmpty(info.Value.compressionMode) ? string.Empty : string.Format("<tr><td>Compression mode:</td><td>{0}</td></tr>", info.Value.compressionMode));
+                    lines.Add(string.IsNullOrEmpty(info.Value.language) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.language));
+                }
             }
 
-            textBoxInfo.Lines = lines.ToArray();
+            lines.Add("</table></body></html>");
+
+            wb_info.DocumentText = string.Join("\n", lines.ToArray());
+        }
+
+        private void OnBrowserPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyData == Keys.Escape) Close();
+        }
+
+        private int GreatestCommonDivisor(int a, int b)
+        {
+            return (b == 0) ? a : GreatestCommonDivisor(b, a % b);
         }
     }
 }

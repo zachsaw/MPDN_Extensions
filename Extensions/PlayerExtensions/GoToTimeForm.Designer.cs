@@ -59,11 +59,11 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(50, 85);
+            this.ButtonOK.Location = new System.Drawing.Point(59, 74);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 3;
-            this.ButtonOK.Text = "OK";
+            this.ButtonOK.Text = "Go";
             this.ButtonOK.UseVisualStyleBackColor = true;
             this.ButtonOK.Click += new System.EventHandler(this.ButtonOkClick);
             // 
@@ -72,7 +72,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(131, 85);
+            this.ButtonCancel.Location = new System.Drawing.Point(138, 74);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 4;
@@ -81,9 +81,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             // textBoxPos
             // 
+            this.textBoxPos.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.errorProvider.SetIconPadding(this.textBoxPos, 3);
             this.textBoxPos.InsertKeyMode = System.Windows.Forms.InsertKeyMode.Overwrite;
-            this.textBoxPos.Location = new System.Drawing.Point(85, 22);
+            this.textBoxPos.Location = new System.Drawing.Point(90, 18);
             this.textBoxPos.Mask = "00:00:00.000";
             this.textBoxPos.Name = "textBoxPos";
             this.textBoxPos.PromptChar = '0';
@@ -96,19 +97,21 @@ namespace Mpdn.Extensions.PlayerExtensions
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(25, 25);
+            this.label1.Location = new System.Drawing.Point(30, 21);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(54, 13);
+            this.label1.Size = new System.Drawing.Size(57, 13);
             this.label1.TabIndex = 6;
-            this.label1.Text = "Timecode";
+            this.label1.Text = "Timecode:";
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(85, 45);
+            this.label2.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.ForeColor = System.Drawing.SystemColors.AppWorkspace;
+            this.label2.Location = new System.Drawing.Point(90, 41);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(97, 14);
             this.label2.TabIndex = 7;
-            this.label2.Text = "( hh:mm:ss.msec )";
+            this.label2.Text = "(hh:mm:ss.msec)";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // errorProvider
@@ -121,7 +124,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(218, 120);
+            this.ClientSize = new System.Drawing.Size(218, 102);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.textBoxPos);

@@ -349,7 +349,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             // btn_configRegex
             // 
             this.btn_configRegex.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.btn_configRegex.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btn_configRegex.Location = new System.Drawing.Point(226, 249);
             this.btn_configRegex.Name = "btn_configRegex";
             this.btn_configRegex.Size = new System.Drawing.Size(75, 23);
