@@ -69,7 +69,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     pos -= offset;
 
     // Calculate faithfulness force
-    float totalW = 0;
+    float weightSum = 0;
     float3 diff = 0;
 
     [unroll] for (int X = -1; X <= 1; X++)
@@ -77,12 +77,12 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     {
 		float dI2 = sqr(acuity*(Luma(c0) - GetY(X,Y)));
         float dXY2 = sqr(float2(X,Y) - offset);
-        float w = exp(-dXY2/(2*radius*radius))*pow(1 + dI2/power, - power);
+        float weight = exp(-dXY2/(2*radius*radius))*pow(1 + dI2/power, - power);
 
-        diff += w*Diff(X,Y);
-        totalW += w;
+        diff += weight*Diff(X,Y);
+        weightSum += weight;
     }
-    diff /= totalW;
+    diff /= weightSum;
     c0.xyz -= strength * diff;
 
     // Convert back to linear light;
