@@ -140,14 +140,14 @@ namespace Mpdn.Extensions.RenderScripts
                 return CompileClKernel("nnedi3ocl.cl", "nnedi3", "-cl-fast-relaxed-math");
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            public override IFilter CreateFilter(IFilter input)
             {
                 DisposeHelper.Dispose(ref m_Buffer);
 
                 if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
-                    return sourceFilter; // OpenCL is not available, or UNORM8 textures used (not supported); fallback
+                    return input; // OpenCL is not available, or UNORM8 textures used (not supported); fallback
                 }
 
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2*s.Width, s.Height);
@@ -163,11 +163,11 @@ namespace Mpdn.Extensions.RenderScripts
                 var weights = s_Weights[(int) Neurons];
                 m_Buffer = Renderer.CreateClBuffer(weights);
 
-                var sourceSize = sourceFilter.OutputSize;
+                var sourceSize = input.OutputSize;
                 if (!IsUpscalingFrom(sourceSize))
-                    return sourceFilter;
+                    return input;
 
-                var yuv = sourceFilter.ConvertToYuv();
+                var yuv = input.ConvertToYuv();
 
                 var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
                     TextureChannels.ChromaOnly, new Vector2(-0.25f, -0.25f), Renderer.ChromaUpscaler,
