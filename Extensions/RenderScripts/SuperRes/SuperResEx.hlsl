@@ -22,6 +22,9 @@
     #define softness (args0[1])
 #endif
 
+#define Pass args0[2]
+#define Passes args0[3]
+
 // -- Misc --
 sampler s0    : register(s0);
 sampler sDiff : register(s1);
@@ -33,7 +36,7 @@ float4 args0  : register(c3);
 // -- Edge detection options -- 
 #define acuity 6.0
 #define radius 0.66
-#define power 3.0
+#define power 1.0
 
 #define originalSize size1
 
@@ -50,14 +53,15 @@ float4 args0  : register(c3);
 
 // -- Input processing --
 //Current high res value
-#define Get(x,y)    (tex2D(s0,ddxddy*(pos+int2(x,y)+0.5)).xyz)
+#define Get(x,y)    (tex2D(s0,tex + dxdy*int2(x,y)).xyz)
 #define GetY(x,y)    (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)).a)
 //Downsampled result
-#define Diff(x,y)     (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)).xyz)
+#define Diff(x,y)     (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)))
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
     float4 c0 = tex2D(s0, tex);
+    c0.xyz = Gamma(c0.xyz);
 
     // Calculate position
     float2 pos = tex * originalSize.xy - 0.5;
@@ -65,33 +69,24 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     pos -= offset;
 
     // Calculate faithfulness force
-    float W = 0;
+    float totalW = 0;
     float3 diff = 0;
-    float3 stab = 0;
-    float var = 0;
 
     [unroll] for (int X = -1; X <= 1; X++)
 	[unroll] for (int Y = -1; Y <= 1; Y++)
     {
-		float dI2 = sqr(acuity*(c0.y - GetY(X,Y))); // sqr(acuity*(c0.xyz - Get(X,Y)));
+		float dI2 = sqr(acuity*(Luma(c0) - GetY(X,Y)));
         float dXY2 = sqr(float2(X,Y) - offset);
         float w = exp(-dXY2/(2*radius*radius))*pow(1 + dI2/power, - power);
 
         diff += w*Diff(X,Y);
-        stab += w*(c0.rgb - Get(X,Y));
-        var += w*dI2;
-        W += w;
+        totalW += w;
     }
-    diff /= W;
-    stab /= W;
-    var = (var / W) - sqr(acuity*stab);
+    diff /= totalW;
+    c0.xyz -= strength * diff;
 
-    // Calculate edge statistics
-    float varD = softness * sqr(acuity*stab);
-    float varS = (1 - softness) * var;
-
-    // Apply force
-    c0.xyz -= strength*lerp(diff, stab, softness);
+    // Convert back to linear light;
+    [branch] if (Pass != Passes) c0.xyz = GammaInv(saturate(c0.xyz));
 
     return c0;
 }
