@@ -15,9 +15,15 @@
 // License along with this library.
 // 
 // -- Color space options --
-#define GammaCurve Rec709
-#define gamma 2.2
-#define QuasiLab true
+#ifndef GammaCurve
+    #define GammaCurve Rec709
+#endif
+#ifndef gamma
+    #define gamma 2.2
+#endif
+#ifndef QuasiLab
+    #define QuasiLab true
+#endif
 
 // -- Option values --
 #define None   1
