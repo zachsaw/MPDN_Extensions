@@ -35,14 +35,13 @@ namespace Mpdn.Extensions.PlayerExtensions
             int trackId = 1;
             var mediaFile = new MediaFile(path);
             var mediaDuration = TimeSpan.FromMilliseconds(mediaFile.duration);
-            long mediaSize = (mediaFile.size / 1024) / 1024;
 
             var lines = new List<string>();
             {
                 lines.Add("<!doctype html>");
                 lines.Add("<html>");
                 lines.Add("<head>");
-                lines.Add("<style>* { padding: 0px; margin: 0px; font-family:tahoma; } body { width: 700px; background: #fff; margin: 0 auto; padding-bottom: 30px; } table { font-size: 12px; border-collapse: collapse; } td { padding: 5px; border-bottom: 1px dotted #1c7feb; } td:first-child { width: 100px; border-right: 1px solid #1c7feb; } .thead { font-size: 15px; color: #1c7feb; padding-top: 25px; border: 0px !important; border-bottom: 2px solid #1c7feb !important; }</style>");
+                lines.Add("<style>* { padding: 0px; margin: 0px; font-family:tahoma; } body { width: 700px; background: #fff; margin: 0 auto; padding-bottom: 30px; } table { width: 700px; font-size: 12px; border-collapse: collapse; } td { padding: 5px; border-bottom: 1px dotted #1c7feb; } td:first-child { width: 100px; border-right: 1px solid #1c7feb; } .thead { font-size: 15px; color: #1c7feb; padding-top: 25px; border: 0px !important; border-bottom: 2px solid #1c7feb !important; }</style>");
                 lines.Add("</head>");
                 lines.Add("<body>");
                 lines.Add("<table border='0' cellspacing='0' cellpadding='0'>");
@@ -51,7 +50,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", trackId));
                 lines.Add(string.Format("<tr><td>Complete name:</td><td>{0}</td></tr>", path));
                 lines.Add(string.Format("<tr><td>Format:</td><td>{0}</td></tr>", mediaFile.format));
-                lines.Add(mediaSize == 0 ? string.Empty : mediaSize > 1024 ? string.Format("<tr><td>File size:</td><td>{0} GB</td></tr>", Math.Round((double)mediaSize / 1024, 2, MidpointRounding.ToEven).ToString("F")) : string.Format("<tr><td>File size:</td><td>{0} MB</td></tr>", mediaSize));
+                lines.Add(mediaFile.size == 0 ? string.Empty : string.Format("<tr><td>File size:</td><td>{0}</td></tr>", BytesToString(mediaFile.size)));
                 lines.Add(string.Format("<tr><td>Duration:</td><td>{0}</td></tr>", mediaDuration.ToString(@"hh\:mm\:ss")));
                 lines.Add(string.Format("<tr><td>Overall bit rate:</td><td>{0} Kbps</td></tr>", mediaFile.bitRate / 1000));
                 lines.Add(string.Format("<tr><td>Encoded date:</td><td>{0}</td></tr>", mediaFile.encodedDate));
@@ -66,7 +65,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 
                 long videoStreamSize;
                 long.TryParse(info.Value.miGetString("StreamSize"), out videoStreamSize);
-                long videoSize = videoStreamSize > 0 ? (videoStreamSize / 1024) / 1024 : 0;
 
                 var timespan = TimeSpan.FromMilliseconds(info.Value.duration);
 
@@ -93,7 +91,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 lines.Add(info.Value.bitDepth == 0 ? string.Empty : string.Format("<tr><td>Bit depth:</td><td>{0} bits</td></tr>", info.Value.bitDepth));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("ScanType")) ? string.Empty : string.Format("<tr><td>Scan type:</td><td>{0}</td></tr>", info.Value.miGetString("ScanType")));
                 lines.Add(bitPerFrame == 0 ? string.Empty : string.Format("<tr><td>Bits/(Pixel*Frame):</td><td>{0}</td></tr>", bitPerFrame.ToString("0.###")));
-                lines.Add(videoSize == 0 ? string.Empty : videoSize > 1024 ? string.Format("<tr><td>Stream size:</td><td>{0} GB</td></tr>", Math.Round((double)videoSize / 1024, 2, MidpointRounding.ToEven).ToString("F")) : string.Format("<tr><td>File size:</td><td>{0} MB</td></tr>", videoSize));
+                lines.Add(videoStreamSize == 0 ? string.Empty : string.Format("<tr><td>Stream size:</td><td>{0}</td></tr>", BytesToString(videoStreamSize)));
                 lines.Add(string.IsNullOrEmpty(info.Value.encodedLibrary) ? string.Empty : string.Format("<tr><td>Writing library:</td><td>{0}</td></tr>", info.Value.encodedLibrary));
                 lines.Add(string.IsNullOrEmpty(info.Value.encoderSettingsRaw) ? string.Empty : string.Format("<tr><td>Encoding settings:</td><td>{0}</td></tr>", info.Value.encoderSettingsRaw));
                 lines.Add(string.IsNullOrEmpty(info.Value.language) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.language));
@@ -109,7 +107,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 
                     long audioStreamSize;
                     long.TryParse(info.Value.miGetString("StreamSize"), out audioStreamSize);
-                    long audioSize = audioStreamSize > 0 ? (audioStreamSize / 1024) / 1024 : 0;
 
                     var timespan = TimeSpan.FromMilliseconds(info.Value.duration);
 
@@ -126,7 +123,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                     lines.Add(info.Value.sampleRate == 0 ? string.Empty : string.Format("<tr><td>Sampling rate:</td><td>{0} KHz</td></tr>", info.Value.sampleRate));
                     lines.Add(info.Value.bitDepth == 0 ? string.Empty : string.Format("<tr><td>Bit depth:</td><td>{0} bits</td></tr>", info.Value.bitDepth));
                     lines.Add(string.IsNullOrEmpty(info.Value.compressionMode) ? string.Empty : string.Format("<tr><td>Compression mode:</td><td>{0}</td></tr>", info.Value.compressionMode));
-                    lines.Add(audioSize == 0 ? string.Empty : audioSize > 1024 ? string.Format("<tr><td>Stream size:</td><td>{0} GB</td></tr>", Math.Round((double)audioSize / 1024, 2, MidpointRounding.ToEven).ToString("F")) : string.Format("<tr><td>Stream size:</td><td>{0} MB</td></tr>", audioSize));
+                    lines.Add(audioStreamSize == 0 ? string.Empty : string.Format("<tr><td>Stream size:</td><td>{0}</td></tr>", BytesToString(audioStreamSize)));
                     lines.Add(string.IsNullOrEmpty(info.Value.language) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.language));
 
                     audioTracks++;
@@ -161,6 +158,17 @@ namespace Mpdn.Extensions.PlayerExtensions
         private int GreatestCommonDivisor(int a, int b)
         {
             return (b == 0) ? a : GreatestCommonDivisor(b, a % b);
+        }
+
+        private string BytesToString(long byteCount)
+        {
+            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
+            if (byteCount == 0)
+                return "0" + suf[0];
+            long bytes = Math.Abs(byteCount);
+            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            double num = Math.Round(bytes / Math.Pow(1024, place), 2);
+            return (Math.Sign(byteCount) * num).ToString() + " " + suf[place];
         }
     }
 }
