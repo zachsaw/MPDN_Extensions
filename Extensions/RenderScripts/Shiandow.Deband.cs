@@ -26,14 +26,12 @@ namespace Mpdn.Extensions.RenderScripts
         public class Deband : RenderChain
         {
             public int maxbitdepth { get; set; }
-            public float margin { get; set; }
             public float power { get; set; }
             public bool grain { get; set; }
 
             public Deband()
             {
                 maxbitdepth = 8;
-                margin = 0.0f;
                 power = 0.5f;
                 grain = true;
             }
@@ -48,8 +46,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 float[] consts = {
                     (1 << bits) - 1, 
-                    power,
-                    margin
+                    power
                 };
 
                 var Deband = CompileShader("Deband.hlsl", macroDefinitions: !grain ? "SkipDithering=1" : "")
