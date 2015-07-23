@@ -36,9 +36,14 @@ namespace Mpdn.Extensions.PlayerExtensions
     {
         #region Properties
 
-        public Dictionary<Guid, Socket> GetClients { get; } = new Dictionary<Guid, Socket>();
+        public Dictionary<Guid, Socket> Clients { get; private set; }
 
         #endregion
+
+        public AcmPlug()
+        {
+            Clients = new Dictionary<Guid, Socket>();
+        }
 
         public override ExtensionUiDescriptor Descriptor
          {
@@ -302,7 +307,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
             else
             {
-                MessageBox.Show("The remote control is not activated.");
+                MessageBox.Show(Gui.VideoBox, "The remote control is not activated.");
             }
         }
 
@@ -329,7 +334,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ClientHandler(Socket client)
         {
             Guid clientGuid = Guid.NewGuid();
-            GetClients.Add(clientGuid, client);
+            Clients.Add(clientGuid, client);
 
             NetworkStream nStream = new NetworkStream(client);
             StreamReader reader = new StreamReader(nStream);
@@ -406,7 +411,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             WriteToSpecificClient("Exit|" + exitMessage, clientGuid.ToString());
 
-            GetClients[clientGuid].Disconnect(true);
+            Clients[clientGuid].Disconnect(true);
             RemoveWriter(clientGuid.ToString());
         }
 
@@ -592,7 +597,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             var callerGuid = Guid.Parse(guid);
             _writers.Remove(callerGuid);
-            GetClients.Remove(callerGuid);
+            Clients.Remove(callerGuid);
             _clientManager.ForceUpdate();
         }
 

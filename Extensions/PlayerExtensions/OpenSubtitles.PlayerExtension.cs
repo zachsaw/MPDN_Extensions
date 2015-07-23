@@ -94,7 +94,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             var subFile = string.Format(Subtitle.FILE_NAME_FORMAT, fileNameWithoutExtension,
                 Settings.PreferedLanguage);
             var fullPath = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), subFile);
-            var subFileSameName = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), $"{fileNameWithoutExtension}.srt");
+            var subFileSameName = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), string.Format("{0}.srt", fileNameWithoutExtension));
             return File.Exists(fullPath) || File.Exists(subFileSameName);
         }
     }

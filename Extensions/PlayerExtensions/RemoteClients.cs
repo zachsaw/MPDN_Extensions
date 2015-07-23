@@ -52,7 +52,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void PopulateGrid()
         {
             ClearGrid();
-            foreach(var item in mainRemote.GetClients)
+            foreach(var item in mainRemote.Clients)
             {
                 try
                 {
