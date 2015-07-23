@@ -15,7 +15,7 @@
 // License along with this library.
 // 
 
-namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
+namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     partial class OpenSubtitlesForm
     {
@@ -140,7 +140,7 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
             // 
             // subtitleBindingSource
             // 
-            this.subtitleBindingSource.DataSource = typeof(Mpdn.Extensions.PlayerExtensions.OpenSubtitles.Subtitle);
+            this.subtitleBindingSource.DataSource = typeof(Subtitle);
             // 
             // btnCancel
             // 

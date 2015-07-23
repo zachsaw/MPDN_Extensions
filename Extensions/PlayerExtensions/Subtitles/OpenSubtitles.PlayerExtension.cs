@@ -26,7 +26,7 @@ using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.PlayerExtensions.Exceptions;
 using MessageBox = System.Windows.Forms.MessageBox;
 
-namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
+namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public class OpenSubtitlesExtension : PlayerExtension<OpenSubtitlesSettings, OpenSubtitlesConfigDialog>
     {

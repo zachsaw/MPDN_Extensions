@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
+namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public class OpenSubtitlesLanguageHandler
     {

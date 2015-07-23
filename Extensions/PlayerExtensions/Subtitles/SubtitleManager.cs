@@ -24,7 +24,7 @@ using Mpdn.DirectShow;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.PlayerExtensions.Interfaces;
 
-namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
+namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public static class SubtitleManager
     {

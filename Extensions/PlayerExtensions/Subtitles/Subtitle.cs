@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
+namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public class Subtitle
     {

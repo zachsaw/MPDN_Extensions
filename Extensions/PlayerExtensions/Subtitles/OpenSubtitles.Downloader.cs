@@ -23,7 +23,7 @@ using System.Text;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.PlayerExtensions.Exceptions;
 
-namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
+namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     #region Subtitle
 
