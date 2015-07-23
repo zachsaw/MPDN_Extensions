@@ -44,17 +44,54 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
             }
         }
 
+        public override IList<Verb> Verbs
+        {
+            get
+            {
+                return new[]
+                {
+                    new Verb(Category.Play, string.Empty, "OpenSubtitles", "D", string.Empty, LaunchOpenSubtitleSearch),
+                };
+            }
+        }
+
+        private void LaunchOpenSubtitleSearch()
+        {
+            try
+            {
+                List<Subtitle> subList;
+                using (new HourGlass())
+                {
+                    subList = m_Downloader.GetSubtitles(Media.FilePath);
+                }
+                if (subList == null || subList.Count == 0)
+                    return; // Opensubtitles messagebox is annoying #44 https://github.com/zachsaw/MPDN_Extensions/issues/44
+                subList.Sort((a, b) => String.Compare(a.Lang, b.Lang, CultureInfo.CurrentUICulture, CompareOptions.StringSort));
+
+                m_Form.SetSubtitles(subList, Settings.PreferedLanguage);
+                m_Form.ShowDialog(Player.ActiveForm);
+            }
+            catch (InternetConnectivityException)
+            {
+                Trace.WriteLine("OpenSubtitles: Failed to access OpenSubtitles.org (InternetConnectivityException)");
+            }
+            catch (Exception)
+            {
+                Trace.WriteLine("OpenSubtitles: General exception occurred while trying to get subtitles");
+            }
+        }
+
         public override void Initialize()
         {
             base.Initialize();
             m_Downloader = new SubtitleDownloader("MPDN_Extensions");
-            Media.Loading += MediaLoading;
+            //Media.Loading += MediaLoading;
         }
 
         public override void Destroy()
         {
             base.Destroy();
-            Media.Loading -= MediaLoading;
+            //Media.Loading -= MediaLoading;
         }
 
 

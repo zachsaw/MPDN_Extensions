@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
 {
     public class Subtitle
@@ -14,6 +16,7 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
         public string Name { get; protected internal set; }
         public string Movie { get; protected internal set; }
         public int Id { get; protected internal set; }
+        public string FilePath { get; protected internal set; }
 
         public string Srt
         {
@@ -23,6 +26,11 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
         public void Save()
         {
             m_Downloader.SaveSubtitleFile(this);
+        }
+
+        public bool LoadSubtitle()
+        {
+            return File.Exists(FilePath) && SubtitleManager.LoadSubtitleFile(FilePath);
         }
     }
 }

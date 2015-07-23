@@ -155,6 +155,7 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
                 throw new Exception("Empty Subtitle");
             var subtitleLines = subs.Split(new[] {"\n"}, StringSplitOptions.RemoveEmptyEntries);
             File.WriteAllLines(@fullPath, subtitleLines);
+            subtitle.FilePath = fullPath;
         }
     }
 

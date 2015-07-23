@@ -240,10 +240,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Interfaces
     public interface IDirectVobSub : IBaseFilter
     {
         [PreserveSig]
-        int get_FileName( /*[MarshalAs(UnmanagedType.LPWStr, SizeConst = 260)]ref StringBuilder*/ IntPtr fn);
+        int get_FileName([In, Out, MarshalAs(UnmanagedType.LPWStr)]ref string fn);
 
         [PreserveSig]
-        int put_FileName([MarshalAs(UnmanagedType.LPWStr)] string fn);
+        int put_FileName([In, MarshalAs(UnmanagedType.LPWStr)] string fn);
 
         [PreserveSig]
         int get_LanguageCount(out int nLangs);
@@ -371,7 +371,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Interfaces
     [ComVisible(true), ComImport, SuppressUnmanagedCodeSecurity,
      Guid("AB52FC9C-2415-4dca-BC1C-8DCC2EAE8151"),
      InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IDirectVobSub3 : IBaseFilter
+    public interface IDirectVobSub2 : IDirectVobSub
     {
         [PreserveSig]
         int OpenSubtitles([MarshalAs(UnmanagedType.LPWStr)] string fn);

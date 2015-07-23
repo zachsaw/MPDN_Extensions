@@ -48,7 +48,7 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
             subtitleBindingSource.DataSource = typeof (Subtitle);
         }
 
-        public void SetSubtitles(List<Subtitle> subtitles, String prefLang)
+        public void SetSubtitles(List<Subtitle> subtitles, string prefLang)
         {
             m_SubtitleList = subtitles;
             List<Subtitle> foundSubs = subtitles;
@@ -83,6 +83,7 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
                 using (new HourGlass())
                 {
                     m_SelectedSub.Save();
+                    m_SelectedSub.LoadSubtitle();
                 }
                 Close();
             }
