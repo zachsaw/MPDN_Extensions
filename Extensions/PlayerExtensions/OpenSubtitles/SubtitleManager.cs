@@ -26,7 +26,7 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
 {
     public static class SubtitleManager
     {
-        private static readonly Guid s_XYDirectVobSub = new Guid("2dfcb782-ec20-4a7c-b530-4577adb33f21");
+        private static readonly Guid s_XyDirectVobSub = new Guid("2dfcb782-ec20-4a7c-b530-4577adb33f21");
         private static Filter s_DirectVobFilter;
 
         public static Filter DirectVobSubFilter
@@ -37,7 +37,7 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
                 {
                     return s_DirectVobFilter;
                 }
-                s_DirectVobFilter = Player.Filters.Video.FirstOrDefault(f => f.ClsId == s_XYDirectVobSub);
+                s_DirectVobFilter = Player.Filters.Video.FirstOrDefault(f => f.ClsId == s_XyDirectVobSub);
 
                 return s_DirectVobFilter;
             }
@@ -52,6 +52,7 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
         {
             if (!IsSubtitleFilterLoaded())
                 return false;
+
             var result = -1;
             ComThread.Do(() =>
             {
