@@ -263,6 +263,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             form.PlayNextFileInDirectory();
         }
 
+        private void RepeatPlaylist()
+        {
+            var lastItem = form.Playlist.Last();
+            if (form.CurrentItem != lastItem) return;
+            if (Media.Position != Media.Duration) return;
+            form.ResetPlayCount();
+            form.SetPlaylistIndex(0);
+        }
+
         public IEnumerable<string> GetAllMediaFiles(string mediaDir)
         {
             var filter = form.openFileDialog.Filter.Split('|');
@@ -455,11 +464,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             switch (Settings.AfterPlaybackOpt)
             {
+                case AfterPlaybackSettingsOpt.ClosePlayer:
+                    CloseMpdn();
+                    break;
                 case AfterPlaybackSettingsOpt.PlayNextFileInFolder:
                     PlayNextInFolder();
                     break;
-                case AfterPlaybackSettingsOpt.ClosePlayer:
-                    CloseMpdn();
+                case AfterPlaybackSettingsOpt.RepeatPlaylist:
+                    RepeatPlaylist();
                     break;
             }
         }
@@ -710,15 +722,16 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
     public enum AfterPlaybackSettingsOpt
     {
         DoNothing = 0,
+        ClosePlayer,
         PlayNextFileInFolder,
-        ClosePlayer
+        RepeatPlaylist
     }
 
     public enum AfterPlaybackSettingsAction
     {
         DoNothing = 0,
-        RemoveFile,
-        GreyOutFile
+        GreyOutFile,
+        RemoveFile
     }
 
     #endregion

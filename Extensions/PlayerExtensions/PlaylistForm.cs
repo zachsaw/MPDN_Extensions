@@ -404,6 +404,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             PlaylistCount = Playlist.Count;
         }
 
+        public void ResetPlayCount()
+        {
+            foreach (var i in Playlist)
+            {
+                i.PlayCount = 0;
+            }
+        }
+
         public void RefreshPlaylist()
         {
             dgv_PlayList.Invalidate();
@@ -698,24 +706,35 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public void PlayNext(bool incIdx = true)
         {
             if (incIdx) currentPlayIndex++;
-            OpenMedia();
 
-            if (currentPlayIndex < Playlist.Count) return;
-            currentPlayIndex = Playlist.Count - 1;
+            if (currentPlayIndex > Playlist.Count - 1)
+            {
+                currentPlayIndex = Playlist.Count - 1;
+                return;
+            }
+
+            SetPlayStyling();
+            OpenMedia();
         }
 
         public void PlayPrevious()
         {
             currentPlayIndex--;
-            OpenMedia();
 
-            if (currentPlayIndex >= 0) return;
-            currentPlayIndex = 0;
+            if (currentPlayIndex < 0)
+            {
+                currentPlayIndex = 0;
+                return;
+            }
+
+            SetPlayStyling();
+            OpenMedia();
         }
 
         public void SetPlaylistIndex(int index)
         {
             currentPlayIndex = index;
+            SetPlayStyling();
             OpenMedia();
         }
 
@@ -723,7 +742,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (dgv_PlayList.Rows.Count < 1 || dgv_PlayList.CurrentRow == null) return;
             SetPlaylistIndex(dgv_PlayList.CurrentRow.Index);
-            SetPlayStyling();
         }
 
         public void PlayNextFileInDirectory(bool next = true)
@@ -818,6 +836,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             AddFilesToPlaylist(fileNames);
             if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused) return;
             currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
+            SetPlayStyling();
             OpenMedia(true);
         }
 

@@ -166,29 +166,40 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             // cb_afterPlaybackAction
             // 
+            this.cb_afterPlaybackAction.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.cb_afterPlaybackAction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_afterPlaybackAction.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.cb_afterPlaybackAction.FormattingEnabled = true;
             this.cb_afterPlaybackAction.Items.AddRange(new object[] {
             "Do nothing",
-            "Remove file",
-            "Grey out file"});
+            "Grey out file",
+            "Remove file"});
             this.cb_afterPlaybackAction.Location = new System.Drawing.Point(6, 46);
             this.cb_afterPlaybackAction.Name = "cb_afterPlaybackAction";
             this.cb_afterPlaybackAction.Size = new System.Drawing.Size(200, 21);
             this.cb_afterPlaybackAction.TabIndex = 15;
+            this.cb_afterPlaybackAction.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.cb_afterPlaybackAction_DrawItem);
+            this.cb_afterPlaybackAction.SelectionChangeCommitted += new System.EventHandler(this.cb_afterPlaybackAction_SelectionChangeCommitted);
+            this.cb_afterPlaybackAction.Enter += new System.EventHandler(this.cb_afterPlaybackAction_Enter);
             // 
             // cb_afterPlaybackOpt
             // 
+            this.cb_afterPlaybackOpt.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.cb_afterPlaybackOpt.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_afterPlaybackOpt.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.cb_afterPlaybackOpt.FormattingEnabled = true;
             this.cb_afterPlaybackOpt.Items.AddRange(new object[] {
             "Do nothing",
+            "Close player",
             "Play next file in folder",
-            "Close player"});
+            "Repeat playlist"});
             this.cb_afterPlaybackOpt.Location = new System.Drawing.Point(6, 17);
             this.cb_afterPlaybackOpt.Name = "cb_afterPlaybackOpt";
             this.cb_afterPlaybackOpt.Size = new System.Drawing.Size(200, 21);
             this.cb_afterPlaybackOpt.TabIndex = 14;
+            this.cb_afterPlaybackOpt.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.cb_afterPlaybackOpt_DrawItem);
+            this.cb_afterPlaybackOpt.SelectionChangeCommitted += new System.EventHandler(this.cb_afterPlaybackOpt_SelectionChangeCommitted);
+            this.cb_afterPlaybackOpt.Enter += new System.EventHandler(this.cb_afterPlaybackOpt_Enter);
             // 
             // groupBox3
             // 
