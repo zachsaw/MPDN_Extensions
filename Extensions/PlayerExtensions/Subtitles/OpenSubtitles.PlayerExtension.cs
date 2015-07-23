@@ -59,6 +59,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 
         private void LaunchOpenSubtitleSearch()
         {
+            if (Player.State == PlayerState.Closed)
+            {
+                MessageBox.Show(Gui.VideoBox, "No Media Loaded");
+                return;
+            }
             Media.Pause();
             try
             {
