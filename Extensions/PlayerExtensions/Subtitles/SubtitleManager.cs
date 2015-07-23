@@ -28,6 +28,23 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public static class SubtitleManager
     {
+        public class SubtitleTiming
+        {
+            public int Delay { get; set; }
+            public int SpeedMultiplier { get; set; }
+            public int SpeedDivisor { get; set; }
+
+            public SubtitleTiming()
+            {
+            }
+
+            public SubtitleTiming(int delay, int speedMultiplier, int speedDivisor)
+            {
+                Delay = delay;
+                SpeedMultiplier = speedMultiplier;
+                SpeedDivisor = speedDivisor;
+            }
+        }
         private static readonly Guid s_XyDirectVobSub = new Guid("2dfcb782-ec20-4a7c-b530-4577adb33f21");
         private static Filter s_DirectVobFilter;
 
@@ -48,6 +65,37 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
         public static bool IsSubtitleFilterLoaded()
         {
             return DirectVobSubFilter != null;
+        }
+
+        public static SubtitleTiming GetTiming()
+        {
+            if (!IsSubtitleFilterLoaded())
+                return null;
+
+            SubtitleTiming timing = null;
+            ComThread.Do(() =>
+            {
+                var extSubSource = DirectVobSubFilter.Base as IDirectVobSub;
+                int delay, mul, div;
+                var hr = extSubSource.get_SubtitleTiming(out delay, out mul, out div);
+                DsError.ThrowExceptionForHR(hr);
+                timing = new SubtitleTiming(delay, mul, div);
+            });
+            return timing;
+        } 
+
+        public static bool SetTiming(SubtitleTiming timing)
+        {
+            if (!IsSubtitleFilterLoaded())
+                return false;
+
+            ComThread.Do(() =>
+            {
+                var extSubSource = DirectVobSubFilter.Base as IDirectVobSub;
+                var hr = extSubSource.put_SubtitleTiming(timing.Delay, timing.SpeedMultiplier, timing.SpeedDivisor);
+                DsError.ThrowExceptionForHR(hr);
+            });
+            return true;
         }
 
         public static bool LoadSubtitleFile(string subtitleFile)
