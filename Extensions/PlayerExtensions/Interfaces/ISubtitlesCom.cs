@@ -301,6 +301,36 @@ namespace Mpdn.Extensions.PlayerExtensions.Interfaces
         [PreserveSig]
         int put_OSD([MarshalAs(UnmanagedType.I1)] bool fOSD);
 
+        ////
+        [PreserveSig]
+        int IsSubtitleReloaderLocked([Out, MarshalAs(UnmanagedType.VariantBool)]out bool fLocked);
+
+        [PreserveSig]
+        int LockSubtitleReloader([In, MarshalAs(UnmanagedType.VariantBool)]bool fLocked);
+
+        [PreserveSig]
+        int get_SubtitleReloader([Out, MarshalAs(UnmanagedType.VariantBool)]out bool fDisabled);
+
+        [PreserveSig]
+        int put_SubtitleReloader([In, MarshalAs(UnmanagedType.VariantBool)]bool fDisabled);
+
+        ////
+        [PreserveSig]
+        int get_ExtendPicture(
+            [Out]out int horizontal,    // 0 - disabled, 1 - mod32 extension (width = (width+31)&~31)
+            [Out]out int vertical,      // 0 - disabled, 1 - 16:9, 2 - 4:3, 0x80 - crop (use crop together with 16:9 or 4:3, eg 0x81 will crop to 16:9 if the picture was taller)
+            [Out]out int resx2,         // 0 - disabled, 1 - enabled, 2 - depends on the original resolution
+            [Out]out int resx2minw,     // resolution doubler will be used if width*height <= resx2minw*resx2minh (resx2minw*resx2minh equals to 384*288 by default)
+            [Out]out int resx2minh);
+
+        [PreserveSig]
+        int put_ExtendPicture(
+            [In]int horizontal,    // 0 - disabled, 1 - mod32 extension (width = (width+31)&~31)
+            [In]int vertical,      // 0 - disabled, 1 - 16:9, 2 - 4:3, 0x80 - crop (use crop together with 16:9 or 4:3, eg 0x81 will crop to 16:9 if the picture was taller)
+            [In]int resx2,         // 0 - disabled, 1 - enabled, 2 - depends on the original resolution
+            [In]int resx2minw,     // resolution doubler will be used if width*height <= resx2minw*resx2minh (resx2minw*resx2minh equals to 384*288 by default)
+            [In]int resx2minh);
+
         [PreserveSig]
         int get_SubtitleTiming(
             [Out] out int delay,

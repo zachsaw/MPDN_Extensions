@@ -16,6 +16,8 @@
 // 
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using DirectShowLib;
 using Mpdn.DirectShow;
@@ -48,18 +50,55 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
             return DirectVobSubFilter != null;
         }
 
-        public static bool LoadSubtitleFile(string filepath)
+        public static bool LoadSubtitleFile(string subtitleFile)
         {
             if (!IsSubtitleFilterLoaded())
                 return false;
 
-            var result = -1;
             ComThread.Do(() =>
             {
-                var vobFilter = (IDirectVobSub) DirectVobSubFilter.Base;
-                result = vobFilter.put_FileName(filepath);
+                var extSubSource = DirectVobSubFilter.Base as IDirectVobSub;
+                if (extSubSource != null && !string.IsNullOrWhiteSpace(subtitleFile))
+                {
+                    string subName = Path.GetFileNameWithoutExtension(subtitleFile);
+
+                    var hr = extSubSource.put_FileName(subtitleFile);
+                    DsError.ThrowExceptionForHR(hr);
+
+                    int iCount;
+
+                    hr = extSubSource.get_LanguageCount(out iCount);
+                    DsError.ThrowExceptionForHR(hr);
+                    Trace.WriteLine("LoadExternalSubtitle Count: " + iCount);
+
+                    for (int i = 0; i < iCount; i++)
+                    {
+                        string ppName;
+
+                        hr = extSubSource.get_LanguageName(i, out ppName);
+                        DsError.ThrowExceptionForHR(hr);
+
+                        Trace.WriteLine("LoadExternalSubtitle SubName " + ppName);
+
+                        if (subName == ppName)
+                        {
+                            Trace.WriteLine("LoadExternalSubtitle Select Stream " + i);
+
+                            hr = extSubSource.put_SelectedLanguage(i);
+                            DsError.ThrowExceptionForHR(hr);
+
+                            int iSelected = 0;
+                            hr = extSubSource.get_SelectedLanguage(ref iSelected);
+                            DsError.ThrowExceptionForHR(hr);
+
+                            Trace.WriteLine("LoadExternalSubtitle Select Result: " + iSelected);
+
+                            break;
+                        }
+                    }
+                }
             });
-            return result == 0;
+            return true;
         }
 
     }
