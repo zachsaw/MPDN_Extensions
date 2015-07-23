@@ -20,9 +20,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Windows;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.PlayerExtensions.Exceptions;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
 {
@@ -50,13 +52,14 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
             {
                 return new[]
                 {
-                    new Verb(Category.Play, string.Empty, "OpenSubtitles", "D", string.Empty, LaunchOpenSubtitleSearch),
+                    new Verb(Category.View, string.Empty, "OpenSubtitles", "D", string.Empty, LaunchOpenSubtitleSearch),
                 };
             }
         }
 
         private void LaunchOpenSubtitleSearch()
         {
+            Media.Pause();
             try
             {
                 List<Subtitle> subList;
@@ -65,7 +68,11 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
                     subList = m_Downloader.GetSubtitles(Media.FilePath);
                 }
                 if (subList == null || subList.Count == 0)
-                    return; // Opensubtitles messagebox is annoying #44 https://github.com/zachsaw/MPDN_Extensions/issues/44
+                {
+                    MessageBox.Show(Gui.VideoBox, "No Subtitles found");
+                    Media.Play();
+                    return;
+                }
                 subList.Sort((a, b) => String.Compare(a.Lang, b.Lang, CultureInfo.CurrentUICulture, CompareOptions.StringSort));
 
                 m_Form.SetSubtitles(subList, Settings.PreferedLanguage);
@@ -85,55 +92,6 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
         {
             base.Initialize();
             m_Downloader = new SubtitleDownloader("MPDN_Extensions");
-            //Media.Loading += MediaLoading;
-        }
-
-        public override void Destroy()
-        {
-            base.Destroy();
-            //Media.Loading -= MediaLoading;
-        }
-
-
-        private void MediaLoading(object sender, MediaLoadingEventArgs e)
-        {
-            if (!Settings.EnableAutoDownloader)
-                return;
-            if (HasExistingSubtitle(e.Filename))
-                return;
-            try
-            {
-                List<Subtitle> subList;
-                using (new HourGlass())
-                {
-                    subList = m_Downloader.GetSubtitles(e.Filename);
-                }
-                if (subList == null || subList.Count == 0)
-                    return; // Opensubtitles messagebox is annoying #44 https://github.com/zachsaw/MPDN_Extensions/issues/44
-                subList.Sort((a, b) => String.Compare(a.Lang, b.Lang, CultureInfo.CurrentUICulture, CompareOptions.StringSort));
-
-                m_Form.SetSubtitles(subList, Settings.PreferedLanguage);
-                m_Form.ShowDialog(Player.ActiveForm);
-            }
-            catch (InternetConnectivityException)
-            {
-                Trace.WriteLine("OpenSubtitles: Failed to access OpenSubtitles.org (InternetConnectivityException)");
-            }
-            catch (Exception)
-            {
-                Trace.WriteLine("OpenSubtitles: General exception occurred while trying to get subtitles");
-            }
-
-        }
-
-        private bool HasExistingSubtitle(string mediaFilename)
-        {
-            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(mediaFilename);
-            var subFile = string.Format(Subtitle.FILE_NAME_FORMAT, fileNameWithoutExtension,
-                Settings.PreferedLanguage);
-            var fullPath = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), subFile);
-            var subFileSameName = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), string.Format("{0}.srt", fileNameWithoutExtension));
-            return File.Exists(fullPath) || File.Exists(subFileSameName);
         }
     }
 

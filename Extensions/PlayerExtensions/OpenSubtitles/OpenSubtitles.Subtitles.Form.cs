@@ -118,5 +118,12 @@ namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
             }
         }
 
+        private void OpenSubtitlesFormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (Player.State == PlayerState.Paused)
+            {
+                Media.Play();
+            }
+        }
     }
 }
