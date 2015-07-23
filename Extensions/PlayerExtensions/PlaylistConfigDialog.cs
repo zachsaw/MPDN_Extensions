@@ -318,7 +318,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             PlaylistForm.UpdatePlaylistWithRegexFilter(new List<string>(), Settings.StripDirectoryInFileName);
         }
 
-        void btn_save_Click(object sender, EventArgs e)
+        private void btn_save_Click(object sender, EventArgs e)
         {
             SaveRegex();
         }
@@ -366,7 +366,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             InitRegexForm();
         }
 
-        void cb_afterPlaybackOpt_DrawItem(object sender, DrawItemEventArgs e)
+        private void cb_afterPlaybackOpt_DrawItem(object sender, DrawItemEventArgs e)
         {
             var comboBox = (ComboBox)sender;
 
@@ -390,7 +390,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
-        void cb_afterPlaybackAction_DrawItem(object sender, DrawItemEventArgs e)
+        private void cb_afterPlaybackAction_DrawItem(object sender, DrawItemEventArgs e)
         {
             var comboBox = (ComboBox)sender;
 
