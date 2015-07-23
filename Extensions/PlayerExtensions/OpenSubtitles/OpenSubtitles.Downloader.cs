@@ -14,15 +14,16 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using Mpdn.Extensions.PlayerExtensions.Exceptions;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.PlayerExtensions.Exceptions;
 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
 {
     #region Subtitle
 

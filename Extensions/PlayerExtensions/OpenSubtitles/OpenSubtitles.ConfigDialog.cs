@@ -17,7 +17,7 @@
 
 using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.OpenSubtitles
 {
     public partial class OpenSubtitlesConfigDialog : OpenSubtitlesConfigBase
     {
