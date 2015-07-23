@@ -341,7 +341,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             StreamWriter writer = new StreamWriter(nStream);
             _writers.Add(clientGuid, writer);
             var clientGUID = reader.ReadLine();
-            if (clientGUID == null) throw new ArgumentNullException(nameof(clientGUID));
             if (!_authHandler.IsGUIDAuthed(clientGUID) && Settings.ValidateClients)
             {
                 ClientAuth(clientGUID, clientGuid);
