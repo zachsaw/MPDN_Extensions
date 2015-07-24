@@ -98,7 +98,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             return true;
         }
 
-        public static bool LoadSubtitleFile(string subtitleFile)
+        public static bool LoadSubtitleFile(string subtitleFile, string language = null)
         {
             if (!IsSubtitleFilterLoaded())
                 return false;
@@ -108,7 +108,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
                 var extSubSource = DirectVobSubFilter.Base as IDirectVobSub;
                 if (extSubSource != null && !string.IsNullOrWhiteSpace(subtitleFile))
                 {
-                    string subName = Path.GetFileNameWithoutExtension(subtitleFile);
+                    var subName = language ?? Path.GetFileNameWithoutExtension(subtitleFile);
 
                     var hr = extSubSource.put_FileName(subtitleFile);
                     DsError.ThrowExceptionForHR(hr);
@@ -119,7 +119,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
                     DsError.ThrowExceptionForHR(hr);
                     Trace.WriteLine("LoadExternalSubtitle Count: " + iCount);
 
-                    for (int i = 0; i < iCount; i++)
+                    for (var i = 0; i < iCount; i++)
                     {
                         string ppName;
 

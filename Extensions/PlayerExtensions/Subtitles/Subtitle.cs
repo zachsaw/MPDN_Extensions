@@ -30,7 +30,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 
         public bool LoadSubtitle()
         {
-            return File.Exists(FilePath) && SubtitleManager.LoadSubtitleFile(FilePath);
+            return File.Exists(FilePath) && SubtitleManager.LoadSubtitleFile(FilePath, Lang);
         }
     }
 }
