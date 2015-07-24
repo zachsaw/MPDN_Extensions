@@ -35,7 +35,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 
         protected override void LoadSettings()
         {
-            checkBoxEnableAutoDownloader.Checked = Settings.EnableAutoDownloader;
             if (Settings.PreferedLanguage != null)
             {
                 comboBoxPrefLanguage.SelectedValue = Settings.PreferedLanguage;
@@ -48,7 +47,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 
         protected override void SaveSettings()
         {
-            Settings.EnableAutoDownloader = checkBoxEnableAutoDownloader.Checked;
             if (comboBoxPrefLanguage.SelectedItem.Equals(OpenSubtitlesLanguageHandler.InvariantCulture))
             {
                 Settings.PreferedLanguage = null;

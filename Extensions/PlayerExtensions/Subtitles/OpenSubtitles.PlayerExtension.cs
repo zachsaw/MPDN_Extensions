@@ -104,11 +104,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
     {
         public OpenSubtitlesSettings()
         {
-            EnableAutoDownloader = false;
             PreferedLanguage = CultureInfo.CurrentUICulture.Parent.EnglishName;
         }
 
-        public bool EnableAutoDownloader { get; set; }
         public string PreferedLanguage { get; set; }
     }
 }
