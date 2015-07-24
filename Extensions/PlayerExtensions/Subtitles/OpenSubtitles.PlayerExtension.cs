@@ -14,16 +14,19 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Windows;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
-using System.IO;
 using Mpdn.Extensions.PlayerExtensions.Exceptions;
+using MessageBox = System.Windows.Forms.MessageBox;
 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public class OpenSubtitlesExtension : PlayerExtension<OpenSubtitlesSettings, OpenSubtitlesConfigDialog>
     {
@@ -43,35 +46,38 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
-        public override void Initialize()
+        public override IList<Verb> Verbs
         {
-            base.Initialize();
-            m_Downloader = new SubtitleDownloader("MPDN_Extensions");
-            Media.Loading += MediaLoading;
+            get
+            {
+                return new[]
+                {
+                    new Verb(Category.View, string.Empty, "OpenSubtitles", "D", string.Empty, LaunchOpenSubtitleSearch),
+                };
+            }
         }
 
-        public override void Destroy()
+        private void LaunchOpenSubtitleSearch()
         {
-            base.Destroy();
-            Media.Loading -= MediaLoading;
-        }
-
-
-        private void MediaLoading(object sender, MediaLoadingEventArgs e)
-        {
-            if (!Settings.EnableAutoDownloader)
+            if (Player.State == PlayerState.Closed)
+            {
+                MessageBox.Show(Gui.VideoBox, "No Media Loaded");
                 return;
-            if (HasExistingSubtitle(e.Filename))
-                return;
+            }
+            Media.Pause();
             try
             {
                 List<Subtitle> subList;
                 using (new HourGlass())
                 {
-                    subList = m_Downloader.GetSubtitles(e.Filename);
+                    subList = m_Downloader.GetSubtitles(Media.FilePath);
                 }
                 if (subList == null || subList.Count == 0)
-                    return; // Opensubtitles messagebox is annoying #44 https://github.com/zachsaw/MPDN_Extensions/issues/44
+                {
+                    MessageBox.Show(Gui.VideoBox, "No Subtitles found");
+                    Media.Play();
+                    return;
+                }
                 subList.Sort((a, b) => String.Compare(a.Lang, b.Lang, CultureInfo.CurrentUICulture, CompareOptions.StringSort));
 
                 m_Form.SetSubtitles(subList, Settings.PreferedLanguage);
@@ -85,17 +91,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 Trace.WriteLine("OpenSubtitles: General exception occurred while trying to get subtitles");
             }
-
         }
 
-        private bool HasExistingSubtitle(string mediaFilename)
+        public override void Initialize()
         {
-            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(mediaFilename);
-            var subFile = string.Format(Subtitle.FILE_NAME_FORMAT, fileNameWithoutExtension,
-                Settings.PreferedLanguage);
-            var fullPath = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), subFile);
-            var subFileSameName = Path.Combine(PathHelper.GetDirectoryName(mediaFilename), string.Format("{0}.srt", fileNameWithoutExtension));
-            return File.Exists(fullPath) || File.Exists(subFileSameName);
+            base.Initialize();
+            m_Downloader = new SubtitleDownloader("MPDN_Extensions");
         }
     }
 
@@ -103,11 +104,9 @@ namespace Mpdn.Extensions.PlayerExtensions
     {
         public OpenSubtitlesSettings()
         {
-            EnableAutoDownloader = false;
             PreferedLanguage = CultureInfo.CurrentUICulture.Parent.EnglishName;
         }
 
-        public bool EnableAutoDownloader { get; set; }
         public string PreferedLanguage { get; set; }
     }
 }

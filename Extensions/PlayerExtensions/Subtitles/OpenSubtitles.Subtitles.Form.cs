@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.PlayerExtensions.Exceptions;
 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public partial class OpenSubtitlesForm : Form
     {
@@ -47,7 +48,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             subtitleBindingSource.DataSource = typeof (Subtitle);
         }
 
-        public void SetSubtitles(List<Subtitle> subtitles, String prefLang)
+        public void SetSubtitles(List<Subtitle> subtitles, string prefLang)
         {
             m_SubtitleList = subtitles;
             List<Subtitle> foundSubs = subtitles;
@@ -82,6 +83,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 using (new HourGlass())
                 {
                     m_SelectedSub.Save();
+                    m_SelectedSub.LoadSubtitle();
                 }
                 Close();
             }
@@ -116,5 +118,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
+        private void OpenSubtitlesFormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (Player.State == PlayerState.Paused)
+            {
+                Media.Play();
+            }
+        }
     }
 }

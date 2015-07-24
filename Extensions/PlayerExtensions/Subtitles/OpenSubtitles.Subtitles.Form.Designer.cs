@@ -15,7 +15,7 @@
 // License along with this library.
 // 
 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     partial class OpenSubtitlesForm
     {
@@ -46,7 +46,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.DownloadButton = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.gridView = new System.Windows.Forms.DataGridView();
@@ -83,7 +83,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.label2.TabIndex = 3;
             this.label2.Text = "Provided by OpenSubtitles.org";
             // 
-            // dataGridView1
+            // gridView
             // 
             this.gridView.AllowUserToAddRows = false;
             this.gridView.AllowUserToDeleteRows = false;
@@ -131,8 +131,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.movieDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.movieDataGridViewTextBoxColumn.DataPropertyName = "Movie";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-            this.movieDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+            this.movieDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle1;
             this.movieDataGridViewTextBoxColumn.HeaderText = "Movie";
             this.movieDataGridViewTextBoxColumn.MaxInputLength = 0;
             this.movieDataGridViewTextBoxColumn.Name = "movieDataGridViewTextBoxColumn";
@@ -140,7 +140,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             // subtitleBindingSource
             // 
-            this.subtitleBindingSource.DataSource = typeof(Mpdn.Extensions.PlayerExtensions.Subtitle);
+            this.subtitleBindingSource.DataSource = typeof(Subtitle);
             // 
             // btnCancel
             // 
@@ -182,6 +182,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.Name = "OpenSubtitlesForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "OpenSubtitles";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.OpenSubtitlesFormClosed);
             ((System.ComponentModel.ISupportInitialize)(this.gridView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.subtitleBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.subLangBindingSource)).EndInit();

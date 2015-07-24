@@ -17,7 +17,7 @@
 
 using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.Extensions.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public partial class OpenSubtitlesConfigDialog : OpenSubtitlesConfigBase
     {
@@ -35,7 +35,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         protected override void LoadSettings()
         {
-            checkBoxEnableAutoDownloader.Checked = Settings.EnableAutoDownloader;
             if (Settings.PreferedLanguage != null)
             {
                 comboBoxPrefLanguage.SelectedValue = Settings.PreferedLanguage;
@@ -48,7 +47,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         protected override void SaveSettings()
         {
-            Settings.EnableAutoDownloader = checkBoxEnableAutoDownloader.Checked;
             if (comboBoxPrefLanguage.SelectedItem.Equals(OpenSubtitlesLanguageHandler.InvariantCulture))
             {
                 Settings.PreferedLanguage = null;
