@@ -83,7 +83,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 lines.Add(info.Value.bitRateNominal == 0 ? string.Empty : string.Format("<tr><td>Nominal bit rate:</td><td>{0} Kbps</td></tr>", info.Value.bitRateNominal / 1000));
                 lines.Add(info.Value.width == 0 ? string.Empty : string.Format("<tr><td>Width:</td><td>{0} pixels</td></tr>", info.Value.width));
                 lines.Add(info.Value.height == 0 ? string.Empty : string.Format("<tr><td>Height:</td><td>{0} pixels</td></tr>", info.Value.height));
-                lines.Add(string.IsNullOrEmpty(displayAspectRatio) ? string.Empty : string.Format("<tr><td>Display Aspect ratio:</td><td>{0}</td></tr>", displayAspectRatio));
+                lines.Add(string.IsNullOrEmpty(displayAspectRatio) ? string.Empty : string.Format("<tr><td>Display aspect ratio:</td><td>{0}</td></tr>", displayAspectRatio));
                 lines.Add(string.IsNullOrEmpty(info.Value.frameRateMode) ? string.Empty : string.Format("<tr><td>Frame rate mode:</td><td>{0}</td></tr>", info.Value.frameRateMode));
                 lines.Add(info.Value.frameRate == 0 ? string.Empty : string.Format("<tr><td>Frame rate:</td><td>{0} fps</td></tr>", info.Value.frameRate));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("ChromaSubsampling")) ? string.Empty : string.Format("<tr><td>Chroma subsampling:</td><td>{0}</td></tr>", info.Value.miGetString("ChromaSubsampling")));
