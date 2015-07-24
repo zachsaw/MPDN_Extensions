@@ -85,8 +85,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
                 if (starTiming == null)
                     return;
 
-                currentTiming = new SubtitleManager.SubtitleTiming(starTiming.Delay, starTiming.SpeedMultiplier,
-                    starTiming.SpeedDivisor);
+                SetDefaultCurrentTiming();
 
                 m_AddDelayMenu.Enabled = true;
                 m_MinusDelayMenu.Enabled = true;
@@ -100,12 +99,19 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             }
         }
 
+        private void SetDefaultCurrentTiming()
+        {
+            currentTiming = new SubtitleManager.SubtitleTiming(starTiming.Delay, starTiming.SpeedMultiplier,
+                starTiming.SpeedDivisor);
+        }
+
         private void ResetDelay()
         {
             if (starTiming == null)
                 return;
 
             SubtitleManager.SetTiming(starTiming);
+            SetDefaultCurrentTiming();
 
             ShowDelayText(0);
         }
