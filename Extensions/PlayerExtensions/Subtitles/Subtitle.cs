@@ -17,6 +17,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
         public string Movie { get; protected internal set; }
         public int Id { get; protected internal set; }
         public string FilePath { get; protected internal set; }
+        public string MediaFileName { get; protected internal set; }
 
         public string Srt
         {

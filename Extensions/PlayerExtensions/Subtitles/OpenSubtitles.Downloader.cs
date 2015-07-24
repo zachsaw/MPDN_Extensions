@@ -37,7 +37,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
         private readonly string m_UserAgent;
         private readonly WebClient m_WebClient = new WebClient();
         private string m_LastTicket;
-        private string m_MediaFilename;
 
 
         public SubtitleDownloader(string userAgent)
@@ -81,7 +80,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             var name = file.Name;
             var size = file.Length.ToString("X");
             var hash = HashCalculator.GetHash(filename);
-            m_MediaFilename = filename;
             var subs = DoRequest(string.Format(OS_URL, name, size, hash));
 
             if (string.IsNullOrEmpty(subs))
@@ -89,7 +87,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
                 throw new EmptyResponseException();
             }
 
-            return ParseSubtitlesResponse(subs);
+           var subtitleList = ParseSubtitlesResponse(subs);
+           subtitleList.ForEach((sub => sub.MediaFileName = filename));
+           return subtitleList;
+
         }
 
         private List<Subtitle> ParseSubtitlesResponse(string subs)
@@ -146,8 +147,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 
         public void SaveSubtitleFile(Subtitle subtitle)
         {
-            var dir = PathHelper.GetDirectoryName(m_MediaFilename);
-            var subFile = string.Format(Subtitle.FILE_NAME_FORMAT, Path.GetFileNameWithoutExtension(m_MediaFilename),
+            var dir = PathHelper.GetDirectoryName(subtitle.MediaFileName);
+            var subFile = string.Format(Subtitle.FILE_NAME_FORMAT, Path.GetFileNameWithoutExtension(subtitle.MediaFileName),
                 subtitle.Lang);
             var fullPath = Path.Combine(dir, subFile);
             var subs = FetchSubtitleText(subtitle);
