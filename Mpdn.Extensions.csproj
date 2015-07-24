@@ -113,12 +113,12 @@
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.NativeMethods.cs" />
     <Compile Include="Extensions\PlayerExtensions\DynamicHotkeys.cs" />
     <Compile Include="Extensions\PlayerExtensions\FullScreenTextPainter.cs" />
-    <Compile Include="Extensions\PlayerExtensions\GoToTime.cs" />
-    <Compile Include="Extensions\PlayerExtensions\GoToTimeForm.cs">
+    <Compile Include="Extensions\PlayerExtensions\GoTo.cs" />
+    <Compile Include="Extensions\PlayerExtensions\GoToForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Extensions\PlayerExtensions\GoToTimeForm.Designer.cs">
-      <DependentUpon>GoToTimeForm.cs</DependentUpon>
+    <Compile Include="Extensions\PlayerExtensions\GoToForm.Designer.cs">
+      <DependentUpon>GoToForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\PlayerExtensions\Interfaces\IDirectVobSub.cs" />
     <Compile Include="Extensions\PlayerExtensions\Interfaces\ILavAudioSettings.cs" />
