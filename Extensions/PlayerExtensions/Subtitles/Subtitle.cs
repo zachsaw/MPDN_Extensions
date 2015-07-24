@@ -29,9 +29,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             m_Downloader.SaveSubtitleFile(this);
         }
 
-        public bool LoadSubtitle()
+        public void LoadSubtitle()
         {
-            return File.Exists(FilePath) && SubtitleManager.LoadSubtitleFile(FilePath, Lang);
+            if (!File.Exists(FilePath))
+                return;
+
+            SubtitleManager.LoadFile(FilePath);
         }
     }
 }

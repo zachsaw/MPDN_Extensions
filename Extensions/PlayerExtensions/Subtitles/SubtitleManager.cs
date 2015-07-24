@@ -92,7 +92,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             return true;
         }
 
-        public static bool LoadSubtitleFile(string subtitleFile, string language = null)
+        public static bool LoadFile(string subtitleFile)
         {
             if (!IsSubtitleFilterLoaded())
                 return false;
@@ -100,44 +100,50 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             ComThread.Do(() =>
             {
                 var extSubSource = SubtitleFilter.Base as IDirectVobSub;
-                if (extSubSource != null && !string.IsNullOrWhiteSpace(subtitleFile))
+                var hr = extSubSource.put_FileName(subtitleFile);
+                DsError.ThrowExceptionForHR(hr);
+            });
+            return true;
+        }
+
+        public static bool SelectLanguage(string lang)
+        {
+            ComThread.Do(() =>
+            {
+                var extSubSource = SubtitleFilter.Base as IDirectVobSub;
+                if (extSubSource == null || string.IsNullOrWhiteSpace(lang))
+                    return;
+
+                int iCount;
+
+                var hr = extSubSource.get_LanguageCount(out iCount);
+                DsError.ThrowExceptionForHR(hr);
+                Trace.WriteLine("LoadExternalSubtitle Count: " + iCount);
+
+                for (var i = 0; i < iCount; i++)
                 {
-                    var subName = language ?? Path.GetFileNameWithoutExtension(subtitleFile);
+                    string langName;
 
-                    var hr = extSubSource.put_FileName(subtitleFile);
+                    hr = extSubSource.get_LanguageName(i, out langName);
                     DsError.ThrowExceptionForHR(hr);
 
-                    int iCount;
+                    Trace.WriteLine("LoadExternalSubtitle SubName " + langName);
 
-                    hr = extSubSource.get_LanguageCount(out iCount);
+                    if (lang != langName)
+                        continue;
+
+                    Trace.WriteLine("LoadExternalSubtitle Select Stream " + i);
+
+                    hr = extSubSource.put_SelectedLanguage(i);
                     DsError.ThrowExceptionForHR(hr);
-                    Trace.WriteLine("LoadExternalSubtitle Count: " + iCount);
 
-                    for (var i = 0; i < iCount; i++)
-                    {
-                        string ppName;
+                    var iSelected = 0;
+                    hr = extSubSource.get_SelectedLanguage(out iSelected);
+                    DsError.ThrowExceptionForHR(hr);
 
-                        hr = extSubSource.get_LanguageName(i, out ppName);
-                        DsError.ThrowExceptionForHR(hr);
+                    Trace.WriteLine("LoadExternalSubtitle Select Result: " + iSelected);
 
-                        Trace.WriteLine("LoadExternalSubtitle SubName " + ppName);
-
-                        if (subName == ppName)
-                        {
-                            Trace.WriteLine("LoadExternalSubtitle Select Stream " + i);
-
-                            hr = extSubSource.put_SelectedLanguage(i);
-                            DsError.ThrowExceptionForHR(hr);
-
-                            int iSelected = 0;
-                            hr = extSubSource.get_SelectedLanguage(out iSelected);
-                            DsError.ThrowExceptionForHR(hr);
-
-                            Trace.WriteLine("LoadExternalSubtitle Select Result: " + iSelected);
-
-                            break;
-                        }
-                    }
+                    break;
                 }
             });
             return true;
