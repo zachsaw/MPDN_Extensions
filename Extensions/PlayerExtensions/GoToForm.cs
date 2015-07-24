@@ -119,6 +119,11 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (e.KeyData == Keys.Enter) btn_frameOk.PerformClick();
         }
 
+        private void nud_frame_Enter(object sender, EventArgs e)
+        {
+            nud_frame.Select(0, nud_frame.Text.Length);
+        }
+
         private void GoToForm_Load(object sender, EventArgs e)
         {
             var pos = new Point(Cursor.Position.X - Width / 2, Cursor.Position.Y - Height / 2);

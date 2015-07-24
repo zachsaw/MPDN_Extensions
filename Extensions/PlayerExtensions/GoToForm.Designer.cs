@@ -44,16 +44,13 @@ namespace Mpdn.Extensions.PlayerExtensions
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.btn_timeOk = new System.Windows.Forms.Button();
             this.tb_time = new System.Windows.Forms.MaskedTextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.errorProvider = new System.Windows.Forms.ErrorProvider(this.components);
             this.btn_frameOk = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.nud_frame = new System.Windows.Forms.NumericUpDown();
-            ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nud_frame)).BeginInit();
             this.SuspendLayout();
             // 
@@ -73,8 +70,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             // tb_time
             // 
-            this.tb_time.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.errorProvider.SetIconPadding(this.tb_time, 3);
+            this.tb_time.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.tb_time.InsertKeyMode = System.Windows.Forms.InsertKeyMode.Overwrite;
             this.tb_time.Location = new System.Drawing.Point(58, 19);
             this.tb_time.Mask = "00:00:00.000";
@@ -107,10 +103,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.label2.Text = "(hh:mm:ss.msec)";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // errorProvider
-            // 
-            this.errorProvider.ContainerControl = this;
-            // 
             // btn_frameOk
             // 
             this.btn_frameOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -136,12 +128,13 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             // nud_frame
             // 
-            this.nud_frame.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.nud_frame.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.nud_frame.Location = new System.Drawing.Point(58, 65);
             this.nud_frame.Name = "nud_frame";
             this.nud_frame.Size = new System.Drawing.Size(97, 20);
             this.nud_frame.TabIndex = 2;
             this.nud_frame.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.nud_frame.Enter += new System.EventHandler(this.nud_frame_Enter);
             this.nud_frame.KeyDown += new System.Windows.Forms.KeyEventHandler(this.nud_frame_KeyDown);
             // 
             // GoToForm
@@ -164,7 +157,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Go To";
-            ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nud_frame)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -177,7 +169,6 @@ namespace Mpdn.Extensions.PlayerExtensions
         private System.Windows.Forms.MaskedTextBox tb_time;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ErrorProvider errorProvider;
         private System.Windows.Forms.Button btn_frameOk;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.NumericUpDown nud_frame;
