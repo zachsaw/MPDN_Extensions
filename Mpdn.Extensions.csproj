@@ -120,9 +120,10 @@
     <Compile Include="Extensions\PlayerExtensions\GoToTimeForm.Designer.cs">
       <DependentUpon>GoToTimeForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\Interfaces\IDirectVobSub.cs" />
     <Compile Include="Extensions\PlayerExtensions\Interfaces\ILavAudioSettings.cs" />
     <Compile Include="Extensions\PlayerExtensions\AudioSettings.cs" />
-    <Compile Include="Extensions\PlayerExtensions\Interfaces\ISubtitlesCom.cs" />
+    <Compile Include="Extensions\PlayerExtensions\Subtitles\SubtitleDelay.cs" />
     <Compile Include="Extensions\PlayerExtensions\Subtitles\Subtitle.cs" />
     <Compile Include="Extensions\PlayerExtensions\Subtitles\SubtitleManager.cs" />
     <Compile Include="Extensions\PlayerExtensions\TaskbarEnhancer.cs" />
