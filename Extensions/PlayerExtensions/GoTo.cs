@@ -21,7 +21,7 @@ using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
-    public class GoToTime : PlayerExtension
+    public class GoTo : PlayerExtension
     {
         private readonly PlayerMenuItem m_MenuItem = new PlayerMenuItem(initiallyDisabled: true);
 
@@ -32,8 +32,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                 return new ExtensionUiDescriptor
                 {
                     Guid = new Guid("7C3BA1E2-EE7B-47D2-B174-6AE76D65EC04"),
-                    Name = "Go To Time",
-                    Description = "Jump to a specified timecode in media"
+                    Name = "Go To",
+                    Description = "Jump to a specified timecode or frame in media"
                 };
             }
         }
@@ -71,7 +71,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (!m_MenuItem.Enabled)
                 return;
 
-            using (var form = new GoToTimeForm())
+            using (var form = new GoToForm())
             {
                 if (form.ShowDialog(Gui.VideoBox) != DialogResult.OK)
                     return;
@@ -83,8 +83,6 @@ namespace Mpdn.Extensions.PlayerExtensions
                 {
                     Media.Pause(false);
                 }
-
-                Media.Seek(form.Position * 1000);
             }
         }
     }

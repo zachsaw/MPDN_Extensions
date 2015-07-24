@@ -41,11 +41,11 @@ namespace Mpdn.Extensions.PlayerExtensions
                 lines.Add("<!doctype html>");
                 lines.Add("<html>");
                 lines.Add("<head>");
-                lines.Add("<style>* { padding: 0px; margin: 0px; font-family:tahoma; } body { width: 700px; background: #fff; margin: 0 auto; padding-bottom: 30px; } table { width: 700px; font-size: 12px; border-collapse: collapse; } td { padding: 5px; border-bottom: 1px dotted #1c7feb; } td:first-child { width: 100px; border-right: 1px solid #1c7feb; } .thead { font-size: 15px; color: #1c7feb; padding-top: 25px; border: 0px !important; border-bottom: 2px solid #1c7feb !important; }</style>");
+                lines.Add("<style>* { padding: 0px; margin: 0px; font-family:tahoma; } body { width: 700px; background: #fff; margin: 0 auto; } table { width: 700px; font-size: 12px; border-collapse: collapse; } td { padding: 5px; border-bottom: 1px dotted #1562b6; } td:first-child { width: 100px; border-right: 1px solid #1562b6; } .thead { font-size: 15px; color: #1562b6; padding-top: 25px; border: 0px !important; border-bottom: 2px solid #1562b6 !important; } .no-padding { padding-top: 0px !important; }</style>");
                 lines.Add("</head>");
                 lines.Add("<body>");
                 lines.Add("<table border='0' cellspacing='0' cellpadding='0'>");
-                lines.Add("<tr><td class='thead' colspan='2'><b>General</b></td></tr>");
+                lines.Add("<tr><td class='thead no-padding' colspan='2'><b>General</b></td></tr>");
                 lines.Add(string.IsNullOrEmpty(mediaFile.uniqueId) ? string.Empty : string.Format("<tr><td>Unique ID:</td><td>{0}</td></tr>", mediaFile.uniqueId));
                 lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", trackId));
                 lines.Add(string.Format("<tr><td>Complete name:</td><td>{0}</td></tr>", path));
@@ -69,8 +69,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 var timespan = TimeSpan.FromMilliseconds(info.Value.duration);
 
                 int gcd = GreatestCommonDivisor(info.Value.width, info.Value.height);
-                string aspectRatio = info.Value.width / gcd + ":" + info.Value.height / gcd;
-
+                string displayAspectRatio = info.Value.width / gcd + ":" + info.Value.height / gcd;
                 double bitPerFrame = info.Value.size * 8 /
                                      ((double)info.Value.width * info.Value.height * info.Value.frameCount);
                 lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", trackId));
@@ -84,7 +83,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 lines.Add(info.Value.bitRateNominal == 0 ? string.Empty : string.Format("<tr><td>Nominal bit rate:</td><td>{0} Kbps</td></tr>", info.Value.bitRateNominal / 1000));
                 lines.Add(info.Value.width == 0 ? string.Empty : string.Format("<tr><td>Width:</td><td>{0} pixels</td></tr>", info.Value.width));
                 lines.Add(info.Value.height == 0 ? string.Empty : string.Format("<tr><td>Height:</td><td>{0} pixels</td></tr>", info.Value.height));
-                lines.Add(string.IsNullOrEmpty(aspectRatio) ? string.Empty : string.Format("<tr><td>Aspect ratio:</td><td>{0}</td></tr>", aspectRatio));
+                lines.Add(string.IsNullOrEmpty(displayAspectRatio) ? string.Empty : string.Format("<tr><td>Display aspect ratio:</td><td>{0}</td></tr>", displayAspectRatio));
                 lines.Add(string.IsNullOrEmpty(info.Value.frameRateMode) ? string.Empty : string.Format("<tr><td>Frame rate mode:</td><td>{0}</td></tr>", info.Value.frameRateMode));
                 lines.Add(info.Value.frameRate == 0 ? string.Empty : string.Format("<tr><td>Frame rate:</td><td>{0} fps</td></tr>", info.Value.frameRate));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("ChromaSubsampling")) ? string.Empty : string.Format("<tr><td>Chroma subsampling:</td><td>{0}</td></tr>", info.Value.miGetString("ChromaSubsampling")));
