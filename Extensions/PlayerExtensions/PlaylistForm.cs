@@ -1056,7 +1056,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             foreach (DataGridViewRow r in dgv_PlayList.SelectedRows)
             {
-                Process.Start(PathHelper.GetDirectoryName(Playlist[r.Index].FilePath));
+                string media = Playlist[r.Index].FilePath;
+                if (!File.Exists(media)) continue;
+                Process.Start(PathHelper.GetDirectoryName(media));
             }
         }
 
@@ -1068,6 +1070,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             foreach (DataGridViewRow r in dgv_PlayList.SelectedRows)
             {
                 string media = Playlist[r.Index].FilePath;
+                if (!File.Exists(media)) continue;
                 var mediaInfo = new ViewMediaInfoForm(media);
                 mediaInfo.Show();
             }
