@@ -343,9 +343,11 @@ namespace Mpdn.Extensions.PlayerExtensions
                 var flowPanel = c as FlowLayoutPanel;
                 if (flowPanel == null) continue;
 
-                flowPanel.Controls.Add(CreateRegexControls());
+                var control = CreateRegexControls();
+                flowPanel.Controls.Add(control);
                 flowPanel.VerticalScroll.Value = flowPanel.VerticalScroll.Maximum;
                 flowPanel.PerformLayout();
+                control.Controls[1].Focus();
             }
 
             regexForm.Invalidate();

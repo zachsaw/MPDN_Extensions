@@ -1052,16 +1052,25 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void ViewFileLocation()
         {
             if (Playlist.Count == 0) return;
-            if (dgv_PlayList.CurrentRow == null) return;
-            Process.Start(PathHelper.GetDirectoryName(Playlist[dgv_PlayList.CurrentRow.Index].FilePath));
+            if (dgv_PlayList.SelectedRows.Count == 0) return;
+
+            foreach (DataGridViewRow r in dgv_PlayList.SelectedRows)
+            {
+                Process.Start(PathHelper.GetDirectoryName(Playlist[r.Index].FilePath));
+            }
         }
 
         private void ViewMediaInfo()
         {
-            if (dgv_PlayList.CurrentRow == null) return;
-            string media = Playlist[dgv_PlayList.CurrentRow.Index].FilePath;
-            var mediaInfo = new ViewMediaInfoForm(media);
-            mediaInfo.ShowDialog();
+            if (Playlist.Count == 0) return;
+            if (dgv_PlayList.SelectedRows.Count == 0) return;
+
+            foreach (DataGridViewRow r in dgv_PlayList.SelectedRows)
+            {
+                string media = Playlist[r.Index].FilePath;
+                var mediaInfo = new ViewMediaInfoForm(media);
+                mediaInfo.Show();
+            }
         }
 
         private void SortPlayList(bool ascending = true)
@@ -1362,6 +1371,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (currentPlayIndex == -1) return;
             dgv_PlayList.Rows[currentPlayIndex].Selected = true;
+            SetInitialDirectory();
 
             if (string.IsNullOrEmpty(Media.FilePath)) return;
             var fnt = new Font(dgv_PlayList.DefaultCellStyle.Font, FontStyle.Regular);
@@ -1443,6 +1453,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 cellDisplayRect.X + cell.Size.Width / 2,
                 cellDisplayRect.Y + cell.Size.Height / 2,
                 2000);
+        }
+
+        private void SetInitialDirectory()
+        {
+            if (dgv_PlayList.SelectedRows.Count > 0)
+            {
+                openFileDialog.InitialDirectory =
+                    Path.GetDirectoryName(Playlist[dgv_PlayList.SelectedRows[0].Index].FilePath);
+            }
         }
 
         #endregion
@@ -1625,12 +1644,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void dgv_PlayList_SelectionChanged(object sender, EventArgs e)
         {
             if (Playlist.Count == 0) return;
-
-            if (dgv_PlayList.SelectedRows.Count > 0)
-            {
-                openFileDialog.InitialDirectory =
-                    Path.GetDirectoryName(Playlist[dgv_PlayList.SelectedRows[0].Index].FilePath);
-            }
+            SetInitialDirectory();
         }
 
         private void dgv_PlayList_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
