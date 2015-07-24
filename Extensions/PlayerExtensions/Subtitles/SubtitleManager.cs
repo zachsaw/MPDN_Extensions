@@ -45,26 +45,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
                 SpeedDivisor = speedDivisor;
             }
         }
-        private static readonly Guid s_XyDirectVobSub = new Guid("2dfcb782-ec20-4a7c-b530-4577adb33f21");
-        private static Filter s_DirectVobFilter;
+        private static readonly Guid s_XySubFilterGuid = new Guid("2dfcb782-ec20-4a7c-b530-4577adb33f21");
+        private static readonly Guid s_VSFilterGuid = new Guid("9852a670-f845-491b-9be6-ebd841b8a613");
 
-        public static Filter DirectVobSubFilter
+        public static Filter SubtitleFilter
         {
             get
             {
-                if (s_DirectVobFilter != null)
-                {
-                    return s_DirectVobFilter;
-                }
-                s_DirectVobFilter = Player.Filters.Video.FirstOrDefault(f => f.ClsId == s_XyDirectVobSub);
-
-                return s_DirectVobFilter;
+                return Player.Filters.Video.FirstOrDefault(f => f.ClsId == s_XySubFilterGuid || f.ClsId == s_VSFilterGuid);
             }
         }
 
         public static bool IsSubtitleFilterLoaded()
         {
-            return DirectVobSubFilter != null;
+            return SubtitleFilter != null;
         }
 
         public static SubtitleTiming GetTiming()
@@ -75,7 +69,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             SubtitleTiming timing = null;
             ComThread.Do(() =>
             {
-                var extSubSource = DirectVobSubFilter.Base as IDirectVobSub;
+                var extSubSource = SubtitleFilter.Base as IDirectVobSub;
                 int delay, mul, div;
                 var hr = extSubSource.get_SubtitleTiming(out delay, out mul, out div);
                 DsError.ThrowExceptionForHR(hr);
@@ -91,7 +85,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 
             ComThread.Do(() =>
             {
-                var extSubSource = DirectVobSubFilter.Base as IDirectVobSub;
+                var extSubSource = SubtitleFilter.Base as IDirectVobSub;
                 var hr = extSubSource.put_SubtitleTiming(timing.Delay, timing.SpeedMultiplier, timing.SpeedDivisor);
                 DsError.ThrowExceptionForHR(hr);
             });
@@ -105,7 +99,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 
             ComThread.Do(() =>
             {
-                var extSubSource = DirectVobSubFilter.Base as IDirectVobSub;
+                var extSubSource = SubtitleFilter.Base as IDirectVobSub;
                 if (extSubSource != null && !string.IsNullOrWhiteSpace(subtitleFile))
                 {
                     var subName = language ?? Path.GetFileNameWithoutExtension(subtitleFile);
@@ -136,7 +130,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
                             DsError.ThrowExceptionForHR(hr);
 
                             int iSelected = 0;
-                            hr = extSubSource.get_SelectedLanguage(ref iSelected);
+                            hr = extSubSource.get_SelectedLanguage(out iSelected);
                             DsError.ThrowExceptionForHR(hr);
 
                             Trace.WriteLine("LoadExternalSubtitle Select Result: " + iSelected);
