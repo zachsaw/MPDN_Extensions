@@ -28,6 +28,8 @@ namespace Mpdn.Extensions.PlayerExtensions
     {
         private static Form regexForm;
         private int regexCount;
+        private int currentAfterPlaybackOptIdx;
+        private int currentAfterPlaybackActionIdx;
 
         public PlaylistConfigDialog()
         {
@@ -91,6 +93,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void InitRegexForm()
         {
+            regexCount = 0;
+
             regexForm = new Form
             {
                 Text = "Configure regex",
@@ -118,22 +122,28 @@ namespace Mpdn.Extensions.PlayerExtensions
                 WrapContents = false
             };
 
-            var btn_clear = new Button
+            var btn_save = new Button
             {
-                Text = "Clear",
+                Text = "Save",
                 Location = new Point(regexForm.Width - 160, regexForm.Height - 55)
             };
 
             var btn_close = new Button
             {
                 Text = "Close",
-                Location = new Point(btn_clear.Location.X + btn_clear.Size.Width + 2, btn_clear.Location.Y)
+                Location = new Point(btn_save.Location.X + btn_save.Size.Width + 2, btn_save.Location.Y)
+            };
+
+            var btn_clear = new Button
+            {
+                Text = "Clear",
+                Location = new Point(btn_close.Location.X, btn_close.Location.Y - 25)
             };
 
             var btn_add = new Button
             {
                 Text = "Add regex",
-                Location = new Point(2, btn_clear.Location.Y)
+                Location = new Point(2, btn_save.Location.Y)
             };
 
             var cb_stripDirectory = new CheckBox
@@ -175,6 +185,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             if (Settings.StripDirectoryInFileName) cb_stripDirectory.Checked = true;
 
+            btn_save.Click += btn_save_Click;
             btn_clear.Click += btn_clear_Click;
             btn_close.Click += btn_close_Click;
             btn_add.Click += btn_add_Click;
@@ -182,8 +193,9 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             regexForm.Controls.Add(label);
             regexForm.Controls.Add(flowPanel);
-            regexForm.Controls.Add(btn_clear);
+            regexForm.Controls.Add(btn_save);
             regexForm.Controls.Add(btn_close);
+            regexForm.Controls.Add(btn_clear);
             regexForm.Controls.Add(btn_add);
             regexForm.Controls.Add(cb_stripDirectory);
             regexForm.Controls.Add(linkLabel);
@@ -306,15 +318,20 @@ namespace Mpdn.Extensions.PlayerExtensions
             PlaylistForm.UpdatePlaylistWithRegexFilter(new List<string>(), Settings.StripDirectoryInFileName);
         }
 
-        private void btn_clear_Click(object sender, EventArgs e)
+        private void btn_save_Click(object sender, EventArgs e)
         {
-            ClearRegex();
+            SaveRegex();
         }
 
         private void btn_close_Click(object sender, EventArgs e)
         {
-            SaveRegex();
             regexForm.Close();
+        }
+
+        private void btn_clear_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Are you sure you want to clear all regex?", "Regex clearing", MessageBoxButtons.YesNo, MessageBoxIcon.Asterisk);
+            if (result == DialogResult.Yes) ClearRegex();
         }
 
         private void btn_add_Click(object sender, EventArgs e)
@@ -326,9 +343,11 @@ namespace Mpdn.Extensions.PlayerExtensions
                 var flowPanel = c as FlowLayoutPanel;
                 if (flowPanel == null) continue;
 
-                flowPanel.Controls.Add(CreateRegexControls());
+                var control = CreateRegexControls();
+                flowPanel.Controls.Add(control);
                 flowPanel.VerticalScroll.Value = flowPanel.VerticalScroll.Maximum;
                 flowPanel.PerformLayout();
+                control.Controls[1].Focus();
             }
 
             regexForm.Invalidate();
@@ -344,19 +363,91 @@ namespace Mpdn.Extensions.PlayerExtensions
             UpdateControls();
         }
 
-        private void cb_afterPlayBackRemoveFile_CheckedChanged(object sender, EventArgs e)
-        {
-            UpdateControls();
-        }
-
-        private void cb_afterPlayBackStrikeOutFile_CheckedChanged(object sender, EventArgs e)
-        {
-            UpdateControls();
-        }
-
         private void btn_configRegex_Clicked(object sender, EventArgs e)
         {
             InitRegexForm();
+        }
+
+        private void cb_afterPlaybackOpt_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            var comboBox = (ComboBox)sender;
+
+            int repeatPlaylistIdx = cb_afterPlaybackOpt.FindString("Repeat playlist");
+            int playNextFileInFolderIdx = cb_afterPlaybackOpt.FindString("Play next file in folder");
+
+            bool isOnRemove = ((AfterPlaybackSettingsAction)cb_afterPlaybackAction.SelectedIndex == AfterPlaybackSettingsAction.RemoveFile);
+
+            if ((e.Index == repeatPlaylistIdx || e.Index == playNextFileInFolderIdx) && isOnRemove)
+            {
+                e.Graphics.FillRectangle(SystemBrushes.Window, e.Bounds);
+                e.Graphics.DrawString(comboBox.Items[e.Index].ToString(), comboBox.Font, SystemBrushes.GrayText, e.Bounds);
+            }
+            else
+            {
+                e.DrawBackground();
+
+                if ((e.State & DrawItemState.Selected) == DrawItemState.Selected) e.Graphics.DrawString(comboBox.Items[e.Index].ToString(), comboBox.Font, SystemBrushes.Window, e.Bounds);
+                else e.Graphics.DrawString(comboBox.Items[e.Index].ToString(), comboBox.Font, SystemBrushes.ControlText, e.Bounds);
+                e.DrawFocusRectangle();
+            }
+        }
+
+        private void cb_afterPlaybackAction_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            var comboBox = (ComboBox)sender;
+
+            int removeFileIdx = cb_afterPlaybackAction.FindString("Remove file");
+            bool isOnRepeat = ((AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex == AfterPlaybackSettingsOpt.RepeatPlaylist);
+            bool isOnPlayNextFileInFolder = ((AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex == AfterPlaybackSettingsOpt.PlayNextFileInFolder);
+
+            if (e.Index == removeFileIdx && (isOnRepeat || isOnPlayNextFileInFolder))
+            {
+                e.Graphics.FillRectangle(SystemBrushes.Window, e.Bounds);
+                e.Graphics.DrawString(comboBox.Items[e.Index].ToString(), comboBox.Font, SystemBrushes.GrayText, e.Bounds);
+            }
+            else
+            {
+                e.DrawBackground();
+
+                if ((e.State & DrawItemState.Selected) == DrawItemState.Selected) e.Graphics.DrawString(comboBox.Items[e.Index].ToString(), comboBox.Font, SystemBrushes.Window, e.Bounds);
+                else e.Graphics.DrawString(comboBox.Items[e.Index].ToString(), comboBox.Font, SystemBrushes.ControlText, e.Bounds);
+                e.DrawFocusRectangle();
+            }
+        }
+
+        private void cb_afterPlaybackOpt_Enter(object sender, EventArgs e)
+        {
+            currentAfterPlaybackOptIdx = cb_afterPlaybackOpt.SelectedIndex;
+        }
+
+        private void cb_afterPlaybackAction_Enter(object sender, EventArgs e)
+        {
+            currentAfterPlaybackActionIdx = cb_afterPlaybackAction.SelectedIndex;
+        }
+
+        private void cb_afterPlaybackOpt_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            bool isOnRemove = ((AfterPlaybackSettingsAction)cb_afterPlaybackAction.SelectedIndex == AfterPlaybackSettingsAction.RemoveFile);
+
+            if (isOnRemove)
+            {
+                int repeatPlaylistIdx = cb_afterPlaybackOpt.FindString("Repeat playlist");
+                int playNextFileInFolderIdx = cb_afterPlaybackOpt.FindString("Play next file in folder");
+                int idx = cb_afterPlaybackOpt.SelectedIndex;
+                if (idx == repeatPlaylistIdx || idx == playNextFileInFolderIdx) cb_afterPlaybackOpt.SelectedIndex = currentAfterPlaybackOptIdx;
+            }
+        }
+
+        private void cb_afterPlaybackAction_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            bool isOnRepeat = ((AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex == AfterPlaybackSettingsOpt.RepeatPlaylist);
+            bool isOnPlayNextFileInFolder = ((AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex == AfterPlaybackSettingsOpt.PlayNextFileInFolder);
+
+            if (isOnRepeat || isOnPlayNextFileInFolder)
+            {
+                int removeFileIdx = cb_afterPlaybackAction.FindString("Remove file");
+                if (cb_afterPlaybackAction.SelectedIndex == removeFileIdx) cb_afterPlaybackAction.SelectedIndex = currentAfterPlaybackActionIdx;
+            }
         }
     }
 
