@@ -21,9 +21,9 @@ using System.Windows.Forms;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
-    internal static class WebClientHelper
+    public static class WebClientHelper
     {
-        private static void SetHeaders(WebClient client)
+        public static void SetHeaders(WebClient client)
         {
             var version = ExtensionUpdateChecker.GetExtensionsVersion();
 

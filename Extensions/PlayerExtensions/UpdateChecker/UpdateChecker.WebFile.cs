@@ -49,12 +49,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             m_WebClient.DownloadFileCompleted += WebClientOnDownloadFileCompleted;
             m_WebClient.DownloadProgressChanged +=
                 (sender, args) => DownloadProgressChanged.Handle(h => h(sender, args));
-            HttpHeaders = new NameValueCollection();
         }
 
         public Uri FileUri { get; private set; }
         public string FilePath { get; private set; }
-        public NameValueCollection HttpHeaders { get; set; }
 
         private static string DefaultFilePath(Uri fileUri)
         {
@@ -96,7 +94,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected void PrepareWebClientRequest()
         {
-            m_WebClient.Headers.Add(HttpHeaders);
+            WebClientHelper.SetHeaders(m_WebClient);
         }
 
         public bool Exists()

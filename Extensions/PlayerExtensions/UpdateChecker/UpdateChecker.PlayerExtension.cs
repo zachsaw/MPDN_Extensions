@@ -154,12 +154,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected void SetHeaders()
         {
-            var version = ExtensionUpdateChecker.GetExtensionsVersion();
-
-            WebClient.Headers.Add("User-Agent",
-                string.Format(
-                    "Mozilla/5.0 (compatible; Windows NT {0}; MPDN/{1}; MPDN_Extensions/{2}; +http://mpdn.zachsaw.com/)",
-                    Environment.OSVersion.Version, Application.ProductVersion, version));
+           WebClientHelper.SetHeaders(WebClient);
         }
 
         private void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
