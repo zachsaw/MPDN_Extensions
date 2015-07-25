@@ -15,6 +15,7 @@
 // License along with this library.
 // 
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -27,9 +28,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         public Version()
         {
+            ChangelogLines = new List<string>();
         }
 
-        public Version(string version)
+        public Version(string version) : this()
         {
             var matches = s_VersionRegex.Match(version);
             Major = uint.Parse(matches.Groups[1].Value);
@@ -40,7 +42,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public uint Major { get; set; }
         public uint Minor { get; set; }
         public uint Revision { get; set; }
-        public string Changelog { get; set; }
+        public List<string> ChangelogLines { get; set; }
 
         public static bool ContainsVersionString(string text)
         {
@@ -95,16 +97,14 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected bool Equals(Version other)
         {
-            var iv1 = GetInteger(this);
-            var iv2 = GetInteger(other);
-            return iv1 == iv2;
+            return Equals(ChangelogLines, other.ChangelogLines) && Revision == other.Revision && Minor == other.Minor && Major == other.Major;
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
+            if (obj.GetType() != this.GetType()) return false;
             return Equals((Version) obj);
         }
 
@@ -112,9 +112,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             unchecked
             {
-                var hashCode = (int) Major;
-                hashCode = (hashCode*397) ^ (int) Minor;
+                var hashCode = (ChangelogLines != null ? ChangelogLines.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ (int) Revision;
+                hashCode = (hashCode*397) ^ (int) Minor;
+                hashCode = (hashCode*397) ^ (int) Major;
                 return hashCode;
             }
         }
