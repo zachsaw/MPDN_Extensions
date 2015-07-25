@@ -28,6 +28,7 @@ using System.Windows.Forms;
 using CommonMark;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
+using Newtonsoft.Json;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
@@ -66,7 +67,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             SetChangelog(version);
         }
 
-        private static List<string> HtmlHeaders
+        protected static List<string> HtmlHeaders
         {
             get
             {
@@ -98,19 +99,21 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var lines = HtmlHeaders;
             lines.AddRange(ParseChangeLog(version.ChangelogLines));
             lines.Add(
-                "<div class=\"center\"><a href=\"#\" onclick=\"window.external.LoadMoreChangelogOnClick();\">Load previous changelogs</a></div>");
+                "<div class=\"center\"><a href=\"#\" onclick=\"window.external.LoadPreviousChangeLog();\">Load previous changelogs</a></div>");
             lines.Add("</body>");
             lines.Add("</html>");
             changelogViewer.DocumentText = string.Join("\n", lines);
             changelogViewer.ObjectForScripting = this;
         }
 
-        public virtual void LoadMoreChangelogOnClick()
+        public virtual void LoadPreviousChangeLog()
         {
             var html = HtmlHeaders;
             using (new HourGlass())
             {
-                var changelog = new WebClient().DownloadString(string.Format("{0}ChangeLog.txt", UpdateChecker.WebsiteUrl));
+                var webClient = new WebClient();
+                WebClientHelper.SetHeaders(webClient);
+                var changelog = webClient.DownloadString(string.Format("{0}ChangeLog.txt", UpdateChecker.WebsiteUrl));
                 html.Add("<h1>Changelogs</h1>");
                 foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
                 {
@@ -392,10 +395,32 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             {
                 "<h1>Changelog</h1>",
                 "<div id='changelog'>",
-                CommonMarkConverter.Convert(String.Join("\n", changelog)),
+                CommonMarkConverter.Convert(string.Join("\n", changelog)),
                 "</div>"
             };
             return lines;
+        }
+
+        public override void LoadPreviousChangeLog()
+        {
+
+            var html = HtmlHeaders;
+            html.Add("<h1>Changelogs</h1>");
+            using (new HourGlass())
+            {
+                var webClient = new WebClient();
+                WebClientHelper.SetHeaders(webClient);
+                var releases = JsonConvert.DeserializeObject<List<GitHubVersion>>(webClient.DownloadString("https://api.github.com/repos/zachsaw/MPDN_Extensions/releases"));
+                foreach (var gitHubVersion in releases)
+                {
+                    html.Add(string.Format("<h2>{0}</h2>", gitHubVersion.tag_name));
+                    html.Add(CommonMarkConverter.Convert(gitHubVersion.body));
+                }
+            }
+            html.Add("</body>");
+            html.Add("</html>");
+            changelogViewer.DocumentText = string.Join("\n", html);
+
         }
     }
 }

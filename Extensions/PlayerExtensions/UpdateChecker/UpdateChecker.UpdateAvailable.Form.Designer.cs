@@ -183,6 +183,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private System.Windows.Forms.Button forgetUpdate;
         private SplitButton downloadButton;
         private CustomProgressBar downloadProgressBar;
-        private System.Windows.Forms.WebBrowser changelogViewer;
+        protected System.Windows.Forms.WebBrowser changelogViewer;
     }
 }
