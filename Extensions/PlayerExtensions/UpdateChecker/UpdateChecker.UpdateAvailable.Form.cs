@@ -110,7 +110,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var html = HtmlHeaders;
             using (new HourGlass())
             {
-                var changelog = new WebClient().DownloadString("http://mpdn.zachsaw.com/Latest/ChangeLog.txt");
+                var changelog = new WebClient().DownloadString(string.Format("{0}ChangeLog.txt", UpdateChecker.WebsiteUrl));
                 html.Add("<h1>Changelogs</h1>");
                 foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
                 {
