@@ -154,12 +154,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected void SetHeaders()
         {
-            var version = ExtensionUpdateChecker.GetExtensionsVersion();
-
-            WebClient.Headers.Add("User-Agent",
-                string.Format(
-                    "Mozilla/5.0 (compatible; Windows NT {0}; MPDN/{1}; MPDN_Extensions/{2}; +http://mpdn.zachsaw.com/)",
-                    Environment.OSVersion.Version, Application.ProductVersion, version));
+           WebClientHelper.SetHeaders(WebClient);
         }
 
         private void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
@@ -193,9 +188,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                         break;
                     }
                 }
-                else if (serverVersion != null)
+                else if (serverVersion != null && !string.IsNullOrWhiteSpace(line))
                 {
-                    serverVersion.Changelog += line.Trim() + Environment.NewLine;
+                    serverVersion.ChangelogLines.Add(line);
                 }
             }
 
@@ -246,9 +241,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var changelogStarted = false;
             foreach (string line in Regex.Split(result.body, "\r\n|\r|\n"))
             {
-                if (changelogStarted)
+                if (changelogStarted && !string.IsNullOrWhiteSpace(line))
                 {
-                    version.Changelog += line.Trim() + Environment.NewLine;
+                    version.ChangelogLines.Add(line);
                 }
                 if (line.StartsWith("#### Changelog"))
                 {
