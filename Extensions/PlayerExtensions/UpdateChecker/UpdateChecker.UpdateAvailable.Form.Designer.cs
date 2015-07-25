@@ -50,11 +50,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.label1 = new System.Windows.Forms.Label();
             this.checkBoxDisable = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.changelogBox = new System.Windows.Forms.RichTextBox();
             this.CloseButton = new System.Windows.Forms.Button();
             this.forgetUpdate = new System.Windows.Forms.Button();
             this.downloadButton = new wyDay.Controls.SplitButton();
             this.downloadProgressBar = new Mpdn.Extensions.PlayerExtensions.UpdateChecker.UpdateAvailableForm.CustomProgressBar();
+            this.changelogViewer = new System.Windows.Forms.WebBrowser();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -86,26 +86,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.panel1.Controls.Add(this.changelogBox);
+            this.panel1.Controls.Add(this.changelogViewer);
             this.panel1.Location = new System.Drawing.Point(12, 29);
             this.panel1.Name = "panel1";
             this.panel1.Padding = new System.Windows.Forms.Padding(1);
             this.panel1.Size = new System.Drawing.Size(501, 169);
             this.panel1.TabIndex = 9;
-            // 
-            // changelogBox
-            // 
-            this.changelogBox.BackColor = System.Drawing.SystemColors.Control;
-            this.changelogBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.changelogBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.changelogBox.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.changelogBox.Location = new System.Drawing.Point(1, 1);
-            this.changelogBox.Name = "changelogBox";
-            this.changelogBox.ReadOnly = true;
-            this.changelogBox.Size = new System.Drawing.Size(499, 167);
-            this.changelogBox.TabIndex = 0;
-            this.changelogBox.Text = "";
-            this.changelogBox.WordWrap = false;
             // 
             // CloseButton
             // 
@@ -156,6 +142,15 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.downloadProgressBar.TabIndex = 12;
             this.downloadProgressBar.Visible = false;
             // 
+            // changelogViewer
+            // 
+            this.changelogViewer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.changelogViewer.Location = new System.Drawing.Point(1, 1);
+            this.changelogViewer.MinimumSize = new System.Drawing.Size(20, 20);
+            this.changelogViewer.Name = "changelogViewer";
+            this.changelogViewer.Size = new System.Drawing.Size(499, 167);
+            this.changelogViewer.TabIndex = 0;
+            // 
             // UpdateAvailableForm
             // 
             this.AcceptButton = this.downloadButton;
@@ -184,11 +179,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox checkBoxDisable;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.RichTextBox changelogBox;
         private System.Windows.Forms.Button CloseButton;
         private System.Windows.Forms.Button forgetUpdate;
         private SplitButton downloadButton;
         private CustomProgressBar downloadProgressBar;
-
+        private System.Windows.Forms.WebBrowser changelogViewer;
     }
 }

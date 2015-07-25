@@ -21,11 +21,15 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using CommonMark;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
+    [ComVisible(true)]
     public partial class UpdateAvailableForm : Form
     {
         protected readonly List<SplitButtonToolStripItem> SplitMenuChoices;
@@ -57,7 +61,44 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
             Settings = settings;
             Text = "New Player available: " + version;
-            changelogBox.Text = version.Changelog;
+            SetChangelog(version);
+        }
+
+        private void SetChangelog(Version version)
+        {
+            var lines = new List<string>
+            {
+                "<!doctype html>",
+                "<html>",
+                "<head>",
+                "<style>" +
+                "body { background: #fff; margin: 0 auto; } " +
+                "h1 { font-size: 15px; color: #1562b6; padding-top: 5px; border: 0px !important; border-bottom: 2px solid #1562b6 !important; }" +
+                "</style>",
+                "</head>",
+                "<body>"
+            };
+            lines.AddRange(ParseChangeLog(version.ChangelogLines));
+            lines.Add("<a id=\"load_more\" href=\"#\" onclick=\"window.external.LoadMoreChangelogOnClick();\">Load More</a>");
+            lines.Add("</body>");
+            lines.Add("</html>");
+            changelogViewer.DocumentText = string.Join("\n", lines);
+            changelogViewer.ObjectForScripting = this;
+        }
+
+        public virtual void LoadMoreChangelogOnClick()
+        {
+            Trace.WriteLine("Click");
+        }
+
+
+        protected virtual List<string> ParseChangeLog(List<string> changelog)
+        {
+            var lines = new List<string> {"<h1>Changelog</h1>", "<div id='changelog'><ol>"};
+
+            lines.AddRange(changelog.Select(line => string.IsNullOrWhiteSpace(line) ? null : string.Format("<li>{0}</li>", line)));
+            lines.Add("</ol></div>");
+            return lines;
         }
 
         public override sealed string Text
@@ -286,7 +327,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         #endregion
     }
-
+    [ComVisible(true)]
     public class ExtensionUpdateAvailableForm : UpdateAvailableForm
     {
         public ExtensionUpdateAvailableForm(Version version, UpdateCheckerSettings settings)
@@ -308,6 +349,18 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         protected override void SetLastMenuChoiceUsed(string name)
         {
             return;
+        }
+
+        protected override List<string> ParseChangeLog(List<string> changelog)
+        {
+            var lines = new List<string>
+            {
+                "<h1>Changelog</h1>",
+                "<div id='changelog'>",
+                CommonMarkConverter.Convert(String.Join("\n",changelog)),
+                "</div>"
+            };
+            return lines;
         }
     }
 }

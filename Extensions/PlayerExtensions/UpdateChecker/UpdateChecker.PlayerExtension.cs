@@ -193,9 +193,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                         break;
                     }
                 }
-                else if (serverVersion != null)
+                else if (serverVersion != null && !string.IsNullOrWhiteSpace(line))
                 {
-                    serverVersion.Changelog += line.Trim() + Environment.NewLine;
+                    serverVersion.ChangelogLines.Add(line);
                 }
             }
 
@@ -246,9 +246,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var changelogStarted = false;
             foreach (string line in Regex.Split(result.body, "\r\n|\r|\n"))
             {
-                if (changelogStarted)
+                if (changelogStarted && !string.IsNullOrWhiteSpace(line))
                 {
-                    version.Changelog += line.Trim() + Environment.NewLine;
+                    version.ChangelogLines.Add(line);
                 }
                 if (line.StartsWith("#### Changelog"))
                 {

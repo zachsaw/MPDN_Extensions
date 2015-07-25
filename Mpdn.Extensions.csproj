@@ -41,6 +41,10 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonMark, Version=0.1.0.0, Culture=neutral, PublicKeyToken=001ef8810438905d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Extensions\Libs\CommonMark.dll</HintPath>
+    </Reference>
     <Reference Include="DirectShowLib-2005">
       <HintPath>MPDN\DirectShowLib-2005.dll</HintPath>
     </Reference>
@@ -403,6 +407,7 @@
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr.hlsl" />
+    <None Include="packages.config" />
     <None Include="Properties\DataSources\System.Globalization.CultureAndRegionInfoBuilder.datasource" />
   </ItemGroup>
   <ItemGroup>
@@ -415,6 +420,9 @@
       <Project>{023b9940-e6ad-47ac-85a4-9d0ed3aecf0c}</Project>
       <Name>Mpdn.Extensions.Framework</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CommonMark.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
