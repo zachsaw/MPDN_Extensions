@@ -43,6 +43,18 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public uint Minor { get; set; }
         public uint Revision { get; set; }
         public List<string> ChangelogLines { get; set; }
+        [Obsolete("Replaced by ChangelogLines. Kept for retro-compatitibility. To be removed in next version.")]
+        public string Changelog
+        {
+            get { return null; }
+            set
+            {
+                if (value == null)
+                    return;
+                ChangelogLines = Regex.Split(value, "\r\n|\r|\n").ToList();
+            }
+        }
+
 
         public static bool ContainsVersionString(string text)
         {
