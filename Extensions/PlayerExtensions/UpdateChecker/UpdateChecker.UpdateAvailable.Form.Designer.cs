@@ -50,7 +50,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.label1 = new System.Windows.Forms.Label();
             this.checkBoxDisable = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.ChangelogViewerWebBrowser = new System.Windows.Forms.WebBrowser();
+            this.changelogViewerWebBrowser = new System.Windows.Forms.WebBrowser();
             this.CloseButton = new System.Windows.Forms.Button();
             this.forgetUpdate = new System.Windows.Forms.Button();
             this.downloadButton = new wyDay.Controls.SplitButton();
@@ -86,22 +86,22 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.panel1.Controls.Add(this.ChangelogViewerWebBrowser);
+            this.panel1.Controls.Add(this.changelogViewerWebBrowser);
             this.panel1.Location = new System.Drawing.Point(12, 29);
             this.panel1.Name = "panel1";
             this.panel1.Padding = new System.Windows.Forms.Padding(1);
             this.panel1.Size = new System.Drawing.Size(603, 211);
             this.panel1.TabIndex = 9;
             // 
-            // ChangelogViewerWebBrowser
+            // changelogViewerWebBrowser
             // 
-            this.ChangelogViewerWebBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ChangelogViewerWebBrowser.Location = new System.Drawing.Point(1, 1);
-            this.ChangelogViewerWebBrowser.MinimumSize = new System.Drawing.Size(20, 20);
-            this.ChangelogViewerWebBrowser.Name = "ChangelogViewerWebBrowser";
-            this.ChangelogViewerWebBrowser.Size = new System.Drawing.Size(601, 209);
-            this.ChangelogViewerWebBrowser.TabIndex = 0;
-            this.ChangelogViewerWebBrowser.WebBrowserShortcutsEnabled = false;
+            this.changelogViewerWebBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.changelogViewerWebBrowser.Location = new System.Drawing.Point(1, 1);
+            this.changelogViewerWebBrowser.MinimumSize = new System.Drawing.Size(20, 20);
+            this.changelogViewerWebBrowser.Name = "changelogViewerWebBrowser";
+            this.changelogViewerWebBrowser.Size = new System.Drawing.Size(601, 209);
+            this.changelogViewerWebBrowser.TabIndex = 0;
+            this.changelogViewerWebBrowser.WebBrowserShortcutsEnabled = false;
             // 
             // CloseButton
             // 
@@ -184,6 +184,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private System.Windows.Forms.Button forgetUpdate;
         private SplitButton downloadButton;
         private CustomProgressBar downloadProgressBar;
-        protected System.Windows.Forms.WebBrowser ChangelogViewerWebBrowser;
+        protected System.Windows.Forms.WebBrowser changelogViewerWebBrowser;
     }
 }
