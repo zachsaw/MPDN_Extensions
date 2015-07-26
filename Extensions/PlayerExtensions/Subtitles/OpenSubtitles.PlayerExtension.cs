@@ -19,8 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Windows;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.PlayerExtensions.Exceptions;
@@ -30,8 +28,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public class OpenSubtitlesExtension : PlayerExtension<OpenSubtitlesSettings, OpenSubtitlesConfigDialog>
     {
-        private SubtitleDownloader m_Downloader;
         private readonly OpenSubtitlesForm m_Form = new OpenSubtitlesForm();
+        private readonly PlayerMenuItem m_MenuItem = new PlayerMenuItem(initiallyDisabled: true);
+
+        private SubtitleDownloader m_Downloader;
 
         public override ExtensionUiDescriptor Descriptor
         {
@@ -52,7 +52,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             {
                 return new[]
                 {
-                    new Verb(Category.View, string.Empty, "OpenSubtitles", "D", string.Empty, LaunchOpenSubtitleSearch),
+                    new Verb(Category.View, string.Empty, "OpenSubtitles", "D", string.Empty, LaunchOpenSubtitleSearch, m_MenuItem)
                 };
             }
         }
@@ -60,10 +60,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
         private void LaunchOpenSubtitleSearch()
         {
             if (Player.State == PlayerState.Closed)
-            {
-                MessageBox.Show(Gui.VideoBox, "No Media Loaded");
                 return;
-            }
+
             Media.Pause();
             try
             {
@@ -96,7 +94,22 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
         public override void Initialize()
         {
             base.Initialize();
+
             m_Downloader = new SubtitleDownloader("MPDN_Extensions");
+
+            Player.StateChanged += PlayerStateChanged;
+        }
+
+        public override void Destroy()
+        {
+            Player.StateChanged -= PlayerStateChanged;
+
+            base.Destroy();
+        }
+
+        private void PlayerStateChanged(object sender, PlayerStateEventArgs args)
+        {
+            m_MenuItem.Enabled = args.NewState != PlayerState.Closed;
         }
     }
 
