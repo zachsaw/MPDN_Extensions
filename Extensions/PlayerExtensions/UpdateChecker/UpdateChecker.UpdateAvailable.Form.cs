@@ -65,6 +65,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             Settings = settings;
             Text = "New Player available: " + version;
             SetChangelog(version);
+            ChangelogViewerWebBrowser.IsWebBrowserContextMenuEnabled = false;
         }
 
         protected static List<string> HtmlHeaders
@@ -102,8 +103,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 "<div class=\"center\"><a href=\"#\" onclick=\"window.external.LoadPreviousChangeLog();\">Load previous changelogs</a></div>");
             lines.Add("</body>");
             lines.Add("</html>");
-            changelogViewer.DocumentText = string.Join("\n", lines);
-            changelogViewer.ObjectForScripting = this;
+            ChangelogViewerWebBrowser.DocumentText = string.Join("\n", lines);
+            ChangelogViewerWebBrowser.ObjectForScripting = this;
         }
 
         public virtual void LoadPreviousChangeLog()
@@ -132,7 +133,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             }
             html.Add("</body>");
             html.Add("</html>");
-            changelogViewer.DocumentText = string.Join("\n", html);
+            ChangelogViewerWebBrowser.DocumentText = string.Join("\n", html);
         }
 
         protected virtual List<string> ParseChangeLog(List<string> changelog)
@@ -419,7 +420,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             }
             html.Add("</body>");
             html.Add("</html>");
-            changelogViewer.DocumentText = string.Join("\n", html);
+            ChangelogViewerWebBrowser.DocumentText = string.Join("\n", html);
 
         }
     }

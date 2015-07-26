@@ -50,11 +50,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.label1 = new System.Windows.Forms.Label();
             this.checkBoxDisable = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.ChangelogViewerWebBrowser = new System.Windows.Forms.WebBrowser();
             this.CloseButton = new System.Windows.Forms.Button();
             this.forgetUpdate = new System.Windows.Forms.Button();
             this.downloadButton = new wyDay.Controls.SplitButton();
             this.downloadProgressBar = new Mpdn.Extensions.PlayerExtensions.UpdateChecker.UpdateAvailableForm.CustomProgressBar();
-            this.changelogViewer = new System.Windows.Forms.WebBrowser();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -71,7 +71,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             // 
             this.checkBoxDisable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBoxDisable.AutoSize = true;
-            this.checkBoxDisable.Location = new System.Drawing.Point(13, 206);
+            this.checkBoxDisable.Location = new System.Drawing.Point(13, 248);
             this.checkBoxDisable.Name = "checkBoxDisable";
             this.checkBoxDisable.Size = new System.Drawing.Size(430, 17);
             this.checkBoxDisable.TabIndex = 10;
@@ -86,18 +86,28 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.panel1.Controls.Add(this.changelogViewer);
+            this.panel1.Controls.Add(this.ChangelogViewerWebBrowser);
             this.panel1.Location = new System.Drawing.Point(12, 29);
             this.panel1.Name = "panel1";
             this.panel1.Padding = new System.Windows.Forms.Padding(1);
-            this.panel1.Size = new System.Drawing.Size(501, 169);
+            this.panel1.Size = new System.Drawing.Size(603, 211);
             this.panel1.TabIndex = 9;
+            // 
+            // ChangelogViewerWebBrowser
+            // 
+            this.ChangelogViewerWebBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ChangelogViewerWebBrowser.Location = new System.Drawing.Point(1, 1);
+            this.ChangelogViewerWebBrowser.MinimumSize = new System.Drawing.Size(20, 20);
+            this.ChangelogViewerWebBrowser.Name = "ChangelogViewerWebBrowser";
+            this.ChangelogViewerWebBrowser.Size = new System.Drawing.Size(601, 209);
+            this.ChangelogViewerWebBrowser.TabIndex = 0;
+            this.ChangelogViewerWebBrowser.WebBrowserShortcutsEnabled = false;
             // 
             // CloseButton
             // 
             this.CloseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.CloseButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.CloseButton.Location = new System.Drawing.Point(437, 242);
+            this.CloseButton.Location = new System.Drawing.Point(539, 284);
             this.CloseButton.Name = "CloseButton";
             this.CloseButton.Size = new System.Drawing.Size(75, 23);
             this.CloseButton.TabIndex = 8;
@@ -109,7 +119,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             // 
             this.forgetUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.forgetUpdate.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.forgetUpdate.Location = new System.Drawing.Point(345, 242);
+            this.forgetUpdate.Location = new System.Drawing.Point(447, 284);
             this.forgetUpdate.Name = "forgetUpdate";
             this.forgetUpdate.Size = new System.Drawing.Size(86, 23);
             this.forgetUpdate.TabIndex = 7;
@@ -121,7 +131,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             // 
             this.downloadButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.downloadButton.AutoSize = true;
-            this.downloadButton.Location = new System.Drawing.Point(264, 242);
+            this.downloadButton.Location = new System.Drawing.Point(366, 284);
             this.downloadButton.Name = "downloadButton";
             this.downloadButton.Size = new System.Drawing.Size(75, 23);
             this.downloadButton.TabIndex = 6;
@@ -137,19 +147,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.downloadProgressBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.downloadProgressBar.Location = new System.Drawing.Point(0, 0);
             this.downloadProgressBar.Name = "downloadProgressBar";
-            this.downloadProgressBar.Size = new System.Drawing.Size(525, 23);
+            this.downloadProgressBar.Size = new System.Drawing.Size(627, 23);
             this.downloadProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.downloadProgressBar.TabIndex = 12;
             this.downloadProgressBar.Visible = false;
-            // 
-            // changelogViewer
-            // 
-            this.changelogViewer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.changelogViewer.Location = new System.Drawing.Point(1, 1);
-            this.changelogViewer.MinimumSize = new System.Drawing.Size(20, 20);
-            this.changelogViewer.Name = "changelogViewer";
-            this.changelogViewer.Size = new System.Drawing.Size(499, 167);
-            this.changelogViewer.TabIndex = 0;
             // 
             // UpdateAvailableForm
             // 
@@ -157,7 +158,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.forgetUpdate;
-            this.ClientSize = new System.Drawing.Size(525, 277);
+            this.ClientSize = new System.Drawing.Size(627, 319);
             this.Controls.Add(this.downloadProgressBar);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.checkBoxDisable);
@@ -183,6 +184,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private System.Windows.Forms.Button forgetUpdate;
         private SplitButton downloadButton;
         private CustomProgressBar downloadProgressBar;
-        protected System.Windows.Forms.WebBrowser changelogViewer;
+        protected System.Windows.Forms.WebBrowser ChangelogViewerWebBrowser;
     }
 }
