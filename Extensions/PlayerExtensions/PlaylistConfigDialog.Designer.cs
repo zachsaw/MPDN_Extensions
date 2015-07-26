@@ -62,6 +62,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.cb_iconScale = new System.Windows.Forms.ComboBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cb_theme = new System.Windows.Forms.ComboBox();
             this.cb_showToolTips = new System.Windows.Forms.CheckBox();
             this.cb_staySnapped = new System.Windows.Forms.CheckBox();
             this.cb_scaleWithPlayer = new System.Windows.Forms.CheckBox();
@@ -76,13 +80,15 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox3.SuspendLayout();
             this.panel1.SuspendLayout();
             this.groupBox5.SuspendLayout();
+            this.groupBox7.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.groupBox6.SuspendLayout();
             this.SuspendLayout();
             // 
             // cb_showPlaylistOnStartup
             // 
             this.cb_showPlaylistOnStartup.AutoSize = true;
-            this.cb_showPlaylistOnStartup.Location = new System.Drawing.Point(5, 57);
+            this.cb_showPlaylistOnStartup.Location = new System.Drawing.Point(7, 57);
             this.cb_showPlaylistOnStartup.Name = "cb_showPlaylistOnStartup";
             this.cb_showPlaylistOnStartup.Size = new System.Drawing.Size(137, 17);
             this.cb_showPlaylistOnStartup.TabIndex = 1;
@@ -113,7 +119,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.btn_save.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_save.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btn_save.Location = new System.Drawing.Point(303, 249);
+            this.btn_save.Location = new System.Drawing.Point(298, 306);
             this.btn_save.Name = "btn_save";
             this.btn_save.Size = new System.Drawing.Size(75, 23);
             this.btn_save.TabIndex = 15;
@@ -124,7 +130,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.btn_cancel.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btn_cancel.Location = new System.Drawing.Point(380, 249);
+            this.btn_cancel.Location = new System.Drawing.Point(375, 306);
             this.btn_cancel.Name = "btn_cancel";
             this.btn_cancel.Size = new System.Drawing.Size(75, 23);
             this.btn_cancel.TabIndex = 16;
@@ -186,7 +192,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.cb_afterPlaybackOpt.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.cb_afterPlaybackOpt.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cb_afterPlaybackOpt.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.cb_afterPlaybackOpt.FormattingEnabled = true;
             this.cb_afterPlaybackOpt.Items.AddRange(new object[] {
             "Do nothing",
@@ -256,6 +261,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             // groupBox5
             // 
+            this.groupBox5.Controls.Add(this.groupBox7);
+            this.groupBox5.Controls.Add(this.groupBox1);
             this.groupBox5.Controls.Add(this.cb_showToolTips);
             this.groupBox5.Controls.Add(this.cb_staySnapped);
             this.groupBox5.Controls.Add(this.cb_scaleWithPlayer);
@@ -264,17 +271,65 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox5.Controls.Add(this.cb_showPlaylistOnStartup);
             this.groupBox5.Location = new System.Drawing.Point(7, 153);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(205, 118);
+            this.groupBox5.Size = new System.Drawing.Size(205, 175);
             this.groupBox5.TabIndex = 0;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Interface";
+            // 
+            // groupBox7
+            // 
+            this.groupBox7.Controls.Add(this.cb_iconScale);
+            this.groupBox7.Location = new System.Drawing.Point(7, 118);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.Size = new System.Drawing.Size(75, 49);
+            this.groupBox7.TabIndex = 19;
+            this.groupBox7.TabStop = false;
+            this.groupBox7.Text = "Icon scale";
+            // 
+            // cb_iconScale
+            // 
+            this.cb_iconScale.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_iconScale.FormattingEnabled = true;
+            this.cb_iconScale.Items.AddRange(new object[] {
+            "100%",
+            "125%",
+            "150%",
+            "175%",
+            "200%",
+            "225%",
+            "250%",
+            "275%",
+            "300%"});
+            this.cb_iconScale.Location = new System.Drawing.Point(6, 18);
+            this.cb_iconScale.Name = "cb_iconScale";
+            this.cb_iconScale.Size = new System.Drawing.Size(63, 21);
+            this.cb_iconScale.TabIndex = 18;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.cb_theme);
+            this.groupBox1.Location = new System.Drawing.Point(87, 118);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(112, 49);
+            this.groupBox1.TabIndex = 18;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Theme";
+            // 
+            // cb_theme
+            // 
+            this.cb_theme.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_theme.FormattingEnabled = true;
+            this.cb_theme.Location = new System.Drawing.Point(6, 18);
+            this.cb_theme.Name = "cb_theme";
+            this.cb_theme.Size = new System.Drawing.Size(101, 21);
+            this.cb_theme.TabIndex = 18;
             // 
             // cb_showToolTips
             // 
             this.cb_showToolTips.AutoSize = true;
             this.cb_showToolTips.Checked = true;
             this.cb_showToolTips.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cb_showToolTips.Location = new System.Drawing.Point(5, 76);
+            this.cb_showToolTips.Location = new System.Drawing.Point(7, 76);
             this.cb_showToolTips.Name = "cb_showToolTips";
             this.cb_showToolTips.Size = new System.Drawing.Size(89, 17);
             this.cb_showToolTips.TabIndex = 6;
@@ -284,7 +339,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // cb_staySnapped
             // 
             this.cb_staySnapped.AutoSize = true;
-            this.cb_staySnapped.Location = new System.Drawing.Point(111, 95);
+            this.cb_staySnapped.Location = new System.Drawing.Point(113, 95);
             this.cb_staySnapped.Name = "cb_staySnapped";
             this.cb_staySnapped.Size = new System.Drawing.Size(91, 17);
             this.cb_staySnapped.TabIndex = 5;
@@ -294,7 +349,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // cb_scaleWithPlayer
             // 
             this.cb_scaleWithPlayer.AutoSize = true;
-            this.cb_scaleWithPlayer.Location = new System.Drawing.Point(5, 38);
+            this.cb_scaleWithPlayer.Location = new System.Drawing.Point(7, 38);
             this.cb_scaleWithPlayer.Name = "cb_scaleWithPlayer";
             this.cb_scaleWithPlayer.Size = new System.Drawing.Size(106, 17);
             this.cb_scaleWithPlayer.TabIndex = 4;
@@ -304,7 +359,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // cb_lockWindowSize
             // 
             this.cb_lockWindowSize.AutoSize = true;
-            this.cb_lockWindowSize.Location = new System.Drawing.Point(5, 19);
+            this.cb_lockWindowSize.Location = new System.Drawing.Point(7, 19);
             this.cb_lockWindowSize.Name = "cb_lockWindowSize";
             this.cb_lockWindowSize.Size = new System.Drawing.Size(110, 17);
             this.cb_lockWindowSize.TabIndex = 3;
@@ -316,7 +371,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_snapWithPlayer.AutoSize = true;
             this.cb_snapWithPlayer.Checked = true;
             this.cb_snapWithPlayer.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cb_snapWithPlayer.Location = new System.Drawing.Point(5, 95);
+            this.cb_snapWithPlayer.Location = new System.Drawing.Point(7, 95);
             this.cb_snapWithPlayer.Name = "cb_snapWithPlayer";
             this.cb_snapWithPlayer.Size = new System.Drawing.Size(104, 17);
             this.cb_snapWithPlayer.TabIndex = 2;
@@ -360,7 +415,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // btn_configRegex
             // 
             this.btn_configRegex.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.btn_configRegex.Location = new System.Drawing.Point(226, 249);
+            this.btn_configRegex.Location = new System.Drawing.Point(221, 306);
             this.btn_configRegex.Name = "btn_configRegex";
             this.btn_configRegex.Size = new System.Drawing.Size(75, 23);
             this.btn_configRegex.TabIndex = 17;
@@ -374,7 +429,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.ClientSize = new System.Drawing.Size(456, 278);
+            this.ClientSize = new System.Drawing.Size(456, 337);
             this.Controls.Add(this.btn_configRegex);
             this.Controls.Add(this.groupBox6);
             this.Controls.Add(this.groupBox5);
@@ -398,6 +453,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.panel1.PerformLayout();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
+            this.groupBox7.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
             this.ResumeLayout(false);
@@ -431,5 +488,9 @@ namespace Mpdn.Extensions.PlayerExtensions
         private Button btn_configRegex;
         private ComboBox cb_afterPlaybackAction;
         private CheckBox cb_showToolTips;
+        private GroupBox groupBox1;
+        private ComboBox cb_theme;
+        private GroupBox groupBox7;
+        private ComboBox cb_iconScale;
     }
 }

@@ -50,38 +50,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonSortAscending = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSortDescending = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonShuffle = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonRepeatPlaylist = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonRestore = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.PlayButton = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.PauseButton = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.StopButton = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSaveDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonNewDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonNewEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSaveEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonLeftDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonRightDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonLeftEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.buttonRightEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonDelDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonDelEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonShuffleEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonShuffleDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonRestoreEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonRestoreDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSortDescendingDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSortDescendingEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSortAscendingEnabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSortAscendingDisabled = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonNew = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonOpen = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
-            this.buttonSave = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonNewPlaylist = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonOpenPlaylist = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
+            this.buttonSavePlaylist = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.buttonSettings = new Mpdn.Extensions.PlayerExtensions.Playlist.ButtonStripItem();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.openPlaylistDialog = new System.Windows.Forms.OpenFileDialog();
             this.savePlaylistDialog = new System.Windows.Forms.SaveFileDialog();
-            this.dgv_PlayList = new System.Windows.Forms.DataGridView();
+            this.dgv_PlayList = new Mpdn.Extensions.PlayerExtensions.Playlist.PlaylistDataGrid();
             this.Playing = new System.Windows.Forms.DataGridViewImageColumn();
             this.Number = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.FullPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -133,7 +116,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // 
             // statusStrip1
             // 
-            this.statusStrip1.BackColor = System.Drawing.SystemColors.Window;
+            this.statusStrip1.BackColor = System.Drawing.Color.Transparent;
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.buttonAdd,
@@ -145,32 +128,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonSortAscending,
             this.buttonSortDescending,
             this.buttonShuffle,
+            this.buttonRepeatPlaylist,
             this.buttonRestore,
             this.PlayButton,
             this.PauseButton,
             this.StopButton,
-            this.buttonSaveDisabled,
-            this.buttonNewDisabled,
-            this.buttonNewEnabled,
-            this.buttonSaveEnabled,
-            this.buttonLeftDisabled,
-            this.buttonRightDisabled,
-            this.buttonLeftEnabled,
             this.toolStripStatusLabel1,
-            this.buttonRightEnabled,
-            this.buttonDelDisabled,
-            this.buttonDelEnabled,
-            this.buttonShuffleEnabled,
-            this.buttonShuffleDisabled,
-            this.buttonRestoreEnabled,
-            this.buttonRestoreDisabled,
-            this.buttonSortDescendingDisabled,
-            this.buttonSortDescendingEnabled,
-            this.buttonSortAscendingEnabled,
-            this.buttonSortAscendingDisabled,
-            this.buttonNew,
-            this.buttonOpen,
-            this.buttonSave,
+            this.buttonNewPlaylist,
+            this.buttonOpenPlaylist,
+            this.buttonSavePlaylist,
             this.buttonSettings});
             this.statusStrip1.Location = new System.Drawing.Point(0, 206);
             this.statusStrip1.Name = "statusStrip1";
@@ -180,38 +146,39 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.statusStrip1.TabIndex = 0;
             this.statusStrip1.TabStop = true;
             this.statusStrip1.Text = "statusStrip1";
+            this.statusStrip1.Visible = false;
             // 
             // buttonAdd
             // 
             this.buttonAdd.AutoSize = false;
             this.buttonAdd.BackColor = System.Drawing.Color.Transparent;
-            this.buttonAdd.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonAdd.BackgroundImage")));
             this.buttonAdd.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonAdd.Name = "buttonAdd";
             this.buttonAdd.Size = new System.Drawing.Size(24, 25);
             this.buttonAdd.ToolTipText = "Add file(s)";
+            this.buttonAdd.Visible = false;
             this.buttonAdd.Click += new System.EventHandler(this.ButtonAddFilesClick);
             // 
             // buttonDel
             // 
             this.buttonDel.AutoSize = false;
             this.buttonDel.BackColor = System.Drawing.Color.Transparent;
-            this.buttonDel.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonDel.BackgroundImage")));
             this.buttonDel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonDel.Name = "buttonDel";
             this.buttonDel.Size = new System.Drawing.Size(24, 25);
             this.buttonDel.ToolTipText = "Remove file(s)";
+            this.buttonDel.Visible = false;
             this.buttonDel.Click += new System.EventHandler(this.ButtonRemoveSelectedItemsClick);
             // 
             // buttonAddFolder
             // 
             this.buttonAddFolder.AutoSize = false;
             this.buttonAddFolder.BackColor = System.Drawing.Color.Transparent;
-            this.buttonAddFolder.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonAddFolder.BackgroundImage")));
             this.buttonAddFolder.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonAddFolder.Name = "buttonAddFolder";
             this.buttonAddFolder.Size = new System.Drawing.Size(24, 25);
             this.buttonAddFolder.ToolTipText = "Add folder";
+            this.buttonAddFolder.Visible = false;
             this.buttonAddFolder.Click += new System.EventHandler(this.ButtonAddFolderClick);
             // 
             // toolStripStatusLabel2
@@ -224,67 +191,78 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // 
             this.buttonLeft.AutoSize = false;
             this.buttonLeft.BackColor = System.Drawing.Color.Transparent;
-            this.buttonLeft.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonLeft.BackgroundImage")));
             this.buttonLeft.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonLeft.Name = "buttonLeft";
             this.buttonLeft.Size = new System.Drawing.Size(24, 25);
             this.buttonLeft.ToolTipText = "Previous";
+            this.buttonLeft.Visible = false;
             this.buttonLeft.Click += new System.EventHandler(this.ButtonLeftClick);
             // 
             // buttonRight
             // 
             this.buttonRight.AutoSize = false;
             this.buttonRight.BackColor = System.Drawing.Color.Transparent;
-            this.buttonRight.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRight.BackgroundImage")));
             this.buttonRight.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonRight.Name = "buttonRight";
             this.buttonRight.Size = new System.Drawing.Size(24, 25);
             this.buttonRight.ToolTipText = "Next";
+            this.buttonRight.Visible = false;
             this.buttonRight.Click += new System.EventHandler(this.ButtonRightClick);
             // 
             // buttonSortAscending
             // 
             this.buttonSortAscending.AutoSize = false;
             this.buttonSortAscending.BackColor = System.Drawing.Color.Transparent;
-            this.buttonSortAscending.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortAscending.BackgroundImage")));
             this.buttonSortAscending.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSortAscending.Margin = new System.Windows.Forms.Padding(10, 2, 0, 0);
             this.buttonSortAscending.Name = "buttonSortAscending";
             this.buttonSortAscending.Size = new System.Drawing.Size(24, 25);
             this.buttonSortAscending.ToolTipText = "Sort playlist (ascending)";
+            this.buttonSortAscending.Visible = false;
             this.buttonSortAscending.Click += new System.EventHandler(this.ButtonSortAscendingClick);
             // 
             // buttonSortDescending
             // 
             this.buttonSortDescending.AutoSize = false;
             this.buttonSortDescending.BackColor = System.Drawing.Color.Transparent;
-            this.buttonSortDescending.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortDescending.BackgroundImage")));
             this.buttonSortDescending.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSortDescending.Name = "buttonSortDescending";
             this.buttonSortDescending.Size = new System.Drawing.Size(24, 25);
             this.buttonSortDescending.ToolTipText = "Sort playlist (descending)";
+            this.buttonSortDescending.Visible = false;
             this.buttonSortDescending.Click += new System.EventHandler(this.ButtonSortDescendingClick);
             // 
             // buttonShuffle
             // 
             this.buttonShuffle.AutoSize = false;
             this.buttonShuffle.BackColor = System.Drawing.Color.Transparent;
-            this.buttonShuffle.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonShuffle.BackgroundImage")));
             this.buttonShuffle.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonShuffle.Name = "buttonShuffle";
             this.buttonShuffle.Size = new System.Drawing.Size(24, 25);
             this.buttonShuffle.ToolTipText = "Shuffle playlist";
+            this.buttonShuffle.Visible = false;
             this.buttonShuffle.Click += new System.EventHandler(this.ButtonShuffleClick);
+            // 
+            // buttonRepeatPlaylist
+            // 
+            this.buttonRepeatPlaylist.AutoSize = false;
+            this.buttonRepeatPlaylist.BackColor = System.Drawing.Color.Transparent;
+            this.buttonRepeatPlaylist.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.buttonRepeatPlaylist.Name = "buttonRepeatPlaylist";
+            this.buttonRepeatPlaylist.Size = new System.Drawing.Size(24, 25);
+            this.buttonRepeatPlaylist.ToolTipText = "Repeat playlist";
+            this.buttonRepeatPlaylist.Visible = false;
+            this.buttonRepeatPlaylist.Click += new System.EventHandler(this.ButtonRepeatPlaylistClick);
             // 
             // buttonRestore
             // 
             this.buttonRestore.AutoSize = false;
             this.buttonRestore.BackColor = System.Drawing.Color.Transparent;
-            this.buttonRestore.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRestore.BackgroundImage")));
             this.buttonRestore.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonRestore.Name = "buttonRestore";
             this.buttonRestore.Size = new System.Drawing.Size(24, 25);
             this.buttonRestore.ToolTipText = "Restore playlist";
+            this.buttonRestore.Visible = false;
             this.buttonRestore.Click += new System.EventHandler(this.ButtonRestoreClick);
             // 
             // PlayButton
@@ -317,241 +295,53 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.StopButton.Size = new System.Drawing.Size(24, 25);
             this.StopButton.Visible = false;
             // 
-            // buttonSaveDisabled
-            // 
-            this.buttonSaveDisabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonSaveDisabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSaveDisabled.BackgroundImage")));
-            this.buttonSaveDisabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonSaveDisabled.Name = "buttonSaveDisabled";
-            this.buttonSaveDisabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonSaveDisabled.Visible = false;
-            // 
-            // buttonNewDisabled
-            // 
-            this.buttonNewDisabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonNewDisabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonNewDisabled.BackgroundImage")));
-            this.buttonNewDisabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonNewDisabled.Name = "buttonNewDisabled";
-            this.buttonNewDisabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonNewDisabled.Visible = false;
-            // 
-            // buttonNewEnabled
-            // 
-            this.buttonNewEnabled.AutoSize = false;
-            this.buttonNewEnabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonNewEnabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonNewEnabled.BackgroundImage")));
-            this.buttonNewEnabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonNewEnabled.Name = "buttonNewEnabled";
-            this.buttonNewEnabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonNewEnabled.ToolTipText = "New playlist";
-            this.buttonNewEnabled.Visible = false;
-            // 
-            // buttonSaveEnabled
-            // 
-            this.buttonSaveEnabled.AutoSize = false;
-            this.buttonSaveEnabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonSaveEnabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSaveEnabled.BackgroundImage")));
-            this.buttonSaveEnabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonSaveEnabled.Name = "buttonSaveEnabled";
-            this.buttonSaveEnabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonSaveEnabled.ToolTipText = "Save playlist";
-            this.buttonSaveEnabled.Visible = false;
-            // 
-            // buttonLeftDisabled
-            // 
-            this.buttonLeftDisabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonLeftDisabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonLeftDisabled.BackgroundImage")));
-            this.buttonLeftDisabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonLeftDisabled.Name = "buttonLeftDisabled";
-            this.buttonLeftDisabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonLeftDisabled.Visible = false;
-            // 
-            // buttonRightDisabled
-            // 
-            this.buttonRightDisabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonRightDisabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRightDisabled.BackgroundImage")));
-            this.buttonRightDisabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonRightDisabled.Name = "buttonRightDisabled";
-            this.buttonRightDisabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonRightDisabled.Visible = false;
-            // 
-            // buttonLeftEnabled
-            // 
-            this.buttonLeftEnabled.AutoSize = false;
-            this.buttonLeftEnabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonLeftEnabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonLeftEnabled.BackgroundImage")));
-            this.buttonLeftEnabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonLeftEnabled.Name = "buttonLeftEnabled";
-            this.buttonLeftEnabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonLeftEnabled.ToolTipText = "Previous";
-            this.buttonLeftEnabled.Visible = false;
-            // 
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(337, 22);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(210, 22);
             this.toolStripStatusLabel1.Spring = true;
             // 
-            // buttonRightEnabled
+            // buttonNewPlaylist
             // 
-            this.buttonRightEnabled.AutoSize = false;
-            this.buttonRightEnabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonRightEnabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRightEnabled.BackgroundImage")));
-            this.buttonRightEnabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonRightEnabled.Name = "buttonRightEnabled";
-            this.buttonRightEnabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonRightEnabled.ToolTipText = "Next";
-            this.buttonRightEnabled.Visible = false;
+            this.buttonNewPlaylist.AutoSize = false;
+            this.buttonNewPlaylist.BackColor = System.Drawing.Color.Transparent;
+            this.buttonNewPlaylist.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.buttonNewPlaylist.Name = "buttonNewPlaylist";
+            this.buttonNewPlaylist.Size = new System.Drawing.Size(24, 25);
+            this.buttonNewPlaylist.ToolTipText = "New playlist";
+            this.buttonNewPlaylist.Visible = false;
+            this.buttonNewPlaylist.Click += new System.EventHandler(this.ButtonNewPlaylistClick);
             // 
-            // buttonDelDisabled
+            // buttonOpenPlaylist
             // 
-            this.buttonDelDisabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonDelDisabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonDelDisabled.BackgroundImage")));
-            this.buttonDelDisabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonDelDisabled.Name = "buttonDelDisabled";
-            this.buttonDelDisabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonDelDisabled.Visible = false;
+            this.buttonOpenPlaylist.AutoSize = false;
+            this.buttonOpenPlaylist.BackColor = System.Drawing.Color.Transparent;
+            this.buttonOpenPlaylist.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.buttonOpenPlaylist.Name = "buttonOpenPlaylist";
+            this.buttonOpenPlaylist.Size = new System.Drawing.Size(24, 25);
+            this.buttonOpenPlaylist.ToolTipText = "Open playlist";
+            this.buttonOpenPlaylist.Visible = false;
+            this.buttonOpenPlaylist.Click += new System.EventHandler(this.ButtonOpenPlaylistClick);
             // 
-            // buttonDelEnabled
+            // buttonSavePlaylist
             // 
-            this.buttonDelEnabled.AutoSize = false;
-            this.buttonDelEnabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonDelEnabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonDelEnabled.BackgroundImage")));
-            this.buttonDelEnabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonDelEnabled.Name = "buttonDelEnabled";
-            this.buttonDelEnabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonDelEnabled.ToolTipText = "Remove file(s)";
-            this.buttonDelEnabled.Visible = false;
-            // 
-            // buttonShuffleEnabled
-            // 
-            this.buttonShuffleEnabled.AutoSize = false;
-            this.buttonShuffleEnabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonShuffleEnabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonShuffleEnabled.BackgroundImage")));
-            this.buttonShuffleEnabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonShuffleEnabled.Name = "buttonShuffleEnabled";
-            this.buttonShuffleEnabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonShuffleEnabled.ToolTipText = "Shuffle playlist";
-            this.buttonShuffleEnabled.Visible = false;
-            // 
-            // buttonShuffleDisabled
-            // 
-            this.buttonShuffleDisabled.AutoSize = false;
-            this.buttonShuffleDisabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonShuffleDisabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonShuffleDisabled.BackgroundImage")));
-            this.buttonShuffleDisabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonShuffleDisabled.Name = "buttonShuffleDisabled";
-            this.buttonShuffleDisabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonShuffleDisabled.ToolTipText = "Shuffle playlist";
-            this.buttonShuffleDisabled.Visible = false;
-            // 
-            // buttonRestoreEnabled
-            // 
-            this.buttonRestoreEnabled.AutoSize = false;
-            this.buttonRestoreEnabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonRestoreEnabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRestoreEnabled.BackgroundImage")));
-            this.buttonRestoreEnabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonRestoreEnabled.Name = "buttonRestoreEnabled";
-            this.buttonRestoreEnabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonRestoreEnabled.ToolTipText = "Restore playlist";
-            this.buttonRestoreEnabled.Visible = false;
-            // 
-            // buttonRestoreDisabled
-            // 
-            this.buttonRestoreDisabled.AutoSize = false;
-            this.buttonRestoreDisabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonRestoreDisabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRestoreDisabled.BackgroundImage")));
-            this.buttonRestoreDisabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonRestoreDisabled.Name = "buttonRestoreDisabled";
-            this.buttonRestoreDisabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonRestoreDisabled.ToolTipText = "Restore playlist";
-            this.buttonRestoreDisabled.Visible = false;
-            // 
-            // buttonSortDescendingDisabled
-            // 
-            this.buttonSortDescendingDisabled.AutoSize = false;
-            this.buttonSortDescendingDisabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonSortDescendingDisabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortDescendingDisabled.BackgroundImage")));
-            this.buttonSortDescendingDisabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonSortDescendingDisabled.Name = "buttonSortDescendingDisabled";
-            this.buttonSortDescendingDisabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonSortDescendingDisabled.ToolTipText = "Shuffle playlist";
-            this.buttonSortDescendingDisabled.Visible = false;
-            // 
-            // buttonSortDescendingEnabled
-            // 
-            this.buttonSortDescendingEnabled.AutoSize = false;
-            this.buttonSortDescendingEnabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonSortDescendingEnabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortDescendingEnabled.BackgroundImage")));
-            this.buttonSortDescendingEnabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonSortDescendingEnabled.Name = "buttonSortDescendingEnabled";
-            this.buttonSortDescendingEnabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonSortDescendingEnabled.ToolTipText = "Shuffle playlist";
-            this.buttonSortDescendingEnabled.Visible = false;
-            // 
-            // buttonSortAscendingEnabled
-            // 
-            this.buttonSortAscendingEnabled.AutoSize = false;
-            this.buttonSortAscendingEnabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonSortAscendingEnabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortAscendingEnabled.BackgroundImage")));
-            this.buttonSortAscendingEnabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonSortAscendingEnabled.Name = "buttonSortAscendingEnabled";
-            this.buttonSortAscendingEnabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonSortAscendingEnabled.ToolTipText = "Shuffle playlist";
-            this.buttonSortAscendingEnabled.Visible = false;
-            // 
-            // buttonSortAscendingDisabled
-            // 
-            this.buttonSortAscendingDisabled.AutoSize = false;
-            this.buttonSortAscendingDisabled.BackColor = System.Drawing.Color.Transparent;
-            this.buttonSortAscendingDisabled.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSortAscendingDisabled.BackgroundImage")));
-            this.buttonSortAscendingDisabled.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonSortAscendingDisabled.Name = "buttonSortAscendingDisabled";
-            this.buttonSortAscendingDisabled.Size = new System.Drawing.Size(24, 25);
-            this.buttonSortAscendingDisabled.ToolTipText = "Shuffle playlist";
-            this.buttonSortAscendingDisabled.Visible = false;
-            // 
-            // buttonNew
-            // 
-            this.buttonNew.AutoSize = false;
-            this.buttonNew.BackColor = System.Drawing.Color.Transparent;
-            this.buttonNew.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonNew.BackgroundImage")));
-            this.buttonNew.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonNew.Name = "buttonNew";
-            this.buttonNew.Size = new System.Drawing.Size(24, 25);
-            this.buttonNew.ToolTipText = "New playlist";
-            this.buttonNew.Click += new System.EventHandler(this.ButtonNewPlaylistClick);
-            // 
-            // buttonOpen
-            // 
-            this.buttonOpen.AutoSize = false;
-            this.buttonOpen.BackColor = System.Drawing.Color.Transparent;
-            this.buttonOpen.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonOpen.BackgroundImage")));
-            this.buttonOpen.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonOpen.Name = "buttonOpen";
-            this.buttonOpen.Size = new System.Drawing.Size(24, 25);
-            this.buttonOpen.ToolTipText = "Open playlist";
-            this.buttonOpen.Click += new System.EventHandler(this.ButtonOpenPlaylistClick);
-            // 
-            // buttonSave
-            // 
-            this.buttonSave.AutoSize = false;
-            this.buttonSave.BackColor = System.Drawing.Color.Transparent;
-            this.buttonSave.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSave.BackgroundImage")));
-            this.buttonSave.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.buttonSave.Name = "buttonSave";
-            this.buttonSave.Size = new System.Drawing.Size(24, 25);
-            this.buttonSave.ToolTipText = "Save playlist";
-            this.buttonSave.Click += new System.EventHandler(this.ButtonSavePlaylistAsClick);
+            this.buttonSavePlaylist.AutoSize = false;
+            this.buttonSavePlaylist.BackColor = System.Drawing.Color.Transparent;
+            this.buttonSavePlaylist.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.buttonSavePlaylist.Name = "buttonSavePlaylist";
+            this.buttonSavePlaylist.Size = new System.Drawing.Size(24, 25);
+            this.buttonSavePlaylist.ToolTipText = "Save playlist";
+            this.buttonSavePlaylist.Visible = false;
+            this.buttonSavePlaylist.Click += new System.EventHandler(this.ButtonSavePlaylistAsClick);
             // 
             // buttonSettings
             // 
             this.buttonSettings.BackColor = System.Drawing.Color.Transparent;
-            this.buttonSettings.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonSettings.BackgroundImage")));
             this.buttonSettings.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSettings.Name = "buttonSettings";
             this.buttonSettings.Size = new System.Drawing.Size(24, 25);
             this.buttonSettings.ToolTipText = "Configure playlist";
+            this.buttonSettings.Visible = false;
             this.buttonSettings.Click += new System.EventHandler(this.ButtonSettingsClick);
             // 
             // timer
@@ -590,9 +380,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.AllowUserToResizeRows = false;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(248)))), ((int)(((byte)(248)))));
             this.dgv_PlayList.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            this.dgv_PlayList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_PlayList.BackgroundColor = System.Drawing.SystemColors.Window;
             this.dgv_PlayList.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgv_PlayList.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
@@ -614,6 +401,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             dataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dgv_PlayList.DefaultCellStyle = dataGridViewCellStyle5;
+            this.dgv_PlayList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_PlayList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
             this.dgv_PlayList.GridColor = System.Drawing.SystemColors.Window;
             this.dgv_PlayList.Location = new System.Drawing.Point(0, 0);
@@ -631,6 +419,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.Size = new System.Drawing.Size(684, 206);
             this.dgv_PlayList.TabIndex = 1;
             this.dgv_PlayList.TabStop = false;
+            this.dgv_PlayList.TransparentColumnHeader = false;
             // 
             // Playing
             // 
@@ -1048,32 +837,22 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private System.Windows.Forms.StatusStrip statusStrip1;
         private ButtonStripItem buttonAdd;
         private ButtonStripItem buttonDel;
-        private ButtonStripItem buttonNew;
-        private ButtonStripItem buttonOpen;
-        private ButtonStripItem buttonSave;
+        private ButtonStripItem buttonNewPlaylist;
+        private ButtonStripItem buttonOpenPlaylist;
+        private ButtonStripItem buttonSavePlaylist;
         private System.Windows.Forms.Timer timer;
         private ButtonStripItem buttonLeft;
         private ButtonStripItem buttonRight;
         private System.Windows.Forms.OpenFileDialog openPlaylistDialog;
         private System.Windows.Forms.SaveFileDialog savePlaylistDialog;
-        private System.Windows.Forms.DataGridView dgv_PlayList;
+        private PlaylistDataGrid dgv_PlayList;
         private ButtonStripItem buttonSortAscending;
         private ButtonStripItem buttonSortDescending;
-        private ButtonStripItem buttonNewDisabled;
         private ContextMenuStrip dgv_PlaylistContextMenu;
         private ButtonStripItem buttonSettings;
         public OpenFileDialog openFileDialog;
         private ToolStripMenuItem playToolStripMenuItem;
         private ButtonStripItem PlayButton;
-        private ButtonStripItem buttonSaveDisabled;
-        private ButtonStripItem buttonNewEnabled;
-        private ButtonStripItem buttonSaveEnabled;
-        private ButtonStripItem buttonLeftDisabled;
-        private ButtonStripItem buttonRightDisabled;
-        private ButtonStripItem buttonLeftEnabled;
-        private ButtonStripItem buttonRightEnabled;
-        private ButtonStripItem buttonDelDisabled;
-        private ButtonStripItem buttonDelEnabled;
         private ContextMenuStrip dgv_PlaylistColumnContextMenu;
         private ToolStripMenuItem numberToolStripMenuItem;
         private ToolStripMenuItem skipChaptersToolStripMenuItem;
@@ -1081,21 +860,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private ToolStripMenuItem fullPathToolStripMenuItem;
         private ToolStripMenuItem directoryToolStripMenuItem;
         private ButtonStripItem buttonShuffle;
-        private ButtonStripItem buttonShuffleDisabled;
-        private ButtonStripItem buttonSortDescendingDisabled;
         private ToolStripMenuItem sortToolStripMenuItem;
         private ToolStripMenuItem ascendingToolStripMenuItem;
         private ToolStripMenuItem descendingToolStripMenuItem;
-        private ButtonStripItem buttonSortDescendingEnabled;
-        private ButtonStripItem buttonSortAscendingEnabled;
-        private ButtonStripItem buttonSortAscendingDisabled;
-        private ButtonStripItem buttonShuffleEnabled;
         private ToolStripStatusLabel toolStripStatusLabel2;
         private ToolStripStatusLabel toolStripStatusLabel1;
         private ButtonStripItem buttonAddFolder;
         private ToolStripMenuItem restoreToolStripMenuItem;
-        private ButtonStripItem buttonRestoreEnabled;
-        private ButtonStripItem buttonRestoreDisabled;
         private ButtonStripItem buttonRestore;
         private ButtonStripItem PauseButton;
         private ButtonStripItem StopButton;
@@ -1130,5 +901,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private DataGridViewTextBoxColumn SkipChapters;
         private DataGridViewTextBoxColumn EndChapter;
         private DataGridViewTextBoxColumn Duration;
+        private ButtonStripItem buttonRepeatPlaylist;
     }
 }

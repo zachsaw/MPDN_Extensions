@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.PlayerExtensions.Playlist;
@@ -26,14 +27,15 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public partial class PlaylistConfigDialog : PlaylistConfigBase
     {
-        private static Form regexForm;
-        private int regexCount;
-        private int currentAfterPlaybackOptIdx;
-        private int currentAfterPlaybackActionIdx;
+        private static Form s_RegexForm;
+        private int m_RegexCount;
+        private int m_CurrentAfterPlaybackOptIdx;
+        private int m_CurrentAfterPlaybackActionIdx;
 
         public PlaylistConfigDialog()
         {
             InitializeComponent();
+            InitControls();
             UpdateControls();
         }
 
@@ -42,6 +44,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             cb_showPlaylistOnStartup.Checked = Settings.ShowPlaylistOnStartup;
             cb_afterPlaybackOpt.SelectedIndex = (int)Settings.AfterPlaybackOpt;
             cb_afterPlaybackAction.SelectedIndex = (int)Settings.AfterPlaybackAction;
+            cb_iconScale.SelectedIndex = (int)Settings.IconScale;
             cb_onStartup.Checked = Settings.BeginPlaybackOnStartup;
             cb_showToolTips.Checked = Settings.ShowToolTips;
             cb_scaleWithPlayer.Checked = Settings.ScaleWithPlayer;
@@ -52,6 +55,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             cb_rememberWindowSize.Checked = Settings.RememberWindowSize;
             cb_lockWindowSize.Checked = Settings.LockWindowSize;
             cb_rememberPlaylist.Checked = Settings.RememberPlaylist;
+            cb_theme.Text = Settings.Theme;
         }
 
         protected override void SaveSettings()
@@ -59,6 +63,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.ShowPlaylistOnStartup = cb_showPlaylistOnStartup.Checked;
             Settings.AfterPlaybackOpt = (AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex;
             Settings.AfterPlaybackAction = (AfterPlaybackSettingsAction)cb_afterPlaybackAction.SelectedIndex;
+            Settings.IconScale = (IconScale)cb_iconScale.SelectedIndex;
             Settings.BeginPlaybackOnStartup = cb_onStartup.Checked;
             Settings.ShowToolTips = cb_showToolTips.Checked;
             Settings.ScaleWithPlayer = cb_scaleWithPlayer.Checked;
@@ -69,6 +74,23 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.RememberWindowSize = cb_rememberWindowSize.Checked;
             Settings.LockWindowSize = cb_lockWindowSize.Checked;
             Settings.RememberPlaylist = cb_rememberPlaylist.Checked;
+            Settings.Theme = cb_theme.Text;
+        }
+
+        private void InitControls()
+        {
+            ValidateAfterPlaybackAction();
+            ValidateAfterPlaybackOpt();
+
+            const string dir = PlaylistForm.PLAYLIST_ICONS_DIR;
+            if (!Directory.Exists(dir)) return;
+
+            var directories = Directory.EnumerateDirectories(Application.StartupPath + @"\" + dir);
+
+            foreach (var d in directories)
+            {
+                cb_theme.Items.Add(new DirectoryInfo(d).Name);
+            }
         }
 
         private void UpdateControls()
@@ -93,9 +115,9 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void InitRegexForm()
         {
-            regexCount = 0;
+            m_RegexCount = 0;
 
-            regexForm = new Form
+            s_RegexForm = new Form
             {
                 Text = "Configure regex",
                 Size = new Size(280, 270),
@@ -125,7 +147,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             var btn_save = new Button
             {
                 Text = "Save",
-                Location = new Point(regexForm.Width - 160, regexForm.Height - 55)
+                Location = new Point(s_RegexForm.Width - 160, s_RegexForm.Height - 55)
             };
 
             var btn_close = new Button
@@ -170,7 +192,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 for (var i = 0; i < Settings.RegexList.Count; i++)
                 {
-                    regexCount++;
+                    m_RegexCount++;
                     flowPanel.Controls.Add(CreateRegexControls(i));
                 }
             }
@@ -178,7 +200,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 for (var i = 0; i < 4; i++)
                 {
-                    regexCount++;
+                    m_RegexCount++;
                     flowPanel.Controls.Add(CreateRegexControls(i));
                 }
             }
@@ -191,15 +213,15 @@ namespace Mpdn.Extensions.PlayerExtensions
             btn_add.Click += btn_add_Click;
             linkLabel.LinkClicked += linkLabel_LinkClicked;
 
-            regexForm.Controls.Add(label);
-            regexForm.Controls.Add(flowPanel);
-            regexForm.Controls.Add(btn_save);
-            regexForm.Controls.Add(btn_close);
-            regexForm.Controls.Add(btn_clear);
-            regexForm.Controls.Add(btn_add);
-            regexForm.Controls.Add(cb_stripDirectory);
-            regexForm.Controls.Add(linkLabel);
-            regexForm.ShowDialog();
+            s_RegexForm.Controls.Add(label);
+            s_RegexForm.Controls.Add(flowPanel);
+            s_RegexForm.Controls.Add(btn_save);
+            s_RegexForm.Controls.Add(btn_close);
+            s_RegexForm.Controls.Add(btn_clear);
+            s_RegexForm.Controls.Add(btn_add);
+            s_RegexForm.Controls.Add(cb_stripDirectory);
+            s_RegexForm.Controls.Add(linkLabel);
+            s_RegexForm.ShowDialog();
         }
 
         private Panel CreateRegexControls()
@@ -211,7 +233,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             var label = new Label
             {
-                Text = "Regex " + regexCount + ":",
+                Text = "Regex " + m_RegexCount + ":",
                 Location = new Point(0, 3),
                 Size = new Size(57, 30),
                 AutoSize = false
@@ -236,7 +258,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             var label = new Label
             {
-                Text = "Regex " + regexCount + ":",
+                Text = "Regex " + m_RegexCount + ":",
                 Location = new Point(0, 3),
                 Size = new Size(57, 30),
                 AutoSize = false
@@ -258,7 +280,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             var regexList = new List<string>();
 
-            foreach (var c in regexForm.Controls)
+            foreach (var c in s_RegexForm.Controls)
             {
                 var cb = c as CheckBox;
                 if (cb == null) continue;
@@ -266,7 +288,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 Settings.StripDirectoryInFileName = cb.Checked;
             }
 
-            foreach (var c in regexForm.Controls)
+            foreach (var c in s_RegexForm.Controls)
             {
                 var flowPanel = c as FlowLayoutPanel;
                 if (flowPanel == null) continue;
@@ -289,7 +311,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void ClearRegex()
         {
-            foreach (var c in regexForm.Controls)
+            foreach (var c in s_RegexForm.Controls)
             {
                 var cb = c as CheckBox;
                 if (cb == null) continue;
@@ -297,7 +319,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 Settings.StripDirectoryInFileName = cb.Checked;
             }
 
-            foreach (var c in regexForm.Controls)
+            foreach (var c in s_RegexForm.Controls)
             {
                 var flowPanel = c as FlowLayoutPanel;
                 if (flowPanel == null) continue;
@@ -318,6 +340,34 @@ namespace Mpdn.Extensions.PlayerExtensions
             PlaylistForm.UpdatePlaylistWithRegexFilter(new List<string>(), Settings.StripDirectoryInFileName);
         }
 
+        private void ValidateAfterPlaybackAction()
+        {
+            bool isOnRepeat = ((AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex ==
+                               AfterPlaybackSettingsOpt.RepeatPlaylist);
+            bool isOnPlayNextFileInFolder = ((AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex ==
+                                             AfterPlaybackSettingsOpt.PlayNextFileInFolder);
+
+            if (isOnRepeat || isOnPlayNextFileInFolder)
+            {
+                int removeFileIdx = cb_afterPlaybackAction.FindString("Remove file");
+                if (cb_afterPlaybackAction.SelectedIndex == removeFileIdx) cb_afterPlaybackAction.SelectedIndex = m_CurrentAfterPlaybackActionIdx;
+            }
+        }
+
+        private void ValidateAfterPlaybackOpt()
+        {
+            bool isOnRemove = ((AfterPlaybackSettingsAction)cb_afterPlaybackAction.SelectedIndex ==
+                               AfterPlaybackSettingsAction.RemoveFile);
+
+            if (isOnRemove)
+            {
+                int repeatPlaylistIdx = cb_afterPlaybackOpt.FindString("Repeat playlist");
+                int playNextFileInFolderIdx = cb_afterPlaybackOpt.FindString("Play next file in folder");
+                int idx = cb_afterPlaybackOpt.SelectedIndex;
+                if (idx == repeatPlaylistIdx || idx == playNextFileInFolderIdx) cb_afterPlaybackOpt.SelectedIndex = m_CurrentAfterPlaybackOptIdx;
+            }
+        }
+
         private void btn_save_Click(object sender, EventArgs e)
         {
             SaveRegex();
@@ -325,7 +375,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void btn_close_Click(object sender, EventArgs e)
         {
-            regexForm.Close();
+            s_RegexForm.Close();
         }
 
         private void btn_clear_Click(object sender, EventArgs e)
@@ -336,9 +386,9 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void btn_add_Click(object sender, EventArgs e)
         {
-            regexCount++;
+            m_RegexCount++;
 
-            foreach (var c in regexForm.Controls)
+            foreach (var c in s_RegexForm.Controls)
             {
                 var flowPanel = c as FlowLayoutPanel;
                 if (flowPanel == null) continue;
@@ -350,7 +400,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 control.Controls[1].Focus();
             }
 
-            regexForm.Invalidate();
+            s_RegexForm.Invalidate();
         }
 
         private void linkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -417,37 +467,22 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void cb_afterPlaybackOpt_Enter(object sender, EventArgs e)
         {
-            currentAfterPlaybackOptIdx = cb_afterPlaybackOpt.SelectedIndex;
+            m_CurrentAfterPlaybackOptIdx = cb_afterPlaybackOpt.SelectedIndex;
         }
 
         private void cb_afterPlaybackAction_Enter(object sender, EventArgs e)
         {
-            currentAfterPlaybackActionIdx = cb_afterPlaybackAction.SelectedIndex;
+            m_CurrentAfterPlaybackActionIdx = cb_afterPlaybackAction.SelectedIndex;
         }
 
         private void cb_afterPlaybackOpt_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            bool isOnRemove = ((AfterPlaybackSettingsAction)cb_afterPlaybackAction.SelectedIndex == AfterPlaybackSettingsAction.RemoveFile);
-
-            if (isOnRemove)
-            {
-                int repeatPlaylistIdx = cb_afterPlaybackOpt.FindString("Repeat playlist");
-                int playNextFileInFolderIdx = cb_afterPlaybackOpt.FindString("Play next file in folder");
-                int idx = cb_afterPlaybackOpt.SelectedIndex;
-                if (idx == repeatPlaylistIdx || idx == playNextFileInFolderIdx) cb_afterPlaybackOpt.SelectedIndex = currentAfterPlaybackOptIdx;
-            }
+            ValidateAfterPlaybackOpt();
         }
 
         private void cb_afterPlaybackAction_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            bool isOnRepeat = ((AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex == AfterPlaybackSettingsOpt.RepeatPlaylist);
-            bool isOnPlayNextFileInFolder = ((AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex == AfterPlaybackSettingsOpt.PlayNextFileInFolder);
-
-            if (isOnRepeat || isOnPlayNextFileInFolder)
-            {
-                int removeFileIdx = cb_afterPlaybackAction.FindString("Remove file");
-                if (cb_afterPlaybackAction.SelectedIndex == removeFileIdx) cb_afterPlaybackAction.SelectedIndex = currentAfterPlaybackActionIdx;
-            }
+            ValidateAfterPlaybackAction();
         }
     }
 
