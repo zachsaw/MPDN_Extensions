@@ -605,7 +605,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (m_MpdnForm.WindowState == FormWindowState.Minimized) m_Form.Bounds = m_Form.RestoreBounds;
 
-            if (m_MpdnForm.Left == 0 && m_MpdnForm.Height == scn.WorkingArea.Height)
+            if (m_MpdnForm.Left == 0 && m_MpdnForm.Height == scn.WorkingArea.Height && !CursorIsOnResizeAnchor())
             {
                 int borderWidth = SystemInformation.SizingBorderWidth;
 
@@ -616,7 +616,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 else m_Form.Left = scn.WorkingArea.Right - m_Form.Width;
                 m_Form.Top = scn.WorkingArea.Top;
             }
-            else if (m_MpdnForm.Left == scn.WorkingArea.Width - m_MpdnForm.Width && m_MpdnForm.Height == scn.WorkingArea.Height)
+            else if (m_MpdnForm.Left == scn.WorkingArea.Width - m_MpdnForm.Width && m_MpdnForm.Height == scn.WorkingArea.Height && !CursorIsOnResizeAnchor())
             {
                 int borderWidth = SystemInformation.SizingBorderWidth;
 
@@ -736,10 +736,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         Scale150X,
         Scale175X,
         Scale200X,
-        Scale225X,
-        Scale250X,
-        Scale275X,
-        Scale300X
     }
 
     public enum AfterPlaybackSettingsOpt
@@ -787,10 +783,28 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public PlaylistSettings()
         {
+            int dpi = (int)GetDpi();
+            switch (dpi)
+            {
+                case 96:
+                    IconScale = IconScale.Scale100X;
+                    break;
+                case 120:
+                    IconScale = IconScale.Scale150X;
+                    break;
+                case 144:
+                case 192:
+                case 240:
+                    IconScale = IconScale.Scale200X;
+                    break;
+                default:
+                    IconScale = IconScale.Scale100X;
+                    break;
+            }
+
             ShowPlaylistOnStartup = false;
             AfterPlaybackOpt = AfterPlaybackSettingsOpt.DoNothing;
             AfterPlaybackAction = AfterPlaybackSettingsAction.DoNothing;
-            IconScale = IconScale.Scale100X;
             BeginPlaybackOnStartup = false;
             ShowToolTips = true;
             SnapWithPlayer = true;
@@ -805,6 +819,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             RememberedFiles = new List<string>();
             RegexList = new List<string>();
             Theme = "Default";
+        }
+
+        private float GetDpi()
+        {
+            var g = Graphics.FromHwnd(IntPtr.Zero);
+            return g.DpiX;
         }
     }
 

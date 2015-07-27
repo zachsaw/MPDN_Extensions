@@ -1217,6 +1217,25 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 statusStrip1.Visible = loadedIcons > 0;
                 statusStrip1.Height = IconSize;
+
+                switch (m_PlayListUi.Settings.IconScale)
+                {
+                    case IconScale.Scale100X:
+                        MinimumSize = new Size(395, 115);
+                        break;
+                    case IconScale.Scale125X:
+                        MinimumSize = new Size(448, 115);
+                        break;
+                    case IconScale.Scale150X:
+                        MinimumSize = new Size(508, 115);
+                        break;
+                    case IconScale.Scale175X:
+                        MinimumSize = new Size(564, 115);
+                        break;
+                    case IconScale.Scale200X:
+                        MinimumSize = new Size(644, 115);
+                        break;
+                }
             });
 
             const string backgroundImage = "background";

@@ -138,8 +138,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonOpenPlaylist,
             this.buttonSavePlaylist,
             this.buttonSettings});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 206);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 207);
             this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 15, 0);
             this.statusStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
             this.statusStrip1.ShowItemToolTips = true;
             this.statusStrip1.Size = new System.Drawing.Size(684, 27);
@@ -298,7 +299,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(210, 22);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(658, 22);
             this.toolStripStatusLabel1.Spring = true;
             // 
             // buttonNewPlaylist
@@ -416,7 +417,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.ShowCellToolTips = false;
             this.dgv_PlayList.ShowEditingIcon = false;
             this.dgv_PlayList.ShowRowErrors = false;
-            this.dgv_PlayList.Size = new System.Drawing.Size(684, 206);
+            this.dgv_PlayList.Size = new System.Drawing.Size(684, 233);
             this.dgv_PlayList.TabIndex = 1;
             this.dgv_PlayList.TabStop = false;
             this.dgv_PlayList.TransparentColumnHeader = false;
@@ -809,14 +810,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // 
             // PlaylistForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
             this.ClientSize = new System.Drawing.Size(684, 233);
             this.Controls.Add(this.dgv_PlayList);
             this.Controls.Add(this.statusStrip1);
             this.KeyPreview = true;
-            this.MinimumSize = new System.Drawing.Size(369, 119);
+            this.MinimumSize = new System.Drawing.Size(395, 115);
             this.Name = "PlaylistForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Playlist";
