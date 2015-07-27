@@ -212,6 +212,7 @@
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.Version.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.PlayerExtension.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker\WebClientHelper.cs" />
+    <Compile Include="Extensions\PlayerExtensions\VideoFrame.cs" />
     <Compile Include="Extensions\PlayerExtensions\VideoSpecifier.cs" />
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfo.cs" />
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfoForm.cs">
