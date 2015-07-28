@@ -1,11 +1,11 @@
 #Colors
-formColor: 255, 255, 255
-fontColor: 0, 0, 0
-selectionColor: 93, 210, 255
-selectionFontColor: 255, 255, 255
-greyOutColor: 100, 100, 100
-playFontColor: 255, 255, 255
-playColor: 42, 127, 183
+formColor: 255, 255, 255, 255
+fontColor: 255, 0, 0, 0
+selectionColor: 255, 93, 210, 255
+selectionFontColor: 255, 255, 255, 255
+greyOutColor: 255, 100, 100, 100
+playFontColor: 255, 255, 255, 255
+playColor: 255, 42, 127, 183
 
 #Controls
 columnHeaderTransparency: false

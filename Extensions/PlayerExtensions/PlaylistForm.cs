@@ -82,13 +82,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public const string PLAYLIST_ICONS_DIR = @"Extensions\PlayerExtensions\Images\Playlist";
 
-        private Color m_FormColor;
-        private Color m_FontColor;
-        private Color m_SelectionColor;
-        private Color m_SelectionFontColor;
-        private Color m_GreyOutColor;
-        private Color m_PlayFontColor;
-        private Color m_PlayColor;
+        private Color m_FontColor = Color.Empty;
+        private Color m_FontDropShadowColor = Color.Empty;
+        private Color m_SelectionFontColor = Color.Empty;
+        private Color m_PlayFontColor = Color.Empty;
+        private Color m_ColumnHeaderFontColor = Color.Empty;
+        private Color m_FormColor = Color.Empty;
+        private Color m_SelectionColor = Color.Empty;
+        private Color m_GreyOutColor = Color.Empty;
+        private Color m_PlayColor = Color.Empty;
+        private Color m_ColumnHeaderColor = Color.Empty;
+        private Color m_ColumnHeaderBorderColor = Color.Empty;
+        private Color m_StatusBorderColor = Color.Empty;
+        private bool m_ColumnHeaderTransparency;
+        private bool m_DropShadow;
 
         private string m_LoadedPlaylist;
 
@@ -152,7 +159,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (Playlist != null) return;
 
-            this.m_PlayListUi = playListUi;
+            m_PlayListUi = playListUi;
             Icon = Gui.Icon;
             DoubleBuffered = true;
 
@@ -163,6 +170,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             OnRegexChange += PlaylistForm_OnRegexChange;
 
+            dgv_PlayList.RowPrePaint += dgv_PlayList_RowPrePaint;
             dgv_PlayList.CellFormatting += dgv_PlayList_CellFormatting;
             dgv_PlayList.CellPainting += dgv_PlayList_CellPainting;
             dgv_PlayList.CellDoubleClick += dgv_PlayList_CellDoubleClick;
@@ -394,17 +402,17 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     if (i.EndChapter != -1)
                     {
-                        dgv_PlayList.Rows.Add(new Bitmap(25, 25), fileCount, path, directory, file,
+                        dgv_PlayList.Rows.Add(string.Empty, fileCount, path, directory, file,
                             String.Join(",", i.SkipChapters),
                             i.EndChapter, i.Duration);
                     }
                     else
                     {
-                        dgv_PlayList.Rows.Add(new Bitmap(25, 25), fileCount, path, directory, file,
+                        dgv_PlayList.Rows.Add(string.Empty, fileCount, path, directory, file,
                             String.Join(",", i.SkipChapters), null, i.Duration);
                     }
                 }
-                else dgv_PlayList.Rows.Add(new Bitmap(25, 25), fileCount, path, directory, file, null, null, i.Duration);
+                else dgv_PlayList.Rows.Add(string.Empty, fileCount, path, directory, file, null, null, i.Duration);
 
                 fileCount++;
             }
@@ -1168,6 +1176,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void LoadCustomSettings()
         {
+            m_FontColor = Color.Empty;
+            m_FontDropShadowColor = Color.Empty;
+            m_SelectionFontColor = Color.Empty;
+            m_PlayFontColor = Color.Empty;
+            m_ColumnHeaderFontColor = Color.Empty;
+            m_FormColor = Color.Empty;
+            m_SelectionColor = Color.Empty;
+            m_GreyOutColor = Color.Empty;
+            m_PlayColor = Color.Empty;
+            m_ColumnHeaderColor = Color.Empty;
+            m_ColumnHeaderBorderColor = Color.Empty;
+            m_StatusBorderColor = Color.Empty;
+            m_ColumnHeaderTransparency = false;
+            m_DropShadow = false;
+
             if (!Directory.Exists(PLAYLIST_ICONS_DIR)) return;
 
             int loadedIcons = 0;
@@ -1205,7 +1228,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 var bitmapArray = BitmapHelper.ConvertBitmapToArray((Bitmap)Image.FromFile(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + i));
                 var resizedBitmapArray = resamplingService.Resample(bitmapArray, IconSize, IconSize);
                 c.Visible = true;
-                c.BackgroundImage = null;
                 c.Width = IconSize + 8;
                 c.Height = IconSize + 9;
                 c.Image = BitmapHelper.ConvertArrayToBitmap(resizedBitmapArray);
@@ -1239,100 +1261,157 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             });
 
             const string backgroundImage = "background";
+            LoadCustomBackground(backgroundImage);
 
+            const string styleFile = "theme.style";
+            LoadCustomTheme(styleFile);
+
+            GuiThread.DoAsync(() =>
+            {
+                if (m_ColumnHeaderTransparency) dgv_PlayList.SetColumnHeaderTransparent();
+                else dgv_PlayList.ResetColumnHeader();
+
+                statusStrip1.BorderColor = m_StatusBorderColor;
+                if (m_FormColor != Color.Empty) BackColor = m_FormColor;
+                if (m_ColumnHeaderFontColor != Color.Empty) dgv_PlayList.ColumnHeadersDefaultCellStyle.ForeColor = m_ColumnHeaderFontColor;
+                if (m_ColumnHeaderColor != Color.Empty) dgv_PlayList.ColumnHeadersDefaultCellStyle.BackColor = m_ColumnHeaderColor;
+                if (m_FontColor != Color.Empty) dgv_PlayList.DefaultCellStyle.ForeColor = m_FontColor;
+                if (m_SelectionColor != Color.Empty) dgv_PlayList.DefaultCellStyle.SelectionBackColor = m_SelectionColor;
+                if (m_SelectionFontColor != Color.Empty) dgv_PlayList.DefaultCellStyle.SelectionForeColor = m_SelectionFontColor;
+
+                SetPlayStyling();
+                dgv_PlayList.Invalidate();
+                dgv_PlayList.Refresh();
+            });
+        }
+
+        private void LoadCustomBackground(string backgroundImage)
+        {
             if (File.Exists(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + backgroundImage + ".png"))
             {
                 GuiThread.DoAsync(() =>
                 {
-                    dgv_PlayList.SetCellsTransparent();
                     dgv_PlayList.BackgroundImage =
                         Image.FromFile(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + backgroundImage + ".png");
+                    dgv_PlayList.SetCellsTransparent();
                 });
             }
             else if (File.Exists(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + backgroundImage + ".jpg"))
             {
                 GuiThread.DoAsync(() =>
                 {
-                    dgv_PlayList.SetCellsTransparent();
                     dgv_PlayList.BackgroundImage =
                         Image.FromFile(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + backgroundImage + ".jpg");
+                    dgv_PlayList.SetCellsTransparent();
                 });
             }
             else
             {
                 GuiThread.DoAsync(() =>
                 {
-                    dgv_PlayList.ResetCells();
                     dgv_PlayList.BackgroundImage = null;
+                    dgv_PlayList.ResetCells();
                 });
             }
+        }
 
-            const string styleFile = "theme.style";
-
-            if (File.Exists(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + styleFile))
+        private void LoadCustomTheme(string styleFile)
+        {
+            try
             {
-                using (var r = File.OpenText(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + styleFile))
+                if (File.Exists(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + styleFile))
                 {
-                    string line;
-                    while ((line = r.ReadLine()) != null)
+                    using (var r = File.OpenText(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + styleFile))
                     {
-                        string[] colors = new string[5];
+                        string line;
+                        while ((line = r.ReadLine()) != null)
+                        {
+                            string[] colors = new string[16];
 
-                        if (line.Contains(":")) colors = line.Split(':')[1].Split(',');
+                            if (line.Contains(":")) colors = line.Split(':')[1].Split(',');
 
-                        if (line.Contains("formColor"))
-                        {
-                            m_FormColor = Color.FromArgb(255, int.Parse(colors[0]), int.Parse(colors[1]),
-                                int.Parse(colors[2]));
-                        }
-                        if (line.Contains("fontColor"))
-                        {
-                            m_FontColor = Color.FromArgb(255, int.Parse(colors[0]), int.Parse(colors[1]),
-                                int.Parse(colors[2]));
-                        }
-                        if (line.Contains("selectionColor"))
-                        {
-                            m_SelectionColor = Color.FromArgb(255, int.Parse(colors[0]), int.Parse(colors[1]),
-                                int.Parse(colors[2]));
-                        }
-                        if (line.Contains("selectionFontColor"))
-                        {
-                            m_SelectionFontColor = Color.FromArgb(255, int.Parse(colors[0]), int.Parse(colors[1]),
-                                int.Parse(colors[2]));
-                        }
-                        if (line.Contains("greyOutColor"))
-                        {
-                            m_GreyOutColor = Color.FromArgb(255, int.Parse(colors[0]), int.Parse(colors[1]),
-                                int.Parse(colors[2]));
-                        }
-                        if (line.Contains("playFontColor"))
-                        {
-                            m_PlayFontColor = Color.FromArgb(255, int.Parse(colors[0]), int.Parse(colors[1]),
-                                int.Parse(colors[2]));
-                        }
-                        if (line.Contains("playColor"))
-                        {
-                            m_PlayColor = Color.FromArgb(255, int.Parse(colors[0]), int.Parse(colors[1]),
-                                int.Parse(colors[2]));
-                        }
-                        if (line.Contains("columnHeaderTransparency"))
-                        {
-                            string val = line.Split(':')[1];
-                            dgv_PlayList.TransparentColumnHeader = bool.Parse(val);
+                            if (line.Contains("fontColor"))
+                            {
+                                m_FontColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("fontDropShadowColor"))
+                            {
+                                m_FontDropShadowColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                                m_DropShadow = true;
+                            }
+                            if (line.Contains("selectionFontColor"))
+                            {
+                                m_SelectionFontColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("playFontColor"))
+                            {
+                                m_PlayFontColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("columnHeaderFontColor"))
+                            {
+                                m_ColumnHeaderFontColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("formColor"))
+                            {
+                                m_FormColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("selectionColor"))
+                            {
+                                m_SelectionColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("greyOutColor"))
+                            {
+                                m_GreyOutColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("playColor"))
+                            {
+                                m_PlayColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("columnHeaderColor"))
+                            {
+                                m_ColumnHeaderColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("columnHeaderBorderColor"))
+                            {
+                                m_ColumnHeaderBorderColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("statusBorderColor"))
+                            {
+                                m_StatusBorderColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("columnHeaderTransparency")) m_ColumnHeaderTransparency = bool.Parse(line.Split(':')[1]);
                         }
                     }
                 }
-
-                GuiThread.DoAsync(() =>
-                {
-                    BackColor = m_FormColor;
-                    dgv_PlayList.DefaultCellStyle.ForeColor = m_FontColor;
-                    dgv_PlayList.DefaultCellStyle.SelectionBackColor = m_SelectionColor;
-                    dgv_PlayList.DefaultCellStyle.SelectionForeColor = m_SelectionFontColor;
-                });
             }
-
-            GuiThread.DoAsync(() => { dgv_PlayList.Invalidate(); });
+            catch (IndexOutOfRangeException ex)
+            {
+                MessageBox.Show("Error parsing '" + Theme + @"\" + styleFile + "'\n\nError: " + ex.Message + "\nThis is likely because you have an error in your theme file.\n\nMake sure the colors are in (a,r,g,b) format.", "Error parsing '" + Theme + @"\" + styleFile + "'", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void SetControlStates()
@@ -1730,22 +1809,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #region Playlist Datagridview Events
 
-        private void dgv_PlayList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void dgv_PlayList_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
         {
-            var skipChapterCell = dgv_PlayList.Rows[e.RowIndex].Cells[m_SkipCellIndex];
-            var endChapterCell = dgv_PlayList.Rows[e.RowIndex].Cells[m_EndCellIndex];
-
-            if (skipChapterCell.IsInEditMode || endChapterCell.IsInEditMode) e.CellStyle.ForeColor = m_FontColor;
-        }
-
-        private void dgv_PlayList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        {
-            e.Paint(e.ClipBounds, DataGridViewPaintParts.All);
+            if ((e.State & DataGridViewElementStates.Selected) == DataGridViewElementStates.Selected &&
+                m_SelectionColor != Color.Empty)
+            {
+                var b = new SolidBrush(m_SelectionColor);
+                e.Graphics.FillRectangle(b, e.RowBounds);
+            }
 
             bool paintPlayRow = CurrentItem != null && e.RowIndex > -1 && e.RowIndex == m_CurrentPlayIndex;
             if (!paintPlayRow) return;
 
             var brush = new SolidBrush(m_PlayColor);
+
             Bitmap icon;
 
             switch (Player.State)
@@ -1760,28 +1837,61 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     icon = (Bitmap)StopButton.BackgroundImage;
                     break;
                 default:
-                    brush = new SolidBrush(Color.FromArgb(0, 0, 0, 0));
                     icon = new Bitmap(24, 24);
                     break;
             }
 
-            if (e.ColumnIndex == 0)
+            var offset = new Point(e.RowBounds.X, e.RowBounds.Y + 2);
+            var rect = new Rectangle(e.RowBounds.X + 12, e.RowBounds.Y + 4, e.RowBounds.Width, e.RowBounds.Height - 9);
+            e.PaintCellsBackground(e.RowBounds, true);
+            e.Graphics.FillRectangle(brush, rect);
+            e.Graphics.DrawImage(icon, new Rectangle(offset, new Size(24, 24)), 0, 0, 24, 24, GraphicsUnit.Pixel);
+            e.PaintCellsContent(e.RowBounds);
+            e.Handled = true;
+        }
+
+        private void dgv_PlayList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            var skipChapterCell = dgv_PlayList.Rows[e.RowIndex].Cells[m_SkipCellIndex];
+            var endChapterCell = dgv_PlayList.Rows[e.RowIndex].Cells[m_EndCellIndex];
+
+            if (skipChapterCell.IsInEditMode || endChapterCell.IsInEditMode) e.CellStyle.ForeColor = m_FontColor;
+        }
+
+        private void dgv_PlayList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex == -1)
             {
-                var rect = new Rectangle(e.CellBounds.X + 15, e.CellBounds.Y + 4, e.CellBounds.Width,
-                    e.CellBounds.Height - 9);
-                var offset = new Point(e.CellBounds.X, e.CellBounds.Y + 2);
-                e.Graphics.FillRectangle(brush, rect);
-                e.Graphics.DrawImage(icon, new Rectangle(offset, new Size(24, 24)), 0, 0, 24, 24, GraphicsUnit.Pixel);
-            }
-            else
-            {
-                var rect = new Rectangle(e.CellBounds.X, e.CellBounds.Y + 4, e.CellBounds.Width,
-                    e.CellBounds.Height - 9);
-                e.Graphics.FillRectangle(brush, rect);
+                if (m_ColumnHeaderTransparency)
+                {
+                    var brush = new SolidBrush(m_ColumnHeaderColor);
+                    e.Graphics.FillRectangle(brush, e.CellBounds);
+                }
+                else e.PaintBackground(e.CellBounds, true);
+                ControlPaint.DrawBorder(e.Graphics, e.CellBounds, m_ColumnHeaderBorderColor, 1,
+                    ButtonBorderStyle.Solid, m_ColumnHeaderBorderColor, 0, ButtonBorderStyle.None,
+                    m_ColumnHeaderBorderColor, 1, ButtonBorderStyle.Solid, m_ColumnHeaderBorderColor, 1,
+                    ButtonBorderStyle.Solid);
+                e.PaintContent(e.CellBounds);
+                e.Handled = true;
             }
 
-            e.Paint(e.ClipBounds, DataGridViewPaintParts.ContentForeground);
-            e.Handled = true;
+            if (e.RowIndex >= 0)
+            {
+                if (m_DropShadow && e.FormattedValue != null)
+                {
+                    string text = e.FormattedValue.ToString();
+                    var rect = new Rectangle(e.CellBounds.Location, e.CellBounds.Size);
+                    var flags = TextFormatFlags.VerticalCenter |
+                                TextFormatFlags.Left |
+                                TextFormatFlags.EndEllipsis;
+
+                    TextRenderer.DrawText(e.Graphics, text, e.CellStyle.Font,
+                        new Rectangle(new Point(rect.X + 1, rect.Y + 1), rect.Size), m_FontDropShadowColor, flags);
+
+                    e.Paint(e.CellBounds, DataGridViewPaintParts.ContentForeground);
+                }
+            }
         }
 
         private void dgv_PlayList_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
@@ -2383,12 +2493,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
     public class PlaylistDataGrid : DataGridView
     {
-        private Color backColor;
-        private Color alternateColor;
-        private Color columnHeaderColor;
-
-        public bool TransparentColumnHeader { get; set; }
-
         protected override CreateParams CreateParams
         {
             get
@@ -2407,10 +2511,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                      ControlStyles.DoubleBuffer |
                      ControlStyles.Opaque |
                      ControlStyles.OptimizedDoubleBuffer, true);
-
-            backColor = DefaultCellStyle.BackColor;
-            alternateColor = AlternatingRowsDefaultCellStyle.BackColor;
-            columnHeaderColor = ColumnHeadersDefaultCellStyle.BackColor;
         }
 
         protected override void OnScroll(ScrollEventArgs e)
@@ -2428,36 +2528,45 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void ResetCells()
         {
-            if (TransparentColumnHeader)
-            {
-                EnableHeadersVisualStyles = true;
-                ColumnHeadersDefaultCellStyle.BackColor = columnHeaderColor;
-                ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Raised;
-            }
-
-            AlternatingRowsDefaultCellStyle.BackColor = alternateColor;
-
-            foreach (DataGridViewColumn col in Columns)
-            {
-                col.DefaultCellStyle.BackColor = backColor;
-            }
+            AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(248, 248, 248);
+            DefaultCellStyle.BackColor = Color.White;
         }
 
         public void SetCellsTransparent()
         {
-            if (TransparentColumnHeader)
-            {
-                EnableHeadersVisualStyles = false;
-                ColumnHeadersDefaultCellStyle.BackColor = Color.Transparent;
-                ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
-            }
-
             AlternatingRowsDefaultCellStyle.BackColor = Color.Transparent;
+            DefaultCellStyle.BackColor = Color.Transparent;
+        }
 
-            foreach (DataGridViewColumn col in Columns)
-            {
-                col.DefaultCellStyle.BackColor = Color.Transparent;
-            }
+        public void ResetColumnHeader()
+        {
+            EnableHeadersVisualStyles = true;
+            ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Raised;
+            ColumnHeadersHeight = 21;
+        }
+
+        public void SetColumnHeaderTransparent()
+        {
+            EnableHeadersVisualStyles = false;
+            ColumnHeadersDefaultCellStyle.BackColor = Color.Transparent;
+            ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            ColumnHeadersHeight = 21;
+        }
+    }
+
+    #endregion
+
+    #region CustomStatusStrip
+
+    public class CustomStatusStrip : StatusStrip
+    {
+        public Color BorderColor;
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            var brush = new SolidBrush(BorderColor);
+            e.Graphics.FillRectangle(brush, new Rectangle(0, 0, Width, 1));
         }
     }
 
