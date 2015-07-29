@@ -16,6 +16,7 @@ greyOutColor
 playColor
 columnHeaderColor
 columnHeaderBorderColor
+statusHighlightColor
 statusBorderColor
 
 #This determines whether the header can be styled or not

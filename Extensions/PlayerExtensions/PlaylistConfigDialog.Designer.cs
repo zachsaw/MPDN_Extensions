@@ -197,7 +197,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_afterPlaybackAction.TabIndex = 15;
             this.cb_afterPlaybackAction.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.cb_afterPlaybackAction_DrawItem);
             this.cb_afterPlaybackAction.SelectionChangeCommitted += new System.EventHandler(this.cb_afterPlaybackAction_SelectionChangeCommitted);
-            this.cb_afterPlaybackAction.Enter += new System.EventHandler(this.cb_afterPlaybackAction_Enter);
             // 
             // cb_afterPlaybackOpt
             // 
@@ -216,7 +215,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_afterPlaybackOpt.TabIndex = 14;
             this.cb_afterPlaybackOpt.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.cb_afterPlaybackOpt_DrawItem);
             this.cb_afterPlaybackOpt.SelectionChangeCommitted += new System.EventHandler(this.cb_afterPlaybackOpt_SelectionChangeCommitted);
-            this.cb_afterPlaybackOpt.Enter += new System.EventHandler(this.cb_afterPlaybackOpt_Enter);
             // 
             // groupBox3
             // 

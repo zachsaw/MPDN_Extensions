@@ -224,6 +224,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_Form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
             m_Form.AfterPlaybackAction = Settings.AfterPlaybackAction;
             m_Form.ShowToolTips = Settings.ShowToolTips;
+
+            m_Form.SetControlStates();
         }
 
         public void SyncSettings()

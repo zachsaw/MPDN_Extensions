@@ -18,11 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Contexts;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -33,7 +35,6 @@ using System.Windows.Forms.Design;
 using MediaInfoDotNet;
 using Mpdn.Extensions.Framework;
 using Ookii.Dialogs;
-using ResampleTest;
 
 namespace Mpdn.Extensions.PlayerExtensions.Playlist
 {
@@ -124,7 +125,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         #endregion
 
         #region Properties
-
+        public static Color StatusHighlightColor { get; set; }
         public static int IconSize { get; set; }
         public List<PlaylistItem> Playlist { get; set; }
         public PlaylistItem CurrentItem { get; set; }
@@ -1187,6 +1188,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_PlayColor = Color.Empty;
             m_ColumnHeaderColor = Color.Empty;
             m_ColumnHeaderBorderColor = Color.Empty;
+            StatusHighlightColor = Color.Empty;
             m_StatusBorderColor = Color.Empty;
             m_ColumnHeaderTransparency = false;
             m_DropShadow = false;
@@ -1213,8 +1215,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 "buttonSettings.png"
             };
 
-            var resamplingService = new ResamplingService { Filter = ResamplingFilters.Mitchell };
-
             foreach (string i in icons)
             {
                 int dotIdx = i.IndexOf('.');
@@ -1225,12 +1225,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     continue;
                 }
                 if (c == null) continue;
-                var bitmapArray = BitmapHelper.ConvertBitmapToArray((Bitmap)Image.FromFile(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + i));
-                var resizedBitmapArray = resamplingService.Resample(bitmapArray, IconSize, IconSize);
                 c.Visible = true;
                 c.Width = IconSize + 8;
                 c.Height = IconSize + 9;
-                c.Image = BitmapHelper.ConvertArrayToBitmap(resizedBitmapArray);
+                c.Image = BitmapHelper.Resize(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + i, IconSize, IconSize);
                 c.ImageAlign = ContentAlignment.MiddleCenter;
                 loadedIcons++;
             }
@@ -1397,6 +1395,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                                     int.Parse(colors[2]),
                                     int.Parse(colors[3]));
                             }
+                            if (line.Contains("statusHighlightColor"))
+                            {
+                                StatusHighlightColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
                             if (line.Contains("statusBorderColor"))
                             {
                                 m_StatusBorderColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
@@ -1414,7 +1418,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
-        private void SetControlStates()
+        public void SetControlStates()
         {
             if (Playlist.Count > 1)
             {
@@ -1448,7 +1452,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 buttonNewPlaylist.Enabled = true;
                 buttonSavePlaylist.Enabled = true;
                 buttonDel.Enabled = true;
-                buttonRepeatPlaylist.Enabled = true;
                 newPlaylistToolStripMenuItem.Enabled = true;
                 savePlaylistToolStripMenuItem.Enabled = true;
                 savePlaylistAsToolStripMenuItem.Enabled = true;
@@ -1464,7 +1467,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 buttonNewPlaylist.Enabled = false;
                 buttonSavePlaylist.Enabled = false;
                 buttonDel.Enabled = false;
-                buttonRepeatPlaylist.Enabled = false;
                 newPlaylistToolStripMenuItem.Enabled = false;
                 savePlaylistToolStripMenuItem.Enabled = false;
                 savePlaylistAsToolStripMenuItem.Enabled = false;
@@ -1475,6 +1477,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 removeUnselectedItemsToolStripMenuItem.Enabled = false;
                 removeNonExistentItemsToolStripMenuItem.Enabled = false;
             }
+
+            buttonRepeatPlaylist.Tag = m_PlayListUi.Settings.AfterPlaybackOpt == AfterPlaybackSettingsOpt.RepeatPlaylist ? "Enabled" : "Disabled";
+            buttonRepeatPlaylist.Invalidate();
         }
 
         private void HandleContextMenu()
@@ -2263,7 +2268,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ButtonRepeatPlaylistClick(object sender, EventArgs e)
         {
-            m_PlayListUi.Settings.AfterPlaybackOpt = AfterPlaybackSettingsOpt.RepeatPlaylist;
+            m_PlayListUi.Settings.AfterPlaybackOpt = m_PlayListUi.Settings.AfterPlaybackOpt != AfterPlaybackSettingsOpt.RepeatPlaylist ? AfterPlaybackSettingsOpt.RepeatPlaylist : AfterPlaybackSettingsOpt.DoNothing;
+            SetControlStates();
         }
 
         private void ButtonRestoreClick(object sender, EventArgs e)
@@ -2577,34 +2583,73 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
     [ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.StatusStrip)]
     public class ButtonStripItem : ToolStripControlHostProxy
     {
+        private bool isHovering;
+
         public ButtonStripItem()
-            : base(CreateButtonInstance()) {}
+            : base(CreateButtonInstance())
+        {}
 
         private static Button CreateButtonInstance()
         {
             var b = new Button {BackColor = Color.Transparent, FlatStyle = FlatStyle.Flat};
             b.FlatAppearance.BorderSize = 0;
             b.FlatAppearance.BorderColor = Color.FromArgb(0, 255, 255, 255);
+            b.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            b.FlatAppearance.MouseOverBackColor = Color.Transparent;
             return b;
+        }
+
+        protected override void OnMouseEnter(EventArgs e)
+        {
+            base.OnMouseEnter(e);
+            isHovering = true;
+        }
+
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            base.OnMouseLeave(e);
+            isHovering = false;
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            if (Image != null)
-            {
-                if (!Enabled)
-                {
-                    var greyScaleMatrix = new ColorMatrix(new[]
-                    {
-                        new float[] {0.30f, 0.30f, 0.30f, 0, 0},
-                        new float[] {0.59f, 0.59f, 0.59f, 0, 0},
-                        new float[] {0.11f, 0.11f, 0.11f, 0, 0},
-                        new float[] {0, 0, 0, 1, 0},
-                        new float[] {0, 0, 0, 0, 1}
-                    });
+            if (Image == null) return;
 
+            if (!Enabled || (Tag != null && Tag.Equals("Disabled")))
+            {
+                var greyScaleMatrix = new ColorMatrix(new[]
+                {
+                    new float[] {0.30f, 0.30f, 0.30f, 0, 0},
+                    new float[] {0.59f, 0.59f, 0.59f, 0, 0},
+                    new float[] {0.11f, 0.11f, 0.11f, 0, 0},
+                    new float[] {0, 0, 0, 1, 0},
+                    new float[] {0, 0, 0, 0, 1}
+                });
+
+                var attr = new ImageAttributes();
+                attr.SetColorMatrix(greyScaleMatrix);
+                attr.SetWrapMode(WrapMode.TileFlipXY);
+
+                e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+                e.Graphics.CompositingQuality = CompositingQuality.HighQuality;
+                e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                e.Graphics.DrawImage(Image,
+                    new Rectangle(
+                        new Point(Width / 2 - PlaylistForm.IconSize / 2, Height / 2 - PlaylistForm.IconSize / 2),
+                        new Size(PlaylistForm.IconSize, PlaylistForm.IconSize)), 0, 0, Image.Width,
+                    Image.Height, GraphicsUnit.Pixel, attr);
+            }
+            else
+            {
+                if (!isHovering)
+                {
                     var attr = new ImageAttributes();
-                    attr.SetColorMatrix(greyScaleMatrix);
+                    attr.SetWrapMode(WrapMode.TileFlipXY);
+
+                    e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+                    e.Graphics.CompositingQuality = CompositingQuality.HighQuality;
+                    e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
                     e.Graphics.DrawImage(Image,
                         new Rectangle(
@@ -2614,14 +2659,24 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
                 else
                 {
+                    var attr = new ImageAttributes();
+                    attr.SetWrapMode(WrapMode.TileFlipXY);
+
+                    e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+                    e.Graphics.CompositingQuality = CompositingQuality.HighQuality;
+                    e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                    var brush = new SolidBrush(PlaylistForm.StatusHighlightColor);
+                    e.Graphics.FillRectangle(brush,
+                        new Rectangle(Point.Empty, new Size(Width, Height)));
+
                     e.Graphics.DrawImage(Image,
                         new Rectangle(
                             new Point(Width / 2 - PlaylistForm.IconSize / 2, Height / 2 - PlaylistForm.IconSize / 2),
-                            new Size(PlaylistForm.IconSize, PlaylistForm.IconSize)));
+                            new Size(PlaylistForm.IconSize, PlaylistForm.IconSize)), 0, 0, Image.Width,
+                        Image.Height, GraphicsUnit.Pixel, attr);
                 }
             }
-
-            base.OnPaint(e);
         }
     }
 

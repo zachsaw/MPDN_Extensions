@@ -29,14 +29,14 @@ namespace Mpdn.Extensions.PlayerExtensions
     {
         private static Form s_RegexForm;
         private int m_RegexCount;
-        private int m_CurrentAfterPlaybackOptIdx;
-        private int m_CurrentAfterPlaybackActionIdx;
 
         public PlaylistConfigDialog()
         {
             InitializeComponent();
-            InitControls();
+            GetThemes();
             UpdateControls();
+
+            Shown += PlaylistConfigDialog_Shown;
         }
 
         protected override void LoadSettings()
@@ -77,11 +77,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.Theme = cb_theme.Text;
         }
 
-        private void InitControls()
+        private void GetThemes()
         {
-            ValidateAfterPlaybackAction();
-            ValidateAfterPlaybackOpt();
-
             const string dir = PlaylistForm.PLAYLIST_ICONS_DIR;
             if (!Directory.Exists(dir)) return;
 
@@ -91,6 +88,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 cb_theme.Items.Add(new DirectoryInfo(d).Name);
             }
+        }
+
+        private void InitControls()
+        {
+            ValidateAfterPlaybackAction();
+            ValidateAfterPlaybackOpt();
         }
 
         private void UpdateControls()
@@ -350,7 +353,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (isOnRepeat || isOnPlayNextFileInFolder)
             {
                 int removeFileIdx = cb_afterPlaybackAction.FindString("Remove file");
-                if (cb_afterPlaybackAction.SelectedIndex == removeFileIdx) cb_afterPlaybackAction.SelectedIndex = m_CurrentAfterPlaybackActionIdx;
+                if (cb_afterPlaybackAction.SelectedIndex == removeFileIdx) cb_afterPlaybackAction.SelectedIndex = 0;
             }
         }
 
@@ -364,8 +367,13 @@ namespace Mpdn.Extensions.PlayerExtensions
                 int repeatPlaylistIdx = cb_afterPlaybackOpt.FindString("Repeat playlist");
                 int playNextFileInFolderIdx = cb_afterPlaybackOpt.FindString("Play next file in folder");
                 int idx = cb_afterPlaybackOpt.SelectedIndex;
-                if (idx == repeatPlaylistIdx || idx == playNextFileInFolderIdx) cb_afterPlaybackOpt.SelectedIndex = m_CurrentAfterPlaybackOptIdx;
+                if (idx == repeatPlaylistIdx || idx == playNextFileInFolderIdx) cb_afterPlaybackOpt.SelectedIndex = 0;
             }
+        }
+
+        private void PlaylistConfigDialog_Shown(object sender, EventArgs e)
+        {
+            InitControls();
         }
 
         private void btn_save_Click(object sender, EventArgs e)
@@ -463,16 +471,6 @@ namespace Mpdn.Extensions.PlayerExtensions
                 else e.Graphics.DrawString(comboBox.Items[e.Index].ToString(), comboBox.Font, SystemBrushes.ControlText, e.Bounds);
                 e.DrawFocusRectangle();
             }
-        }
-
-        private void cb_afterPlaybackOpt_Enter(object sender, EventArgs e)
-        {
-            m_CurrentAfterPlaybackOptIdx = cb_afterPlaybackOpt.SelectedIndex;
-        }
-
-        private void cb_afterPlaybackAction_Enter(object sender, EventArgs e)
-        {
-            m_CurrentAfterPlaybackActionIdx = cb_afterPlaybackAction.SelectedIndex;
         }
 
         private void cb_afterPlaybackOpt_SelectionChangeCommitted(object sender, EventArgs e)
