@@ -15,6 +15,7 @@
 // License along with this library.
 // 
 
+using System;
 using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
@@ -25,29 +26,50 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public partial class Jinc2DConfigDialog : Jinc2DConfigDialogBase
         {
+            private const ScalerTaps MIN_SCALER_TAPS = ScalerTaps.Four;
+            private const ScalerTaps MAX_SCALER_TAPS = ScalerTaps.Eight;
+
             public Jinc2DConfigDialog()
             {
                 InitializeComponent();
 
-                var descs = EnumHelpers.GetDescriptions<ScalerTaps>().Take(3);
-                foreach (var desc in descs)
-                {
-                    comboBoxTapCount.Items.Add(desc);
-                }
+                var vals = Enum.GetValues(typeof (ScalerTaps))
+                    .Cast<ScalerTaps>()
+                    .Where(val => (int) val >= (int) MIN_SCALER_TAPS && (int) val <= (int) MAX_SCALER_TAPS)
+                    .Select(val => new ComboBoxItem(val.ToDescription(), val));
+
+                comboBoxTapCount.Items.AddRange(vals.ToArray<object>());
             }
 
             protected override void LoadSettings()
             {
-                comboBoxTapCount.SelectedIndex = (int) Settings.TapCount;
+                comboBoxTapCount.SelectedIndex = (int) Settings.TapCount - (int) MIN_SCALER_TAPS;
                 checkBoxAntiRinging.Checked = Settings.AntiRingingEnabled;
                 AntiRingingStrengthSetter.Value = (decimal) Settings.AntiRingingStrength;
             }
 
             protected override void SaveSettings()
             {
-                Settings.TapCount = (ScalerTaps) comboBoxTapCount.SelectedIndex;
+                Settings.TapCount = ((ComboBoxItem) comboBoxTapCount.SelectedItem).Value;
                 Settings.AntiRingingEnabled = checkBoxAntiRinging.Checked;
                 Settings.AntiRingingStrength = (float) AntiRingingStrengthSetter.Value;
+            }
+
+            private class ComboBoxItem
+            {
+                private readonly string m_Text;
+                public readonly ScalerTaps Value;
+
+                public ComboBoxItem(string text, ScalerTaps value)
+                {
+                    m_Text = text;
+                    Value = value;
+                }
+
+                public override string ToString()
+                {
+                    return m_Text;
+                }
             }
         }
 

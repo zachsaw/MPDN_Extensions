@@ -34,6 +34,11 @@ namespace Mpdn.Extensions.CustomLinearScalers
             get { return true; }
         }
 
+        public ScalerTaps MinTapCount
+        {
+            get { return ScalerTaps.Four; }
+        }
+
         public virtual ScalerTaps MaxTapCount
         {
             get { return ScalerTaps.Sixteen; }

@@ -37,6 +37,11 @@ namespace Mpdn.Extensions.CustomLinearScalers
                 get { return false; }
             }
 
+            public ScalerTaps MinTapCount
+            {
+                get { return ScalerTaps.Four; }
+            }
+
             public ScalerTaps MaxTapCount
             {
                 get { return ScalerTaps.Eight; }
@@ -44,7 +49,7 @@ namespace Mpdn.Extensions.CustomLinearScalers
 
             public float GetWeight(float n, int width)
             {
-                return (float) GaussianKernel(n, width / 2);
+                return (float) GaussianKernel(n, width / 2.0);
             }
 
             private static double GaussianKernel(double x, double radius)
