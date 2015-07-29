@@ -225,6 +225,8 @@ namespace Mpdn.Extensions.Framework
         {
             switch (scalerTaps)
             {
+                case ScalerTaps.Two:
+                    return 2;
                 case ScalerTaps.Four:
                     return 4;
                 case ScalerTaps.Six:
@@ -318,7 +320,7 @@ namespace Mpdn.Extensions.Framework
     {
         public static int InterfaceVersion
         {
-            get { return 1; }
+            get { return 2; }
         }
 
         public static IList<Assembly> Assemblies

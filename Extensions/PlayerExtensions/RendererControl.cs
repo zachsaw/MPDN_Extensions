@@ -31,6 +31,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private readonly PlayerMenuItem m_MatrixMenu;
         private readonly PlayerMenuItem m_ToggleLevelsMenu = new PlayerMenuItem(initiallyDisabled: true);
         private readonly PlayerMenuItem m_ToggleMatrixMenu = new PlayerMenuItem(initiallyDisabled: true);
+        private readonly PlayerMenuItem m_ToggleImproveChromaMenu = new PlayerMenuItem(initiallyDisabled: true);
 
         private PlayerMenuItem m_TvRangeMenu;
         private PlayerMenuItem m_PcRangeMenu;
@@ -39,6 +40,12 @@ namespace Mpdn.Extensions.PlayerExtensions
         private PlayerMenuItem m_Bt2020Menu;
 
         private bool m_Enabled;
+
+        private YuvColorimetric m_OriginalOutputLevels;
+        private YuvColorimetric m_OutputLevels;
+
+        private bool m_OriginalImproveChroma;
+        private bool m_ImproveChroma;
 
         public RenderControl()
         {
@@ -87,7 +94,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                     new Verb(CATEGORY, SUBCATEGORY, "YUV levels", m_LevelsMenu), 
                     new Verb(CATEGORY, SUBCATEGORY, "YUV matrix", m_MatrixMenu), 
                     new Verb(CATEGORY, SUBCATEGORY, "Toggle YUV levels", "Ctrl+Shift+L", string.Empty, () => DoAction(ToggleLevels), m_ToggleLevelsMenu),
-                    new Verb(CATEGORY, SUBCATEGORY, "Toggle YUV matrix", "Ctrl+Shift+M", string.Empty, () => DoAction(ToggleYuv), m_ToggleMatrixMenu)
+                    new Verb(CATEGORY, SUBCATEGORY, "Toggle YUV matrix", "Ctrl+Shift+M", string.Empty, () => DoAction(ToggleYuv), m_ToggleMatrixMenu),
+                    new Verb(CATEGORY, SUBCATEGORY, "Toggle improve chroma", "Ctrl+Shift+C", string.Empty, () => DoAction(ToggleImproveChroma), m_ToggleImproveChromaMenu)
                 };
             }
         }
@@ -127,6 +135,41 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_ToggleLevelsMenu.Enabled = enabled;
             m_ToggleMatrixMenu.Enabled = enabled;
 
+            if (args.OldState == PlayerState.Closed)
+            {
+                // Save states so we can restore the temporary settings when media is closed
+
+                m_OriginalOutputLevels = RendererSettings.OutputLevels;
+                m_OutputLevels = m_OriginalOutputLevels;
+
+                m_OriginalImproveChroma = RendererSettings.ImproveChromaReconstruction;
+                m_ImproveChroma = m_OriginalImproveChroma;
+            }
+
+            if (args.NewState == PlayerState.Closed)
+            {
+                // Restore on media close
+
+                var refresh = false;
+
+                if (RendererSettings.OutputLevels != m_OriginalOutputLevels)
+                {
+                    RendererSettings.OutputLevels = m_OriginalOutputLevels;
+                    refresh = true;
+                }
+
+                if (RendererSettings.ImproveChromaReconstruction != m_OriginalImproveChroma)
+                {
+                    RendererSettings.ImproveChromaReconstruction = m_OriginalImproveChroma;
+                    refresh = true;
+                }
+
+                if (refresh)
+                {
+                    Player.Config.Refresh();
+                }
+            }
+
             if (args.NewState != PlayerState.Closed && args.OldState != PlayerState.Closed)
                 return;
 
@@ -135,6 +178,18 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void OnSettingsChanged(object sender, EventArgs e)
         {
+            if (m_OutputLevels != RendererSettings.OutputLevels)
+            {
+                m_OutputLevels = RendererSettings.OutputLevels;
+                m_OriginalOutputLevels = m_OutputLevels;
+            }
+
+            if (m_ImproveChroma != RendererSettings.ImproveChromaReconstruction)
+            {
+                m_ImproveChroma = RendererSettings.ImproveChromaReconstruction;
+                m_OriginalImproveChroma = m_ImproveChroma;
+            }
+
             UpdateControls();
         }
 
@@ -152,7 +207,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void SelectTvRange()
         {
-            var settings = RendererSettings.OutputLevels;
             switch (Renderer.Colorimetric)
             {
                 case YuvColorimetric.FullRangePc601: RendererSettings.OutputLevels = YuvColorimetric.ItuBt601; break;
@@ -160,12 +214,10 @@ namespace Mpdn.Extensions.PlayerExtensions
                 case YuvColorimetric.FullRangePc2020: RendererSettings.OutputLevels = YuvColorimetric.ItuBt2020; break;
             }
             Apply();
-            RendererSettings.OutputLevels = settings;
         }
 
         private void SelectPcRange()
         {
-            var settings = RendererSettings.OutputLevels;
             switch (Renderer.Colorimetric)
             {
                 case YuvColorimetric.ItuBt601: RendererSettings.OutputLevels = YuvColorimetric.FullRangePc601; break;
@@ -173,12 +225,10 @@ namespace Mpdn.Extensions.PlayerExtensions
                 case YuvColorimetric.ItuBt2020: RendererSettings.OutputLevels = YuvColorimetric.FullRangePc2020; break;
             }
             Apply();
-            RendererSettings.OutputLevels = settings;
         }
 
         private void SelectBt601()
         {
-            var settings = RendererSettings.OutputLevels;
             switch (Renderer.Colorimetric)
             {
                 case YuvColorimetric.FullRangePc709: 
@@ -191,12 +241,10 @@ namespace Mpdn.Extensions.PlayerExtensions
                     break;
             }
             Apply();
-            RendererSettings.OutputLevels = settings;
         }
 
         private void SelectBt709()
         {
-            var settings = RendererSettings.OutputLevels;
             switch (Renderer.Colorimetric)
             {
                 case YuvColorimetric.FullRangePc601:
@@ -209,12 +257,10 @@ namespace Mpdn.Extensions.PlayerExtensions
                     break;
             }
             Apply();
-            RendererSettings.OutputLevels = settings;
         }
 
         private void SelectBt2020()
         {
-            var settings = RendererSettings.OutputLevels;
             switch (Renderer.Colorimetric)
             {
                 case YuvColorimetric.FullRangePc601:
@@ -227,12 +273,10 @@ namespace Mpdn.Extensions.PlayerExtensions
                     break;
             }
             Apply();
-            RendererSettings.OutputLevels = settings;
         }
 
         private void ToggleLevels()
         {
-            var settings = RendererSettings.OutputLevels;
             switch (Renderer.Colorimetric)
             {
                 case YuvColorimetric.FullRangePc601: RendererSettings.OutputLevels = YuvColorimetric.ItuBt601; break;
@@ -243,12 +287,10 @@ namespace Mpdn.Extensions.PlayerExtensions
                 case YuvColorimetric.ItuBt2020: RendererSettings.OutputLevels = YuvColorimetric.FullRangePc2020; break;
             }
             Apply();
-            RendererSettings.OutputLevels = settings;
         }
 
         private void ToggleYuv()
         {
-            var settings = RendererSettings.OutputLevels;
             switch (Renderer.Colorimetric)
             {
                 case YuvColorimetric.FullRangePc601: RendererSettings.OutputLevels = YuvColorimetric.FullRangePc709; break;
@@ -259,11 +301,19 @@ namespace Mpdn.Extensions.PlayerExtensions
                 case YuvColorimetric.ItuBt2020: RendererSettings.OutputLevels = YuvColorimetric.ItuBt601; break;
             }
             Apply();
-            RendererSettings.OutputLevels = settings;
+        }
+
+        private void ToggleImproveChroma()
+        {
+            RendererSettings.ImproveChromaReconstruction = !RendererSettings.ImproveChromaReconstruction;
+            m_ImproveChroma = RendererSettings.ImproveChromaReconstruction;
+            Player.OsdText.Show("Improve chroma: " + (RendererSettings.ImproveChromaReconstruction ? "Enabled" : "Disabled"));
+            Player.Config.Refresh();
         }
 
         private void Apply()
         {
+            m_OutputLevels = RendererSettings.OutputLevels;
             Player.OsdText.Show("Colour space: " + RendererSettings.OutputLevels.ToDescription());
             Player.Config.Refresh();
         }
