@@ -352,7 +352,6 @@
       <DependentUpon>Shiandow.SuperRes.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.cs" />
-    <Compile Include="Extensions\PlayerExtensions\ResamplingService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\PlayerExtensions\Subtitles\OpenSubtitles.LanguageHandler.cs" />
     <None Include="Extensions\RenderScripts\ChromaScaler\Chroma.hlsl" />
