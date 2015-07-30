@@ -831,6 +831,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             dgv_PlayList.Invalidate();
 
+            if (string.IsNullOrEmpty(Media.FilePath)) return;
             if (!Duration.Visible) return;
             Task.Factory.StartNew(GetCurrentMediaDuration);
         }
