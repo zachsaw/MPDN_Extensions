@@ -70,7 +70,7 @@ namespace Mpdn.Extensions.RenderScripts
                 
                 IFilter resultY, result;
 
-                var pass1 = NNedi3Helpers.CreateFilter(NNEDI3p1, yuv, Neurons1, Neurons1 != Neurons2);
+                var pass1 = NNedi3Helpers.CreateFilter(NNEDI3p1, yuv, Neurons1, true);
                 resultY = new ShaderFilter(Interleave, yuv, pass1);
                 var pass2 = NNedi3Helpers.CreateFilter(NNEDI3p2, resultY, Neurons2, Neurons1 != Neurons2);
                 result = new ShaderFilter(Combine, resultY, pass2, chroma);
