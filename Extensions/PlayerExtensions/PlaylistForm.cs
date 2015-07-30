@@ -121,6 +121,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private ToolTip m_PlayCountToolTip;
 
+        private AfterPlaybackSettingsOpt prevAfterPlaybackOpt;
+
         #endregion
 
         #region Properties
@@ -2268,7 +2270,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ButtonRepeatPlaylistClick(object sender, EventArgs e)
         {
-            m_PlayListUi.Settings.AfterPlaybackOpt = m_PlayListUi.Settings.AfterPlaybackOpt != AfterPlaybackSettingsOpt.RepeatPlaylist ? AfterPlaybackSettingsOpt.RepeatPlaylist : AfterPlaybackSettingsOpt.DoNothing;
+            if (m_PlayListUi.Settings.AfterPlaybackOpt != AfterPlaybackSettingsOpt.RepeatPlaylist)
+                prevAfterPlaybackOpt = m_PlayListUi.Settings.AfterPlaybackOpt;
+
+            m_PlayListUi.Settings.AfterPlaybackOpt = m_PlayListUi.Settings.AfterPlaybackOpt != AfterPlaybackSettingsOpt.RepeatPlaylist ? AfterPlaybackSettingsOpt.RepeatPlaylist : prevAfterPlaybackOpt;
             SetControlStates();
         }
 
@@ -2548,7 +2553,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             EnableHeadersVisualStyles = true;
             ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Raised;
-            ColumnHeadersHeight = 21;
+            AutoResizeColumnHeadersHeight();
         }
 
         public void SetColumnHeaderTransparent()
@@ -2556,7 +2561,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             EnableHeadersVisualStyles = false;
             ColumnHeadersDefaultCellStyle.BackColor = Color.Transparent;
             ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            ColumnHeadersHeight = 21;
+            AutoResizeColumnHeadersHeight();
         }
     }
 

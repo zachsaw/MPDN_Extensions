@@ -827,10 +827,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     IconScale = IconScale.Scale100X;
                     break;
                 case 120:
-                    IconScale = IconScale.Scale150X;
+                    IconScale = IconScale.Scale125X;
                     break;
                 case 144:
+                    IconScale = IconScale.Scale150X;
+                    break;
                 case 192:
+                    IconScale = IconScale.Scale175X;
+                    break;
                 case 240:
                     IconScale = IconScale.Scale200X;
                     break;

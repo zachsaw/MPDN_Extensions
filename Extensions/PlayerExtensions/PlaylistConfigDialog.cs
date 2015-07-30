@@ -30,6 +30,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         private static Form s_RegexForm;
         private int m_RegexCount;
 
+        private int prevAfterPlaybackAction = -1;
+
         public PlaylistConfigDialog()
         {
             InitializeComponent();
@@ -350,11 +352,14 @@ namespace Mpdn.Extensions.PlayerExtensions
             bool isOnPlayNextFileInFolder = ((AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex ==
                                              AfterPlaybackSettingsOpt.PlayNextFileInFolder);
 
-            if (isOnRepeat || isOnPlayNextFileInFolder)
-            {
-                int removeFileIdx = cb_afterPlaybackAction.FindString("Remove file");
-                if (cb_afterPlaybackAction.SelectedIndex == removeFileIdx) cb_afterPlaybackAction.SelectedIndex = 0;
-            }
+            int removeFileIdx = cb_afterPlaybackAction.FindString("Remove file");
+
+            prevAfterPlaybackAction = cb_afterPlaybackAction.SelectedIndex;
+
+            if (cb_afterPlaybackAction.SelectedIndex == removeFileIdx && (isOnRepeat || isOnPlayNextFileInFolder))
+                cb_afterPlaybackAction.SelectedIndex = 0;
+            else
+                if (prevAfterPlaybackAction > -1) cb_afterPlaybackAction.SelectedIndex = prevAfterPlaybackAction;
         }
 
         private void ValidateAfterPlaybackOpt()
@@ -362,13 +367,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             bool isOnRemove = ((AfterPlaybackSettingsAction)cb_afterPlaybackAction.SelectedIndex ==
                                AfterPlaybackSettingsAction.RemoveFile);
 
-            if (isOnRemove)
-            {
-                int repeatPlaylistIdx = cb_afterPlaybackOpt.FindString("Repeat playlist");
-                int playNextFileInFolderIdx = cb_afterPlaybackOpt.FindString("Play next file in folder");
-                int idx = cb_afterPlaybackOpt.SelectedIndex;
-                if (idx == repeatPlaylistIdx || idx == playNextFileInFolderIdx) cb_afterPlaybackOpt.SelectedIndex = 0;
-            }
+
+            int repeatPlaylistIdx = cb_afterPlaybackOpt.FindString("Repeat playlist");
+            int playNextFileInFolderIdx = cb_afterPlaybackOpt.FindString("Play next file in folder");
+            int idx = cb_afterPlaybackOpt.SelectedIndex;
+            if ((idx == repeatPlaylistIdx || idx == playNextFileInFolderIdx) && isOnRemove)
+                cb_afterPlaybackOpt.SelectedIndex = 0;
         }
 
         private void PlaylistConfigDialog_Shown(object sender, EventArgs e)
