@@ -30,11 +30,13 @@ namespace Mpdn.Extensions.RenderScripts
 
             public NNedi3()
             {
-                Neurons = NNedi3Neurons.Neurons16;
+                Neurons1 = NNedi3Neurons.Neurons16;
+                Neurons2 = NNedi3Neurons.Neurons16;
                 CodePath = NNedi3Path.ScalarMad;
             }
 
-            public NNedi3Neurons Neurons { get; set; }
+            public NNedi3Neurons Neurons1 { get; set; }
+            public NNedi3Neurons Neurons2 { get; set; }
             public NNedi3Path CodePath { get; set; }
 
             #endregion
@@ -52,7 +54,8 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Func<TextureSize, TextureSize> Transformation = s => new TextureSize(2 * s.Height, s.Width);
 
-                var NNEDI3 = LoadShader11(string.Format("NNEDI3_{0}_{1}.cso", s_NeuronCount[(int) Neurons], s_CodePath[(int) CodePath]));
+                var NNEDI3p1 = LoadShader11(string.Format("NNEDI3_{0}_{1}.cso", s_NeuronCount[(int)Neurons1], s_CodePath[(int)CodePath]));
+                var NNEDI3p2 = LoadShader11(string.Format("NNEDI3_{0}_{1}.cso", s_NeuronCount[(int)Neurons2], s_CodePath[(int)CodePath]));
                 var Interleave = CompileShader("Interleave.hlsl").Configure(transform: Transformation);
                 var Combine = CompileShader("Combine.hlsl").Configure(transform: Transformation);
 
@@ -67,9 +70,9 @@ namespace Mpdn.Extensions.RenderScripts
                 
                 IFilter resultY, result;
 
-                var pass1 = NNedi3Helpers.CreateFilter(NNEDI3, yuv, Neurons);
+                var pass1 = NNedi3Helpers.CreateFilter(NNEDI3p1, yuv, Neurons1, Neurons1 != Neurons2);
                 resultY = new ShaderFilter(Interleave, yuv, pass1);
-                var pass2 = NNedi3Helpers.CreateFilter(NNEDI3, resultY, Neurons);
+                var pass2 = NNedi3Helpers.CreateFilter(NNEDI3p2, resultY, Neurons2, Neurons1 != Neurons2);
                 result = new ShaderFilter(Combine, resultY, pass2, chroma);
 
                 return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),

@@ -30,13 +30,15 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
-                comboBoxNeurons.SelectedIndex = (int) Settings.Neurons;
+                comboBoxNeurons1.SelectedIndex = (int) Settings.Neurons1;
+                comboBoxNeurons2.SelectedIndex = (int) Settings.Neurons2;
                 comboBoxPath.SelectedIndex = (int) Settings.CodePath;
             }
 
             protected override void SaveSettings()
             {
-                Settings.Neurons = (NNedi3Neurons) comboBoxNeurons.SelectedIndex;
+                Settings.Neurons1 = (NNedi3Neurons) comboBoxNeurons1.SelectedIndex;
+                Settings.Neurons2 = (NNedi3Neurons) comboBoxNeurons2.SelectedIndex;
                 Settings.CodePath = (NNedi3Path) comboBoxPath.SelectedIndex;
             }
         }
