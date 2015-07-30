@@ -138,12 +138,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonOpenPlaylist,
             this.buttonSavePlaylist,
             this.buttonSettings});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 258);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 206);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
+            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 15, 0);
             this.statusStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
             this.statusStrip1.ShowItemToolTips = true;
-            this.statusStrip1.Size = new System.Drawing.Size(855, 34);
+            this.statusStrip1.Size = new System.Drawing.Size(684, 27);
             this.statusStrip1.TabIndex = 0;
             this.statusStrip1.TabStop = true;
             this.statusStrip1.Text = "statusStrip1";
@@ -155,7 +155,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonAdd.BackColor = System.Drawing.Color.Transparent;
             this.buttonAdd.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonAdd.Name = "buttonAdd";
-            this.buttonAdd.Size = new System.Drawing.Size(30, 32);
+            this.buttonAdd.Size = new System.Drawing.Size(24, 25);
             this.buttonAdd.ToolTipText = "Add file(s)";
             this.buttonAdd.Visible = false;
             this.buttonAdd.Click += new System.EventHandler(this.ButtonAddFilesClick);
@@ -166,7 +166,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonDel.BackColor = System.Drawing.Color.Transparent;
             this.buttonDel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonDel.Name = "buttonDel";
-            this.buttonDel.Size = new System.Drawing.Size(30, 32);
+            this.buttonDel.Size = new System.Drawing.Size(24, 25);
             this.buttonDel.ToolTipText = "Remove file(s)";
             this.buttonDel.Visible = false;
             this.buttonDel.Click += new System.EventHandler(this.ButtonRemoveSelectedItemsClick);
@@ -177,7 +177,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonAddFolder.BackColor = System.Drawing.Color.Transparent;
             this.buttonAddFolder.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonAddFolder.Name = "buttonAddFolder";
-            this.buttonAddFolder.Size = new System.Drawing.Size(30, 32);
+            this.buttonAddFolder.Size = new System.Drawing.Size(24, 25);
             this.buttonAddFolder.ToolTipText = "Add folder";
             this.buttonAddFolder.Visible = false;
             this.buttonAddFolder.Click += new System.EventHandler(this.ButtonAddFolderClick);
@@ -185,7 +185,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // toolStripStatusLabel2
             // 
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(13, 29);
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(10, 22);
             this.toolStripStatusLabel2.Text = " ";
             // 
             // buttonLeft
@@ -194,7 +194,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonLeft.BackColor = System.Drawing.Color.Transparent;
             this.buttonLeft.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonLeft.Name = "buttonLeft";
-            this.buttonLeft.Size = new System.Drawing.Size(30, 32);
+            this.buttonLeft.Size = new System.Drawing.Size(24, 25);
             this.buttonLeft.ToolTipText = "Previous";
             this.buttonLeft.Visible = false;
             this.buttonLeft.Click += new System.EventHandler(this.ButtonLeftClick);
@@ -205,7 +205,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonRight.BackColor = System.Drawing.Color.Transparent;
             this.buttonRight.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonRight.Name = "buttonRight";
-            this.buttonRight.Size = new System.Drawing.Size(30, 32);
+            this.buttonRight.Size = new System.Drawing.Size(24, 25);
             this.buttonRight.ToolTipText = "Next";
             this.buttonRight.Visible = false;
             this.buttonRight.Click += new System.EventHandler(this.ButtonRightClick);
@@ -217,7 +217,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonSortAscending.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSortAscending.Margin = new System.Windows.Forms.Padding(10, 2, 0, 0);
             this.buttonSortAscending.Name = "buttonSortAscending";
-            this.buttonSortAscending.Size = new System.Drawing.Size(30, 32);
+            this.buttonSortAscending.Size = new System.Drawing.Size(24, 25);
             this.buttonSortAscending.ToolTipText = "Sort playlist (ascending)";
             this.buttonSortAscending.Visible = false;
             this.buttonSortAscending.Click += new System.EventHandler(this.ButtonSortAscendingClick);
@@ -228,7 +228,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonSortDescending.BackColor = System.Drawing.Color.Transparent;
             this.buttonSortDescending.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSortDescending.Name = "buttonSortDescending";
-            this.buttonSortDescending.Size = new System.Drawing.Size(30, 32);
+            this.buttonSortDescending.Size = new System.Drawing.Size(24, 25);
             this.buttonSortDescending.ToolTipText = "Sort playlist (descending)";
             this.buttonSortDescending.Visible = false;
             this.buttonSortDescending.Click += new System.EventHandler(this.ButtonSortDescendingClick);
@@ -239,7 +239,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonShuffle.BackColor = System.Drawing.Color.Transparent;
             this.buttonShuffle.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonShuffle.Name = "buttonShuffle";
-            this.buttonShuffle.Size = new System.Drawing.Size(30, 32);
+            this.buttonShuffle.Size = new System.Drawing.Size(24, 25);
             this.buttonShuffle.ToolTipText = "Shuffle playlist";
             this.buttonShuffle.Visible = false;
             this.buttonShuffle.Click += new System.EventHandler(this.ButtonShuffleClick);
@@ -250,7 +250,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonRepeatPlaylist.BackColor = System.Drawing.Color.Transparent;
             this.buttonRepeatPlaylist.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonRepeatPlaylist.Name = "buttonRepeatPlaylist";
-            this.buttonRepeatPlaylist.Size = new System.Drawing.Size(30, 32);
+            this.buttonRepeatPlaylist.Size = new System.Drawing.Size(24, 25);
             this.buttonRepeatPlaylist.ToolTipText = "Repeat playlist";
             this.buttonRepeatPlaylist.Visible = false;
             this.buttonRepeatPlaylist.Click += new System.EventHandler(this.ButtonRepeatPlaylistClick);
@@ -261,7 +261,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonRestore.BackColor = System.Drawing.Color.Transparent;
             this.buttonRestore.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonRestore.Name = "buttonRestore";
-            this.buttonRestore.Size = new System.Drawing.Size(30, 32);
+            this.buttonRestore.Size = new System.Drawing.Size(24, 25);
             this.buttonRestore.ToolTipText = "Restore playlist";
             this.buttonRestore.Visible = false;
             this.buttonRestore.Click += new System.EventHandler(this.ButtonRestoreClick);
@@ -273,7 +273,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.PlayButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("PlayButton.BackgroundImage")));
             this.PlayButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.PlayButton.Name = "PlayButton";
-            this.PlayButton.Size = new System.Drawing.Size(30, 32);
+            this.PlayButton.Size = new System.Drawing.Size(24, 25);
             this.PlayButton.Visible = false;
             // 
             // PauseButton
@@ -283,7 +283,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.PauseButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("PauseButton.BackgroundImage")));
             this.PauseButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.PauseButton.Name = "PauseButton";
-            this.PauseButton.Size = new System.Drawing.Size(30, 32);
+            this.PauseButton.Size = new System.Drawing.Size(24, 25);
             this.PauseButton.Visible = false;
             // 
             // StopButton
@@ -293,13 +293,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.StopButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("StopButton.BackgroundImage")));
             this.StopButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.StopButton.Name = "StopButton";
-            this.StopButton.Size = new System.Drawing.Size(30, 32);
+            this.StopButton.Size = new System.Drawing.Size(24, 25);
             this.StopButton.Visible = false;
             // 
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(822, 29);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(658, 22);
             this.toolStripStatusLabel1.Spring = true;
             // 
             // buttonNewPlaylist
@@ -308,7 +308,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonNewPlaylist.BackColor = System.Drawing.Color.Transparent;
             this.buttonNewPlaylist.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonNewPlaylist.Name = "buttonNewPlaylist";
-            this.buttonNewPlaylist.Size = new System.Drawing.Size(30, 32);
+            this.buttonNewPlaylist.Size = new System.Drawing.Size(24, 25);
             this.buttonNewPlaylist.ToolTipText = "New playlist";
             this.buttonNewPlaylist.Visible = false;
             this.buttonNewPlaylist.Click += new System.EventHandler(this.ButtonNewPlaylistClick);
@@ -319,7 +319,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonOpenPlaylist.BackColor = System.Drawing.Color.Transparent;
             this.buttonOpenPlaylist.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonOpenPlaylist.Name = "buttonOpenPlaylist";
-            this.buttonOpenPlaylist.Size = new System.Drawing.Size(30, 32);
+            this.buttonOpenPlaylist.Size = new System.Drawing.Size(24, 25);
             this.buttonOpenPlaylist.ToolTipText = "Open playlist";
             this.buttonOpenPlaylist.Visible = false;
             this.buttonOpenPlaylist.Click += new System.EventHandler(this.ButtonOpenPlaylistClick);
@@ -330,7 +330,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonSavePlaylist.BackColor = System.Drawing.Color.Transparent;
             this.buttonSavePlaylist.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSavePlaylist.Name = "buttonSavePlaylist";
-            this.buttonSavePlaylist.Size = new System.Drawing.Size(30, 32);
+            this.buttonSavePlaylist.Size = new System.Drawing.Size(24, 25);
             this.buttonSavePlaylist.ToolTipText = "Save playlist";
             this.buttonSavePlaylist.Visible = false;
             this.buttonSavePlaylist.Click += new System.EventHandler(this.ButtonSavePlaylistAsClick);
@@ -340,7 +340,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.buttonSettings.BackColor = System.Drawing.Color.Transparent;
             this.buttonSettings.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.buttonSettings.Name = "buttonSettings";
-            this.buttonSettings.Size = new System.Drawing.Size(30, 32);
+            this.buttonSettings.Size = new System.Drawing.Size(24, 25);
             this.buttonSettings.ToolTipText = "Configure playlist";
             this.buttonSettings.Visible = false;
             this.buttonSettings.Click += new System.EventHandler(this.ButtonSettingsClick);
@@ -406,7 +406,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
             this.dgv_PlayList.GridColor = System.Drawing.SystemColors.Window;
             this.dgv_PlayList.Location = new System.Drawing.Point(0, 0);
-            this.dgv_PlayList.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.dgv_PlayList.Name = "dgv_PlayList";
             this.dgv_PlayList.RowHeadersVisible = false;
             this.dgv_PlayList.RowHeadersWidth = 4;
@@ -418,7 +417,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.dgv_PlayList.ShowCellToolTips = false;
             this.dgv_PlayList.ShowEditingIcon = false;
             this.dgv_PlayList.ShowRowErrors = false;
-            this.dgv_PlayList.Size = new System.Drawing.Size(855, 291);
+            this.dgv_PlayList.Size = new System.Drawing.Size(684, 233);
             this.dgv_PlayList.TabIndex = 1;
             this.dgv_PlayList.TabStop = false;
             // 
@@ -528,12 +527,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.viewToolStripMenuItem,
             this.sortToolStripMenuItem});
             this.dgv_PlaylistContextMenu.Name = "contextMenuStrip1";
-            this.dgv_PlaylistContextMenu.Size = new System.Drawing.Size(139, 186);
+            this.dgv_PlaylistContextMenu.Size = new System.Drawing.Size(118, 158);
             // 
             // playToolStripMenuItem
             // 
             this.playToolStripMenuItem.Name = "playToolStripMenuItem";
-            this.playToolStripMenuItem.Size = new System.Drawing.Size(138, 26);
+            this.playToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.playToolStripMenuItem.Text = "Play";
             this.playToolStripMenuItem.Click += new System.EventHandler(this.ButtonPlayClick);
             // 
@@ -545,34 +544,34 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.addClipboardToolStripMenuItem,
             this.addPlaylistToolStripMenuItem});
             this.addToolStripMenuItem.Name = "addToolStripMenuItem";
-            this.addToolStripMenuItem.Size = new System.Drawing.Size(138, 26);
+            this.addToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.addToolStripMenuItem.Text = "Add";
             // 
             // openFilesToolStripMenuItem
             // 
             this.openFilesToolStripMenuItem.Name = "openFilesToolStripMenuItem";
-            this.openFilesToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            this.openFilesToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.openFilesToolStripMenuItem.Text = "File(s)";
             this.openFilesToolStripMenuItem.Click += new System.EventHandler(this.ButtonAddFilesClick);
             // 
             // addFolderToolStripMenuItem
             // 
             this.addFolderToolStripMenuItem.Name = "addFolderToolStripMenuItem";
-            this.addFolderToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            this.addFolderToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.addFolderToolStripMenuItem.Text = "Folder";
             this.addFolderToolStripMenuItem.Click += new System.EventHandler(this.ButtonAddFolderClick);
             // 
             // addClipboardToolStripMenuItem
             // 
             this.addClipboardToolStripMenuItem.Name = "addClipboardToolStripMenuItem";
-            this.addClipboardToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            this.addClipboardToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.addClipboardToolStripMenuItem.Text = "From clipboard";
             this.addClipboardToolStripMenuItem.Click += new System.EventHandler(this.ButtonAddFromClipboardClick);
             // 
             // addPlaylistToolStripMenuItem
             // 
             this.addPlaylistToolStripMenuItem.Name = "addPlaylistToolStripMenuItem";
-            this.addPlaylistToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            this.addPlaylistToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.addPlaylistToolStripMenuItem.Text = "Playlist";
             this.addPlaylistToolStripMenuItem.Click += new System.EventHandler(this.ButtonAddPlaylistClick);
             // 
@@ -584,34 +583,34 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.openClipboardToolStripMenuItem,
             this.openPlaylistToolStripMenuItem});
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(138, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.openToolStripMenuItem.Text = "Open";
             // 
             // openFileToolStripMenuItem
             // 
             this.openFileToolStripMenuItem.Name = "openFileToolStripMenuItem";
-            this.openFileToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            this.openFileToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.openFileToolStripMenuItem.Text = "File(s)";
             this.openFileToolStripMenuItem.Click += new System.EventHandler(this.ButtonOpenFilesClick);
             // 
             // openFolderToolStripMenuItem
             // 
             this.openFolderToolStripMenuItem.Name = "openFolderToolStripMenuItem";
-            this.openFolderToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            this.openFolderToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.openFolderToolStripMenuItem.Text = "Folder";
             this.openFolderToolStripMenuItem.Click += new System.EventHandler(this.ButtonOpenFolderClick);
             // 
             // openClipboardToolStripMenuItem
             // 
             this.openClipboardToolStripMenuItem.Name = "openClipboardToolStripMenuItem";
-            this.openClipboardToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            this.openClipboardToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.openClipboardToolStripMenuItem.Text = "From clipboard";
             this.openClipboardToolStripMenuItem.Click += new System.EventHandler(this.ButtonOpenFromClipboardClick);
             // 
             // openPlaylistToolStripMenuItem
             // 
             this.openPlaylistToolStripMenuItem.Name = "openPlaylistToolStripMenuItem";
-            this.openPlaylistToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            this.openPlaylistToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.openPlaylistToolStripMenuItem.Text = "Playlist";
             this.openPlaylistToolStripMenuItem.Click += new System.EventHandler(this.ButtonOpenPlaylistClick);
             // 
@@ -622,27 +621,27 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.removeUnselectedItemsToolStripMenuItem,
             this.removeNonExistentItemsToolStripMenuItem});
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(138, 26);
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.removeToolStripMenuItem.Text = "Remove";
             // 
             // removeSelectedItemsToolStripMenuItem
             // 
             this.removeSelectedItemsToolStripMenuItem.Name = "removeSelectedItemsToolStripMenuItem";
-            this.removeSelectedItemsToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
+            this.removeSelectedItemsToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
             this.removeSelectedItemsToolStripMenuItem.Text = "Selected items";
             this.removeSelectedItemsToolStripMenuItem.Click += new System.EventHandler(this.ButtonRemoveSelectedItemsClick);
             // 
             // removeUnselectedItemsToolStripMenuItem
             // 
             this.removeUnselectedItemsToolStripMenuItem.Name = "removeUnselectedItemsToolStripMenuItem";
-            this.removeUnselectedItemsToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
+            this.removeUnselectedItemsToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
             this.removeUnselectedItemsToolStripMenuItem.Text = "Unselected items";
             this.removeUnselectedItemsToolStripMenuItem.Click += new System.EventHandler(this.ButtonRemoveUnselectedItemsClick);
             // 
             // removeNonExistentItemsToolStripMenuItem
             // 
             this.removeNonExistentItemsToolStripMenuItem.Name = "removeNonExistentItemsToolStripMenuItem";
-            this.removeNonExistentItemsToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
+            this.removeNonExistentItemsToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
             this.removeNonExistentItemsToolStripMenuItem.Text = "Nonexistent items";
             this.removeNonExistentItemsToolStripMenuItem.Click += new System.EventHandler(this.ButtonRemoveNonExistentItemsClick);
             // 
@@ -653,27 +652,27 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.savePlaylistToolStripMenuItem,
             this.savePlaylistAsToolStripMenuItem});
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(138, 26);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.saveToolStripMenuItem.Text = "Playlist";
             // 
             // newPlaylistToolStripMenuItem
             // 
             this.newPlaylistToolStripMenuItem.Name = "newPlaylistToolStripMenuItem";
-            this.newPlaylistToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
+            this.newPlaylistToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.newPlaylistToolStripMenuItem.Text = "New playlist";
             this.newPlaylistToolStripMenuItem.Click += new System.EventHandler(this.ButtonNewPlaylistClick);
             // 
             // savePlaylistToolStripMenuItem
             // 
             this.savePlaylistToolStripMenuItem.Name = "savePlaylistToolStripMenuItem";
-            this.savePlaylistToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
+            this.savePlaylistToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.savePlaylistToolStripMenuItem.Text = "Save playlist";
             this.savePlaylistToolStripMenuItem.Click += new System.EventHandler(this.ButtonSavePlaylistClick);
             // 
             // savePlaylistAsToolStripMenuItem
             // 
             this.savePlaylistAsToolStripMenuItem.Name = "savePlaylistAsToolStripMenuItem";
-            this.savePlaylistAsToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
+            this.savePlaylistAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.savePlaylistAsToolStripMenuItem.Text = "Save playlist as";
             this.savePlaylistAsToolStripMenuItem.Click += new System.EventHandler(this.ButtonSavePlaylistAsClick);
             // 
@@ -683,20 +682,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.viewFileLocationToolStripMenuItem,
             this.viewMediaInfoToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(138, 26);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.viewToolStripMenuItem.Text = "View";
             // 
             // viewFileLocationToolStripMenuItem
             // 
             this.viewFileLocationToolStripMenuItem.Name = "viewFileLocationToolStripMenuItem";
-            this.viewFileLocationToolStripMenuItem.Size = new System.Drawing.Size(165, 26);
+            this.viewFileLocationToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.viewFileLocationToolStripMenuItem.Text = "File location";
             this.viewFileLocationToolStripMenuItem.Click += new System.EventHandler(this.ButtonViewFileLocation);
             // 
             // viewMediaInfoToolStripMenuItem
             // 
             this.viewMediaInfoToolStripMenuItem.Name = "viewMediaInfoToolStripMenuItem";
-            this.viewMediaInfoToolStripMenuItem.Size = new System.Drawing.Size(165, 26);
+            this.viewMediaInfoToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.viewMediaInfoToolStripMenuItem.Text = "Media info";
             this.viewMediaInfoToolStripMenuItem.Click += new System.EventHandler(this.ButtonViewMediaInfo);
             // 
@@ -708,34 +707,34 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.shuffleToolStripMenuItem,
             this.restoreToolStripMenuItem});
             this.sortToolStripMenuItem.Name = "sortToolStripMenuItem";
-            this.sortToolStripMenuItem.Size = new System.Drawing.Size(138, 26);
+            this.sortToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.sortToolStripMenuItem.Text = "Sort";
             // 
             // ascendingToolStripMenuItem
             // 
             this.ascendingToolStripMenuItem.Name = "ascendingToolStripMenuItem";
-            this.ascendingToolStripMenuItem.Size = new System.Drawing.Size(162, 26);
+            this.ascendingToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.ascendingToolStripMenuItem.Text = "Ascending";
             this.ascendingToolStripMenuItem.Click += new System.EventHandler(this.ButtonSortAscendingClick);
             // 
             // descendingToolStripMenuItem
             // 
             this.descendingToolStripMenuItem.Name = "descendingToolStripMenuItem";
-            this.descendingToolStripMenuItem.Size = new System.Drawing.Size(162, 26);
+            this.descendingToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.descendingToolStripMenuItem.Text = "Descending";
             this.descendingToolStripMenuItem.Click += new System.EventHandler(this.ButtonSortDescendingClick);
             // 
             // shuffleToolStripMenuItem
             // 
             this.shuffleToolStripMenuItem.Name = "shuffleToolStripMenuItem";
-            this.shuffleToolStripMenuItem.Size = new System.Drawing.Size(162, 26);
+            this.shuffleToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.shuffleToolStripMenuItem.Text = "Shuffle";
             this.shuffleToolStripMenuItem.Click += new System.EventHandler(this.ButtonShuffleClick);
             // 
             // restoreToolStripMenuItem
             // 
             this.restoreToolStripMenuItem.Name = "restoreToolStripMenuItem";
-            this.restoreToolStripMenuItem.Size = new System.Drawing.Size(162, 26);
+            this.restoreToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.restoreToolStripMenuItem.Text = "Restore";
             this.restoreToolStripMenuItem.Click += new System.EventHandler(this.ButtonRestoreClick);
             // 
@@ -750,7 +749,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.endChapterToolStripMenuItem,
             this.durationToolStripMenuItem});
             this.dgv_PlaylistColumnContextMenu.Name = "dgv_PlaylistColumnContextMenu";
-            this.dgv_PlaylistColumnContextMenu.Size = new System.Drawing.Size(175, 160);
+            this.dgv_PlaylistColumnContextMenu.Size = new System.Drawing.Size(147, 136);
             // 
             // numberToolStripMenuItem
             // 
@@ -758,7 +757,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.numberToolStripMenuItem.CheckOnClick = true;
             this.numberToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.numberToolStripMenuItem.Name = "numberToolStripMenuItem";
-            this.numberToolStripMenuItem.Size = new System.Drawing.Size(174, 26);
+            this.numberToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.numberToolStripMenuItem.Text = "#";
             this.numberToolStripMenuItem.Click += new System.EventHandler(this.UpdateColumns);
             // 
@@ -768,7 +767,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.fullPathToolStripMenuItem.CheckOnClick = true;
             this.fullPathToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.fullPathToolStripMenuItem.Name = "fullPathToolStripMenuItem";
-            this.fullPathToolStripMenuItem.Size = new System.Drawing.Size(174, 26);
+            this.fullPathToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.fullPathToolStripMenuItem.Text = "Full Path";
             this.fullPathToolStripMenuItem.Click += new System.EventHandler(this.UpdateColumns);
             // 
@@ -776,7 +775,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // 
             this.directoryToolStripMenuItem.CheckOnClick = true;
             this.directoryToolStripMenuItem.Name = "directoryToolStripMenuItem";
-            this.directoryToolStripMenuItem.Size = new System.Drawing.Size(174, 26);
+            this.directoryToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.directoryToolStripMenuItem.Text = "Directory";
             this.directoryToolStripMenuItem.Click += new System.EventHandler(this.UpdateColumns);
             // 
@@ -786,7 +785,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.skipChaptersToolStripMenuItem.CheckOnClick = true;
             this.skipChaptersToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.skipChaptersToolStripMenuItem.Name = "skipChaptersToolStripMenuItem";
-            this.skipChaptersToolStripMenuItem.Size = new System.Drawing.Size(174, 26);
+            this.skipChaptersToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.skipChaptersToolStripMenuItem.Text = "Skip Chapters";
             this.skipChaptersToolStripMenuItem.Click += new System.EventHandler(this.UpdateColumns);
             // 
@@ -796,7 +795,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.endChapterToolStripMenuItem.CheckOnClick = true;
             this.endChapterToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.endChapterToolStripMenuItem.Name = "endChapterToolStripMenuItem";
-            this.endChapterToolStripMenuItem.Size = new System.Drawing.Size(174, 26);
+            this.endChapterToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.endChapterToolStripMenuItem.Text = "End Chapter";
             this.endChapterToolStripMenuItem.Click += new System.EventHandler(this.UpdateColumns);
             // 
@@ -804,21 +803,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // 
             this.durationToolStripMenuItem.CheckOnClick = true;
             this.durationToolStripMenuItem.Name = "durationToolStripMenuItem";
-            this.durationToolStripMenuItem.Size = new System.Drawing.Size(174, 26);
+            this.durationToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.durationToolStripMenuItem.Text = "Duration";
             this.durationToolStripMenuItem.Click += new System.EventHandler(this.UpdateColumns);
             // 
             // PlaylistForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
-            this.ClientSize = new System.Drawing.Size(855, 291);
+            this.ClientSize = new System.Drawing.Size(684, 233);
             this.Controls.Add(this.dgv_PlayList);
             this.Controls.Add(this.statusStrip1);
             this.KeyPreview = true;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.MinimumSize = new System.Drawing.Size(489, 132);
+            this.MinimumSize = new System.Drawing.Size(394, 113);
             this.Name = "PlaylistForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Playlist";

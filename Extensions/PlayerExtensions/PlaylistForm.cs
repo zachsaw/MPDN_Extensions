@@ -1240,22 +1240,24 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 statusStrip1.Visible = loadedIcons > 0;
                 statusStrip1.Height = IconSize;
 
+                int minWidth = Convert.ToInt32(GetDpi() + (IconSize * 14) + 75);
+
                 switch (m_PlayListUi.Settings.IconScale)
                 {
                     case IconScale.Scale100X:
-                        MinimumSize = new Size(395, 115);
+                        MinimumSize = new Size(minWidth, 115);
                         break;
                     case IconScale.Scale125X:
-                        MinimumSize = new Size(448, 115);
+                        MinimumSize = new Size(minWidth, 115);
                         break;
                     case IconScale.Scale150X:
-                        MinimumSize = new Size(508, 115);
+                        MinimumSize = new Size(minWidth, 115);
                         break;
                     case IconScale.Scale175X:
-                        MinimumSize = new Size(564, 115);
+                        MinimumSize = new Size(minWidth, 115);
                         break;
                     case IconScale.Scale200X:
-                        MinimumSize = new Size(644, 115);
+                        MinimumSize = new Size(minWidth, 115);
                         break;
                 }
             });
@@ -1584,6 +1586,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         #endregion
 
         #region Helper Methods
+
+        private float GetDpi()
+        {
+            var g = Graphics.FromHwnd(IntPtr.Zero);
+            return g.DpiX;
+        }
 
         private void ResetActive()
         {
