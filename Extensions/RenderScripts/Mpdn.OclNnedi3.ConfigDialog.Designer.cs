@@ -48,15 +48,19 @@ namespace Mpdn.Extensions.RenderScripts
             {
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
-            this.comboBoxNeurons = new System.Windows.Forms.ComboBox();
+            this.comboBoxNeurons1 = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.comboBoxNeurons2 = new System.Windows.Forms.ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(125, 61);
+            this.buttonCancel.Location = new System.Drawing.Point(117, 154);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1005;
@@ -67,46 +71,92 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(44, 61);
+            this.buttonOk.Location = new System.Drawing.Point(36, 154);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 1004;
             this.buttonOk.Text = "OK";
             this.buttonOk.UseVisualStyleBackColor = true;
             // 
-            // comboBoxNeurons
+            // comboBoxNeurons1
             // 
-            this.comboBoxNeurons.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxNeurons.FormattingEnabled = true;
-            this.comboBoxNeurons.Items.AddRange(new object[] {
+            this.comboBoxNeurons1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxNeurons1.FormattingEnabled = true;
+            this.comboBoxNeurons1.Items.AddRange(new object[] {
             "16",
             "32",
             "64",
             "128",
             "256"});
-            this.comboBoxNeurons.Location = new System.Drawing.Point(101, 17);
-            this.comboBoxNeurons.Name = "comboBoxNeurons";
-            this.comboBoxNeurons.Size = new System.Drawing.Size(67, 21);
-            this.comboBoxNeurons.TabIndex = 0;
+            this.comboBoxNeurons1.Location = new System.Drawing.Point(92, 40);
+            this.comboBoxNeurons1.Name = "comboBoxNeurons1";
+            this.comboBoxNeurons1.Size = new System.Drawing.Size(67, 21);
+            this.comboBoxNeurons1.TabIndex = 0;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(24, 20);
+            this.label1.Location = new System.Drawing.Point(24, 18);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(50, 13);
             this.label1.TabIndex = 1007;
             this.label1.Text = "Neurons:";
             // 
-            // NNedi3ConfigDialog
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(44, 43);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(42, 13);
+            this.label2.TabIndex = 1008;
+            this.label2.Text = "Pass 1:";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(44, 70);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(42, 13);
+            this.label3.TabIndex = 1010;
+            this.label3.Text = "Pass 2:";
+            // 
+            // comboBoxNeurons2
+            // 
+            this.comboBoxNeurons2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxNeurons2.FormattingEnabled = true;
+            this.comboBoxNeurons2.Items.AddRange(new object[] {
+            "16",
+            "32",
+            "64",
+            "128",
+            "256"});
+            this.comboBoxNeurons2.Location = new System.Drawing.Point(92, 67);
+            this.comboBoxNeurons2.Name = "comboBoxNeurons2";
+            this.comboBoxNeurons2.Size = new System.Drawing.Size(67, 21);
+            this.comboBoxNeurons2.TabIndex = 1;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(38, 101);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(149, 26);
+            this.label4.TabIndex = 1011;
+            this.label4.Text = "* Selecting higher neurons for \r\n   first pass gives better quality";
+            // 
+            // OclNNedi3ConfigDialog
             // 
             this.AcceptButton = this.buttonOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(212, 96);
+            this.ClientSize = new System.Drawing.Size(204, 189);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.comboBoxNeurons2);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.comboBoxNeurons);
+            this.Controls.Add(this.comboBoxNeurons1);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -125,8 +175,12 @@ namespace Mpdn.Extensions.RenderScripts
 
             private System.Windows.Forms.Button buttonCancel;
             private System.Windows.Forms.Button buttonOk;
-            private System.Windows.Forms.ComboBox comboBoxNeurons;
+            private System.Windows.Forms.ComboBox comboBoxNeurons1;
             private System.Windows.Forms.Label label1;
+            private System.Windows.Forms.Label label2;
+            private System.Windows.Forms.Label label3;
+            private System.Windows.Forms.ComboBox comboBoxNeurons2;
+            private System.Windows.Forms.Label label4;
 
         }
     }
