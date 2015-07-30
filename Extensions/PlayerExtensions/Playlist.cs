@@ -61,6 +61,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private const string SUBCATEGORY = "Playlist";
         private const int ICON_BASE_SIZE = 16;
+        private string OS_VERSION = Environment.OSVersion.ToString();
 
         private readonly PlaylistForm m_Form = new PlaylistForm();
         private readonly PlayerMenuItem m_MenuItem = new PlayerMenuItem();
@@ -353,7 +354,17 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 if (Settings.ScaleWithPlayer)
                 {
-                    if (Settings.LockWindowSize) m_Form.Height = m_MpdnForm.Height - (borderWidth * 2);
+                    if (Settings.LockWindowSize)
+                    {
+                        if (OS_VERSION.Contains("6.3")) //check if OS is Windows 10
+                        {
+                            m_Form.Height = m_MpdnForm.Height + borderWidth;
+                        }
+                        else
+                        {
+                            m_Form.Height = m_MpdnForm.Height - borderWidth * 2;
+                        }
+                    }
                     else m_Form.Height = m_MpdnForm.Height;
                 }
             }
@@ -363,8 +374,16 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     if (Settings.LockWindowSize)
                     {
-                        m_Form.Width = m_MpdnForm.Width;
-                        m_Form.Height = m_MpdnForm.Height - (borderWidth * 2);
+                        if (OS_VERSION.Contains("6.3")) //check if OS is Windows 10
+                        {
+                            m_Form.Width = m_MpdnForm.Width;
+                            m_Form.Height = m_MpdnForm.Height - borderWidth;
+                        }
+                        else
+                        {
+                            m_Form.Width = m_MpdnForm.Width;
+                            m_Form.Height = m_MpdnForm.Height - borderWidth * 2;
+                        }
                     }
                     else m_Form.Size = m_MpdnForm.Size;
                 }
@@ -372,13 +391,29 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (Settings.LockWindowSize)
             {
-                m_Form.Left = m_MpdnForm.Right + borderWidth;
-                m_Form.Top = m_MpdnForm.Top + borderWidth;
+                if (OS_VERSION.Contains("6.3")) //check if OS is Windows 10
+                {
+                    m_Form.Left = m_MpdnForm.Right - (borderWidth * 2);
+                    m_Form.Top = m_MpdnForm.Top;
+                }
+                else
+                {
+                    m_Form.Left = m_MpdnForm.Right + borderWidth;
+                    m_Form.Top = m_MpdnForm.Top + borderWidth;
+                }
             }
             else
             {
-                m_Form.Left = m_MpdnForm.Right;
-                m_Form.Top = m_MpdnForm.Top;
+                if (OS_VERSION.Contains("6.3")) //check if OS is Windows 10
+                {
+                    m_Form.Left = m_MpdnForm.Right - (borderWidth * 2) - 5;
+                    m_Form.Top = m_MpdnForm.Top;
+                }
+                else
+                {
+                    m_Form.Left = m_MpdnForm.Right;
+                    m_Form.Top = m_MpdnForm.Top;
+                }
             }
         }
 
