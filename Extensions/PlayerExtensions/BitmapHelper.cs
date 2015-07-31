@@ -14,7 +14,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             using (var g = Graphics.FromImage(bm))
             {
                 g.SmoothingMode = SmoothingMode.HighQuality;
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.InterpolationMode = InterpolationMode.HighQualityBilinear;
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 g.DrawImage(img, new Rectangle(0, 0, width, height));
             }
