@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -49,7 +51,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             RegexList = e.RegexList;
             StripDirectoryInFileName = e.StripDirectoryInFileName;
-            playListUi.SyncSettings();
+            m_PlayListUi.SyncSettings();
 
             PopulatePlaylist();
         }
@@ -71,41 +73,61 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #region Fields
 
-        private Playlist playListUi;
+        private Playlist m_PlayListUi;
 
-        private const double MaxOpacity = 1.0;
-        private const double MinOpacity = 0.8;
-        private const string ActiveIndicator = "[*]";
-        private const string InactiveIndicator = "[ ]";
+        private const double MAX_OPACITY = 1.0;
+        private const double MIN_OPACITY = 0.8;
+        private const string ACTIVE_INDICATOR = "[*]";
+        private const string INACTIVE_INDICATOR = "[ ]";
 
-        private string loadedPlaylist;
+        public const string PLAYLIST_ICONS_DIR = @"Extensions\PlayerExtensions\Images\Playlist";
 
-        private bool firstShow = true;
-        private bool wasShowing;
+        private Color m_FontColor = Color.Empty;
+        private Color m_FontDropShadowColor = Color.Empty;
+        private Color m_SelectionFontColor = Color.Empty;
+        private Color m_PlayFontColor = Color.Empty;
+        private Color m_ColumnHeaderFontColor = Color.Empty;
+        private Color m_FormColor = Color.Empty;
+        private Color m_SelectionColor = Color.Empty;
+        private Color m_GreyOutColor = Color.Empty;
+        private Color m_PlayColor = Color.Empty;
+        private Color m_ColumnHeaderColor = Color.Empty;
+        private Color m_ColumnHeaderBorderColor = Color.Empty;
+        private Color m_StatusBorderColor = Color.Empty;
+        private bool m_ColumnHeaderTransparency;
+        private bool m_DropShadow;
 
-        private bool columnsFixed;
+        private string m_LoadedPlaylist;
 
-        private int currentPlayIndex = -1;
-        private int selectedRowIndex = -1;
-        private long previousChapterPosition;
+        private bool m_FirstShow = true;
+        private bool m_WasShowing;
 
-        private bool isDragging;
-        private Rectangle dragRowRect;
-        private int dragRowIndex;
+        private bool m_ColumnsFixed;
 
-        private int titleCellIndex = 4;
-        private int skipCellIndex = 5;
-        private int endCellIndex = 6;
+        private int m_CurrentPlayIndex = -1;
+        private int m_SelectedRowIndex = -1;
+        private long m_PreviousChapterPosition;
 
-        private int minWorker;
-        private int minIoc;
+        private bool m_IsDragging;
+        private Rectangle m_DragRowRect;
+        private int m_DragRowIndex;
 
-        private ToolTip playCountToolTip;
+        private int m_TitleCellIndex = 4;
+        private int m_SkipCellIndex = 5;
+        private int m_EndCellIndex = 6;
+
+        private int m_MinWorker;
+        private int m_MinIoc;
+
+        private ToolTip m_PlayCountToolTip;
+
+        private AfterPlaybackSettingsOpt prevAfterPlaybackOpt;
 
         #endregion
 
         #region Properties
-
+        public static Color StatusHighlightColor { get; set; }
+        public static int IconSize { get; set; }
         public List<PlaylistItem> Playlist { get; set; }
         public PlaylistItem CurrentItem { get; set; }
         public static int PlaylistCount { get; set; }
@@ -123,6 +145,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public AfterPlaybackSettingsAction AfterPlaybackAction { get; set; }
         public List<string> Columns { get; set; }
         public List<string> TempRememberedFiles { get; set; }
+        public string Theme { get; set; }
 
         #endregion
 
@@ -131,22 +154,25 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public PlaylistForm()
         {
             InitializeComponent();
-            Opacity = MinOpacity;
+            Opacity = MIN_OPACITY;
         }
 
         public void Setup(Playlist playListUi)
         {
             if (Playlist != null) return;
 
-            this.playListUi = playListUi;
+            m_PlayListUi = playListUi;
             Icon = Gui.Icon;
             DoubleBuffered = true;
+
+            Task.Factory.StartNew(LoadCustomSettings);
 
             Load += PlaylistForm_Load;
             Shown += PlaylistForm_Shown;
 
             OnRegexChange += PlaylistForm_OnRegexChange;
 
+            dgv_PlayList.RowPrePaint += dgv_PlayList_RowPrePaint;
             dgv_PlayList.CellFormatting += dgv_PlayList_CellFormatting;
             dgv_PlayList.CellPainting += dgv_PlayList_CellPainting;
             dgv_PlayList.CellDoubleClick += dgv_PlayList_CellDoubleClick;
@@ -175,8 +201,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Playlist = new List<PlaylistItem>();
             TempRememberedFiles = new List<string>();
 
-            ThreadPool.GetMaxThreads(out minWorker, out minIoc);
-            ThreadPool.SetMinThreads(minWorker, minIoc);
+            ThreadPool.GetMaxThreads(out m_MinWorker, out m_MinIoc);
+            ThreadPool.SetMinThreads(m_MinWorker, m_MinIoc);
 
             SetControlStates();
             DisableTabStop(this);
@@ -239,21 +265,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (RememberWindowPosition && RememberWindowSize)
             {
-                if (firstShow)
+                if (m_FirstShow)
                 {
                     Location = WindowPosition;
                     Size = WindowSize;
-                    firstShow = false;
+                    m_FirstShow = false;
                 }
             }
             else
             {
                 if (RememberWindowPosition)
                 {
-                    if (firstShow)
+                    if (m_FirstShow)
                     {
                         Location = WindowPosition;
-                        firstShow = false;
+                        m_FirstShow = false;
                     }
                 }
                 else
@@ -271,10 +297,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
                 if (RememberWindowSize)
                 {
-                    if (firstShow)
+                    if (m_FirstShow)
                     {
                         Size = WindowSize;
-                        firstShow = false;
+                        m_FirstShow = false;
                     }
                 }
                 else
@@ -302,7 +328,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
             }
 
-            if (SnapWithPlayer) playListUi.SnapPlayer();
+            if (SnapWithPlayer) m_PlayListUi.SnapPlayer();
         }
 
         public DataGridView GetDgvPlaylist()
@@ -366,37 +392,37 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                             MessageBox.Show(
                                 "Error evaluating expression at 'Regex " + count + "'!", "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            
+
                             hasShownException = true;
                         }
                     }
                 }
 
-                if (StripDirectoryInFileName && Playlist.Count > 1) if (file.Contains(directory)) file = file.Replace(directory, string.Empty).Trim();
+                if (StripDirectoryInFileName && m_PlayListUi.GetMediaFiles(path).Count() > 1) if (file.Contains(directory)) file = file.Replace(directory, string.Empty).Trim();
 
                 if (i.SkipChapters != null)
                 {
                     if (i.EndChapter != -1)
                     {
-                        dgv_PlayList.Rows.Add(new Bitmap(25, 25), fileCount, path, directory, file,
+                        dgv_PlayList.Rows.Add(string.Empty, fileCount, path, directory, file,
                             String.Join(",", i.SkipChapters),
                             i.EndChapter, i.Duration);
                     }
                     else
                     {
-                        dgv_PlayList.Rows.Add(new Bitmap(25, 25), fileCount, path, directory, file,
+                        dgv_PlayList.Rows.Add(string.Empty, fileCount, path, directory, file,
                             String.Join(",", i.SkipChapters), null, i.Duration);
                     }
                 }
-                else dgv_PlayList.Rows.Add(new Bitmap(25, 25), fileCount, path, directory, file, null, null, i.Duration);
+                else dgv_PlayList.Rows.Add(string.Empty, fileCount, path, directory, file, null, null, i.Duration);
 
                 fileCount++;
             }
 
             if (prevScrollIndex > -1) dgv_PlayList.FirstDisplayedScrollingRowIndex = prevScrollIndex;
-            currentPlayIndex = (Playlist.FindIndex(i => i.Active) > -1)
+            m_CurrentPlayIndex = (Playlist.FindIndex(i => i.Active) > -1)
                 ? Playlist.FindIndex(i => i.Active)
-                : currentPlayIndex != -1 && currentPlayIndex < Playlist.Count ? currentPlayIndex : -1;
+                : m_CurrentPlayIndex != -1 && m_CurrentPlayIndex < Playlist.Count ? m_CurrentPlayIndex : -1;
 
             SetPlayStyling();
 
@@ -422,7 +448,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             ClearPlaylist();
             PopulatePlaylist();
             CurrentItem = null;
-            currentPlayIndex = -1;
+            m_CurrentPlayIndex = -1;
             Text = "Playlist";
             dgv_PlayList.Invalidate();
 
@@ -432,7 +458,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public void ClearPlaylist()
         {
             Playlist.Clear();
-            currentPlayIndex = -1;
+            m_CurrentPlayIndex = -1;
             playToolStripMenuItem.Text = "Play";
         }
 
@@ -441,7 +467,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             openPlaylistDialog.FileName = savePlaylistDialog.FileName;
             if (openPlaylistDialog.ShowDialog(Player.ActiveForm) != DialogResult.OK) return;
 
-            loadedPlaylist = openPlaylistDialog.FileName;
+            m_LoadedPlaylist = openPlaylistDialog.FileName;
             OpenPlaylist(openPlaylistDialog.FileName, clear);
         }
 
@@ -475,8 +501,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void SavePlaylist()
         {
-            if (String.IsNullOrEmpty(loadedPlaylist)) return;
-            SavePlaylist(loadedPlaylist);
+            if (String.IsNullOrEmpty(m_LoadedPlaylist)) return;
+            SavePlaylist(m_LoadedPlaylist);
         }
 
         public void SavePlaylist(string filename)
@@ -496,7 +522,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                         .Select(
                             item =>
                                 string.Format("{0}{1} | SkipChapter: {2} | EndChapter: {3}",
-                                    item.Active ? ActiveIndicator : InactiveIndicator,
+                                    item.Active ? ACTIVE_INDICATOR : INACTIVE_INDICATOR,
                                     item.FilePath, item.HasChapter ? String.Join(",", item.SkipChapters) : "0",
                                     item.EndChapter > -1 ? item.EndChapter : 0));
             }
@@ -506,7 +532,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     Playlist
                         .Select(
                             item =>
-                                string.Format("{0}{1}", item.Active ? ActiveIndicator : InactiveIndicator,
+                                string.Format("{0}{1}", item.Active ? ACTIVE_INDICATOR : INACTIVE_INDICATOR,
                                     item.FilePath));
             }
 
@@ -538,8 +564,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 for (var i = 0; i < dgv_PlayList.Rows.Count; i++)
                 {
-                    var skipChapterCell = dgv_PlayList.Rows[i].Cells[skipCellIndex];
-                    var endChapterCell = dgv_PlayList.Rows[i].Cells[endCellIndex];
+                    var skipChapterCell = dgv_PlayList.Rows[i].Cells[m_SkipCellIndex];
+                    var endChapterCell = dgv_PlayList.Rows[i].Cells[m_EndCellIndex];
 
                     if (skipChapterCell.Value != null && skipChapterCell.Value.ToString() != string.Empty)
                     {
@@ -549,7 +575,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                         var sortedNumbers =
                             numbers.Distinct().Except(new[] {string.Empty}).Select(int.Parse).OrderBy(x => x).ToList();
 
-                        if (CurrentItem != null && i == currentPlayIndex)
+                        if (CurrentItem != null && i == m_CurrentPlayIndex)
                         {
                             if (sortedNumbers.Any(num => num >= Media.Chapters.Count))
                             {
@@ -573,7 +599,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     {
                         var value = new String(endChapterCell.Value.ToString().Where(Char.IsDigit).ToArray());
 
-                        if (CurrentItem != null && i == currentPlayIndex)
+                        if (CurrentItem != null && i == m_CurrentPlayIndex)
                         {
                             if (value.Length > 0 && int.Parse(value) > Media.Chapters.Count)
                             {
@@ -606,12 +632,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             string title;
             var isActive = false;
 
-            if (line.StartsWith(ActiveIndicator))
+            if (line.StartsWith(ACTIVE_INDICATOR))
             {
-                title = line.Substring(ActiveIndicator.Length).Trim();
+                title = line.Substring(ACTIVE_INDICATOR.Length).Trim();
                 isActive = true;
             }
-            else if (line.StartsWith(InactiveIndicator)) title = line.Substring(InactiveIndicator.Length).Trim();
+            else if (line.StartsWith(INACTIVE_INDICATOR)) title = line.Substring(INACTIVE_INDICATOR.Length).Trim();
             else throw new FileLoadException();
 
             var item = new PlaylistItem(title, isActive);
@@ -628,14 +654,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             bool isActive;
             var skipChapters = new List<int>();
 
-            if (splitLine[0].StartsWith(ActiveIndicator))
+            if (splitLine[0].StartsWith(ACTIVE_INDICATOR))
             {
-                title = splitLine[0].Substring(ActiveIndicator.Length).Trim();
+                title = splitLine[0].Substring(ACTIVE_INDICATOR.Length).Trim();
                 isActive = true;
             }
-            else if (line.StartsWith(InactiveIndicator))
+            else if (line.StartsWith(INACTIVE_INDICATOR))
             {
-                title = splitLine[0].Substring(InactiveIndicator.Length).Trim();
+                title = splitLine[0].Substring(INACTIVE_INDICATOR.Length).Trim();
                 isActive = false;
             }
             else throw new FileLoadException();
@@ -662,8 +688,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     var skipChapters = new List<int>();
                     int endChapter = -1;
 
-                    var skipChapterCell = dgv_PlayList.Rows[i].Cells[skipCellIndex];
-                    var endChapterCell = dgv_PlayList.Rows[i].Cells[endCellIndex];
+                    var skipChapterCell = dgv_PlayList.Rows[i].Cells[m_SkipCellIndex];
+                    var endChapterCell = dgv_PlayList.Rows[i].Cells[m_EndCellIndex];
 
                     if (skipChapterCell.Value != null && skipChapterCell.Value.ToString() != string.Empty)
                     {
@@ -689,27 +715,27 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void PlayActive()
         {
-            currentPlayIndex = -1;
+            m_CurrentPlayIndex = -1;
 
             foreach (var item in Playlist)
             {
-                currentPlayIndex++;
+                m_CurrentPlayIndex++;
                 if (!item.Active) continue;
                 OpenMedia();
                 return;
             }
 
-            currentPlayIndex = 0;
+            m_CurrentPlayIndex = 0;
             OpenMedia();
         }
 
         public void PlayNext(bool incIdx = true)
         {
-            if (incIdx) currentPlayIndex++;
+            if (incIdx) m_CurrentPlayIndex++;
 
-            if (currentPlayIndex > Playlist.Count - 1)
+            if (m_CurrentPlayIndex > Playlist.Count - 1)
             {
-                currentPlayIndex = Playlist.Count - 1;
+                m_CurrentPlayIndex = Playlist.Count - 1;
                 return;
             }
 
@@ -719,11 +745,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void PlayPrevious()
         {
-            currentPlayIndex--;
+            m_CurrentPlayIndex--;
 
-            if (currentPlayIndex < 0)
+            if (m_CurrentPlayIndex < 0)
             {
-                currentPlayIndex = 0;
+                m_CurrentPlayIndex = 0;
                 return;
             }
 
@@ -733,7 +759,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void SetPlaylistIndex(int index)
         {
-            currentPlayIndex = index;
+            m_CurrentPlayIndex = index;
             SetPlayStyling();
             OpenMedia();
         }
@@ -750,7 +776,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             string mediaPath = Media.FilePath;
             string mediaDir = Path.GetDirectoryName(mediaPath);
-            var mediaFiles = playListUi.GetMediaFiles(mediaDir);
+            var mediaFiles = m_PlayListUi.GetMediaFiles(mediaDir);
             string nextFile = next
                 ? mediaFiles.SkipWhile(file => file != mediaPath).Skip(1).FirstOrDefault()
                 : mediaFiles.TakeWhile(file => file != mediaPath).LastOrDefault();
@@ -765,15 +791,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OpenMedia(bool queue = false)
         {
-            if (currentPlayIndex < 0 || currentPlayIndex >= Playlist.Count) return;
+            if (m_CurrentPlayIndex < 0 || m_CurrentPlayIndex >= Playlist.Count) return;
 
             bool playerWasFullScreen = Player.FullScreenMode.Active;
             ResetActive();
 
             try
             {
-                var item = Playlist[currentPlayIndex];
-                dgv_PlayList.CurrentCell = dgv_PlayList.Rows[currentPlayIndex].Cells[titleCellIndex];
+                var item = Playlist[m_CurrentPlayIndex];
+                dgv_PlayList.CurrentCell = dgv_PlayList.Rows[m_CurrentPlayIndex].Cells[m_TitleCellIndex];
 
                 if (File.Exists(item.FilePath))
                 {
@@ -782,7 +808,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
                 else
                 {
-                    if (currentPlayIndex != Playlist.Count - 1) PlayNext();
+                    if (m_CurrentPlayIndex != Playlist.Count - 1) PlayNext();
                     else CloseMedia();
 
                     SetPlayStyling();
@@ -793,7 +819,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 item.Active = true;
                 CurrentItem = item;
-                previousChapterPosition = 0;
+                m_PreviousChapterPosition = 0;
 
                 if (!queue) Text = Player.State + " ─ " + CurrentItem.FilePath;
 
@@ -807,6 +833,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             dgv_PlayList.Invalidate();
 
+            if (string.IsNullOrEmpty(Media.FilePath)) return;
             if (!Duration.Visible) return;
             Task.Factory.StartNew(GetCurrentMediaDuration);
         }
@@ -814,7 +841,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public void CloseMedia()
         {
             CurrentItem = null;
-            currentPlayIndex = -1;
+            m_CurrentPlayIndex = -1;
             Text = "Playlist";
             Media.Close();
             dgv_PlayList.Invalidate();
@@ -835,7 +862,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             AddFilesToPlaylist(fileNames);
             if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused) return;
-            currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
+            m_CurrentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
             SetPlayStyling();
             OpenMedia(true);
         }
@@ -862,14 +889,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 Playlist.Add(item);
             }
 
-            if (dgv_PlayList.CurrentRow != null) selectedRowIndex = dgv_PlayList.CurrentRow.Index;
+            if (dgv_PlayList.CurrentRow != null) m_SelectedRowIndex = dgv_PlayList.CurrentRow.Index;
 
             PopulatePlaylist();
 
-            if (selectedRowIndex < 0) selectedRowIndex = 0;
-            else if (selectedRowIndex > Playlist.Count - 1) selectedRowIndex = Playlist.Count - 1;
+            if (m_SelectedRowIndex < 0) m_SelectedRowIndex = 0;
+            else if (m_SelectedRowIndex > Playlist.Count - 1) m_SelectedRowIndex = Playlist.Count - 1;
 
-            dgv_PlayList.CurrentCell = dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex];
+            dgv_PlayList.CurrentCell = dgv_PlayList.Rows[m_SelectedRowIndex].Cells[m_TitleCellIndex];
 
             if (!Duration.Visible) return;
             Task.Factory.StartNew(GetMediaDuration);
@@ -885,7 +912,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (fd.ShowDialog(this) != DialogResult.OK) return;
 
-                var media = playListUi.GetAllMediaFiles(fd.SelectedPath).ToArray();
+                var media = m_PlayListUi.GetAllMediaFiles(fd.SelectedPath).ToArray();
                 if (media.Length == 0)
                 {
                     MessageBox.Show("There are no files in the selected directory.", "Warning", MessageBoxButtons.OK,
@@ -909,7 +936,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public void OpenFiles(string[] fileNames)
         {
             AddFilesToPlaylist(fileNames);
-            currentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
+            m_CurrentPlayIndex = fileNames.Count() > 1 ? Playlist.Count - fileNames.Count() : Playlist.Count - 1;
             OpenMedia();
         }
 
@@ -925,7 +952,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 ClearPlaylist();
 
-                var media = playListUi.GetAllMediaFiles(fd.SelectedPath).ToArray();
+                var media = m_PlayListUi.GetAllMediaFiles(fd.SelectedPath).ToArray();
                 if (media.Length == 0)
                 {
                     MessageBox.Show("There are no files in the selected directory.", "Warning", MessageBoxButtons.OK,
@@ -962,25 +989,25 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             try
             {
                 if (Playlist.Count <= 0) return;
-                if (dgv_PlayList.CurrentRow != null) selectedRowIndex = dgv_PlayList.CurrentRow.Index;
+                if (dgv_PlayList.CurrentRow != null) m_SelectedRowIndex = dgv_PlayList.CurrentRow.Index;
 
                 rowIndexes.AddRange(from DataGridViewRow r in dgv_PlayList.SelectedRows select r.Index);
 
                 foreach (int index in rowIndexes.OrderByDescending(v => v))
                 {
-                    if (index == currentPlayIndex) CloseMedia();
+                    if (index == m_CurrentPlayIndex) CloseMedia();
 
                     Playlist.RemoveAt(index);
                 }
 
                 PopulatePlaylist();
 
-                selectedRowIndex = selectedRowIndex < 0
+                m_SelectedRowIndex = m_SelectedRowIndex < 0
                     ? 0
-                    : selectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : selectedRowIndex;
+                    : m_SelectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : m_SelectedRowIndex;
 
                 dgv_PlayList.CurrentCell = Playlist.Count > 0
-                    ? dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex]
+                    ? dgv_PlayList.Rows[m_SelectedRowIndex].Cells[m_TitleCellIndex]
                     : dgv_PlayList.CurrentCell = null;
             }
             catch (Exception ex)
@@ -996,26 +1023,26 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             try
             {
                 if (Playlist.Count <= 0) return;
-                if (dgv_PlayList.CurrentRow != null) selectedRowIndex = dgv_PlayList.CurrentRow.Index;
+                if (dgv_PlayList.CurrentRow != null) m_SelectedRowIndex = dgv_PlayList.CurrentRow.Index;
 
                 rowIndexes.AddRange(
                     dgv_PlayList.Rows.Cast<DataGridViewRow>().Where(r1 => !r1.Selected).Select(r2 => r2.Index));
 
                 foreach (int index in rowIndexes.OrderByDescending(v => v))
                 {
-                    if (index == currentPlayIndex) CloseMedia();
+                    if (index == m_CurrentPlayIndex) CloseMedia();
 
                     Playlist.RemoveAt(index);
                 }
 
                 PopulatePlaylist();
 
-                selectedRowIndex = selectedRowIndex < 0
+                m_SelectedRowIndex = m_SelectedRowIndex < 0
                     ? 0
-                    : selectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : selectedRowIndex;
+                    : m_SelectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : m_SelectedRowIndex;
 
                 dgv_PlayList.CurrentCell = Playlist.Count > 0
-                    ? dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex]
+                    ? dgv_PlayList.Rows[m_SelectedRowIndex].Cells[m_TitleCellIndex]
                     : dgv_PlayList.CurrentCell = null;
             }
             catch (Exception ex)
@@ -1029,18 +1056,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             try
             {
                 if (Playlist.Count <= 0) return;
-                if (dgv_PlayList.CurrentRow != null) selectedRowIndex = dgv_PlayList.CurrentRow.Index;
+                if (dgv_PlayList.CurrentRow != null) m_SelectedRowIndex = dgv_PlayList.CurrentRow.Index;
 
                 Playlist.RemoveAll(p => !File.Exists(p.FilePath));
 
                 PopulatePlaylist();
 
-                selectedRowIndex = selectedRowIndex < 0
+                m_SelectedRowIndex = m_SelectedRowIndex < 0
                     ? 0
-                    : selectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : selectedRowIndex;
+                    : m_SelectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : m_SelectedRowIndex;
 
                 dgv_PlayList.CurrentCell = Playlist.Count > 0
-                    ? dgv_PlayList.Rows[selectedRowIndex].Cells[titleCellIndex]
+                    ? dgv_PlayList.Rows[m_SelectedRowIndex].Cells[m_TitleCellIndex]
                     : dgv_PlayList.CurrentCell = null;
             }
             catch (Exception ex)
@@ -1150,7 +1177,252 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #region Controls Handling Methods
 
-        private void SetControlStates()
+        public void LoadCustomSettings()
+        {
+            m_FontColor = Color.Empty;
+            m_FontDropShadowColor = Color.Empty;
+            m_SelectionFontColor = Color.Empty;
+            m_PlayFontColor = Color.Empty;
+            m_ColumnHeaderFontColor = Color.Empty;
+            m_FormColor = Color.Empty;
+            m_SelectionColor = Color.Empty;
+            m_GreyOutColor = Color.Empty;
+            m_PlayColor = Color.Empty;
+            m_ColumnHeaderColor = Color.Empty;
+            m_ColumnHeaderBorderColor = Color.Empty;
+            StatusHighlightColor = Color.Empty;
+            m_StatusBorderColor = Color.Empty;
+            m_ColumnHeaderTransparency = false;
+            m_DropShadow = false;
+
+            if (!Directory.Exists(PLAYLIST_ICONS_DIR)) return;
+
+            int loadedIcons = 0;
+
+            string[] icons =
+            {
+                "buttonAdd.png",
+                "buttonDel.png",
+                "buttonAddFolder.png",
+                "buttonLeft.png",
+                "buttonRight.png",
+                "buttonSortAscending.png",
+                "buttonSortDescending.png",
+                "buttonShuffle.png",
+                "buttonRepeatPlaylist.png",
+                "buttonRestore.png",
+                "buttonNewPlaylist.png",
+                "buttonOpenPlaylist.png",
+                "buttonSavePlaylist.png",
+                "buttonSettings.png"
+            };
+
+            foreach (string i in icons)
+            {
+                int dotIdx = i.IndexOf('.');
+                var c = statusStrip1.Items.Find(i.Substring(0, dotIdx), true).FirstOrDefault();
+                if (!File.Exists(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + i))
+                {
+                    c.Visible = false;
+                    continue;
+                }
+                if (c == null) continue;
+                c.Visible = true;
+                c.Width = IconSize + 8;
+                c.Height = IconSize + 9;
+                c.Image = BitmapHelper.Resize(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + i, IconSize, IconSize);
+                c.ImageAlign = ContentAlignment.MiddleCenter;
+                loadedIcons++;
+            }
+
+            GuiThread.DoAsync(() =>
+            {
+                statusStrip1.Visible = loadedIcons > 0;
+                statusStrip1.Height = IconSize;
+
+                int minWidth = Convert.ToInt32(GetDpi() + (IconSize * 14) + 75);
+
+                switch (m_PlayListUi.Settings.IconScale)
+                {
+                    case IconScale.Scale100X:
+                        MinimumSize = new Size(minWidth, 115);
+                        break;
+                    case IconScale.Scale125X:
+                        MinimumSize = new Size(minWidth, 115);
+                        break;
+                    case IconScale.Scale150X:
+                        MinimumSize = new Size(minWidth, 115);
+                        break;
+                    case IconScale.Scale175X:
+                        MinimumSize = new Size(minWidth, 115);
+                        break;
+                    case IconScale.Scale200X:
+                        MinimumSize = new Size(minWidth, 115);
+                        break;
+                }
+            });
+
+            const string backgroundImage = "background";
+            LoadCustomBackground(backgroundImage);
+
+            const string styleFile = "theme.style";
+            LoadCustomTheme(styleFile);
+
+            GuiThread.DoAsync(() =>
+            {
+                if (m_ColumnHeaderTransparency) dgv_PlayList.SetColumnHeaderTransparent();
+                else dgv_PlayList.ResetColumnHeader();
+
+                statusStrip1.BorderColor = m_StatusBorderColor;
+                if (m_FormColor != Color.Empty) BackColor = m_FormColor;
+                if (m_ColumnHeaderFontColor != Color.Empty) dgv_PlayList.ColumnHeadersDefaultCellStyle.ForeColor = m_ColumnHeaderFontColor;
+                if (m_ColumnHeaderColor != Color.Empty) dgv_PlayList.ColumnHeadersDefaultCellStyle.BackColor = m_ColumnHeaderColor;
+                if (m_FontColor != Color.Empty) dgv_PlayList.DefaultCellStyle.ForeColor = m_FontColor;
+                if (m_SelectionColor != Color.Empty) dgv_PlayList.DefaultCellStyle.SelectionBackColor = m_SelectionColor;
+                if (m_SelectionFontColor != Color.Empty) dgv_PlayList.DefaultCellStyle.SelectionForeColor = m_SelectionFontColor;
+
+                SetPlayStyling();
+                dgv_PlayList.Invalidate();
+                dgv_PlayList.Refresh();
+            });
+        }
+
+        private void LoadCustomBackground(string backgroundImage)
+        {
+            if (File.Exists(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + backgroundImage + ".png"))
+            {
+                GuiThread.DoAsync(() =>
+                {
+                    dgv_PlayList.BackgroundImage =
+                        Image.FromFile(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + backgroundImage + ".png");
+                    dgv_PlayList.SetCellsTransparent();
+                });
+            }
+            else if (File.Exists(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + backgroundImage + ".jpg"))
+            {
+                GuiThread.DoAsync(() =>
+                {
+                    dgv_PlayList.BackgroundImage =
+                        Image.FromFile(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + backgroundImage + ".jpg");
+                    dgv_PlayList.SetCellsTransparent();
+                });
+            }
+            else
+            {
+                GuiThread.DoAsync(() =>
+                {
+                    dgv_PlayList.BackgroundImage = null;
+                    dgv_PlayList.ResetCells();
+                });
+            }
+        }
+
+        private void LoadCustomTheme(string styleFile)
+        {
+            try
+            {
+                if (File.Exists(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + styleFile))
+                {
+                    using (var r = File.OpenText(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + styleFile))
+                    {
+                        string line;
+                        while ((line = r.ReadLine()) != null)
+                        {
+                            string[] colors = new string[16];
+
+                            if (line.Contains(":")) colors = line.Split(':')[1].Split(',');
+
+                            if (line.Contains("fontColor"))
+                            {
+                                m_FontColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("fontDropShadowColor"))
+                            {
+                                m_FontDropShadowColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                                m_DropShadow = true;
+                            }
+                            if (line.Contains("selectionFontColor"))
+                            {
+                                m_SelectionFontColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("playFontColor"))
+                            {
+                                m_PlayFontColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("columnHeaderFontColor"))
+                            {
+                                m_ColumnHeaderFontColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("formColor"))
+                            {
+                                m_FormColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("selectionColor"))
+                            {
+                                m_SelectionColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("greyOutColor"))
+                            {
+                                m_GreyOutColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("playColor"))
+                            {
+                                m_PlayColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("columnHeaderColor"))
+                            {
+                                m_ColumnHeaderColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("columnHeaderBorderColor"))
+                            {
+                                m_ColumnHeaderBorderColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("statusHighlightColor"))
+                            {
+                                StatusHighlightColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("statusBorderColor"))
+                            {
+                                m_StatusBorderColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("columnHeaderTransparency")) m_ColumnHeaderTransparency = bool.Parse(line.Split(':')[1]);
+                        }
+                    }
+                }
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                MessageBox.Show("Error parsing '" + Theme + @"\" + styleFile + "'\n\nError: " + ex.Message + "\nThis is likely because you have an error in your theme file.\n\nMake sure the colors are in (a,r,g,b) format.", "Error parsing '" + Theme + @"\" + styleFile + "'", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        public void SetControlStates()
         {
             if (Playlist.Count > 1)
             {
@@ -1164,12 +1436,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 ascendingToolStripMenuItem.Enabled = true;
                 descendingToolStripMenuItem.Enabled = true;
                 shuffleToolStripMenuItem.Enabled = true;
-                buttonLeft.BackgroundImage = buttonLeftEnabled.BackgroundImage;
-                buttonRight.BackgroundImage = buttonRightEnabled.BackgroundImage;
-                buttonShuffle.BackgroundImage = buttonShuffleEnabled.BackgroundImage;
-                buttonRestore.BackgroundImage = buttonRestoreEnabled.BackgroundImage;
-                buttonSortAscending.BackgroundImage = buttonSortAscendingEnabled.BackgroundImage;
-                buttonSortDescending.BackgroundImage = buttonSortDescendingEnabled.BackgroundImage;
             }
             else
             {
@@ -1183,18 +1449,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 ascendingToolStripMenuItem.Enabled = false;
                 descendingToolStripMenuItem.Enabled = false;
                 shuffleToolStripMenuItem.Enabled = false;
-                buttonLeft.BackgroundImage = buttonLeftDisabled.BackgroundImage;
-                buttonRight.BackgroundImage = buttonRightDisabled.BackgroundImage;
-                buttonShuffle.BackgroundImage = buttonShuffleDisabled.BackgroundImage;
-                buttonRestore.BackgroundImage = buttonRestoreDisabled.BackgroundImage;
-                buttonSortAscending.BackgroundImage = buttonSortAscendingDisabled.BackgroundImage;
-                buttonSortDescending.BackgroundImage = buttonSortDescendingDisabled.BackgroundImage;
             }
 
             if (Playlist.Count > 0)
             {
-                buttonNew.Enabled = true;
-                buttonSave.Enabled = true;
+                buttonNewPlaylist.Enabled = true;
+                buttonSavePlaylist.Enabled = true;
                 buttonDel.Enabled = true;
                 newPlaylistToolStripMenuItem.Enabled = true;
                 savePlaylistToolStripMenuItem.Enabled = true;
@@ -1205,14 +1465,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 removeSelectedItemsToolStripMenuItem.Enabled = true;
                 removeUnselectedItemsToolStripMenuItem.Enabled = true;
                 removeNonExistentItemsToolStripMenuItem.Enabled = true;
-                buttonNew.BackgroundImage = buttonNewEnabled.BackgroundImage;
-                buttonSave.BackgroundImage = buttonSaveEnabled.BackgroundImage;
-                buttonDel.BackgroundImage = buttonDelEnabled.BackgroundImage;
             }
             else
             {
-                buttonNew.Enabled = false;
-                buttonSave.Enabled = false;
+                buttonNewPlaylist.Enabled = false;
+                buttonSavePlaylist.Enabled = false;
                 buttonDel.Enabled = false;
                 newPlaylistToolStripMenuItem.Enabled = false;
                 savePlaylistToolStripMenuItem.Enabled = false;
@@ -1223,16 +1480,16 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 removeSelectedItemsToolStripMenuItem.Enabled = false;
                 removeUnselectedItemsToolStripMenuItem.Enabled = false;
                 removeNonExistentItemsToolStripMenuItem.Enabled = false;
-                buttonNew.BackgroundImage = buttonNewDisabled.BackgroundImage;
-                buttonSave.BackgroundImage = buttonSaveDisabled.BackgroundImage;
-                buttonDel.BackgroundImage = buttonDelDisabled.BackgroundImage;
             }
+
+            buttonRepeatPlaylist.Tag = m_PlayListUi.Settings.AfterPlaybackOpt == AfterPlaybackSettingsOpt.RepeatPlaylist ? "Enabled" : "Disabled";
+            buttonRepeatPlaylist.Invalidate();
         }
 
         private void HandleContextMenu()
         {
             if (dgv_PlayList.Rows.Count < 1) return;
-            if (dgv_PlayList.CurrentCell == null || dgv_PlayList.CurrentCell.RowIndex != currentPlayIndex) playToolStripMenuItem.Text = "Play";
+            if (dgv_PlayList.CurrentCell == null || dgv_PlayList.CurrentCell.RowIndex != m_CurrentPlayIndex) playToolStripMenuItem.Text = "Play";
             else
             {
                 switch (Player.State)
@@ -1262,7 +1519,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void SetColumnSize()
         {
-            if (columnsFixed) return;
+            if (m_ColumnsFixed) return;
             if (Columns == null || Columns.Count == 0) return;
 
             for (var i = 0; i < dgv_PlayList.Columns.Count; i++)
@@ -1276,7 +1533,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 c.FillWeight = int.Parse(split[2]);
             }
 
-            columnsFixed = true;
+            m_ColumnsFixed = true;
         }
 
         private void FitColumnsToHeader()
@@ -1307,9 +1564,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             endChapterToolStripMenuItem.Checked = EndChapter.Visible;
             durationToolStripMenuItem.Checked = Duration.Visible;
 
-            if (Title.Visible) titleCellIndex = Title.Index;
-            if (SkipChapters.Visible) skipCellIndex = SkipChapters.Index;
-            if (EndChapter.Visible) endCellIndex = EndChapter.Index;
+            if (Title.Visible) m_TitleCellIndex = Title.Index;
+            if (SkipChapters.Visible) m_SkipCellIndex = SkipChapters.Index;
+            if (EndChapter.Visible) m_EndCellIndex = EndChapter.Index;
         }
 
         private void UpdateColumns(object sender, EventArgs e)
@@ -1321,14 +1578,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             EndChapter.Visible = endChapterToolStripMenuItem.Checked;
             Duration.Visible = durationToolStripMenuItem.Checked;
 
-            if (Title.Visible) titleCellIndex = Title.Index;
-            if (SkipChapters.Visible) skipCellIndex = SkipChapters.Index;
-            if (EndChapter.Visible) endCellIndex = EndChapter.Index;
+            if (Title.Visible) m_TitleCellIndex = Title.Index;
+            if (SkipChapters.Visible) m_SkipCellIndex = SkipChapters.Index;
+            if (EndChapter.Visible) m_EndCellIndex = EndChapter.Index;
         }
 
         #endregion
 
         #region Helper Methods
+
+        private float GetDpi()
+        {
+            var g = Graphics.FromHwnd(IntPtr.Zero);
+            return g.DpiX;
+        }
 
         private void ResetActive()
         {
@@ -1345,7 +1608,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (File.Exists(Playlist[r.Index].FilePath))
                 {
                     if (AfterPlaybackAction == AfterPlaybackSettingsAction.GreyOutFile &&
-                        Playlist[r.Index].PlayCount > 0 && r.Index != currentPlayIndex)
+                        Playlist[r.Index].PlayCount > 0 && r.Index != m_CurrentPlayIndex)
                     {
                         var item = Playlist[r.Index];
                         if (20 + (item.PlayCount * 70) >= 180) r.DefaultCellStyle.ForeColor = Color.FromArgb(180, 180, 180);
@@ -1360,7 +1623,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     {
                         var f = new Font(dgv_PlayList.DefaultCellStyle.Font, FontStyle.Regular);
                         r.DefaultCellStyle.Font = f;
-                        r.DefaultCellStyle.ForeColor = Color.Black;
+                        r.DefaultCellStyle.ForeColor = m_FontColor;
                         r.Selected = false;
                     }
                 }
@@ -1368,18 +1631,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     var f = new Font(dgv_PlayList.DefaultCellStyle.Font, FontStyle.Strikeout);
                     r.DefaultCellStyle.Font = f;
-                    r.DefaultCellStyle.ForeColor = Color.LightGray;
+                    r.DefaultCellStyle.ForeColor = m_GreyOutColor;
                 }
             }
 
-            if (currentPlayIndex == -1) return;
-            dgv_PlayList.Rows[currentPlayIndex].Selected = true;
+            if (m_CurrentPlayIndex == -1) return;
+            dgv_PlayList.Rows[m_CurrentPlayIndex].Selected = true;
             SetInitialDirectory();
 
             if (string.IsNullOrEmpty(Media.FilePath)) return;
             var fnt = new Font(dgv_PlayList.DefaultCellStyle.Font, FontStyle.Regular);
-            dgv_PlayList.Rows[currentPlayIndex].DefaultCellStyle.Font = fnt;
-            dgv_PlayList.Rows[currentPlayIndex].DefaultCellStyle.ForeColor = Color.White;
+            dgv_PlayList.Rows[m_CurrentPlayIndex].DefaultCellStyle.Font = fnt;
+            dgv_PlayList.Rows[m_CurrentPlayIndex].DefaultCellStyle.ForeColor = m_PlayFontColor;
         }
 
         private static void SelectChapter(int chapterNum)
@@ -1430,8 +1693,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             int nextRow = currentCell.RowIndex;
             var nextCell = SkipChapters.Visible
-                ? dgv_PlayList.Rows[nextRow].Cells[skipCellIndex]
-                : dgv_PlayList.Rows[nextRow].Cells[endCellIndex];
+                ? dgv_PlayList.Rows[nextRow].Cells[m_SkipCellIndex]
+                : dgv_PlayList.Rows[nextRow].Cells[m_EndCellIndex];
 
             if (nextCell == null || !nextCell.Visible) return;
             dgv_PlayList.CurrentCell = nextCell;
@@ -1484,7 +1747,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (String.IsNullOrEmpty(Media.FilePath)) return;
             if (!File.Exists(Media.FilePath))
             {
-                currentPlayIndex = -1;
+                m_CurrentPlayIndex = -1;
                 Text = "Playlist";
                 RefreshPlaylist();
                 return;
@@ -1495,8 +1758,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             HandleContextMenu();
 
-            if (currentPlayIndex == -1) return;
-            dgv_PlayList.InvalidateRow(currentPlayIndex);
+            if (m_CurrentPlayIndex == -1) return;
+            dgv_PlayList.InvalidateRow(m_CurrentPlayIndex);
         }
 
         private void PlaybackCompleted(object sender, EventArgs e)
@@ -1508,7 +1771,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (AfterPlaybackAction == AfterPlaybackSettingsAction.RemoveFile)
                 {
-                    RemoveFile(currentPlayIndex);
+                    RemoveFile(m_CurrentPlayIndex);
                     PlayNext(false);
                     return;
                 }
@@ -1522,7 +1785,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (Media.FilePath != string.Empty && Media.Chapters.Count != 0 && CurrentItem != null &&
                 CurrentItem.HasChapter)
             {
-                previousChapterPosition =
+                m_PreviousChapterPosition =
                     GetChapters()
                         .Aggregate(
                             (prev, next) => e.SampleTime >= prev.Position && e.SampleTime <= next.Position ? prev : next)
@@ -1535,9 +1798,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (Media.FilePath != string.Empty && Media.Chapters.Count != 0 && CurrentItem != null &&
                 CurrentItem.HasChapter)
             {
-                if (e.SampleTime >= previousChapterPosition)
+                if (e.SampleTime >= m_PreviousChapterPosition)
                 {
-                    int currentChapterIndex = GetChapterIndexByPosition(previousChapterPosition);
+                    int currentChapterIndex = GetChapterIndexByPosition(m_PreviousChapterPosition);
 
                     if (CurrentItem.SkipChapters.Contains(currentChapterIndex) &&
                         currentChapterIndex < Media.Chapters.Count) SelectChapter(currentChapterIndex);
@@ -1548,35 +1811,33 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void EnteringFullScreenMode(object sender, EventArgs e)
         {
-            wasShowing = Visible;
+            m_WasShowing = Visible;
             Hide();
         }
 
         private void ExitedFullScreenMode(object sender, EventArgs e)
         {
-            if (wasShowing) Show(Gui.VideoBox);
+            if (m_WasShowing) Show(Gui.VideoBox);
         }
 
         #endregion
 
         #region Playlist Datagridview Events
 
-        private void dgv_PlayList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void dgv_PlayList_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
         {
-            var skipChapterCell = dgv_PlayList.Rows[e.RowIndex].Cells[skipCellIndex];
-            var endChapterCell = dgv_PlayList.Rows[e.RowIndex].Cells[endCellIndex];
+            if ((e.State & DataGridViewElementStates.Selected) == DataGridViewElementStates.Selected &&
+                m_SelectionColor != Color.Empty)
+            {
+                var b = new SolidBrush(m_SelectionColor);
+                e.Graphics.FillRectangle(b, e.RowBounds);
+            }
 
-            if (skipChapterCell.IsInEditMode || endChapterCell.IsInEditMode) e.CellStyle.ForeColor = Color.Black;
-        }
-
-        private void dgv_PlayList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        {
-            e.Paint(e.ClipBounds, DataGridViewPaintParts.All);
-
-            bool paintPlayRow = CurrentItem != null && e.RowIndex > -1 && e.RowIndex == currentPlayIndex;
+            bool paintPlayRow = CurrentItem != null && e.RowIndex > -1 && e.RowIndex == m_CurrentPlayIndex;
             if (!paintPlayRow) return;
 
-            var brush = new SolidBrush(Color.FromArgb(42, 127, 183));
+            var brush = new SolidBrush(m_PlayColor);
+
             Bitmap icon;
 
             switch (Player.State)
@@ -1591,28 +1852,61 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     icon = (Bitmap)StopButton.BackgroundImage;
                     break;
                 default:
-                    brush = new SolidBrush(Color.FromArgb(0, 0, 0, 0));
                     icon = new Bitmap(24, 24);
                     break;
             }
 
-            if (e.ColumnIndex == 0)
+            var offset = new Point(e.RowBounds.X, e.RowBounds.Y + 2);
+            var rect = new Rectangle(e.RowBounds.X + 12, e.RowBounds.Y + 4, e.RowBounds.Width, e.RowBounds.Height - 9);
+            e.PaintCellsBackground(e.RowBounds, true);
+            e.Graphics.FillRectangle(brush, rect);
+            e.Graphics.DrawImage(icon, new Rectangle(offset, new Size(24, 24)), 0, 0, 24, 24, GraphicsUnit.Pixel);
+            e.PaintCellsContent(e.RowBounds);
+            e.Handled = true;
+        }
+
+        private void dgv_PlayList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            var skipChapterCell = dgv_PlayList.Rows[e.RowIndex].Cells[m_SkipCellIndex];
+            var endChapterCell = dgv_PlayList.Rows[e.RowIndex].Cells[m_EndCellIndex];
+
+            if (skipChapterCell.IsInEditMode || endChapterCell.IsInEditMode) e.CellStyle.ForeColor = m_FontColor;
+        }
+
+        private void dgv_PlayList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex == -1)
             {
-                var rect = new Rectangle(e.CellBounds.X + 15, e.CellBounds.Y + 4, e.CellBounds.Width,
-                    e.CellBounds.Height - 9);
-                var offset = new Point(e.CellBounds.X, e.CellBounds.Y + 2);
-                e.Graphics.FillRectangle(brush, rect);
-                e.Graphics.DrawImage(icon, new Rectangle(offset, new Size(24, 24)), 0, 0, 24, 24, GraphicsUnit.Pixel);
-            }
-            else
-            {
-                var rect = new Rectangle(e.CellBounds.X, e.CellBounds.Y + 4, e.CellBounds.Width,
-                    e.CellBounds.Height - 9);
-                e.Graphics.FillRectangle(brush, rect);
+                if (m_ColumnHeaderTransparency)
+                {
+                    var brush = new SolidBrush(m_ColumnHeaderColor);
+                    e.Graphics.FillRectangle(brush, e.CellBounds);
+                }
+                else e.PaintBackground(e.CellBounds, true);
+                ControlPaint.DrawBorder(e.Graphics, e.CellBounds, m_ColumnHeaderBorderColor, 1,
+                    ButtonBorderStyle.Solid, m_ColumnHeaderBorderColor, 0, ButtonBorderStyle.None,
+                    m_ColumnHeaderBorderColor, 1, ButtonBorderStyle.Solid, m_ColumnHeaderBorderColor, 1,
+                    ButtonBorderStyle.Solid);
+                e.PaintContent(e.CellBounds);
+                e.Handled = true;
             }
 
-            e.Paint(e.ClipBounds, DataGridViewPaintParts.ContentForeground);
-            e.Handled = true;
+            if (e.RowIndex >= 0)
+            {
+                if (m_DropShadow && e.FormattedValue != null)
+                {
+                    string text = e.FormattedValue.ToString();
+                    var rect = new Rectangle(e.CellBounds.Location, e.CellBounds.Size);
+                    var flags = TextFormatFlags.VerticalCenter |
+                                TextFormatFlags.Left |
+                                TextFormatFlags.EndEllipsis;
+
+                    TextRenderer.DrawText(e.Graphics, text, e.CellStyle.Font,
+                        new Rectangle(new Point(rect.X + 1, rect.Y + 1), rect.Size), m_FontDropShadowColor, flags);
+
+                    e.Paint(e.CellBounds, DataGridViewPaintParts.ContentForeground);
+                }
+            }
         }
 
         private void dgv_PlayList_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
@@ -1662,21 +1956,26 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void dgv_PlayList_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
             if (!ShowToolTips) return;
+            if (dgv_PlayList.Rows == null && dgv_PlayList.Rows.Count == 0) return;
             int row = e.RowIndex;
             if (row == -1) return;
             var item = Playlist[row];
             if (item == null) return;
 
-            playCountToolTip = new ToolTip
+            m_PlayCountToolTip = new ToolTip
             {
                 InitialDelay = 475
             };
 
             row++;
-            if (item.PlayCount < 4) playCountToolTip.SetToolTip(dgv_PlayList, "[" + row + "] Played " + item.PlayCount + (item.PlayCount == 1 ? " time!" : " times!"));
+            if (item.PlayCount < 4)
+            {
+                m_PlayCountToolTip.SetToolTip(dgv_PlayList,
+                    "[" + row + "] Played " + item.PlayCount + (item.PlayCount == 1 ? " time!" : " times!"));
+            }
             else
             {
-                playCountToolTip.SetToolTip(dgv_PlayList,
+                m_PlayCountToolTip.SetToolTip(dgv_PlayList,
                     "[" + row + "] Played " + item.PlayCount + " times!\nHow many times are you going to play this?");
             }
         }
@@ -1684,20 +1983,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void dgv_PlayList_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
         {
             if (!ShowToolTips) return;
-            if (playCountToolTip != null) playCountToolTip.Dispose();
+            if (m_PlayCountToolTip != null) m_PlayCountToolTip.Dispose();
         }
 
         private void dgv_PlayList_HandleInput(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != ',' && e.KeyChar != ' ' &&
-                dgv_PlayList.CurrentCell.ColumnIndex == skipCellIndex)
+                dgv_PlayList.CurrentCell.ColumnIndex == m_SkipCellIndex)
             {
                 ShowCurrentCellTooltip("Only numbers are allowed. You may separate them with a comma or a space.");
                 e.Handled = true;
             }
 
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
-                dgv_PlayList.CurrentCell.ColumnIndex == endCellIndex)
+                dgv_PlayList.CurrentCell.ColumnIndex == m_EndCellIndex)
             {
                 ShowCurrentCellTooltip("Only numbers are allowed.");
                 e.Handled = true;
@@ -1726,21 +2025,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (Playlist.Count < 2) return;
             if (e.Button != MouseButtons.Left) return;
-            if (dragRowRect != Rectangle.Empty && !dragRowRect.Contains(e.X, e.Y) && isDragging) dgv_PlayList.DoDragDrop(dgv_PlayList.Rows[dragRowIndex], DragDropEffects.Move);
+            if (m_DragRowRect != Rectangle.Empty && !m_DragRowRect.Contains(e.X, e.Y) && m_IsDragging) dgv_PlayList.DoDragDrop(dgv_PlayList.Rows[m_DragRowIndex], DragDropEffects.Move);
         }
 
         private void dgv_PlayList_MouseDown(object sender, MouseEventArgs e)
         {
             var hit = dgv_PlayList.HitTest(e.X, e.Y);
-            dragRowIndex = dgv_PlayList.HitTest(e.X, e.Y).RowIndex;
+            m_DragRowIndex = dgv_PlayList.HitTest(e.X, e.Y).RowIndex;
 
-            if (dragRowIndex != -1)
+            if (m_DragRowIndex != -1)
             {
-                isDragging = true;
+                m_IsDragging = true;
                 var dragSize = SystemInformation.DragSize;
-                dragRowRect = new Rectangle(new Point(e.X - (dragSize.Width / 2), e.Y - (dragSize.Height / 2)), dragSize);
+                m_DragRowRect = new Rectangle(new Point(e.X - (dragSize.Width / 2), e.Y - (dragSize.Height / 2)), dragSize);
             }
-            else dragRowRect = Rectangle.Empty;
+            else m_DragRowRect = Rectangle.Empty;
 
             if (e.Button == MouseButtons.Right)
             {
@@ -1759,9 +2058,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void dgv_PlayList_MouseUp(object sender, MouseEventArgs e)
         {
-            dragRowIndex = dgv_PlayList.HitTest(e.X, e.Y).RowIndex;
+            m_DragRowIndex = dgv_PlayList.HitTest(e.X, e.Y).RowIndex;
 
-            if (dragRowIndex != -1) isDragging = false;
+            if (m_DragRowIndex != -1) m_IsDragging = false;
         }
 
         private void dgv_PlayList_DragOver(object sender, DragEventArgs e)
@@ -1780,7 +2079,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                     if (Directory.Exists(filename))
                     {
-                        var media = playListUi.GetAllMediaFiles(filename);
+                        var media = m_PlayListUi.GetAllMediaFiles(filename);
                         AddFiles(media.ToArray());
                         return;
                     }
@@ -1799,7 +2098,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     bool isFolder = (attr & FileAttributes.Directory) == FileAttributes.Directory;
 
                     if (!isFolder) continue;
-                    if (Directory.Exists(p)) mediaFiles.AddRange(playListUi.GetAllMediaFiles(p));
+                    if (Directory.Exists(p)) mediaFiles.AddRange(m_PlayListUi.GetAllMediaFiles(p));
                 }
 
                 if (mediaFiles.Count > 0) AddFiles(mediaFiles.NaturalSort().ToArray());
@@ -1811,7 +2110,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                         .OrderBy(f => f, new NaturalSortComparer()).ToList();
                 AddFiles(actualFiles.NaturalSort().ToArray());
 
-                dgv_PlayList.CurrentCell = dgv_PlayList.Rows[dgv_PlayList.Rows.Count - 1].Cells[titleCellIndex];
+                dgv_PlayList.CurrentCell = dgv_PlayList.Rows[dgv_PlayList.Rows.Count - 1].Cells[m_TitleCellIndex];
                 SetPlayStyling();
             }
             else if (e.Data.GetDataPresent(typeof(DataGridViewRow)))
@@ -1820,12 +2119,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 int destinationRow = dgv_PlayList.HitTest(clientPoint.X, clientPoint.Y).RowIndex;
 
                 if (destinationRow == -1 || destinationRow >= Playlist.Count) return;
-                var playItem = Playlist.ElementAt(dragRowIndex);
-                Playlist.RemoveAt(dragRowIndex);
+                var playItem = Playlist.ElementAt(m_DragRowIndex);
+                Playlist.RemoveAt(m_DragRowIndex);
                 NotifyPlaylistChanged();
                 Playlist.Insert(destinationRow, playItem);
                 PopulatePlaylist();
-                dgv_PlayList.CurrentCell = dgv_PlayList.Rows[destinationRow].Cells[titleCellIndex];
+                dgv_PlayList.CurrentCell = dgv_PlayList.Rows[destinationRow].Cells[m_TitleCellIndex];
             }
         }
 
@@ -1835,7 +2134,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ButtonPlayClick(object sender, EventArgs e)
         {
-            if (dgv_PlayList.CurrentCell.RowIndex != currentPlayIndex) PlaySelectedFile();
+            if (dgv_PlayList.CurrentCell.RowIndex != m_CurrentPlayIndex) PlaySelectedFile();
             else
             {
                 switch (Player.State)
@@ -1977,6 +2276,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             ShufflePlayList();
         }
 
+        private void ButtonRepeatPlaylistClick(object sender, EventArgs e)
+        {
+            if (m_PlayListUi.Settings.AfterPlaybackOpt != AfterPlaybackSettingsOpt.RepeatPlaylist)
+                prevAfterPlaybackOpt = m_PlayListUi.Settings.AfterPlaybackOpt;
+
+            m_PlayListUi.Settings.AfterPlaybackOpt = m_PlayListUi.Settings.AfterPlaybackOpt != AfterPlaybackSettingsOpt.RepeatPlaylist ? AfterPlaybackSettingsOpt.RepeatPlaylist : prevAfterPlaybackOpt;
+            SetControlStates();
+        }
+
         private void ButtonRestoreClick(object sender, EventArgs e)
         {
             RestoreRememberedPlaylist();
@@ -1984,8 +2292,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ButtonSettingsClick(object sender, EventArgs e)
         {
-            playListUi.ShowConfigDialog(this);
-            playListUi.Reinitialize();
+            m_PlayListUi.ShowConfigDialog(this);
+            m_PlayListUi.Reinitialize();
         }
 
         #endregion
@@ -2011,9 +2319,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (e.KeyCode == Keys.P && e.Modifiers == (Keys.Control | Keys.Alt))
             {
-                playListUi.ViewPlaylist();
+                m_PlayListUi.ViewPlaylist();
                 e.SuppressKeyPress = true;
                 e.Handled = true;
+            }
+
+            if (e.KeyCode == Keys.O)
+            {
+                m_PlayListUi.ShowConfigDialog(this);
+                m_PlayListUi.Reinitialize();
             }
 
             if (e.KeyCode == Keys.Tab && e.Modifiers == Keys.Control)
@@ -2040,8 +2354,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 GuiThread.DoAsync(() =>
                 {
                     if (dgv_PlayList.Rows.Count < 1) return;
-                    dgv_PlayList.Rows[currentPlayIndex].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
-                    dgv_PlayList.InvalidateRow(currentPlayIndex);
+                    dgv_PlayList.Rows[m_CurrentPlayIndex].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
+                    dgv_PlayList.InvalidateRow(m_CurrentPlayIndex);
                 });
             }
             catch (Exception ex)
@@ -2066,7 +2380,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     GuiThread.DoAsync(() =>
                     {
                         if (dgv_PlayList.Rows.Count < 1) return;
-                        if (idx != currentPlayIndex || !string.IsNullOrEmpty(item.Duration))
+                        if (idx != m_CurrentPlayIndex || !string.IsNullOrEmpty(item.Duration))
                         {
                             dgv_PlayList.Rows[idx].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
                             dgv_PlayList.InvalidateRow(idx);
@@ -2091,9 +2405,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (inForm || ActiveForm == this)
             {
-                if (Opacity < MaxOpacity) Opacity += 0.1;
+                if (Opacity < MAX_OPACITY) Opacity += 0.1;
             }
-            else if (Opacity > MinOpacity) Opacity -= 0.1;
+            else if (Opacity > MIN_OPACITY) Opacity -= 0.1;
         }
 
         private void TimerTick(object sender, EventArgs e)
@@ -2149,7 +2463,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Duration = duration;
             PlayCount = 0;
         }
-        public PlaylistItem(string filePath, List<int> skipChapter, int endChapter, bool isActive, string duration, int playCount)
+
+        public PlaylistItem(string filePath, List<int> skipChapter, int endChapter, bool isActive, string duration,
+            int playCount)
         {
             if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException("filePath");
 
@@ -2192,20 +2508,188 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
     #endregion
 
+    #region PlaylistDataGrid
+
+    public class PlaylistDataGrid : DataGridView
+    {
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x02000000; // WS_CLIPCHILDREN
+                return cp;
+            }
+        }
+
+        public PlaylistDataGrid()
+        {
+            DoubleBuffered = true;
+            ResizeRedraw = true;
+            SetStyle(ControlStyles.AllPaintingInWmPaint |
+                     ControlStyles.DoubleBuffer |
+                     ControlStyles.Opaque |
+                     ControlStyles.OptimizedDoubleBuffer, true);
+        }
+
+        protected override void OnScroll(ScrollEventArgs e)
+        {
+            base.OnScroll(e);
+            Invalidate();
+        }
+
+        protected override void PaintBackground(Graphics graphics, Rectangle clipBounds, Rectangle gridBounds)
+        {
+            base.PaintBackground(graphics, clipBounds, gridBounds);
+            if (BackgroundImage == null) return;
+            graphics.DrawImage(BackgroundImage, gridBounds);
+        }
+
+        public void ResetCells()
+        {
+            AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(248, 248, 248);
+            DefaultCellStyle.BackColor = Color.White;
+        }
+
+        public void SetCellsTransparent()
+        {
+            AlternatingRowsDefaultCellStyle.BackColor = Color.Transparent;
+            DefaultCellStyle.BackColor = Color.Transparent;
+        }
+
+        public void ResetColumnHeader()
+        {
+            EnableHeadersVisualStyles = true;
+            ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Raised;
+            AutoResizeColumnHeadersHeight();
+        }
+
+        public void SetColumnHeaderTransparent()
+        {
+            EnableHeadersVisualStyles = false;
+            ColumnHeadersDefaultCellStyle.BackColor = Color.Transparent;
+            ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            AutoResizeColumnHeadersHeight();
+        }
+    }
+
+    #endregion
+
+    #region CustomStatusStrip
+
+    public class CustomStatusStrip : StatusStrip
+    {
+        public Color BorderColor;
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            var brush = new SolidBrush(BorderColor);
+            e.Graphics.FillRectangle(brush, new Rectangle(0, 0, Width, 1));
+        }
+    }
+
+    #endregion
+
     #region ToolstripItem Proxy
 
     [ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.StatusStrip)]
     public class ButtonStripItem : ToolStripControlHostProxy
     {
+        private bool isHovering;
+
         public ButtonStripItem()
-            : base(CreateButtonInstance()) {}
+            : base(CreateButtonInstance())
+        {}
 
         private static Button CreateButtonInstance()
         {
             var b = new Button {BackColor = Color.Transparent, FlatStyle = FlatStyle.Flat};
             b.FlatAppearance.BorderSize = 0;
             b.FlatAppearance.BorderColor = Color.FromArgb(0, 255, 255, 255);
+            b.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            b.FlatAppearance.MouseOverBackColor = Color.Transparent;
             return b;
+        }
+
+        protected override void OnMouseEnter(EventArgs e)
+        {
+            base.OnMouseEnter(e);
+            isHovering = true;
+        }
+
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            base.OnMouseLeave(e);
+            isHovering = false;
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            if (Image == null) return;
+
+            if (!Enabled || (Tag != null && Tag.Equals("Disabled")))
+            {
+                var greyScaleMatrix = new ColorMatrix(new[]
+                {
+                    new float[] {0.30f, 0.30f, 0.30f, 0, 0},
+                    new float[] {0.59f, 0.59f, 0.59f, 0, 0},
+                    new float[] {0.11f, 0.11f, 0.11f, 0, 0},
+                    new float[] {0, 0, 0, 1, 0},
+                    new float[] {0, 0, 0, 0, 1}
+                });
+
+                var attr = new ImageAttributes();
+                attr.SetColorMatrix(greyScaleMatrix);
+                attr.SetWrapMode(WrapMode.TileFlipXY);
+
+                e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+                e.Graphics.CompositingQuality = CompositingQuality.HighQuality;
+                e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                e.Graphics.DrawImage(Image,
+                    new Rectangle(
+                        new Point(Width / 2 - PlaylistForm.IconSize / 2, Height / 2 - PlaylistForm.IconSize / 2),
+                        new Size(PlaylistForm.IconSize, PlaylistForm.IconSize)), 0, 0, Image.Width,
+                    Image.Height, GraphicsUnit.Pixel, attr);
+            }
+            else
+            {
+                if (!isHovering)
+                {
+                    var attr = new ImageAttributes();
+                    attr.SetWrapMode(WrapMode.TileFlipXY);
+
+                    e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+                    e.Graphics.CompositingQuality = CompositingQuality.HighQuality;
+                    e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                    e.Graphics.DrawImage(Image,
+                        new Rectangle(
+                            new Point(Width / 2 - PlaylistForm.IconSize / 2, Height / 2 - PlaylistForm.IconSize / 2),
+                            new Size(PlaylistForm.IconSize, PlaylistForm.IconSize)), 0, 0, Image.Width,
+                        Image.Height, GraphicsUnit.Pixel, attr);
+                }
+                else
+                {
+                    var attr = new ImageAttributes();
+                    attr.SetWrapMode(WrapMode.TileFlipXY);
+
+                    e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+                    e.Graphics.CompositingQuality = CompositingQuality.HighQuality;
+                    e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                    var brush = new SolidBrush(PlaylistForm.StatusHighlightColor);
+                    e.Graphics.FillRectangle(brush,
+                        new Rectangle(Point.Empty, new Size(Width, Height)));
+
+                    e.Graphics.DrawImage(Image,
+                        new Rectangle(
+                            new Point(Width / 2 - PlaylistForm.IconSize / 2, Height / 2 - PlaylistForm.IconSize / 2),
+                            new Size(PlaylistForm.IconSize, PlaylistForm.IconSize)), 0, 0, Image.Width,
+                        Image.Height, GraphicsUnit.Pixel, attr);
+                }
+            }
         }
     }
 
