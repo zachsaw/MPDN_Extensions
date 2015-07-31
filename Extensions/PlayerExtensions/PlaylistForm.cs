@@ -398,7 +398,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     }
                 }
 
-                if (StripDirectoryInFileName && Playlist.Count > 1) if (file.Contains(directory)) file = file.Replace(directory, string.Empty).Trim();
+                if (StripDirectoryInFileName && m_PlayListUi.GetMediaFiles(path).Count() > 1) if (file.Contains(directory)) file = file.Replace(directory, string.Empty).Trim();
 
                 if (i.SkipChapters != null)
                 {

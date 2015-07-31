@@ -120,6 +120,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void InitRegexForm()
         {
+            var toolTip = new ToolTip();
+
             m_RegexCount = 0;
 
             s_RegexForm = new Form
@@ -179,6 +181,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                 AutoSize = true,
                 Location = new Point(3, flowPanel.Location.Y + flowPanel.Height + 5)
             };
+
+            toolTip.SetToolTip(cb_stripDirectory, "Strips the directory from the filename when there's more than one file in the directory");
 
             var link = new LinkLabel.Link
             {
