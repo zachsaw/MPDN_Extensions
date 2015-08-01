@@ -87,8 +87,56 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             PlaylistForm.IconSize = Convert.ToInt32((ICON_BASE_SIZE / 100f) * int.Parse(Regex.Match(Settings.IconScale.ToString(), @"\d+").Value));
             if (!string.IsNullOrEmpty(Settings.Theme)) m_Form.Theme = Settings.Theme;
 
-            m_Form.Setup(this);
+            Player.Loaded += OnPlayerLoaded;
+        }
 
+        public override void Destroy()
+        {
+            Player.StateChanged -= OnPlayerStateChanged;
+            Player.Playback.Completed -= OnPlaybackCompleted;
+            Player.Closed -= OnMpdnFormClosed;
+            Player.DragEnter -= OnDragEnter;
+            Player.DragDrop -= OnDragDrop;
+            Player.CommandLineFileOpen -= OnCommandLineFileOpen;
+            m_MpdnForm.Move -= OnMpdnFormMove;
+            m_MpdnForm.KeyDown -= OnMpdnFormKeyDown;
+            m_MpdnForm.MainMenuStrip.MenuActivate -= OnMpdnFormMainMenuActivated;
+            m_MpdnForm.SizeChanged -= OnMpdnFormSizeChanged;
+            m_MpdnForm.ResizeBegin -= OnMpdnFormResizeBegin;
+            m_MpdnForm.ResizeEnd -= OnMpdnFormResizeEnd;
+            m_Form.VisibleChanged -= OnFormVisibilityChanged;
+            m_Form.Move -= OnFormMove;
+            m_Form.SizeChanged -= OnFormSizeChanged;
+
+            base.Destroy();
+            m_Form.Dispose();
+        }
+
+        public void Reinitialize()
+        {
+            PlaylistForm.IconSize = Convert.ToInt32((ICON_BASE_SIZE / 100f) * int.Parse(Regex.Match(Settings.IconScale.ToString(), @"\d+").Value));
+            m_Form.Theme = Settings.Theme;
+            m_Form.LoadCustomSettings();
+
+            if (Settings.LockWindowSize) SetFormToFixed();
+            else SetFormToSizable();
+            if (Settings.SnapWithPlayer) SnapPlayer();
+
+            m_Form.RememberWindowPosition = Settings.RememberWindowPosition;
+            m_Form.RememberWindowSize = Settings.RememberWindowSize;
+            m_Form.SnapWithPlayer = Settings.SnapWithPlayer;
+            m_Form.KeepSnapped = Settings.StaySnapped;
+            m_Form.LockWindowSize = Settings.LockWindowSize;
+            m_Form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
+            m_Form.AfterPlaybackAction = Settings.AfterPlaybackAction;
+            m_Form.ShowToolTips = Settings.ShowToolTips;
+
+            m_Form.SetControlStates();
+        }
+
+        private void SetupPlaylist()
+        {
+            m_Form.Setup(this);
             Player.StateChanged += OnPlayerStateChanged;
             Player.Playback.Completed += OnPlaybackCompleted;
             Player.Closed += OnMpdnFormClosed;
@@ -183,50 +231,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             FixFormLocationBounds();
             BindContextMenu(m_MpdnForm);
-        }
-
-        public override void Destroy()
-        {
-            Player.StateChanged -= OnPlayerStateChanged;
-            Player.Playback.Completed -= OnPlaybackCompleted;
-            Player.Closed -= OnMpdnFormClosed;
-            Player.DragEnter -= OnDragEnter;
-            Player.DragDrop -= OnDragDrop;
-            Player.CommandLineFileOpen -= OnCommandLineFileOpen;
-            m_MpdnForm.Move -= OnMpdnFormMove;
-            m_MpdnForm.KeyDown -= OnMpdnFormKeyDown;
-            m_MpdnForm.MainMenuStrip.MenuActivate -= OnMpdnFormMainMenuActivated;
-            m_MpdnForm.SizeChanged -= OnMpdnFormSizeChanged;
-            m_MpdnForm.ResizeBegin -= OnMpdnFormResizeBegin;
-            m_MpdnForm.ResizeEnd -= OnMpdnFormResizeEnd;
-            m_Form.VisibleChanged -= OnFormVisibilityChanged;
-            m_Form.Move -= OnFormMove;
-            m_Form.SizeChanged -= OnFormSizeChanged;
-
-            base.Destroy();
-            m_Form.Dispose();
-        }
-
-        public void Reinitialize()
-        {
-            PlaylistForm.IconSize = Convert.ToInt32((ICON_BASE_SIZE / 100f) * int.Parse(Regex.Match(Settings.IconScale.ToString(), @"\d+").Value));
-            m_Form.Theme = Settings.Theme;
-            m_Form.LoadCustomSettings();
-
-            if (Settings.LockWindowSize) SetFormToFixed();
-            else SetFormToSizable();
-            if (Settings.SnapWithPlayer) SnapPlayer();
-
-            m_Form.RememberWindowPosition = Settings.RememberWindowPosition;
-            m_Form.RememberWindowSize = Settings.RememberWindowSize;
-            m_Form.SnapWithPlayer = Settings.SnapWithPlayer;
-            m_Form.KeepSnapped = Settings.StaySnapped;
-            m_Form.LockWindowSize = Settings.LockWindowSize;
-            m_Form.BeginPlaybackOnStartup = Settings.BeginPlaybackOnStartup;
-            m_Form.AfterPlaybackAction = Settings.AfterPlaybackAction;
-            m_Form.ShowToolTips = Settings.ShowToolTips;
-
-            m_Form.SetControlStates();
         }
 
         public void SyncSettings()
@@ -500,6 +504,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void OnFormCloseMedia(object sender, EventArgs e)
         {
             CloseMedia();
+        }
+
+        private void OnPlayerLoaded(object sender, EventArgs e)
+        {
+            SetupPlaylist();
         }
 
         private void OnPlayerStateChanged(object sender, EventArgs e)
