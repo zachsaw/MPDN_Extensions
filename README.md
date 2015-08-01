@@ -14,7 +14,7 @@ MPDN project page - http://forum.doom9.org/showthread.php?t=171120
 
 Prerequisites
 -------------
-* **MPDN v2.38.1** and above
+* **MPDN v2.39.0** and above
 * .NET Framework version 4.0
 
 
