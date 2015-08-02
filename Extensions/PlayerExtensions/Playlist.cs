@@ -706,6 +706,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnMpdnFormKeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.C)
+            {
+                CloseMedia();
+            }
+
             if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Tab)
             {
                 if (Player.FullScreenMode.Active || !m_Form.Visible || m_Form.ContainsFocus) return;
