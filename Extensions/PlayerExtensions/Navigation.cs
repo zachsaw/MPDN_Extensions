@@ -131,13 +131,13 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void SaveKeyFrameInfo(IBaseFilter source)
         {
-            var keyFrameInfo = (IKeyFrameInfo)source;
+            var keyFrameInfo = (IKeyFrameInfo) source;
             int keyFrameCount;
             var hr = keyFrameInfo.GetKeyFrameCount(out keyFrameCount);
             if (hr != S_OK)
                 return;
 
-            var p = Marshal.AllocHGlobal(keyFrameCount * sizeof(long));
+            var p = Marshal.AllocHGlobal(keyFrameCount*sizeof (long));
             try
             {
                 if (keyFrameInfo.GetKeyFrames(TimeFormat.MediaTime, p, keyFrameCount) != S_OK)
@@ -145,7 +145,11 @@ namespace Mpdn.Extensions.PlayerExtensions
 
                 var keyFrames = new long[keyFrameCount];
                 Marshal.Copy(p, keyFrames, 0, keyFrameCount);
-                m_KeyFrames = keyFrames.Select(v => v / 10).Cast<long?>().ToArray(); // convert to usec
+                m_KeyFrames = keyFrames
+                    .Select(t => t/10) // convert to usec
+                    .OrderBy(t => t) // make sure it's sorted in ascending order
+                    .Cast<long?>()
+                    .ToArray();
             }
             finally
             {
