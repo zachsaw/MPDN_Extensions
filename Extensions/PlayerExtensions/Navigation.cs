@@ -53,7 +53,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private const int S_OK = 0;
         private static readonly Guid s_LavSourceFilterGuid = new Guid("B98D13E7-55DB-4385-A33D-09FD1BA26338");
-        private long?[] m_KeyFrames = new long?[0];
+        private long?[] m_KeyFrames;
 
         public override ExtensionUiDescriptor Descriptor
         {
@@ -112,6 +112,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void OnMediaLoaded(object sender, EventArgs eventArgs)
         {
+            m_KeyFrames = new long?[0];
             ComThread.Do(() => SaveKeyFrameInfo(VideoSourceFilter.Base));
         }
 
