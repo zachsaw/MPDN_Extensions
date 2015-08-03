@@ -18,6 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security;
+using DirectShowLib;
+using Mpdn.DirectShow;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -47,6 +51,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             new PlayerMenuItem(initiallyDisabled: true)
         };
 
+        private const int S_OK = 0;
+        private static readonly Guid s_LavSourceFilterGuid = new Guid("B98D13E7-55DB-4385-A33D-09FD1BA26338");
+        private long?[] m_KeyFrames = new long?[0];
+
         public override ExtensionUiDescriptor Descriptor
         {
             get
@@ -70,8 +78,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                     GetVerb("Backward (5 seconds)", "Left", Jump(-5), m_MenuItems[1]),
                     GetVerb("Forward (1 frame)", "Ctrl+Right", StepFrame(), m_MenuItems[2]),
                     GetVerb("Backward (1 frame)", "Ctrl+Left", JumpFrame(-1), m_MenuItems[3]),
-                    GetVerb("Forward (30 seconds)", "Ctrl+Shift+Right", Jump(30), m_MenuItems[4]),
-                    GetVerb("Backward (30 seconds)", "Ctrl+Shift+Left", Jump(-30), m_MenuItems[5]),
+                    GetVerb("Forward (next keyframe)", "Ctrl+Shift+Right", JumpKeyFrame(30), m_MenuItems[4]),
+                    GetVerb("Backward (previous keyframe)", "Ctrl+Shift+Left", JumpKeyFrame(-30), m_MenuItems[5]),
                     GetVerb("Play next chapter", "Shift+Right", PlayChapter(true), m_MenuItems[6]),
                     GetVerb("Play previous chapter", "Shift+Left", PlayChapter(false), m_MenuItems[7]),
                     GetVerb("Play next file in folder", "Ctrl+PageDown", PlayFileInFolder(true), m_MenuItems[8]),
@@ -84,12 +92,27 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             base.Initialize();
             Player.StateChanged += PlayerStateChanged;
+            Media.Loaded += OnMediaLoaded;
         }
 
         public override void Destroy()
         {
+            Media.Loaded -= OnMediaLoaded;
             Player.StateChanged -= PlayerStateChanged;
             base.Destroy();
+        }
+
+        private static Filter VideoSourceFilter
+        {
+            get
+            {
+                return Player.Filters.Video.FirstOrDefault(f => f.ClsId == s_LavSourceFilterGuid);
+            }
+        }
+
+        private void OnMediaLoaded(object sender, EventArgs eventArgs)
+        {
+            ComThread.Do(() => SaveKeyFrameInfo(VideoSourceFilter.Base));
         }
 
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
@@ -103,6 +126,30 @@ namespace Mpdn.Extensions.PlayerExtensions
         private static Verb GetVerb(string menuItemText, string shortCutString, Action action, PlayerMenuItem menuItem)
         {
             return new Verb(Category.Play, "Navigation", menuItemText, shortCutString, string.Empty, action, menuItem);
+        }
+
+        private void SaveKeyFrameInfo(IBaseFilter source)
+        {
+            var keyFrameInfo = (IKeyFrameInfo)source;
+            int keyFrameCount;
+            var hr = keyFrameInfo.GetKeyFrameCount(out keyFrameCount);
+            if (hr != S_OK)
+                return;
+
+            var p = Marshal.AllocHGlobal(keyFrameCount * sizeof(long));
+            try
+            {
+                if (keyFrameInfo.GetKeyFrames(TimeFormat.MediaTime, p, keyFrameCount) != S_OK)
+                    return;
+
+                var keyFrames = new long[keyFrameCount];
+                Marshal.Copy(p, keyFrames, 0, keyFrameCount);
+                m_KeyFrames = keyFrames.Select(v => v / 10).Cast<long?>().ToArray(); // convert to usec
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(p);
+            }
         }
 
         private Action PlayChapter(bool next)
@@ -193,6 +240,37 @@ namespace Mpdn.Extensions.PlayerExtensions
             };
         }
 
+        private Action JumpKeyFrame(float defaultTime)
+        {
+            return delegate
+            {
+                if (Player.State == PlayerState.Closed)
+                    return;
+
+                if (m_KeyFrames.Length == 0)
+                {
+                    Jump(defaultTime)();
+                    return;
+                }
+
+                var forward = defaultTime >= 0;
+                if (forward)
+                {
+                    var nextKeyFramePos = m_KeyFrames.FirstOrDefault(t => t > Media.Position);
+                    if (nextKeyFramePos != null) Media.Seek(nextKeyFramePos.Value);
+                    else Jump(defaultTime)();
+                }
+                else
+                {
+                    var prevKeyFramePos =
+                        m_KeyFrames.LastOrDefault(
+                            t => t < Media.Position - (Player.State == PlayerState.Playing ? 1000000 : 0));
+                    if (prevKeyFramePos != null) Media.Seek(prevKeyFramePos.Value);
+                    else Jump(defaultTime)();
+                }
+            };
+        }
+
         private Action Jump(float time)
         {
             return delegate
@@ -206,5 +284,22 @@ namespace Mpdn.Extensions.PlayerExtensions
                 Media.Seek(nextPos);
             };
         }
+
+        #region IKeyFrameInfo COM interface
+
+        // See: https://github.com/Nevcairiel/LAVFilters/blob/master/developer_info/IKeyFrameInfo.h
+        [ComImport, Guid("01A5BBD3-FE71-487C-A2EC-F585918A8724")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        [SuppressUnmanagedCodeSecurity]
+        private interface IKeyFrameInfo
+        {
+            [PreserveSig]
+            int GetKeyFrameCount(out int nKFs); // returns S_FALSE when every frame is a keyframe
+
+            [PreserveSig]
+            int GetKeyFrames(ref Guid format, IntPtr pKFs, ref int nKFs);
+        }
+
+        #endregion
     }
 }
