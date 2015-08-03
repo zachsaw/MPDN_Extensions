@@ -146,9 +146,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                 var keyFrames = new long[keyFrameCount];
                 Marshal.Copy(p, keyFrames, 0, keyFrameCount);
                 m_KeyFrames = keyFrames
-                    .Select(t => t/10) // convert to usec
+                    .Select(t => (long?) t/10) // convert to usec
                     .OrderBy(t => t) // make sure it's sorted in ascending order
-                    .Cast<long?>()
                     .ToArray();
             }
             finally
