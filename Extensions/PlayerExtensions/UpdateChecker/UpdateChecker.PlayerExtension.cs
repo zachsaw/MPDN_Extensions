@@ -71,7 +71,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 }
                 catch (InternetConnectivityException e)
                 {
-                    MessageBox.Show(Gui.VideoBox, "You need an internet connection to check for update.");
+                    MessageBox.Show(Gui.VideoBox, 
+                        string.Format("You need an internet connection to check for updates:\n{0}", e.InnerException.Message),
+                        "Internet Connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Trace.WriteLine(e);
                     return;
                 }

@@ -225,7 +225,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             m_File.DownloadFailed += (sender, error) => GuiThread.DoAsync(() =>
             {
                 ResetDlButtonProgressBar();
-                MessageBox.Show(error.Message, "Download Error");
+                MessageBox.Show(error.Message, "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             });
 
             m_File.Cancelled += sender =>
