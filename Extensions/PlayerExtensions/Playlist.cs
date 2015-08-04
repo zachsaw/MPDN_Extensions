@@ -249,8 +249,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void ViewPlaylist()
         {
-            if (m_Form.Visible) m_Form.Hide();
-            else m_Form.Show(Gui.VideoBox);
+            if (m_Form.Visible)
+            {
+                m_Form.Hide();
+            }
+            else
+            {
+                Player.FullScreenMode.Active = false;
+                m_Form.Show(Gui.VideoBox);
+            }
         }
 
         private void NewPlaylist()
