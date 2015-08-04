@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.PlayerExtensions.Exceptions;
@@ -72,7 +73,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
                 }
                 if (subList == null || subList.Count == 0)
                 {
-                    MessageBox.Show(Gui.VideoBox, "No Subtitles found");
+                    MessageBox.Show(Gui.VideoBox, "No Subtitles found", "Subtitles unavailable", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Media.Play();
                     return;
                 }
