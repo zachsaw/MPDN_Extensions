@@ -19,6 +19,7 @@ using System.Drawing;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
+using SharpDX;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 using WeightFilter = Mpdn.Extensions.Framework.RenderChain.TextureSourceFilter<Mpdn.ISourceTexture>;
 
@@ -44,8 +45,8 @@ namespace Mpdn.Extensions.RenderScripts
                 var targetSize = Renderer.LumaSize;
                 CreateWeights((Size) sourceSize, targetSize);
 
-                var offset = Renderer.ChromaOffset;
-                int lobes = TapCount.ToInt()/2;
+                var offset = Renderer.ChromaOffset + new Vector2(0.5f, 0.5f);
+                int lobes = TapCount.ToInt() / 2;
                 var shader = CompileShader("Jinc2D.hlsl",
                     macroDefinitions:
                         string.Format("LOBES = {0}; AR = {1}; CHROMA = 1;",

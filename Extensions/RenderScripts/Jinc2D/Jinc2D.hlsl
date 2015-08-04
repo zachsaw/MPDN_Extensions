@@ -40,48 +40,55 @@ float4  args0 : register(c4);
     #define LOOP 0
 #endif
 
-#define width  (p0[0])
-#define height (p0[1])
+#define width                   (p0[0])
+#define height                  (p0[1])
 
-#define imageTexelSize      (size0.zw)
-#define chromaTexelSize     (size1.zw)
+#define imageTexelSize          (size0.zw)
+#define chromaTexelSize         (size1.zw)
 
 #ifdef CHROMA
-#define inputTexelSize      chromaTexelSize
+    #define inputTexelSize      chromaTexelSize
+    #define texelOffset         (args0.yz)
 #else
-#define inputTexelSize      imageTexelSize
+    #define inputTexelSize      imageTexelSize
+    #define texelOffset         (0.5f)
 #endif
 
-#define antiRingingStrength (args0[0])
-#define chromaOffset        (args0.yz)
+#define antiRingingStrength     (args0[0])
 
 #define px (p1[0])
 #define py (p1[1])
 
-#define Get2D(x,y)         (tex2D(s0, pos + inputTexelSize*int2((x),(y))))
-#define UV(xy)             (float2(tex2D(s1, xy)[0], tex2D(s2, xy)[0]))
+#define UV(xy)                 (float2(tex2D(s1, xy)[0], tex2D(s2, xy)[0]))
 
 #ifdef CHROMA
-    #define Get(x,y)       (UV(pos + inputTexelSize*int2((x),(y))))
-    #define color_t float2
-    #define GetResult(c)   (float4(tex2D(s0, tex)[0], c, 1))
+    #define color_t            float2
+    #define Get(x,y)           (UV(pos + inputTexelSize*int2((x),(y))))
+    #define GetResult(c)       (float4(tex2D(s0, tex)[0], c, 1))
 #else
-    #define Get(x,y)       (Get2D(x,y).rgb)
-    #define color_t float3
-    #define GetResult(c)   (float4(c, 1))
+    #define color_t            float3
+    #define Get(x,y)           ((tex2D(s0, pos + inputTexelSize*int2((x),(y)))).rgb)
+    #define GetResult(c)       (float4(c, 1))
 #endif
 
-#define Weights1(x,y)      (tex2D(s1, float2(x,y)))
-#define Weights2(x,y)      (tex2D(s2, float2(x,y)))
-#define Weights3(x,y)      (tex2D(s3, float2(x,y)))
-#define Weights4(x,y)      (tex2D(s4, float2(x,y)))
+#ifdef CHROMA
+    #define Weights1(x,y)      (tex2D(s3, float2(x,y)))
+    #define Weights2(x,y)      (tex2D(s4, float2(x,y)))
+    #define Weights3(x,y)      (tex2D(s5, float2(x,y)))
+    #define Weights4(x,y)      (tex2D(s6, float2(x,y)))
+#else
+    #define Weights1(x,y)      (tex2D(s1, float2(x,y)))
+    #define Weights2(x,y)      (tex2D(s2, float2(x,y)))
+    #define Weights3(x,y)      (tex2D(s3, float2(x,y)))
+    #define Weights4(x,y)      (tex2D(s4, float2(x,y)))
+#endif
 
 color_t ApplyAntiRinging(float2 pos, color_t color);
 
 float4 main(float2 tex : TEXCOORD0) : COLOR
 {
     // Calculate position
-    float2 pos = (tex / inputTexelSize) - 0.5f;
+    float2 pos = (tex / inputTexelSize) - texelOffset;
     float2 offset = frac(pos);
     float2 texelTopLeft = pos - offset;
     pos = (texelTopLeft + 0.5f) * inputTexelSize;
@@ -161,7 +168,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
             }
         }
     }
-    
+
     return GetResult(ApplyAntiRinging(pos, avg/W));
 }
 
