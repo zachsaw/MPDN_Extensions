@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
+using Mpdn.Extensions.PlayerExtensions.Exceptions;
 using Newtonsoft.Json;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
@@ -63,8 +64,18 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var newVersion = false;
             using (new HourGlass())
             {
-                m_Checker.CheckVersion();
-                m_ExtChecker.CheckVersion();
+                try
+                {
+                    m_Checker.CheckVersion();
+                    m_ExtChecker.CheckVersion();
+                }
+                catch (InternetConnectivityException e)
+                {
+                    MessageBox.Show(Gui.VideoBox, "You need an internet connection to check for update.");
+                    Trace.WriteLine(e);
+                    return;
+                }
+             
             }
 
             if (Settings.MpdnVersionOnServer > m_CurrentVersion)
@@ -160,16 +171,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
-            string changelog;
-            try
+            if (e.Error != null)
             {
-                changelog = e.Result;
-            }
-            catch (Exception)
-            {
+                Trace.WriteLine(e.Error);
                 return;
             }
-          
+            var changelog = e.Result;
             ParseChangelog(changelog);
         }
 
@@ -208,8 +215,16 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public void CheckVersion()
         {
             SetHeaders();
-            var changelog = WebClient.DownloadString(ChangelogUrl);
-            ParseChangelog(changelog);
+            try
+            {
+                var changelog = WebClient.DownloadString(ChangelogUrl);
+                ParseChangelog(changelog);
+            }
+            catch (WebException e)
+            {
+               throw new InternetConnectivityException("No connection", e);
+            }
+           
 
         }
         public void CheckVersionAsync()
