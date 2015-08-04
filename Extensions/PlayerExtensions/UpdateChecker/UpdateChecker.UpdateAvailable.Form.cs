@@ -114,7 +114,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             {
                 var webClient = new WebClient();
                 WebClientHelper.SetHeaders(webClient);
-                var changelog = webClient.DownloadString(string.Format("{0}ChangeLog.txt", UpdateChecker.WebsiteUrl));
+                var changelog = webClient.DownloadString(string.Format("{0}ChangeLog.txt", UpdateChecker.LatestFolderUrl));
                 html.Add("<h1>Changelogs</h1>");
                 foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
                 {

@@ -89,7 +89,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public override void Initialize()
         {
             base.Initialize();
-            m_Checker = new UpdateChecker(Settings, new Uri("http://mpdn.zachsaw.com/LatestVersion.txt"));
+            m_Checker = new UpdateChecker(Settings, new Uri(string.Format("{0}LatestVersion.txt", UpdateChecker.MpdnRepoUrl)));
             m_ExtChecker = new ExtensionUpdateChecker(Settings, new Uri("https://api.github.com/repos/zachsaw/MPDN_Extensions/releases/latest"));
             Player.Loaded += PlayerControlPlayerLoaded;
         }
@@ -140,7 +140,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
     public class UpdateChecker
     {
-        public static readonly string WebsiteUrl = "http://mpdn.zachsaw.com/Latest/";
+        public static readonly string MpdnRepoUrl = "http://mpdn.zachsaw.com/";
+        public static readonly string LatestFolderUrl = string.Format("{0}Latest/", MpdnRepoUrl);
         protected readonly UpdateCheckerSettings Settings;
         protected readonly WebClient WebClient = new WebClient();
         protected readonly Uri ChangelogUrl;
