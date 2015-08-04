@@ -82,6 +82,10 @@ namespace Mpdn.Extensions.Framework
 
         protected static bool TryDecodeKeyString(string keyString, out Keys keys)
         {
+            keys = Keys.None;
+            if (string.IsNullOrWhiteSpace(keyString))
+                return false;
+
             keyString = keyString.ToLower().Trim();
             var keyWords = Regex.Split(keyString, @"\W+");
             var specialKeys = AddSpecialKeys(keyString);
