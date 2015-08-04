@@ -113,7 +113,12 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void OnMediaLoaded(object sender, EventArgs eventArgs)
         {
             m_KeyFrames = new long?[0];
-            ComThread.Do(() => SaveKeyFrameInfo(VideoSourceFilter.Base));
+
+            var filter = VideoSourceFilter;
+            if (filter == null)
+                return;
+
+            ComThread.Do(() => SaveKeyFrameInfo(filter.Base));
         }
 
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
