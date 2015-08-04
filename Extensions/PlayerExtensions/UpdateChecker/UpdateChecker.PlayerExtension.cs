@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
+using Mpdn.Extensions.PlayerExtensions.Exceptions;
 using Newtonsoft.Json;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
@@ -63,8 +64,20 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var newVersion = false;
             using (new HourGlass())
             {
-                m_Checker.CheckVersion();
-                m_ExtChecker.CheckVersion();
+                try
+                {
+                    m_Checker.CheckVersion();
+                    m_ExtChecker.CheckVersion();
+                }
+                catch (InternetConnectivityException e)
+                {
+                    MessageBox.Show(Gui.VideoBox, 
+                        string.Format("You need an internet connection to check for updates:\n{0}", e.InnerException.Message),
+                        "Internet Connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Trace.WriteLine(e);
+                    return;
+                }
+             
             }
 
             if (Settings.MpdnVersionOnServer > m_CurrentVersion)
@@ -89,7 +102,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public override void Initialize()
         {
             base.Initialize();
-            m_Checker = new UpdateChecker(Settings, new Uri("http://mpdn.zachsaw.com/LatestVersion.txt"));
+            m_Checker = new UpdateChecker(Settings, new Uri(string.Format("{0}LatestVersion.txt", UpdateChecker.MpdnRepoUrl)));
             m_ExtChecker = new ExtensionUpdateChecker(Settings, new Uri("https://api.github.com/repos/zachsaw/MPDN_Extensions/releases/latest"));
             Player.Loaded += PlayerControlPlayerLoaded;
         }
@@ -140,7 +153,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
     public class UpdateChecker
     {
-        public static readonly string WebsiteUrl = "http://mpdn.zachsaw.com/Latest/";
+        public static readonly string MpdnRepoUrl = "http://mpdn.zachsaw.com/";
+        public static readonly string LatestFolderUrl = string.Format("{0}Latest/", MpdnRepoUrl);
         protected readonly UpdateCheckerSettings Settings;
         protected readonly WebClient WebClient = new WebClient();
         protected readonly Uri ChangelogUrl;
@@ -159,16 +173,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
-            string changelog;
-            try
+            if (e.Error != null)
             {
-                changelog = e.Result;
-            }
-            catch (Exception)
-            {
+                Trace.WriteLine(e.Error);
                 return;
             }
-          
+            var changelog = e.Result;
             ParseChangelog(changelog);
         }
 
@@ -207,8 +217,16 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public void CheckVersion()
         {
             SetHeaders();
-            var changelog = WebClient.DownloadString(ChangelogUrl);
-            ParseChangelog(changelog);
+            try
+            {
+                var changelog = WebClient.DownloadString(ChangelogUrl);
+                ParseChangelog(changelog);
+            }
+            catch (WebException e)
+            {
+               throw new InternetConnectivityException("No connection", e);
+            }
+           
 
         }
         public void CheckVersionAsync()
