@@ -15,9 +15,12 @@
 // License along with this library.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
+using SharpDX;
 using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 using WeightFilter = Mpdn.Extensions.Framework.RenderChain.TextureSourceFilter<Mpdn.ISourceTexture>;
 
@@ -27,7 +30,7 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Jinc2D : RenderChain
         {
-            private const int DATA_POINTS = 12;
+            private const int BASE_DATA_POINTS = 8;
 
             private ISourceTexture[] m_Weights;
 
@@ -59,9 +62,10 @@ namespace Mpdn.Extensions.RenderScripts
                 if (!IsUpscalingFrom(sourceSize))
                     return input;
 
-                CreateWeights();
-
                 var targetSize = Renderer.TargetSize;
+                CreateWeights(GetScaleFactor(targetSize.Width, sourceSize.Width),
+                    GetScaleFactor(targetSize.Height, sourceSize.Height));
+
                 int lobes = TapCount.ToInt()/2;
                 var shader = CompileShader("Jinc2D.hlsl",
                     macroDefinitions:
@@ -73,31 +77,18 @@ namespace Mpdn.Extensions.RenderScripts
                         linearSampling: true
                     );
 
-                return GetJincFilter(input, shader);
+                return GetJincFilter(shader, new[] {input});
             }
 
-            private IFilter GetJincFilter(IFilter input, ShaderFilterSettings<IShader> shader)
+            private static double GetScaleFactor(int dest, int source)
             {
-                switch (TapCount)
-                {
-                    case ScalerTaps.Four:
-                        return new ShaderFilter(shader, input,
-                            new WeightFilter(m_Weights[0]),
-                            new WeightFilter(m_Weights[1]));
-                    case ScalerTaps.Six:
-                        return new ShaderFilter(shader, input,
-                            new WeightFilter(m_Weights[0]),
-                            new WeightFilter(m_Weights[1]),
-                            new WeightFilter(m_Weights[2]));
-                    case ScalerTaps.Eight:
-                        return new ShaderFilter(shader, input,
-                            new WeightFilter(m_Weights[0]),
-                            new WeightFilter(m_Weights[1]),
-                            new WeightFilter(m_Weights[2]),
-                            new WeightFilter(m_Weights[3]));
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                return Math.Log(dest/(double)source, 2);
+            }
+
+            protected IFilter GetJincFilter(ShaderFilterSettings<IShader> shader, IFilter[] inputs)
+            {
+                var filters = m_Weights.Select(w => new WeightFilter(w));
+                return new ShaderFilter(shader, inputs.Concat((IEnumerable<IFilter<IBaseTexture>>) filters).ToArray());
             }
 
             public override void Reset()
@@ -107,7 +98,7 @@ namespace Mpdn.Extensions.RenderScripts
                 base.Reset();
             }
 
-            private void DiscardTextures()
+            protected void DiscardTextures()
             {
                 DiscardWeights(ref m_Weights);
             }
@@ -124,43 +115,45 @@ namespace Mpdn.Extensions.RenderScripts
                 weights = null;
             }
 
-            private float GetWeight(double dist)
-            {
-                var lobes = TapCount.ToInt()/2;
-                return (float) Jinc.GetWeight(dist, lobes);
-            }
-
             private static double GetDistance(double point1, double point2)
             {
                 return Math.Sqrt(point1*point1 + point2*point2);
             }
 
-            private void CreateWeights()
+            protected void CreateWeights(double scaleFactorX, double scaleFactorY)
             {
                 if (m_Weights != null)
                     return;
 
                 int lobes = TapCount.ToInt() / 2;
                 m_Weights = new ISourceTexture[lobes];
-                var data1 = new float[DATA_POINTS, DATA_POINTS*4];
+                var dataPointsX = GetDataPointCount(scaleFactorX);
+                var dataPointsY = GetDataPointCount(scaleFactorY);
+                var data = new Half[dataPointsY, dataPointsX * 4];
                 for (int z = 0; z < lobes; z++)
                 {
-                    for (int y = 0; y < DATA_POINTS; y++)
+                    for (int y = 0; y < dataPointsY; y++)
                     {
-                        for (int x = 0; x < DATA_POINTS; x++)
+                        for (int x = 0; x < dataPointsX; x++)
                         {
-                            var offsetX = x/(float) DATA_POINTS;
-                            var offsetY = y/(float) DATA_POINTS;
+                            var offsetX = x/(float) dataPointsX;
+                            var offsetY = y/(float) dataPointsX;
 
                             for (int i = 0; i < 4; i++)
                             {
-                                data1[y, x*4 + i] = GetWeight(GetDistance(i + offsetX, z + offsetY));
+                                var distance = GetDistance(i + offsetX, z + offsetY);
+                                data[y, x*4 + i] = (float) Jinc.GetWeight(distance, lobes);
                             }
                         }
                     }
-                    m_Weights[z] = Renderer.CreateTexture(DATA_POINTS, DATA_POINTS, TextureFormat.Float32);
-                    Renderer.UpdateTexture(m_Weights[z], data1);
+                    m_Weights[z] = Renderer.CreateTexture(dataPointsX, dataPointsY);
+                    Renderer.UpdateTexture(m_Weights[z], data);
                 }
+            }
+
+            private static int GetDataPointCount(double scaleFactorX)
+            {
+                return Math.Max(BASE_DATA_POINTS / 2, (int)(BASE_DATA_POINTS * scaleFactorX));
             }
         }
 
