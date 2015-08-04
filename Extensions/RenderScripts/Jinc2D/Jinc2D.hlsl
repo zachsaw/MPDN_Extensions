@@ -20,10 +20,19 @@ sampler s1    : register(s1);
 sampler s2    : register(s2);
 sampler s3    : register(s3);
 sampler s4    : register(s4);
+
+#ifdef CHROMA
+
+sampler s5    : register(s5);
+sampler s6    : register(s6);
+
+#endif
+
 float4  p0    : register(c0);
 float2  p1    : register(c1);
 float4  size0 : register(c2);
-float4  args0 : register(c3);
+float4  size1 : register(c3);
+float4  args0 : register(c4);
 
 #if LOBES>2
     #define LOOP 1
@@ -34,21 +43,28 @@ float4  args0 : register(c3);
 #define width  (p0[0])
 #define height (p0[1])
 
-#define inputTexelSize size0.zw
-#define antiRingingStrength args0[0]
+#define imageTexelSize      (size0.zw)
+#define chromaTexelSize     (size1.zw)
+
+#ifdef CHROMA
+#define inputTexelSize      chromaTexelSize
+#else
+#define inputTexelSize      imageTexelSize
+#endif
+
+#define antiRingingStrength (args0[0])
+#define chromaOffset        (args0.yz)
 
 #define px (p1[0])
 #define py (p1[1])
 
 #define Get2D(x,y)         (tex2D(s0, pos + inputTexelSize*int2((x),(y))))
-#define GetChroma          (tex2D(s0, tex).yz)
+#define UV(xy)             (float2(tex2D(s1, xy)[0], tex2D(s2, xy)[0]))
 
-#define LUMA_ONLY 0 // Luma only is slower - so no point having it
-
-#if LUMA_ONLY==1
-    #define Get(x,y)       (Get2D(x,y)[0])
-    #define color_t float
-    #define GetResult(c)   (float4(c, GetChroma, 1))
+#ifdef CHROMA
+    #define Get(x,y)       (UV(pos + inputTexelSize*int2((x),(y))))
+    #define color_t float2
+    #define GetResult(c)   (float4(tex2D(s0, tex)[0], c, 1))
 #else
     #define Get(x,y)       (Get2D(x,y).rgb)
     #define color_t float3

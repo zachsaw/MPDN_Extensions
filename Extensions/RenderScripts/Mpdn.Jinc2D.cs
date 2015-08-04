@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
@@ -63,8 +64,7 @@ namespace Mpdn.Extensions.RenderScripts
                     return input;
 
                 var targetSize = Renderer.TargetSize;
-                CreateWeights(GetScaleFactor(targetSize.Width, sourceSize.Width),
-                    GetScaleFactor(targetSize.Height, sourceSize.Height));
+                CreateWeights((Size) sourceSize, targetSize);
 
                 int lobes = TapCount.ToInt()/2;
                 var shader = CompileShader("Jinc2D.hlsl",
@@ -120,10 +120,13 @@ namespace Mpdn.Extensions.RenderScripts
                 return Math.Sqrt(point1*point1 + point2*point2);
             }
 
-            protected void CreateWeights(double scaleFactorX, double scaleFactorY)
+            protected void CreateWeights(Size sourceSize, Size targetSize)
             {
                 if (m_Weights != null)
                     return;
+
+                double scaleFactorX = GetScaleFactor(targetSize.Width, sourceSize.Width);
+                double scaleFactorY = GetScaleFactor(targetSize.Height, sourceSize.Height);
 
                 int lobes = TapCount.ToInt() / 2;
                 m_Weights = new ISourceTexture[lobes];
