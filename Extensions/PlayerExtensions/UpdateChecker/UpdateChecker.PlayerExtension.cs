@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -257,9 +258,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var result = JsonConvert.DeserializeObject<GitHubVersion>(changelog);
             var version = new ExtensionVersion(result.tag_name);
             var changelogStarted = false;
-            foreach (string line in Regex.Split(result.body, "\r\n|\r|\n"))
+            foreach (var line in Regex.Split(result.body, "\r\n|\r|\n").Where(line => !string.IsNullOrWhiteSpace(line)))
             {
-                if (changelogStarted && !string.IsNullOrWhiteSpace(line))
+                if (changelogStarted)
                 {
                     version.ChangelogLines.Add(line);
                 }
