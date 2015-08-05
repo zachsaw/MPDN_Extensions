@@ -44,15 +44,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             Icon = Gui.Icon;
             m_Type = type;
             m_Settings = settings;
-            Closing += OnClosing;
-        }
-
-        private void OnClosing(object sender, CancelEventArgs cancelEventArgs)
-        {
-            if (m_DownloadingWebFile != null)
-            {
-                m_DownloadingWebFile.CancelDownload();
-            }
         }
 
         private void ForgetUpdateButtonClick(object sender, EventArgs e)
@@ -167,6 +158,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             });
             m_DownloadingWebFile.DownloadFile();
 
+        }
+
+        private void CancelButtonClick(object sender, EventArgs e)
+        {
+            m_DownloadingWebFile.CancelDownload();
+            Close();
         }
     }
 }

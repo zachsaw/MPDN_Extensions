@@ -37,7 +37,6 @@
             // 
             // installButton
             // 
-            this.installButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.installButton.Location = new System.Drawing.Point(12, 52);
             this.installButton.Name = "installButton";
             this.installButton.Size = new System.Drawing.Size(75, 23);
@@ -55,6 +54,7 @@
             this.cancelButton.TabIndex = 1;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
+            this.cancelButton.Click += new System.EventHandler(this.CancelButtonClick);
             // 
             // label1
             // 
@@ -91,6 +91,7 @@
             // 
             // SimpleUpdateForm
             // 
+            this.AcceptButton = this.installButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
