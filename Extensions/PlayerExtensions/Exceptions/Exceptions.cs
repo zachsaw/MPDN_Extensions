@@ -24,5 +24,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Exceptions
 
     public class InternetConnectivityException : Exception
     {
+        public InternetConnectivityException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        public InternetConnectivityException()
+        {
+        }
     }
 }

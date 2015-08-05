@@ -43,17 +43,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public uint Minor { get; set; }
         public uint Revision { get; set; }
         public List<string> ChangelogLines { get; set; }
-        [Obsolete("Replaced by ChangelogLines. Kept for retro-compatitibility. To be removed in next version.")]
-        public string Changelog
-        {
-            get { return null; }
-            set
-            {
-                if (value == null)
-                    return;
-                ChangelogLines = Regex.Split(value, "\r\n|\r|\n").ToList();
-            }
-        }
 
 
         public static bool ContainsVersionString(string text)
@@ -73,6 +62,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var iv2 = GetInteger(v2);
             return iv1 > iv2;
         }
+        
 
         private static int GetInteger(Version v)
         {
@@ -142,17 +132,17 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var list = new List<UpdateAvailableForm.SplitButtonToolStripItem>
             {
                 new UpdateAvailableForm.SplitButtonToolStripItem("x64 Installer",
-                    string.Format("{0}MediaPlayerDotNet_x64_Installer.exe", UpdateChecker.WebsiteUrl)),
+                    string.Format("{0}MediaPlayerDotNet_x64_Installer.exe", UpdateChecker.LatestFolderUrl)),
                 new UpdateAvailableForm.SplitButtonToolStripItem("x86 Installer",
-                    string.Format("{0}MediaPlayerDotNet_x86_Installer.exe", UpdateChecker.WebsiteUrl)),
+                    string.Format("{0}MediaPlayerDotNet_x86_Installer.exe", UpdateChecker.LatestFolderUrl)),
                 new UpdateAvailableForm.SplitButtonToolStripItem("AnyCPU Zip",
-                    string.Format("{0}MediaPlayerDotNet_AnyCPU.zip", UpdateChecker.WebsiteUrl)),
+                    string.Format("{0}MediaPlayerDotNet_AnyCPU.zip", UpdateChecker.LatestFolderUrl)),
                 new UpdateAvailableForm.SplitButtonToolStripItem("x64 Zip",
-                    string.Format("{0}MediaPlayerDotNet_x64.zip", UpdateChecker.WebsiteUrl)),
+                    string.Format("{0}MediaPlayerDotNet_x64.zip", UpdateChecker.LatestFolderUrl)),
                 new UpdateAvailableForm.SplitButtonToolStripItem("x86 Zip",
-                    string.Format("{0}MediaPlayerDotNet_x86.zip", UpdateChecker.WebsiteUrl)),
+                    string.Format("{0}MediaPlayerDotNet_x86.zip", UpdateChecker.LatestFolderUrl)),
                 new UpdateAvailableForm.SplitButtonToolStripItem("Open in Browser",
-                    UpdateChecker.WebsiteUrl, false)
+                    UpdateChecker.LatestFolderUrl, false)
             };
             return list;
         }

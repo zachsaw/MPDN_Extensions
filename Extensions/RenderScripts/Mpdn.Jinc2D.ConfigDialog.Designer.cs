@@ -84,7 +84,7 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.AntiRingingStrengthSetter.DecimalPlaces = 2;
             this.AntiRingingStrengthSetter.Increment = new decimal(new int[] {
-            1,
+            15,
             0,
             0,
             131072});

@@ -70,6 +70,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (Player.State == PlayerState.Closed)
                 return;
 
+            Player.FullScreenMode.Active = false;
+
             using (var form = new ViewMediaInfoForm(Media.FilePath))
             {
                 form.ShowDialog(Gui.VideoBox);
