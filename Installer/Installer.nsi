@@ -25,6 +25,8 @@ SetCompressor lzma
 !define MULTIUSER_EXECUTIONLEVEL Admin
 !include "MultiUser.nsh"
 
+!include "WinMessages.nsh"
+
 !addplugindir ./
 !include "nsProcess.nsh"
 
@@ -49,8 +51,12 @@ Var /GLOBAL mpdn_root
 Var /GLOBAL uninstallerPresent
 Var /Global doCleanInstall
 
-
 ;--------------------------------
+; Advanced Installer Variables
+Var /Global playerArchitecture
+Var /Global playerInstallerPath
+;--------------------------------
+
 ;Configuration
 
 ;General
@@ -170,6 +176,24 @@ Section -pre
 
 SectionEnd
 
+Section /o "-Install Player" SecInstallPlayer
+    DetailPrint "Install Player"
+    IfFileExists $playerInstallerPath 0 noPlayer
+        Banner::show /set 76 "Installing the Player" "MediaPlayerDotNet"
+
+        Banner::getWindow
+        Pop $1
+        
+        ExecWait "$playerInstallerPath /S"
+        ;Delete $playerInstallerPath
+        
+        Banner::destroy        
+        GoTo +3
+    noPlayer:  
+        DetailPrint "Player installer not found: $playerInstallerPath"
+        
+SectionEnd
+
 Section /o "Extensions for MPDN x86" SecMPDNExtensions32
     !insertmacro InstallExtensions "$mpdn32_root"
 
@@ -183,9 +207,13 @@ Section -post
     ; Register for 64-bit first so it has precedence over the 32-bit MPDN
     ${IfNot} $mpdn64_root == ""
         ${registerExtension} "$mpdn64_root\MediaPlayerDotNet.exe" ".mpl" "MPDN Playlist File"
+        ${GetFileVersion}  "$mpdn64_root\MediaPlayerDotNet.exe" $R0
+        WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MediaPlayerDotNet_x64" "DisplayVersion" "$R0/${VERSION_1}.${VERSION_2}.${VERSION_3}"      
     ${EndIf}
     ${IfNot} $mpdn32_root == ""
         ${registerExtension} "$mpdn32_root\MediaPlayerDotNet.exe" ".mpl" "MPDN Playlist File"
+        ${GetFileVersion}  "$mpdn32_root\MediaPlayerDotNet.exe" $R0
+        WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MediaPlayerDotNet_x86" "DisplayVersion" "$R0/${VERSION_1}.${VERSION_2}.${VERSION_3}"     
     ${EndIf}
     
 SectionEnd
@@ -208,6 +236,20 @@ Function .onInit
     ${GetParameters} $R0
     ClearErrors
     
+    ; Advanced Installer Variables
+        ${GetOptions} '$R0' '/ARCH=' $R1
+        StrCmp $R1 '' 0 +3
+        StrCpy $playerArchitecture ''
+        Goto +2
+        StrCpy $playerArchitecture $R1
+        
+        ${GetOptions} '$R0' '/INSTALLER=' $R1
+        StrCmp $R1 '' 0 +3
+        StrCpy $playerInstallerPath ''
+        Goto +2
+        StrCpy $playerInstallerPath $R1
+    ; END Advanced Installer Variables
+    
     !insertmacro SelectSection ${SecMPDNExtensions32}
     !insertmacro SelectSection ${SecMPDNExtensions64}
     
@@ -226,18 +268,31 @@ Function .onInit
     StrCpy $R0 "$mpdn32_root"
     StrCpy $R1 "$mpdn64_root"
     
-    StrCmp $R0 "" 0 check64
-        SectionSetText ${SecMPDNExtensions32} ""
-        !insertmacro UnselectSection ${SecMPDNExtensions32}
-check64:
-    StrCmp $R1 "" 0 done
-        SectionSetText ${SecMPDNExtensions64} ""
-        !insertmacro UnselectSection ${SecMPDNExtensions64}
-done:
+    ${IfNot} "$playerArchitecture$playerInstallerPath" == ""
+        ${If} $playerArchitecture == "x64"
+            SectionSetText ${SecMPDNExtensions32} ""
+            !insertmacro UnselectSection ${SecMPDNExtensions32}
+        ${Else}
+            SectionSetText ${SecMPDNExtensions64} ""
+            !insertmacro UnselectSection ${SecMPDNExtensions64}
+        ${EndIf}
+        !insertmacro SelectSection ${SecInstallPlayer}
+        
+    ${Else}
+            
+        StrCmp $R0 "" 0 check64
+            SectionSetText ${SecMPDNExtensions32} ""
+            !insertmacro UnselectSection ${SecMPDNExtensions32}
+    check64:
+        StrCmp $R1 "" 0 done
+            SectionSetText ${SecMPDNExtensions64} ""
+            !insertmacro UnselectSection ${SecMPDNExtensions64}
+    done:
 
-    StrCmp "$R0$R1" "" 0 +3
-        MessageBox MB_OK "Unable to find any installations of MPDN.$\r$\n$\r$\nPlease install MPDN first!"
-        Abort
+        StrCmp "$R0$R1" "" 0 +3
+            MessageBox MB_OK "Unable to find any installations of MPDN.$\r$\n$\r$\nPlease install MPDN first!"
+            Abort
+    ${EndIf}
 
 FunctionEnd
 
