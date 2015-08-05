@@ -54,7 +54,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.CloseButton = new System.Windows.Forms.Button();
             this.forgetUpdate = new System.Windows.Forms.Button();
             this.downloadButton = new wyDay.Controls.SplitButton();
-            this.downloadProgressBar = new Mpdn.Extensions.PlayerExtensions.UpdateChecker.UpdateAvailableForm.CustomProgressBar();
+            this.downloadProgressBar = new TextProgressBar();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -143,7 +143,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             // 
             this.downloadProgressBar.Cursor = System.Windows.Forms.Cursors.Default;
             this.downloadProgressBar.CustomText = null;
-            this.downloadProgressBar.DisplayStyle = Mpdn.Extensions.PlayerExtensions.UpdateChecker.UpdateAvailableForm.CustomProgressBar.ProgressBarDisplayText.Percentage;
+            this.downloadProgressBar.DisplayStyle = TextProgressBar.ProgressBarDisplayText.Percentage;
             this.downloadProgressBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.downloadProgressBar.Location = new System.Drawing.Point(0, 0);
             this.downloadProgressBar.Name = "downloadProgressBar";
@@ -183,7 +183,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private System.Windows.Forms.Button CloseButton;
         private System.Windows.Forms.Button forgetUpdate;
         private SplitButton downloadButton;
-        private CustomProgressBar downloadProgressBar;
+        private TextProgressBar downloadProgressBar;
         protected System.Windows.Forms.WebBrowser changelogViewerWebBrowser;
     }
 }

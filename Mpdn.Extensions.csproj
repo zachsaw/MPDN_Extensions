@@ -77,9 +77,11 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
     <Reference Include="YAXLib">
       <HintPath>MPDN\YAXLib.dll</HintPath>
@@ -198,6 +200,15 @@
     </Compile>
     <Compile Include="Extensions\PlayerExtensions\RemoteControl_AuthHandler.cs" />
     <Compile Include="Extensions\PlayerExtensions\RendererControl.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\SimpleUpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\SimpleUpdateForm.Designer.cs">
+      <DependentUpon>SimpleUpdateForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\TextProgressBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -418,6 +429,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Extensions\PlayerExtensions\UpdateChecker\SimpleUpdateForm.resx">
+      <DependentUpon>SimpleUpdateForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
