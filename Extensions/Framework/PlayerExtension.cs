@@ -16,7 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
@@ -154,5 +156,42 @@ namespace Mpdn.Extensions.Framework
         }
 
         #endregion
+    }
+
+
+    public class AboutExtensions : PlayerExtension
+    {
+        public override ExtensionUiDescriptor Descriptor
+        {
+            get
+            {
+                return new ExtensionUiDescriptor
+                {
+                    Guid = new Guid("AB0556BA-E743-48FD-8D3E-CDCAFD66E637"),
+                    Name = "About MPDN Extensions",
+                    Description = "View the about box of MPDN Extensions"
+                };
+            }
+        }
+
+        public override IList<Verb> Verbs
+        {
+            get
+            {
+                return new[]
+                {
+                    new Verb(Category.Help, string.Empty, "About MPDN Extensions...", string.Empty, string.Empty, ShowAboutBox)
+                };
+            }
+        }
+
+        private static void ShowAboutBox()
+        {
+            // TODO custom form for about box
+            var version = FileVersionInfo.GetVersionInfo(typeof (AboutExtensions).Assembly.Location).FileVersion;
+            MessageBox.Show(Gui.VideoBox,
+                string.Format("MPDN Extensions version {0}\r\n\r\nLicense: Open Source LGPLv3", version),
+                "About MPDN Extensions", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
     }
 }
