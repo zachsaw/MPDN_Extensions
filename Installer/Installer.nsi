@@ -188,9 +188,11 @@ Section /o "-Install Player" SecInstallPlayer
         ;Delete $playerInstallerPath
         
         Banner::destroy        
-        GoTo +3
+        GoTo playedInstalled
     noPlayer:  
         DetailPrint "Player installer not found: $playerInstallerPath"
+        
+    playedInstalled:
         
 SectionEnd
 
