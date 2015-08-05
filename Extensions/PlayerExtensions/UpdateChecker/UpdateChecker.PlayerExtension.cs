@@ -62,7 +62,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void ManualUpdateCheck()
         {
-            var newVersion = false;
             using (new HourGlass())
             {
                 try
