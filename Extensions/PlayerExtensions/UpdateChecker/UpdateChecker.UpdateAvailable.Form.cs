@@ -185,22 +185,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 return SplitMenuChoices.First(file => file.Name == Settings.LastMpdnReleaseChosen);
             }
 
-            var appArch = Assembly.GetEntryAssembly().GetName().ProcessorArchitecture;
-            string arch;
-            switch (appArch)
-            {
-                case ProcessorArchitecture.MSIL:
-                    arch = "AnyCPU";
-                    break;
-                case ProcessorArchitecture.Amd64:
-                    arch = "x64";
-                    break;
-                default:
-                    arch = "x86";
-                    break;
-            }
-
-            return SplitMenuChoices.First(file => file.Name.Contains(arch)) ?? SplitMenuChoices[0];
+          return SplitMenuChoices.First(file => file.Name.Contains(ArchitectureHelper.GetPlayerArtchitecture())) ?? SplitMenuChoices[0];
         }
 
         private void DownloadFile(string url)

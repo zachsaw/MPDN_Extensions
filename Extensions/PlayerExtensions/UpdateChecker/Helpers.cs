@@ -17,6 +17,7 @@
 
 using System;
 using System.Net;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
@@ -31,6 +32,28 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 string.Format(
                     "Mozilla/5.0 (compatible; Windows NT {0}; MPDN/{1}; MPDN_Extensions/{2}; +http://mpdn.zachsaw.com/)",
                     Environment.OSVersion.Version, Application.ProductVersion, version));
+        }
+    }
+
+    public static class ArchitectureHelper
+    {
+        public static string GetPlayerArtchitecture()
+        {
+            var appArch = Assembly.GetEntryAssembly().GetName().ProcessorArchitecture;
+            string arch;
+            switch (appArch)
+            {
+                case ProcessorArchitecture.MSIL:
+                    arch = "AnyCPU";
+                    break;
+                case ProcessorArchitecture.Amd64:
+                    arch = "x64";
+                    break;
+                default:
+                    arch = "x86";
+                    break;
+            }
+            return arch;
         }
     }
 }
