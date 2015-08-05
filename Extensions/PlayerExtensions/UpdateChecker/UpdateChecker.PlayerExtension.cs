@@ -142,6 +142,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             CheckForUpdate = true;
             ForgetMpdnVersion = false;
+            UseSimpleUpdate = true;
         }
         
         public bool CheckForUpdate { get; set; }
@@ -150,6 +151,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public bool ForgetMpdnVersion { get; set; }
         public bool ForgetExtensionVersion { get; set; }
         public string LastMpdnReleaseChosen { get; set; }
+        public bool UseSimpleUpdate { get; set; }
     }
 
     public class UpdateChecker

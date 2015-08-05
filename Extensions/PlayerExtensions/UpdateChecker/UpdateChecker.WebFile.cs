@@ -107,13 +107,13 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             File.Delete(FilePath);
         }
 
-        public Process Start()
+        public Process Start(string args = null)
         {
             if (!Exists())
             {
                 throw new InvalidOperationException("The file to be run doesn't exists");
             }
-            return Process.Start(FilePath);
+            return args != null ? Process.Start(FilePath, args) : Process.Start(FilePath);
         }
 
         public void DownloadFile()

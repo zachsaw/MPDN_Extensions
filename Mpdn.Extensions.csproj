@@ -225,7 +225,7 @@
     <Compile Include="Extensions\PlayerExtensions\Exceptions\Exceptions.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.Version.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.PlayerExtension.cs" />
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\WebClientHelper.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\Helpers.cs" />
     <Compile Include="Extensions\PlayerExtensions\VideoFrame.cs" />
     <Compile Include="Extensions\PlayerExtensions\VideoSpecifier.cs" />
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfo.cs" />
@@ -429,9 +429,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Extensions\PlayerExtensions\UpdateChecker\SimpleUpdateForm.resx">
-      <DependentUpon>SimpleUpdateForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
