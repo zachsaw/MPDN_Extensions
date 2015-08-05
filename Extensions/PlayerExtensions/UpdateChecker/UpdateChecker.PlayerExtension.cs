@@ -174,7 +174,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             CheckForUpdate = true;
             ForgetMpdnVersion = false;
-            UseSimpleUpdate = ArchitectureHelper.GetPlayerArtchitecture() != ArchitectureHelper.Architecture.AnyCPU;
+            UseSimpleUpdate = RegistryHelper.IsPlayerInstalled();
         }
         
         public bool CheckForUpdate { get; set; }

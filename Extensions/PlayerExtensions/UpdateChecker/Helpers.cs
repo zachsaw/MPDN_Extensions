@@ -19,6 +19,7 @@ using System;
 using System.Net;
 using System.Reflection;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
@@ -43,6 +44,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             x86,
             AnyCPU
         }
+
         public static Architecture GetPlayerArtchitecture()
         {
             var appArch = Assembly.GetEntryAssembly().GetName().ProcessorArchitecture;
@@ -60,6 +62,41 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     break;
             }
             return arch;
+        }
+    }
+
+    public static class RegistryHelper
+    {
+        public enum RegistryRoot
+        {
+            HKLM,
+            HKCU
+        }
+        public static bool RegistryValueExists(RegistryRoot root, string subKey, string valueName)
+        {
+            RegistryKey registryKey;
+            switch (root)
+            {
+                case RegistryRoot.HKLM:
+                    registryKey = Registry.LocalMachine.OpenSubKey(subKey, false);
+                    break;
+                case RegistryRoot.HKCU:
+                    registryKey = Registry.CurrentUser.OpenSubKey(subKey, false);
+                    break;
+                default:
+                    throw new System.InvalidOperationException(
+                        "parameter subKey must be either \"HKLM\" or \"HKCU\"");
+            }
+
+            return registryKey != null && registryKey.GetValue(valueName) != null;
+        }
+
+        public static bool IsPlayerInstalled()
+        {
+            return RegistryValueExists(RegistryRoot.HKLM,
+                string.Format("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MediaPlayerDotNet_{0}",
+                    ArchitectureHelper.GetPlayerArtchitecture())
+                , "DisplayVersion");
         }
     }
 }
