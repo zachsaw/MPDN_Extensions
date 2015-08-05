@@ -185,7 +185,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 return SplitMenuChoices.First(file => file.Name == Settings.LastMpdnReleaseChosen);
             }
 
-          return SplitMenuChoices.First(file => file.Name.Contains(ArchitectureHelper.GetPlayerArtchitecture())) ?? SplitMenuChoices[0];
+          return SplitMenuChoices.First(file => file.Name.Contains(ArchitectureHelper.GetPlayerArtchitecture().ToString())) ?? SplitMenuChoices[0];
         }
 
         private void DownloadFile(string url)

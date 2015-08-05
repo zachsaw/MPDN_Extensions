@@ -37,20 +37,26 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
     public static class ArchitectureHelper
     {
-        public static string GetPlayerArtchitecture()
+        public enum Architecture
+        {
+            x64,
+            x86,
+            AnyCPU
+        }
+        public static Architecture GetPlayerArtchitecture()
         {
             var appArch = Assembly.GetEntryAssembly().GetName().ProcessorArchitecture;
-            string arch;
+            Architecture arch;
             switch (appArch)
             {
                 case ProcessorArchitecture.MSIL:
-                    arch = "AnyCPU";
+                    arch = Architecture.AnyCPU;
                     break;
                 case ProcessorArchitecture.Amd64:
-                    arch = "x64";
+                    arch = Architecture.x64;
                     break;
                 default:
-                    arch = "x86";
+                    arch = Architecture.x86;
                     break;
             }
             return arch;
