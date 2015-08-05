@@ -37,10 +37,8 @@
             // 
             // installButton
             // 
-            this.installButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.installButton.Location = new System.Drawing.Point(12, 44);
+            this.installButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.installButton.Location = new System.Drawing.Point(12, 52);
             this.installButton.Name = "installButton";
             this.installButton.Size = new System.Drawing.Size(75, 23);
             this.installButton.TabIndex = 0;
@@ -50,11 +48,8 @@
             // 
             // cancelButton
             // 
-            this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(253, 44);
+            this.cancelButton.Location = new System.Drawing.Point(253, 52);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 1;
@@ -67,7 +62,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(79, 16);
+            this.label1.Location = new System.Drawing.Point(81, 26);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(178, 13);
             this.label1.TabIndex = 2;
@@ -75,7 +70,7 @@
             // 
             // forgetUpdateButton
             // 
-            this.forgetUpdateButton.Location = new System.Drawing.Point(133, 44);
+            this.forgetUpdateButton.Location = new System.Drawing.Point(133, 52);
             this.forgetUpdateButton.Name = "forgetUpdateButton";
             this.forgetUpdateButton.Size = new System.Drawing.Size(75, 23);
             this.forgetUpdateButton.TabIndex = 3;
@@ -99,13 +94,14 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(340, 81);
+            this.ClientSize = new System.Drawing.Size(340, 87);
             this.ControlBox = false;
             this.Controls.Add(this.downloadProgressBar);
             this.Controls.Add(this.forgetUpdateButton);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.installButton);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "SimpleUpdateForm";
             this.ShowInTaskbar = false;
             this.Text = "New Update Available";
