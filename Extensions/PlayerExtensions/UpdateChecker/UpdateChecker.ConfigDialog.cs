@@ -25,7 +25,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public UpdateCheckerConfigDialog()
         {
             InitializeComponent();
-            simpleModeTooltip.SetToolTip(simpleModeCheckbox, "This mode disable the display of the changelog and it updates silently the player");
+            simpleModeTooltip.SetToolTip(simpleModeCheckbox, "This mode disable the display of the changelog and it updates silently the player. Only for x86 and x64.");
+            if (ArchitectureHelper.GetPlayerArtchitecture() == ArchitectureHelper.Architecture.AnyCPU)
+            {
+                simpleModeCheckbox.Checked = false;
+                simpleModeCheckbox.Enabled = false;
+            }
 
         }
 
