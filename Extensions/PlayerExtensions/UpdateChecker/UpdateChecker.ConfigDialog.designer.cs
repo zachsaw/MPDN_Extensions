@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
+using System.Windows;
+
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     partial class UpdateCheckerConfigDialog
@@ -44,16 +47,19 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
             this.checkBoxCheckUpdate = new System.Windows.Forms.CheckBox();
+            this.simpleModeCheckbox = new System.Windows.Forms.CheckBox();
+            this.simpleModeTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(149, 59);
+            this.buttonCancel.Location = new System.Drawing.Point(149, 89);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1005;
@@ -64,7 +70,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(68, 59);
+            this.buttonOk.Location = new System.Drawing.Point(68, 89);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 1004;
@@ -81,13 +87,27 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.checkBoxCheckUpdate.Text = "Check for new versions";
             this.checkBoxCheckUpdate.UseVisualStyleBackColor = true;
             // 
+            // simpleModeCheckbox
+            // 
+            this.simpleModeCheckbox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.simpleModeCheckbox.AutoSize = true;
+            this.simpleModeCheckbox.Location = new System.Drawing.Point(22, 45);
+            this.simpleModeCheckbox.Name = "simpleModeCheckbox";
+            this.simpleModeCheckbox.Size = new System.Drawing.Size(87, 17);
+            this.simpleModeCheckbox.TabIndex = 1007;
+            this.simpleModeCheckbox.Text = "Simple Mode";
+            this.simpleModeCheckbox.UseVisualStyleBackColor = true;
+            // 
             // UpdateCheckerConfigDialog
             // 
             this.AcceptButton = this.buttonOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(236, 94);
+            this.ClientSize = new System.Drawing.Size(236, 124);
+            this.Controls.Add(this.simpleModeCheckbox);
             this.Controls.Add(this.checkBoxCheckUpdate);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
@@ -108,6 +128,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.Button buttonOk;
         private System.Windows.Forms.CheckBox checkBoxCheckUpdate;
-
+        private System.Windows.Forms.CheckBox simpleModeCheckbox;
+        private System.Windows.Forms.ToolTip simpleModeTooltip;
     }
 }

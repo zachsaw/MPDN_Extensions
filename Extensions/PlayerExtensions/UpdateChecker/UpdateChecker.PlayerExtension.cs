@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -61,7 +62,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void ManualUpdateCheck()
         {
-            var newVersion = false;
             using (new HourGlass())
             {
                 try
@@ -79,23 +79,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 }
              
             }
-
-            if (Settings.MpdnVersionOnServer > m_CurrentVersion)
-            {
-                new UpdateAvailableForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(Gui.VideoBox);
-                newVersion = true;
-            }
-
-            if (Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion())
-            {
-                new ExtensionUpdateAvailableForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
-                    Gui.VideoBox);
-                newVersion = true;
-            }
             
-            if (!newVersion)
+            if (!DisplayUpdateForm(true))
             {
-                MessageBox.Show(Gui.VideoBox, "You have the latest release.");
+                MessageBox.Show(Gui.VideoBox, "You have the latest release.", "Up-to-date",MessageBoxButtons.OK,MessageBoxIcon.Information);
             }
         }
 
@@ -113,19 +100,64 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 return;
 
             m_CurrentVersion = new Version(Application.ProductVersion);
-            if (!Settings.ForgetMpdnVersion && Settings.MpdnVersionOnServer > m_CurrentVersion)
-            {
-                new UpdateAvailableForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(Gui.VideoBox);
-            }
-            if (!Settings.ForgetExtensionVersion &&
-                Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion())
-            {
-                new ExtensionUpdateAvailableForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
-                    Gui.VideoBox);
-            }
+
+            DisplayUpdateForm();
+
             m_Checker.CheckVersionAsync();
             m_ExtChecker.CheckVersionAsync();
 
+        }
+
+        private bool DisplayUpdateForm(bool force = false)
+        {
+            var playerNeedUpdate = Settings.MpdnVersionOnServer > m_CurrentVersion;
+            var extensionNeedUpdate = Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion();
+            return Settings.UseSimpleUpdate
+                ? DisplaySimpleForm(force, playerNeedUpdate, extensionNeedUpdate)
+                : DisplayAdvancedForm(force, playerNeedUpdate, extensionNeedUpdate);
+        }
+
+        private bool DisplayAdvancedForm(bool force, bool playerNeedUpdate, bool extensionNeedUpdate)
+        {
+            var newVersion = false;
+            if ((force || !Settings.ForgetMpdnVersion) && playerNeedUpdate)
+            {
+                new UpdateAvailableForm(Settings.MpdnVersionOnServer, Settings).ShowDialog(Gui.VideoBox);
+                newVersion = true;
+            }
+
+            if ((force || !Settings.ForgetExtensionVersion) &&
+                extensionNeedUpdate)
+            {
+                new ExtensionUpdateAvailableForm(Settings.ExtensionVersionOnServer, Settings).ShowDialog(
+                    Gui.VideoBox);
+                newVersion = true;
+            }
+
+            return newVersion;
+        }
+
+        private bool DisplaySimpleForm(bool force, bool playerNeedUpdate, bool extensionNeedUpdate)
+        {
+            if ((force || !Settings.ForgetMpdnVersion && !Settings.ForgetExtensionVersion)
+                && playerNeedUpdate && extensionNeedUpdate)
+            {
+                new SimpleUpdateForm(SimpleUpdateForm.UpdateType.Both, Settings).ShowDialog(Gui.VideoBox);
+                return true;
+            }
+
+            if ((force || !Settings.ForgetMpdnVersion) && playerNeedUpdate)
+            {
+                new SimpleUpdateForm(SimpleUpdateForm.UpdateType.Player, Settings).ShowDialog(Gui.VideoBox);
+                return true;
+            }
+
+            if ((force || !Settings.ForgetExtensionVersion) && extensionNeedUpdate)
+            {
+                new SimpleUpdateForm(SimpleUpdateForm.UpdateType.Extensions, Settings).ShowDialog(Gui.VideoBox);
+                return true;
+            }
+            return false;
         }
 
         public override void Destroy()
@@ -141,6 +173,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             CheckForUpdate = true;
             ForgetMpdnVersion = false;
+            UseSimpleUpdate = RegistryHelper.IsPlayerInstalled();
         }
         
         public bool CheckForUpdate { get; set; }
@@ -149,6 +182,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public bool ForgetMpdnVersion { get; set; }
         public bool ForgetExtensionVersion { get; set; }
         public string LastMpdnReleaseChosen { get; set; }
+        public bool UseSimpleUpdate { get; set; }
     }
 
     public class UpdateChecker
@@ -257,9 +291,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var result = JsonConvert.DeserializeObject<GitHubVersion>(changelog);
             var version = new ExtensionVersion(result.tag_name);
             var changelogStarted = false;
-            foreach (string line in Regex.Split(result.body, "\r\n|\r|\n"))
+            foreach (var line in Regex.Split(result.body, "\r\n|\r|\n").Where(line => !string.IsNullOrWhiteSpace(line)))
             {
-                if (changelogStarted && !string.IsNullOrWhiteSpace(line))
+                if (changelogStarted)
                 {
                     version.ChangelogLines.Add(line);
                 }

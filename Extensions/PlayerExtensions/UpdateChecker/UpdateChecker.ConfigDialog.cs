@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
+using System.Windows.Controls;
 using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
@@ -23,17 +25,25 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public UpdateCheckerConfigDialog()
         {
             InitializeComponent();
+            simpleModeTooltip.SetToolTip(simpleModeCheckbox, "This mode disable the display of the changelog and it updates silently the player. Only for installed version.");
+            if (!RegistryHelper.IsPlayerInstalled())
+            {
+                simpleModeCheckbox.Enabled = false;
+                simpleModeCheckbox.Text += " (Only for installed version)";
+            }
 
         }
 
         protected override void LoadSettings()
         {
             checkBoxCheckUpdate.Checked = Settings.CheckForUpdate;
+            simpleModeCheckbox.Checked = Settings.UseSimpleUpdate;
         }
 
         protected override void SaveSettings()
         {
             Settings.CheckForUpdate = checkBoxCheckUpdate.Checked;
+            Settings.UseSimpleUpdate = simpleModeCheckbox.Checked;
         }
     }
     public class UpdateCheckerConfigBase : ScriptConfigDialog<UpdateCheckerSettings>

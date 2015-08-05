@@ -77,9 +77,11 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
     <Reference Include="YAXLib">
       <HintPath>MPDN\YAXLib.dll</HintPath>
@@ -198,6 +200,15 @@
     </Compile>
     <Compile Include="Extensions\PlayerExtensions\RemoteControl_AuthHandler.cs" />
     <Compile Include="Extensions\PlayerExtensions\RendererControl.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\SimpleUpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\SimpleUpdateForm.Designer.cs">
+      <DependentUpon>SimpleUpdateForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\TextProgressBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -214,7 +225,7 @@
     <Compile Include="Extensions\PlayerExtensions\Exceptions\Exceptions.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.Version.cs" />
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker\UpdateChecker.PlayerExtension.cs" />
-    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\WebClientHelper.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\Helpers.cs" />
     <Compile Include="Extensions\PlayerExtensions\VideoFrame.cs" />
     <Compile Include="Extensions\PlayerExtensions\VideoSpecifier.cs" />
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfo.cs" />
