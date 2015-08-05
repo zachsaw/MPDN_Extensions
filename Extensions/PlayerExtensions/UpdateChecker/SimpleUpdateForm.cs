@@ -101,7 +101,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void InstallerOnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs downloadProgressChangedEventArgs)
         {
-            GuiThread.Do(() =>
+            GuiThread.DoAsync(() =>
             {
                 downloadProgressBar.Value = downloadProgressChangedEventArgs.ProgressPercentage;
             });
@@ -110,7 +110,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private void InstallerOnDownloadFailed(object sender, Exception error)
         {
             var file = ((WebFile) sender);
-            GuiThread.Do(() =>
+            GuiThread.DoAsync(() =>
             {
                 downloadProgressBar.Visible = false;
                 installButton.Enabled = true;
@@ -129,9 +129,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private WebFile UpdatePlayer()
         {
-            var arch = ArchitectureHelper.GetPlayerArtchitecture();
+            var arch = ArchitectureHelper.GetPlayerArtchitecture().ToString();
             var installer =
-                m_Settings.MpdnVersionOnServer.GenerateSplitButtonItemList().First(file => file.Name.Contains(arch) && file.IsFile && file.Name.Contains(".exe"));
+                m_Settings.MpdnVersionOnServer.GenerateSplitButtonItemList().First(file => file.Name.Contains(arch) && file.IsFile && file.Name.Contains("Installer"));
             downloadProgressBar.CustomText = installer.Name;
             return new TemporaryWebFile(new Uri(installer.Url));
         }
@@ -163,6 +163,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     Application.Exit();
 
                 });
+                m_DownloadingWebFile.DownloadFile();
             });
             m_DownloadingWebFile.DownloadFile();
 

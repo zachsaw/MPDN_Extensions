@@ -32,7 +32,7 @@
             this.cancelButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.forgetUpdateButton = new System.Windows.Forms.Button();
-            this.downloadProgressBar = new TextProgressBar();
+            this.downloadProgressBar = new Mpdn.Extensions.PlayerExtensions.UpdateChecker.TextProgressBar();
             this.SuspendLayout();
             // 
             // installButton
@@ -40,7 +40,6 @@
             this.installButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.installButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.installButton.Location = new System.Drawing.Point(12, 44);
             this.installButton.Name = "installButton";
             this.installButton.Size = new System.Drawing.Size(75, 23);
@@ -86,6 +85,8 @@
             // 
             // downloadProgressBar
             // 
+            this.downloadProgressBar.CustomText = null;
+            this.downloadProgressBar.DisplayStyle = Mpdn.Extensions.PlayerExtensions.UpdateChecker.TextProgressBar.ProgressBarDisplayText.Both;
             this.downloadProgressBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.downloadProgressBar.Location = new System.Drawing.Point(0, 0);
             this.downloadProgressBar.Name = "downloadProgressBar";
@@ -95,7 +96,6 @@
             // 
             // SimpleUpdateForm
             // 
-            this.AcceptButton = this.installButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
