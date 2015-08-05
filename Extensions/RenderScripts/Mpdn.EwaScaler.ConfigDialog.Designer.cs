@@ -16,9 +16,9 @@
 // 
 namespace Mpdn.Extensions.RenderScripts
 {
-    namespace Mpdn.Jinc2D
+    namespace Mpdn.EwaScaler
     {
-        partial class Jinc2DConfigDialog
+        partial class EwaScalerConfigDialog
         {
             /// <summary>
             /// Required designer variable.
@@ -48,12 +48,14 @@ namespace Mpdn.Extensions.RenderScripts
             {
             this.ButtonOK = new System.Windows.Forms.Button();
             this.ButtonCancel = new System.Windows.Forms.Button();
-            this.AntiRingingStrengthSetter = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
+            this.setterAntiRingStrength = new System.Windows.Forms.NumericUpDown();
+            this.labelStrength = new System.Windows.Forms.Label();
             this.checkBoxAntiRinging = new System.Windows.Forms.CheckBox();
             this.comboBoxTapCount = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.AntiRingingStrengthSetter)).BeginInit();
+            this.label3 = new System.Windows.Forms.Label();
+            this.comboBoxScaler = new System.Windows.Forms.ComboBox();
+            ((System.ComponentModel.ISupportInitialize)(this.setterAntiRingStrength)).BeginInit();
             this.SuspendLayout();
             // 
             // ButtonOK
@@ -61,7 +63,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(64, 110);
+            this.ButtonOK.Location = new System.Drawing.Point(55, 159);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 10;
@@ -73,49 +75,49 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(145, 110);
+            this.ButtonCancel.Location = new System.Drawing.Point(136, 159);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 11;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
             // 
-            // AntiRingingStrengthSetter
+            // setterAntiRingStrength
             // 
-            this.AntiRingingStrengthSetter.DecimalPlaces = 2;
-            this.AntiRingingStrengthSetter.Increment = new decimal(new int[] {
+            this.setterAntiRingStrength.DecimalPlaces = 2;
+            this.setterAntiRingStrength.Increment = new decimal(new int[] {
             15,
             0,
             0,
             131072});
-            this.AntiRingingStrengthSetter.Location = new System.Drawing.Point(128, 71);
-            this.AntiRingingStrengthSetter.Maximum = new decimal(new int[] {
+            this.setterAntiRingStrength.Location = new System.Drawing.Point(135, 113);
+            this.setterAntiRingStrength.Maximum = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            this.AntiRingingStrengthSetter.Name = "AntiRingingStrengthSetter";
-            this.AntiRingingStrengthSetter.Size = new System.Drawing.Size(44, 20);
-            this.AntiRingingStrengthSetter.TabIndex = 3;
-            this.AntiRingingStrengthSetter.Value = new decimal(new int[] {
+            this.setterAntiRingStrength.Name = "setterAntiRingStrength";
+            this.setterAntiRingStrength.Size = new System.Drawing.Size(44, 20);
+            this.setterAntiRingStrength.TabIndex = 3;
+            this.setterAntiRingStrength.Value = new decimal(new int[] {
             85,
             0,
             0,
             131072});
             // 
-            // label1
+            // labelStrength
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(72, 73);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(50, 13);
-            this.label1.TabIndex = 7;
-            this.label1.Text = "Strength:";
+            this.labelStrength.AutoSize = true;
+            this.labelStrength.Location = new System.Drawing.Point(79, 115);
+            this.labelStrength.Name = "labelStrength";
+            this.labelStrength.Size = new System.Drawing.Size(50, 13);
+            this.labelStrength.TabIndex = 7;
+            this.labelStrength.Text = "Strength:";
             // 
             // checkBoxAntiRinging
             // 
             this.checkBoxAntiRinging.AutoSize = true;
-            this.checkBoxAntiRinging.Location = new System.Drawing.Point(57, 45);
+            this.checkBoxAntiRinging.Location = new System.Drawing.Point(64, 87);
             this.checkBoxAntiRinging.Name = "checkBoxAntiRinging";
             this.checkBoxAntiRinging.Size = new System.Drawing.Size(119, 17);
             this.checkBoxAntiRinging.TabIndex = 2;
@@ -127,43 +129,65 @@ namespace Mpdn.Extensions.RenderScripts
             this.comboBoxTapCount.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTapCount.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxTapCount.FormattingEnabled = true;
-            this.comboBoxTapCount.Location = new System.Drawing.Point(57, 12);
+            this.comboBoxTapCount.Location = new System.Drawing.Point(64, 54);
             this.comboBoxTapCount.Name = "comboBoxTapCount";
             this.comboBoxTapCount.Size = new System.Drawing.Size(121, 21);
-            this.comboBoxTapCount.TabIndex = 0;
+            this.comboBoxTapCount.TabIndex = 1;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(17, 15);
+            this.label2.Location = new System.Drawing.Point(24, 57);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(34, 13);
             this.label2.TabIndex = 9;
             this.label2.Text = "Taps:";
             // 
-            // Jinc2DConfigDialog
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(18, 24);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(40, 13);
+            this.label3.TabIndex = 13;
+            this.label3.Text = "Scaler:";
+            // 
+            // comboBoxScaler
+            // 
+            this.comboBoxScaler.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxScaler.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.comboBoxScaler.FormattingEnabled = true;
+            this.comboBoxScaler.Location = new System.Drawing.Point(64, 21);
+            this.comboBoxScaler.Name = "comboBoxScaler";
+            this.comboBoxScaler.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxScaler.TabIndex = 0;
+            this.comboBoxScaler.SelectedIndexChanged += new System.EventHandler(this.ScalerSelectionChanged);
+            // 
+            // EwaScalerConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(232, 145);
+            this.ClientSize = new System.Drawing.Size(223, 194);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.comboBoxScaler);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.comboBoxTapCount);
             this.Controls.Add(this.checkBoxAntiRinging);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.AntiRingingStrengthSetter);
+            this.Controls.Add(this.labelStrength);
+            this.Controls.Add(this.setterAntiRingStrength);
             this.Controls.Add(this.ButtonCancel);
             this.Controls.Add(this.ButtonOK);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "Jinc2DConfigDialog";
+            this.Name = "EwaScalerConfigDialog";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Jinc2D Settings";
-            ((System.ComponentModel.ISupportInitialize)(this.AntiRingingStrengthSetter)).EndInit();
+            this.Text = "EwaScaler Settings";
+            ((System.ComponentModel.ISupportInitialize)(this.setterAntiRingStrength)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -173,11 +197,13 @@ namespace Mpdn.Extensions.RenderScripts
 
             private System.Windows.Forms.Button ButtonOK;
             private System.Windows.Forms.Button ButtonCancel;
-            private System.Windows.Forms.NumericUpDown AntiRingingStrengthSetter;
-            private System.Windows.Forms.Label label1;
+            private System.Windows.Forms.NumericUpDown setterAntiRingStrength;
+            private System.Windows.Forms.Label labelStrength;
             private System.Windows.Forms.CheckBox checkBoxAntiRinging;
             private System.Windows.Forms.ComboBox comboBoxTapCount;
             private System.Windows.Forms.Label label2;
+            private System.Windows.Forms.Label label3;
+            private System.Windows.Forms.ComboBox comboBoxScaler;
 
         }
     }

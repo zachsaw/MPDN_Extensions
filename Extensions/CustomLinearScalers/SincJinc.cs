@@ -15,25 +15,25 @@
 // License along with this library.
 // 
 using System;
+using Mpdn.Extensions.CustomLinearScalers.Functions;
 
 namespace Mpdn.Extensions.CustomLinearScalers
 {
-    public class SincCosine : Sinc
+    public class SincJinc : Sinc
     {
         public override Guid Guid
         {
-            get { return new Guid("687A62CC-8A73-4511-BB1F-158F61B8CDA1"); }
+            get { return new Guid("C7D677F7-C2FE-407F-8C7F-CD67A8F3A977"); }
         }
 
         public override string WindowName
         {
-            get { return "Cosine"; }
+            get { return "Jinc"; }
         }
 
         public override double GetWindowWeight(double x, double radius)
         {
-            var f = x * Math.PI / 2;
-            return Math.Cos(f / radius);
+            return Jinc.CalculateWindow(x, (int) Math.Round(radius));
         }
     }
 }

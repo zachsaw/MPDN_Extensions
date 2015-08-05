@@ -101,8 +101,10 @@
     <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />
+    <Compile Include="Extensions\CustomLinearScalers\SincJinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincBlackman.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincCosine.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHamming.cs" />
@@ -245,7 +247,7 @@
       <DependentUpon>Mpdn.ImageProcessor.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.ImageProcessor.cs" />
-    <Compile Include="Extensions\RenderScripts\Mpdn.Jinc2DChroma.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.EwaChromaScaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Lut3D.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -297,13 +299,13 @@
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptedRenderChain.ScriptParser.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptGroup.cs" />
-    <Compile Include="Extensions\RenderScripts\Mpdn.Jinc2D.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.EwaScaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ChromaScaler.cs" />
-    <Compile Include="Extensions\RenderScripts\Mpdn.Jinc2D.ConfigDialog.cs">
+    <Compile Include="Extensions\RenderScripts\Mpdn.EwaScaler.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.Jinc2D.ConfigDialog.Designer.cs">
-      <DependentUpon>Mpdn.Jinc2D.ConfigDialog.cs</DependentUpon>
+    <Compile Include="Extensions\RenderScripts\Mpdn.EwaScaler.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.EwaScaler.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ConfigDialog.cs">
       <SubType>Form</SubType>
@@ -425,7 +427,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Extensions\RenderScripts\Jinc2D\Jinc2D.hlsl" />
+    <Content Include="Extensions\RenderScripts\EwaScaler\EwaScaler.hlsl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

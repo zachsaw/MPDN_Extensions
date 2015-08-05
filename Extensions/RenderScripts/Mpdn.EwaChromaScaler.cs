@@ -25,13 +25,13 @@ using WeightFilter = Mpdn.Extensions.Framework.RenderChain.TextureSourceFilter<M
 
 namespace Mpdn.Extensions.RenderScripts
 {
-    namespace Mpdn.Jinc2D
+    namespace Mpdn.EwaScaler
     {
-        public class Jinc2DChroma : Jinc2D
+        public class EwaScalerChroma : EwaScaler
         {
             protected override string ShaderPath
             {
-                get { return "Jinc2D"; }
+                get { return "EwaScaler"; }
             }
 
             public override IFilter CreateFilter(IFilter input)
@@ -47,7 +47,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var offset = Renderer.ChromaOffset + new Vector2(0.5f, 0.5f);
                 int lobes = TapCount.ToInt() / 2;
-                var shader = CompileShader("Jinc2D.hlsl",
+                var shader = CompileShader("EwaScaler.hlsl",
                     macroDefinitions:
                         string.Format("LOBES = {0}; AR = {1}; CHROMA = 1;",
                             lobes, AntiRingingEnabled ? 1 : 0))
@@ -58,15 +58,15 @@ namespace Mpdn.Extensions.RenderScripts
                     );
 
                 var yuvFilters = new IFilter[] {new YSourceFilter(), new USourceFilter(), new VSourceFilter()};
-                return GetJincFilter(shader, yuvFilters).ConvertToRgb();
+                return GetEwaFilter(shader, yuvFilters).ConvertToRgb();
             }
         }
 
-        public class Jinc2DChromaScaler : RenderChainUi<Jinc2DChroma, Jinc2DConfigDialog>
+        public class EwaScalerChromaScaler : RenderChainUi<EwaScalerChroma, EwaScalerConfigDialog>
         {
             protected override string ConfigFileName
             {
-                get { return "Mpdn.Jinc2DChroma"; }
+                get { return "Mpdn.EwaScalerChroma"; }
             }
 
             public override string Category
@@ -81,8 +81,8 @@ namespace Mpdn.Extensions.RenderScripts
                     return new ExtensionUiDescriptor
                     {
                         Guid = new Guid("D93E8C6F-1A4C-40D2-913A-3773C00D1541"),
-                        Name = "Jinc2D Chroma",
-                        Description = "Jinc (cylindrical) chroma upscaler"
+                        Name = "EWA Chroma Scaler",
+                        Description = "Elliptical weighted average (EWA) chroma upscaler"
                     };
                 }
             }
