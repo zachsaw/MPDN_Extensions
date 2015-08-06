@@ -115,7 +115,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private void InstallerOnDownloaded(object sender)
         {
             ((WebFile) sender).Start();
-            Application.Exit();
+            GuiThread.Do((Application.Exit));
         }
 
         private WebFile UpdatePlayer()
@@ -137,27 +137,16 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void UpdateBoth()
         {
-            m_DownloadingWebFile = UpdatePlayer();
-            m_DownloadingWebFile.DownloadProgressChanged += InstallerOnDownloadProgressChanged;
+            m_DownloadingWebFile = UpdateExtensions();
             m_DownloadingWebFile.DownloadFailed += InstallerOnDownloadFailed;
-            m_DownloadingWebFile.Downloaded += ((sender) =>
+            m_DownloadingWebFile.DownloadProgressChanged += InstallerOnDownloadProgressChanged;
+            m_DownloadingWebFile.Downloaded += ((o) =>
             {
-                var filePath = ((WebFile) sender).FilePath;
-                m_DownloadingWebFile = UpdateExtensions();
-
-                m_DownloadingWebFile.DownloadFailed += InstallerOnDownloadFailed;
-                m_DownloadingWebFile.DownloadProgressChanged += InstallerOnDownloadProgressChanged;
-                m_DownloadingWebFile.Downloaded += ((o) =>
-                {
-                    var downloadedExtensionInstaller = (WebFile) o;
-                    downloadedExtensionInstaller.Start(string.Format("/ARCH={0} /INSTALLER=\"{1}\"", ArchitectureHelper.GetPlayerArtchitecture(), filePath));
-                    Application.Exit();
-
-                });
-                m_DownloadingWebFile.DownloadFile();
+                var downloadedExtensionInstaller = (WebFile) o;
+                downloadedExtensionInstaller.Start(string.Format("/ARCH={0} /MPDN_VERSION=\"{1}\"", ArchitectureHelper.GetPlayerArtchitecture(), m_Settings.MpdnVersionOnServer));
+                GuiThread.Do((Application.Exit));
             });
             m_DownloadingWebFile.DownloadFile();
-
         }
 
         private void CancelButtonClick(object sender, EventArgs e)
