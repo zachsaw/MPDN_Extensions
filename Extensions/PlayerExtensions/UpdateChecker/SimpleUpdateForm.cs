@@ -151,7 +151,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void CancelButtonClick(object sender, EventArgs e)
         {
-            m_DownloadingWebFile.CancelDownload();
+            if (m_DownloadingWebFile != null) m_DownloadingWebFile.CancelDownload();
             Close();
         }
     }
