@@ -16,6 +16,7 @@
 
 using System;
 using System.ComponentModel;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -91,6 +92,9 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
+                if (Renderer.InputFormat.IsRgb())
+                    return input;
+
                 var yInput = new YSourceFilter();
                 var uInput = new USourceFilter();
                 var vInput = new VSourceFilter();

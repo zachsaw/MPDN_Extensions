@@ -62,6 +62,9 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
+                if (Renderer.InputFormat.IsRgb())
+                    return input;
+
                 IFilter hiRes;
 
                 var chromaSize = (TextureSize)Renderer.ChromaSize;

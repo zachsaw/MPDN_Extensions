@@ -38,6 +38,9 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 DiscardTextures();
 
+                if (Renderer.InputFormat.IsRgb())
+                    return input;
+
                 var sourceSize = input.OutputSize;
                 if (!IsUpscalingFrom(sourceSize))
                     return input;
