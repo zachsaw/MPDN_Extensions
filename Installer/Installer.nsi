@@ -54,7 +54,7 @@ Var /Global doCleanInstall
 ;--------------------------------
 ; Advanced Installer Variables
 Var /Global playerArchitecture
-Var /Global playerInstallerPath
+Var /Global playerVersion
 ;--------------------------------
 
 ;Configuration
@@ -106,6 +106,7 @@ ShowUninstDetails show
 
 LangString DESC_SecMPDNExtensions32 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for MPDN 32-bit Edition."
 LangString DESC_SecMPDNExtensions64 ${LANG_ENGLISH} "Install ${PROJECT_NAME} for MPDN 64-bit Edition."
+LangString DESC_SecUpdatePlayer ${LANG_ENGLISH} "It will download the player installer and update MPDN automatically."
 
 ;--------------------------------
 ;Macros
@@ -176,23 +177,24 @@ Section -pre
 
 SectionEnd
 
-Section /o "-Install Player" SecInstallPlayer
+Section /o "Download & Update Player" SecInstallPlayer
+    StrCpy $R1 "MPDN_$playerArchitecture_$playerVersion_Installer.exe"
+    NSISdl::download "http://mpdn.zachsaw.com/Latest/MediaPlayerDotNet_$playerArchitecture_Installer.exe" $R1
+    Pop $R0 ;Get the return value
+        StrCmp $R0 "success" +3
+        MessageBox MB_OK "Download failed: $R0"
+        Quit
+        
     DetailPrint "Install Player"
-    IfFileExists $playerInstallerPath 0 noPlayer
-        Banner::show /set 76 "Installing the Player" "MediaPlayerDotNet"
+    Banner::show /set 76 "Updating the Player..." "MediaPlayerDotNet $playerVersion"
 
-        Banner::getWindow
-        Pop $1
-        
-        ExecWait "$playerInstallerPath /S"
-        ;Delete $playerInstallerPath
-        
-        Banner::destroy        
-        GoTo playedInstalled
-    noPlayer:  
-        DetailPrint "Player installer not found: $playerInstallerPath"
-        
-    playedInstalled:
+    Banner::getWindow
+    Pop $1
+    
+    ExecWait "$R1 /S"
+    Delete $R1
+    
+    Banner::destroy        
         
 SectionEnd
 
@@ -209,13 +211,11 @@ Section -post
     ; Register for 64-bit first so it has precedence over the 32-bit MPDN
     ${IfNot} $mpdn64_root == ""
         ${registerExtension} "$mpdn64_root\MediaPlayerDotNet.exe" ".mpl" "MPDN Playlist File"
-        ${GetFileVersion}  "$mpdn64_root\MediaPlayerDotNet.exe" $R0
-        WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MediaPlayerDotNet_x64" "DisplayVersion" "$R0/${VERSION_1}.${VERSION_2}.${VERSION_3}"      
+        WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MediaPlayerDotNet_x64" "DisplayVersion" "$playerVersion/${VERSION_1}.${VERSION_2}.${VERSION_3}"      
     ${EndIf}
     ${IfNot} $mpdn32_root == ""
         ${registerExtension} "$mpdn32_root\MediaPlayerDotNet.exe" ".mpl" "MPDN Playlist File"
-        ${GetFileVersion}  "$mpdn32_root\MediaPlayerDotNet.exe" $R0
-        WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MediaPlayerDotNet_x86" "DisplayVersion" "$R0/${VERSION_1}.${VERSION_2}.${VERSION_3}"     
+        WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MediaPlayerDotNet_x86" "DisplayVersion" "$playerVersion/${VERSION_1}.${VERSION_2}.${VERSION_3}"     
     ${EndIf}
     
 SectionEnd
@@ -245,11 +245,11 @@ Function .onInit
         Goto +2
         StrCpy $playerArchitecture $R1
         
-        ${GetOptions} '$R0' '/INSTALLER=' $R1
+        ${GetOptions} '$R0' '/MPDN_VERSION=' $R1
         StrCmp $R1 '' 0 +3
-        StrCpy $playerInstallerPath ''
+        StrCpy $playerVersion ''
         Goto +2
-        StrCpy $playerInstallerPath $R1
+        StrCpy $playerVersion $R1
     ; END Advanced Installer Variables
     
     !insertmacro SelectSection ${SecMPDNExtensions32}
@@ -270,7 +270,7 @@ Function .onInit
     StrCpy $R0 "$mpdn32_root"
     StrCpy $R1 "$mpdn64_root"
     
-    ${IfNot} "$playerArchitecture$playerInstallerPath" == ""
+    ${IfNot} "$playerArchitecture$playerVersion" == ""
         ${If} $playerArchitecture == "x64"
             SectionSetText ${SecMPDNExtensions32} ""
             !insertmacro UnselectSection ${SecMPDNExtensions32}
@@ -279,9 +279,10 @@ Function .onInit
             !insertmacro UnselectSection ${SecMPDNExtensions64}
         ${EndIf}
         !insertmacro SelectSection ${SecInstallPlayer}
+        SectionSetFlags ${SecInstallPlayer} 17
         
     ${Else}
-            
+        SectionSetText ${SecInstallPlayer} ""
         StrCmp $R0 "" 0 check64
             SectionSetText ${SecMPDNExtensions32} ""
             !insertmacro UnselectSection ${SecMPDNExtensions32}
@@ -302,6 +303,12 @@ Function Welcome.show
     ${NSD_CreateCheckbox} 120u -18u 50% 12u "Perform a clean install (use with care)"
     Pop $doCleanInstall
     SetCtlColors $doCleanInstall "" ${MUI_BGCOLOR}
+    
+     ${IfNot} "$playerArchitecture$playerVersion" == ""
+        SendMessage $mui.WelcomePage.Text ${WM_SETTEXT} 0 "STR:$(MUI_TEXT_WELCOME_INFO_TEXT)$\n$\nIt will also download and update the player to the latest version. ($playerVersion)"
+        SendMessage $mui.WelcomePage.Title ${WM_SETTEXT} 0 "STR:${PROJECT_NAME} v${VERSION_1}.${VERSION_2}.${VERSION_3} + MediaPlayerDotNet $playerVersion"
+        SendMessage $HWNDPARENT ${WM_SETTEXT} 0 "STR:${PROJECT_NAME} v${VERSION_1}.${VERSION_2}.${VERSION_3} + MediaPlayerDotNet $playerVersion"
+    ${EndIf}
 FunctionEnd
 
 Function Welcome.leave
@@ -344,4 +351,5 @@ SectionEnd
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
     !insertmacro MUI_DESCRIPTION_TEXT ${SecMPDNExtensions32} $(DESC_SecMPDNExtensions32)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecMPDNExtensions64} $(DESC_SecMPDNExtensions64)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecInstallPlayer} $(DESC_SecUpdatePlayer)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
