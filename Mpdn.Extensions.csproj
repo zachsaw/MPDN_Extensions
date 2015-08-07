@@ -132,6 +132,13 @@
     <Compile Include="Extensions\PlayerExtensions\Interfaces\IDirectVobSub.cs" />
     <Compile Include="Extensions\PlayerExtensions\Interfaces\ILavAudioSettings.cs" />
     <Compile Include="Extensions\PlayerExtensions\AudioSettings.cs" />
+    <Compile Include="Extensions\PlayerExtensions\FullScreenDisplaySelector.cs" />
+    <Compile Include="Extensions\PlayerExtensions\FullScreenDisplaySelector.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\FullScreenDisplaySelector.ConfigDialog.Designer.cs">
+      <DependentUpon>FullScreenDisplaySelector.ConfigDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\PlayerExtensions\Subtitles\SubtitleDelay.cs" />
     <Compile Include="Extensions\PlayerExtensions\Subtitles\Subtitle.cs" />
     <Compile Include="Extensions\PlayerExtensions\Subtitles\SubtitleManager.cs" />
