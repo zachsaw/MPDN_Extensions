@@ -16,10 +16,8 @@
 // 
 
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 
@@ -61,6 +59,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     m_Settings.ForgetMpdnVersion = true;
                     break;
             }
+            StopDownload();
         }
 
         private void InstallButtonClick(object sender, EventArgs e)
@@ -90,12 +89,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             m_DownloadingWebFile.DownloadFile();
         }
 
-        private void InstallerOnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs downloadProgressChangedEventArgs)
+        private void InstallerOnDownloadProgressChanged(object sender,
+            DownloadProgressChangedEventArgs downloadProgressChangedEventArgs)
         {
-            GuiThread.DoAsync(() =>
-            {
-                downloadProgressBar.Value = downloadProgressChangedEventArgs.ProgressPercentage;
-            });
+            GuiThread.DoAsync(() => { downloadProgressBar.Value = downloadProgressChangedEventArgs.ProgressPercentage; });
         }
 
         private void InstallerOnDownloadFailed(object sender, Exception error)
@@ -105,11 +102,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             {
                 downloadProgressBar.Visible = false;
                 installButton.Enabled = true;
-                MessageBox.Show(Gui.VideoBox, string.Format("Problem while downloading: {0}\n{1}", file.FileUri, error.Message),
-               "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Gui.VideoBox,
+                    string.Format("Problem while downloading: {0}\n{1}", file.FileUri, error.Message),
+                    "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             });
-           
-
         }
 
         private void InstallerOnDownloaded(object sender)
@@ -122,7 +118,8 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             var arch = ArchitectureHelper.GetPlayerArtchitecture().ToString();
             var installer =
-                m_Settings.MpdnVersionOnServer.GenerateSplitButtonItemList().First(file => file.Name.Contains(arch) && file.IsFile && file.Name.Contains("Installer"));
+                m_Settings.MpdnVersionOnServer.GenerateSplitButtonItemList()
+                    .First(file => file.Name.Contains(arch) && file.IsFile && file.Name.Contains("Installer"));
             downloadProgressBar.CustomText = installer.Name;
             return new TemporaryWebFile(new Uri(installer.Url));
         }
@@ -130,7 +127,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private WebFile UpdateExtensions()
         {
             var installer =
-               m_Settings.ExtensionVersionOnServer.Files.First(file => file.name.Contains(".exe"));
+                m_Settings.ExtensionVersionOnServer.Files.First(file => file.name.Contains(".exe"));
             downloadProgressBar.CustomText = installer.name;
             return new TemporaryWebFile(new Uri(installer.browser_download_url));
         }
@@ -140,16 +137,25 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             m_DownloadingWebFile = UpdateExtensions();
             m_DownloadingWebFile.DownloadFailed += InstallerOnDownloadFailed;
             m_DownloadingWebFile.DownloadProgressChanged += InstallerOnDownloadProgressChanged;
-            m_DownloadingWebFile.Downloaded += ((o) =>
+            m_DownloadingWebFile.Downloaded += (o =>
             {
                 var downloadedExtensionInstaller = (WebFile) o;
-                downloadedExtensionInstaller.Start(string.Format("/ARCH={0} /MPDN_VERSION=\"{1}\"", ArchitectureHelper.GetPlayerArtchitecture(), m_Settings.MpdnVersionOnServer));
+                downloadedExtensionInstaller.Start(string.Format("/ARCH={0} /MPDN_VERSION=\"{1}\"",
+                    ArchitectureHelper.GetPlayerArtchitecture(), m_Settings.MpdnVersionOnServer));
                 GuiThread.Do((Application.Exit));
             });
             m_DownloadingWebFile.DownloadFile();
         }
 
         private void CancelButtonClick(object sender, EventArgs e)
+        {
+            StopDownload();
+        }
+
+        /// <summary>
+        ///     Stop the download and close the Form
+        /// </summary>
+        private void StopDownload()
         {
             if (m_DownloadingWebFile != null) m_DownloadingWebFile.CancelDownload();
             Close();
