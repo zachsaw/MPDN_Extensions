@@ -1,9 +1,9 @@
 MPDN Extensions
 ===============
 
-MPDN project page - http://www.zachsaw.com/mpdn/
-
-MPDN support page on Doom9.org - http://forum.doom9.org/showthread.php?t=171120
+MPDN project page - http://www.zachsaw.com/mpdn/  
+MPDN support page on Doom9.org - http://forum.doom9.org/showthread.php?t=171120  
+MPDN Extensions Wiki - https://github.com/zachsaw/MPDN_Extensions/wiki/MPDN-Extensions-Wiki---Home  
 
 <H3>Developers</H3>
 * Zachs
