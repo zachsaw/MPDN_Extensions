@@ -28,6 +28,22 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public static class SubtitleManager
     {
+        [Flags]
+        private enum SubType
+        {
+            SRT = 0,
+            SUB,
+            SMI,
+            PSB,
+            SSA,
+            ASS,
+            IDX,
+            USF,
+            XSS,
+            TXT,
+            RT,
+            SUP
+        };
         public class SubtitleTiming
         {
             public int Delay { get; set; }
@@ -148,6 +164,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             });
             return true;
         }
+        /// <summary>
+        /// Check if the extension of the file is linked to a Subtitle format.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public static bool IsSubtitleFile(string file)
+        {
+            var extension = Path.GetExtension(file);
 
+            if (extension == null)
+                return false;
+
+            var ext = extension.Remove(0,1);
+            return Enum.IsDefined(typeof (SubType), ext.ToUpper());
+        }
     }
 }
