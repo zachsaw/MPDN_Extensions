@@ -139,6 +139,7 @@
     <Compile Include="Extensions\PlayerExtensions\FullScreenDisplaySelector.ConfigDialog.Designer.cs">
       <DependentUpon>FullScreenDisplaySelector.ConfigDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\Subtitles\SubtitleDragAndDrop.cs" />
     <Compile Include="Extensions\PlayerExtensions\Subtitles\SubtitleDelay.cs" />
     <Compile Include="Extensions\PlayerExtensions\Subtitles\Subtitle.cs" />
     <Compile Include="Extensions\PlayerExtensions\Subtitles\SubtitleManager.cs" />
