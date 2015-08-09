@@ -16,7 +16,6 @@
 // 
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -26,7 +25,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public class SubtitleDragAndDrop : PlayerExtension
     {
-
         public override ExtensionUiDescriptor Descriptor
         {
             get
@@ -45,17 +43,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             get { return "SubtitleDragAndDrop"; }
         }
 
-
         public override void Initialize()
         {
             base.Initialize();
-            Player.DragDrop +=PlayerOnDragDrop;
+            Player.DragDrop += PlayerOnDragDrop;
         }
-
 
         private void PlayerOnDragDrop(object sender, PlayerControlEventArgs<DragEventArgs> playerControlEventArgs)
         {
-            var files = (string[])playerControlEventArgs.InputArgs.Data.GetData(DataFormats.FileDrop);
+            var files = (string[]) playerControlEventArgs.InputArgs.Data.GetData(DataFormats.FileDrop);
             foreach (var file in files.Where(SubtitleManager.IsSubtitleFile))
             {
                 playerControlEventArgs.Handled = true;
@@ -80,7 +76,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
         {
             base.Destroy();
             Player.DragDrop -= PlayerOnDragDrop;
-
         }
     }
 }
