@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using DirectShowLib;
 using Mpdn.Extensions.Framework;
 
-namespace Mpdn.Extensions.AudioScripts
+namespace Mpdn.Examples.AudioScripts
 {
-    public class Passthrough : Framework.AudioScript
+    public class Gargle : Extensions.Framework.AudioScript
     {
         private const int GARGLE_RATE = 10;
         private const int SHAPE = 1; // 0=Triangle, 1=Sqaure
@@ -37,8 +38,8 @@ namespace Mpdn.Extensions.AudioScripts
             {
                 return new ExtensionUiDescriptor
                 {
-                    Guid = new Guid("137018B2-E203-4571-B7C1-31FC2C48CD60"),
-                    Name = "Passthrough",
+                    Guid = new Guid("A27971B2-F625-4AC8-9AC5-5B448AB77BB6"),
+                    Name = "Gargle",
                     Description = "Simple audio gargle example"
                 };
             }
@@ -53,16 +54,16 @@ namespace Mpdn.Extensions.AudioScripts
 
         public override bool Process()
         {
-            AudioHelpers.CopySample(Audio.Input, Audio.Output); // passthrough from input to output
+            AudioHelpers.CopySample(Audio.Input, Audio.Output); // Gargle from input to output
 
             IntPtr samples;
             Audio.Output.GetPointer(out samples);
-            Gargle(samples, Audio.Output.GetActualDataLength(), SHAPE == 0); // gargle output
+            GargleSamples(samples, Audio.Output.GetActualDataLength(), SHAPE == 0); // gargle output
 
             return true; // true = we handled the audio processing
         }
 
-        private unsafe void Gargle(IntPtr samples, int cb, bool triangle)
+        private unsafe void GargleSamples(IntPtr samples, int cb, bool triangle)
         {
             var pb = (byte*) samples;
 

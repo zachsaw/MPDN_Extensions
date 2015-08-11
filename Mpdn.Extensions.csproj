@@ -103,7 +103,8 @@
     <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\AudioScripts\Passthrough.cs" />
+    <Compile Include="Examples\AudioScripts\Gargle.cs" />
+    <Compile Include="Examples\AudioScripts\Passthrough.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />
@@ -448,6 +449,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Extensions\RenderScripts\EwaScaler\EwaScaler.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\AudioScripts\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
