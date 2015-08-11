@@ -450,9 +450,7 @@
   <ItemGroup>
     <Content Include="Extensions\RenderScripts\EwaScaler\EwaScaler.hlsl" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Extensions\AudioScripts\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>rmdir /s /q "$(ProjectDir)MPDN\Extensions"
