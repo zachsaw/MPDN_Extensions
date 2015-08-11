@@ -88,6 +88,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Compile Include="Examples\AudioScripts\Gargle.cs" />
+    <Compile Include="Examples\AudioScripts\Passthrough.cs" />
     <Compile Include="Examples\RenderScripts\Example.Basic.cs" />
     <Compile Include="Examples\RenderScripts\Example.CustomTextures.cs" />
     <Compile Include="Examples\RenderScripts\Example.DirectCompute.cs" />
@@ -103,8 +105,6 @@
     <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Examples\AudioScripts\Gargle.cs" />
-    <Compile Include="Examples\AudioScripts\Passthrough.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />

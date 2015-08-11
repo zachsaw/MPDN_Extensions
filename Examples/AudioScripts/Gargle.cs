@@ -24,7 +24,7 @@ namespace Mpdn.Examples.AudioScripts
     public class Gargle : Extensions.Framework.AudioScript
     {
         private const int GARGLE_RATE = 10;
-        private const int SHAPE = 1; // 0=Triangle, 1=Sqaure
+        private const int SHAPE = 0; // 0=Triangle, 1=Sqaure
 
         private short m_Channels;
         private int m_SamplesPerSec;
@@ -40,7 +40,7 @@ namespace Mpdn.Examples.AudioScripts
                 {
                     Guid = new Guid("A27971B2-F625-4AC8-9AC5-5B448AB77BB6"),
                     Name = "Gargle",
-                    Description = "Simple audio gargle example"
+                    Description = "Simple audio gargle example (translated from Windows SDK)"
                 };
             }
         }
@@ -54,7 +54,7 @@ namespace Mpdn.Examples.AudioScripts
 
         public override bool Process()
         {
-            AudioHelpers.CopySample(Audio.Input, Audio.Output); // Gargle from input to output
+            AudioHelpers.CopySample(Audio.Input, Audio.Output); // passthrough from input to output
 
             IntPtr samples;
             Audio.Output.GetPointer(out samples);
