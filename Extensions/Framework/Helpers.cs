@@ -682,6 +682,11 @@ namespace Mpdn.Extensions.Framework
             return PlayerControl.CreateText(font, size, style);
         }
 
+        public static void ClearScreen()
+        {
+            PlayerControl.ClearScreen();
+        }
+
         public static void ShowOptionsDialog()
         {
             PlayerControl.ShowOptionsDialog();
