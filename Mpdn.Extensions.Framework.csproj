@@ -81,6 +81,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\Framework\AudioScript.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviderBase.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviders.cs" />
     <Compile Include="Extensions\Framework\Config\ExtensionsUi.cs">

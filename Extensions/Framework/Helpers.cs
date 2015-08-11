@@ -17,12 +17,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using DirectShowLib;
+using Mpdn.AudioScript;
 using Mpdn.Config;
 using Mpdn.DirectShow;
 using Mpdn.RenderScript;
@@ -261,6 +264,56 @@ namespace Mpdn.Extensions.Framework
         }
     }
 
+    public static class AudioHelpers
+    {
+        private const int S_OK = 0;
+
+        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
+        public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
+
+        public static void CopySample(IMediaSample src, IMediaSample dest)
+        {
+            var sourceSize = src.GetActualDataLength();
+            var destSize = dest.GetSize();
+
+            Debug.Assert(destSize >= sourceSize);
+
+            IntPtr sourceBuffer;
+            src.GetPointer(out sourceBuffer);
+
+            IntPtr destBuffer;
+            dest.GetPointer(out destBuffer);
+
+            CopyMemory(destBuffer, sourceBuffer, sourceSize);
+
+            // Copy the sample times
+            long start, end;
+
+            if (src.GetTime(out start, out end) == S_OK)
+            {
+                dest.SetTime(start, end);
+            }
+
+            if (src.GetMediaTime(out start, out end) == S_OK)
+            {
+                dest.SetMediaTime(start, end);
+            }
+
+            // Copy the media type
+            AMMediaType mediaType;
+            src.GetMediaType(out mediaType);
+            dest.SetMediaType(mediaType);
+            DsUtils.FreeAMMediaType(mediaType);
+
+            dest.SetSyncPoint(src.IsSyncPoint() == S_OK);
+            dest.SetPreroll(src.IsPreroll() == S_OK);
+            dest.SetDiscontinuity(src.IsDiscontinuity() == S_OK);
+
+            // Copy the actual data length
+            dest.SetActualDataLength(sourceSize);
+        }
+    }
+
     public static class StringHelpers
     {
         public static string SubstringIdx(this string self, int startIndex, int endIndex)
@@ -320,7 +373,7 @@ namespace Mpdn.Extensions.Framework
     {
         public static int InterfaceVersion
         {
-            get { return 2; }
+            get { return 3; }
         }
 
         public static IList<Assembly> Assemblies
@@ -333,9 +386,19 @@ namespace Mpdn.Extensions.Framework
             get { return PlayerControl.RenderScripts; }
         }
 
+        public static IList<IAudioScript> AudioScripts
+        {
+            get { return PlayerControl.AudioScripts; }
+        }
+
         public static IList<IPlayerExtension> PlayerExtensions
         {
             get { return PlayerControl.PlayerExtensions; }
+        }
+
+        public static IAudioScript AudioScript
+        {
+            get { return PlayerControl.ActiveAudioScript; }
         }
 
         public static IRenderScript RenderScript
