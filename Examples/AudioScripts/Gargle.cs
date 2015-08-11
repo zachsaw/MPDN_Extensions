@@ -66,6 +66,7 @@ namespace Mpdn.Examples.AudioScripts
         private unsafe void GargleSamples(IntPtr samples, int cb, bool triangle)
         {
             var pb = (byte*) samples;
+            var bytesPerSample = m_BytesPerSample;
 
             // We know how many samples per sec and how
             // many channels so we can calculate the modulation period in samples.
@@ -106,7 +107,7 @@ namespace Mpdn.Examples.AudioScripts
                         else m = 0;
                     }
 
-                    if (m_BytesPerSample == 1)
+                    if (bytesPerSample == 1)
                     {
                         // 8 bit sound uses 0..255 representing -128..127
                         // Any overflow, even by 1, would sound very bad.
@@ -122,7 +123,7 @@ namespace Mpdn.Examples.AudioScripts
                         *pb = (byte) (i + 128); // reset zero offset to 128
 
                     }
-                    else if (m_BytesPerSample == 2)
+                    else if (bytesPerSample == 2)
                     {
                         // 16 bit sound uses 16 bits properly (0 means 0)
                         // We still clip paranoically
