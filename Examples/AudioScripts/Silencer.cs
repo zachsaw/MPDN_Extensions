@@ -36,10 +36,14 @@ namespace Mpdn.Examples.AudioScripts
             }
         }
 
-        protected override void Process(float[,] samples)
+        protected override bool CpuOnly
         {
-            var length = samples.GetLength(1);
-            for (int i = 0; i < length; i++)
+            get { return true; }
+        }
+
+        protected override void Process(float[,] samples, short channels, int sampleCount)
+        {
+            for (int i = 0; i < sampleCount; i++)
             {
                 samples[CHANNEL_TO_SILENT, i] = 0;
             }

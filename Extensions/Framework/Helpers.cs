@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -25,6 +24,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Cudafy;
+using Cudafy.Host;
 using Cudafy.Translator;
 using DirectShowLib;
 using Mpdn.AudioScript;
@@ -289,20 +289,20 @@ namespace Mpdn.Extensions.Framework
         [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
         public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
 
-        public static void CopySample(IMediaSample src, IMediaSample dest)
+        public static void CopySample(IMediaSample src, IMediaSample dest, bool copySamples)
         {
             var sourceSize = src.GetActualDataLength();
-            var destSize = dest.GetSize();
 
-            Debug.Assert(destSize >= sourceSize);
+            if (copySamples)
+            {
+                IntPtr sourceBuffer;
+                src.GetPointer(out sourceBuffer);
 
-            IntPtr sourceBuffer;
-            src.GetPointer(out sourceBuffer);
+                IntPtr destBuffer;
+                dest.GetPointer(out destBuffer);
 
-            IntPtr destBuffer;
-            dest.GetPointer(out destBuffer);
-
-            CopyMemory(destBuffer, sourceBuffer, sourceSize);
+                CopyMemory(destBuffer, sourceBuffer, sourceSize);
+            }
 
             // Copy the sample times
             long start, end;
@@ -393,6 +393,11 @@ namespace Mpdn.Extensions.Framework
         {
             return GetSampleFormat(format) == AudioSampleFormat.Unknown;
         }
+
+        public static void LoadAudioKernel(this GPGPU gpu, Type type)
+        {
+            gpu.LoadModule(CudafyTranslator.Cudafy(eArchitecture.OpenCL, type), false);
+        }
     }
 
     public static class AudioKernels
@@ -473,9 +478,17 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
+        // ReSharper disable InconsistentNaming
+        public struct int24
+        {
+            public const int MinValue = -8388608;
+            public const int MaxValue = 8388607;
+        }
+        // ReSharper restore InconsistentNaming
+
         [Cudafy]
         [StructLayout(LayoutKind.Sequential)]
-        public struct UInt24
+        public struct Int24
         {
             public byte B0;
             public byte B1;
@@ -483,12 +496,12 @@ namespace Mpdn.Extensions.Framework
         }
 
         [Cudafy]
-        public static void GetSamplesUInt24(GThread thread, UInt24[] samples, float[,] output)
+        public static void GetSamplesInt24(GThread thread, Int24[] samples, float[,] output)
         {
             var channels = output.GetLength(0);
             var sampleCount = output.GetLength(1);
-            const float mid = ((float)((1 << 24) / 2));
-            const float min = -((float)(((1 << 24) / 2)-1));
+            const float mid = -int24.MinValue;
+            const float min = -int24.MaxValue;
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
@@ -496,10 +509,14 @@ namespace Mpdn.Extensions.Framework
                 for (int i = 0; i < channels; i++)
                 {
                     var index = (tid * channels) + i;
-                    var b0 = (int) samples[index].B0;
-                    var b1 = (int) samples[index].B1;
-                    var b2 = (int) samples[index].B2;
-                    var v = b0 | (b1 << 8) | (b2 << 16) | ((b2 * 0x80 != 0) ? (0xff << 24) : 0);
+                    var b0 = samples[index].B0;
+                    var b1 = samples[index].B1;
+                    var b2 = samples[index].B2;
+                    var v = b0 | (b1 << 8) | (b2 << 16);
+                    if ((v & 0x800000) != 0)
+                    {
+                        v |= ~0xffffff;
+                    }
                     output[i, tid] = ((v - min)/mid) - 1.0f;
                 }
                 tid += thread.gridDim.x;
@@ -507,12 +524,12 @@ namespace Mpdn.Extensions.Framework
         }
 
         [Cudafy]
-        public static void PutSamplesUInt24(GThread thread, float[,] samples, UInt24[] output)
+        public static void PutSamplesInt24(GThread thread, float[,] samples, Int24[] output)
         {
             var channels = samples.GetLength(0);
             var sampleCount = samples.GetLength(1);
-            const float mid = ((float)((1 << 24) / 2));
-            const float min = -((float)(((1 << 24) / 2)-1));
+            const float mid = -int24.MinValue;
+            const float min = -int24.MaxValue;
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)

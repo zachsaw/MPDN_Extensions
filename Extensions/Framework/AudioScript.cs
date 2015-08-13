@@ -39,13 +39,18 @@ namespace Mpdn.Extensions.Framework
 
         private GPGPU m_Gpu;
 
-        private Func<IntPtr, int, int, float[,]> m_GetInputSamplesFunc;
-        private Func<float[,], IntPtr, bool> m_PutOutputSamplesFunc;
         private AudioSampleFormat m_SampleFormat = AudioSampleFormat.Unknown;
+        private Func<IntPtr, short, int, IMediaSample, bool> m_ProcessFunc;
 
-        protected abstract void Process(float[,] samples);
+        protected abstract void Process(float[,] samples, short channels, int sampleCount);
 
         #region Implementation
+
+        protected GPGPU Gpu { get { return m_Gpu; } }
+
+        protected virtual bool CpuOnly { get { return false; } }
+
+        protected virtual void OnLoadAudioKernel() { }
 
         public bool Process()
         {
@@ -58,75 +63,136 @@ namespace Mpdn.Extensions.Framework
             var output = Audio.Output;
 
             // passthrough from input to output
-            AudioHelpers.CopySample(input, output);
+            AudioHelpers.CopySample(input, output, false);
 
             IntPtr samples;
-            output.GetPointer(out samples);
-            var outputFormat = Audio.InputFormat;
-            var bytesPerSample = outputFormat.wBitsPerSample/8;
-            var length = output.GetActualDataLength() / bytesPerSample;
-            var channels = outputFormat.nChannels;
+            input.GetPointer(out samples);
+            var format = Audio.InputFormat;
+            var bytesPerSample = format.wBitsPerSample/8;
+            var length = input.GetActualDataLength()/bytesPerSample;
+            var channels = format.nChannels;
+            var sampleFormat = format.SampleFormat();
 
-            var sampleFormat = outputFormat.SampleFormat();
+            return CpuOnly
+                ? ProcessCpu(sampleFormat, samples, channels, length, output)
+                : Process(sampleFormat, samples, channels, length, output);
+        }
+
+        private bool Process(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
+        {
             if (m_SampleFormat == AudioSampleFormat.Unknown || (m_SampleFormat != sampleFormat))
             {
-                m_GetInputSamplesFunc = GetInputSamplesFunc(sampleFormat);
-                m_PutOutputSamplesFunc = PutOutputSamplesFunc(sampleFormat);
+                m_ProcessFunc = GetProcessFunc(sampleFormat);
                 m_SampleFormat = sampleFormat;
             }
 
-            var inputSamples = m_GetInputSamplesFunc(samples, channels, length);
+            return m_ProcessFunc(samples, channels, length, output);
+        }
+
+        private bool ProcessCpu(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
+        {
+            if (m_SampleFormat == AudioSampleFormat.Unknown || (m_SampleFormat != sampleFormat))
+            {
+                m_ProcessFunc = GetProcessCpuFunc(sampleFormat);
+                m_SampleFormat = sampleFormat;
+            }
+
+            return m_ProcessFunc(samples, channels, length, output);
+        }
+
+        private Func<IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat)
+        {
+            switch (sampleFormat)
+            {
+                case AudioSampleFormat.Float:
+                    return ProcessInternal<float>;
+                case AudioSampleFormat.Double:
+                    return ProcessInternal<double>;
+                case AudioSampleFormat.Pcm8:
+                    return ProcessInternal<byte>;
+                case AudioSampleFormat.Pcm16:
+                    return ProcessInternal<short>;
+                case AudioSampleFormat.Pcm24:
+                    return ProcessInternal<AudioKernels.Int24>;
+                case AudioSampleFormat.Pcm32:
+                    return ProcessInternal<int>;
+                default:
+                    throw new ArgumentOutOfRangeException("sampleFormat");
+            }
+        }
+
+        private bool ProcessInternal<T>(IntPtr samples, short channels, int length, IMediaSample output) where T : struct
+        {
+            var gpu = m_Gpu;
+            var sampleCount = length/channels;
+            var result = new float[channels, sampleCount];
+            try
+            {
+                var devInputSamples = gpu.Allocate<T>(length);
+                var devInputResult = gpu.Allocate(result);
+                var devOutputResult = gpu.Allocate<T>(length);
+                try
+                {
+                    gpu.CopyToDevice(samples, 0, devInputSamples, 0, length);
+                    gpu.Launch(THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
+                        devInputSamples, devInputResult);
+                    Process(devInputResult, channels, sampleCount);
+                    output.GetPointer(out samples);
+                    gpu.Launch(THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
+                        devInputResult, devOutputResult);
+                    gpu.CopyFromDevice(devOutputResult, 0, samples, 0, length);
+                }
+                finally
+                {
+                    gpu.Free(devInputSamples);
+                    gpu.Free(devInputResult);
+                    gpu.Free(devOutputResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                gpu.FreeAll();
+                Trace.WriteLine(ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        private Func<IntPtr, short, int, IMediaSample, bool> GetProcessCpuFunc(AudioSampleFormat sampleFormat)
+        {
+            switch (sampleFormat)
+            {
+                case AudioSampleFormat.Float:
+                    return ProcessCpuInternal<float>;
+                case AudioSampleFormat.Double:
+                    return ProcessCpuInternal<double>;
+                case AudioSampleFormat.Pcm8:
+                    return ProcessCpuInternal<byte>;
+                case AudioSampleFormat.Pcm16:
+                    return ProcessCpuInternal<short>;
+                case AudioSampleFormat.Pcm24:
+                    return ProcessCpuInternal<AudioKernels.Int24>;
+                case AudioSampleFormat.Pcm32:
+                    return ProcessCpuInternal<int>;
+                default:
+                    throw new ArgumentOutOfRangeException("sampleFormat");
+            }
+        }
+
+        private bool ProcessCpuInternal<T>(IntPtr samples, short channels, int length, IMediaSample output) where T : struct
+        {
+            var inputSamples = GetInputSamplesCpu<T>(samples, channels, length);
             if (inputSamples == null)
                 return false;
 
-            Process(inputSamples);
+            var sampleCount = length / channels;
+            Process(inputSamples, channels, sampleCount);
 
-            return m_PutOutputSamplesFunc(inputSamples, samples);
+            output.GetPointer(out samples);
+            return PutOutputSamplesCpu<T>(inputSamples, samples);
         }
 
-        private Func<IntPtr, int, int, float[,]> GetInputSamplesFunc(AudioSampleFormat sampleFormat)
-        {
-            switch (sampleFormat)
-            {
-                case AudioSampleFormat.Float:
-                    return GetInputSamples<float>;
-                case AudioSampleFormat.Double:
-                    return GetInputSamples<double>;
-                case AudioSampleFormat.Pcm8:
-                    return GetInputSamples<byte>;
-                case AudioSampleFormat.Pcm16:
-                    return GetInputSamples<short>;
-                case AudioSampleFormat.Pcm24:
-                    return GetInputSamples<AudioKernels.UInt24>;
-                case AudioSampleFormat.Pcm32:
-                    return GetInputSamples<int>;
-                default:
-                    throw new ArgumentOutOfRangeException("sampleFormat");
-            }
-        }
-
-        private Func<float[,], IntPtr, bool> PutOutputSamplesFunc(AudioSampleFormat sampleFormat)
-        {
-            switch (sampleFormat)
-            {
-                case AudioSampleFormat.Float:
-                    return PutOutputSamples<float>;
-                case AudioSampleFormat.Double:
-                    return PutOutputSamples<double>;
-                case AudioSampleFormat.Pcm8:
-                    return PutOutputSamples<byte>;
-                case AudioSampleFormat.Pcm16:
-                    return PutOutputSamples<short>;
-                case AudioSampleFormat.Pcm24:
-                    return PutOutputSamples<AudioKernels.UInt24>;
-                case AudioSampleFormat.Pcm32:
-                    return PutOutputSamples<int>;
-                default:
-                    throw new ArgumentOutOfRangeException("sampleFormat");
-            }
-        }
-
-        private bool PutOutputSamples<T>(float[,] samples, IntPtr output) where T : struct
+        private bool PutOutputSamplesCpu<T>(float[,] samples, IntPtr output) where T : struct
         {
             var sampleCount = samples.GetLength(1);
             var channels = samples.GetLength(0);
@@ -139,7 +205,7 @@ namespace Mpdn.Extensions.Framework
                 try
                 {
                     gpu.CopyToDevice(samples, devSamples);
-                    gpu.Launch(Math.Min(THREAD_COUNT, length), 1, string.Format("PutSamples{0}", typeof (T).Name),
+                    gpu.Launch(THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
                         devSamples, devOutput);
                     gpu.CopyFromDevice(devOutput, 0, output, 0, length);
                 }
@@ -151,13 +217,14 @@ namespace Mpdn.Extensions.Framework
             }
             catch (Exception ex)
             {
+                gpu.FreeAll();
                 Trace.WriteLine(ex.Message);
                 return false;
             }
             return true;
         }
 
-        private float[,] GetInputSamples<T>(IntPtr samples, int channels, int length) where T : struct
+        private float[,] GetInputSamplesCpu<T>(IntPtr samples, int channels, int length) where T : struct
         {
             var gpu = m_Gpu;
             var result = new float[channels, length / channels];
@@ -168,7 +235,7 @@ namespace Mpdn.Extensions.Framework
                 try
                 {
                     gpu.CopyToDevice(samples, 0, devSamples, 0, length);
-                    gpu.Launch(Math.Min(THREAD_COUNT, length), 1, string.Format("GetSamples{0}", typeof (T).Name),
+                    gpu.Launch(THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
                         devSamples, devOutput);
                     gpu.CopyFromDevice(devOutput, result);
                 }
@@ -198,7 +265,7 @@ namespace Mpdn.Extensions.Framework
                 m_Gpu.FreeAll();
                 m_Gpu.HostFreeAll();
                 m_Gpu.DestroyStreams();
-                m_Gpu.UnloadModule(AudioKernels.KernelModule);
+                m_Gpu.UnloadModules();
                 DisposeHelper.Dispose(ref m_Gpu);
             }
             catch (Exception ex)
@@ -225,6 +292,7 @@ namespace Mpdn.Extensions.Framework
                 }
                 m_Gpu = CudafyHost.GetDevice(eGPUType.OpenCL, index);
                 m_Gpu.LoadModule(AudioKernels.KernelModule);
+                OnLoadAudioKernel();
             }
             catch (Exception ex)
             {

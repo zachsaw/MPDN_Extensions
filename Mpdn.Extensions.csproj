@@ -54,6 +54,7 @@
     <Reference Include="MediaInfoDotNet">
       <HintPath>MPDN\MediaInfoDotNet.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.WindowsAPICodePack.Shell">
       <HintPath>Extensions\Libs\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
     </Reference>
@@ -95,7 +96,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <Compile Include="Examples\AudioScripts\Gargle.cs" />
+    <Compile Include="Examples\AudioScripts\Gain.cs" />
     <Compile Include="Examples\AudioScripts\Silencer.cs" />
     <Compile Include="Examples\RenderScripts\Example.Basic.cs" />
     <Compile Include="Examples\RenderScripts\Example.CustomTextures.cs" />
@@ -112,6 +113,7 @@
     <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Examples\AudioScripts\Gargle.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />

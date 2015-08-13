@@ -16,13 +16,12 @@
 // 
 
 using System;
-using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Examples.AudioScripts
 {
     public class Gargle : Extensions.Framework.AudioScript
     {
-        private const int GARGLE_RATE = 10;
+        private const int GARGLE_RATE = 5;
         private const int SHAPE = 0; // 0=Triangle, 1=Sqaure
 
         private int m_Phase;
@@ -40,110 +39,53 @@ namespace Mpdn.Examples.AudioScripts
             }
         }
 
-        protected override void Process(float[,] samples)
+        protected override bool CpuOnly
         {
-//            GargleSamples(samples, Audio.Output.GetActualDataLength(), SHAPE == 0); // gargle output
+            get { return true; }
         }
 
-        private unsafe void GargleSamples(IntPtr samples, int cb, bool triangle)
+        protected override void Process(float[,] samples, short channels, int sampleCount)
         {
-            var pb = (byte*) samples;
-            var format = Audio.OutputFormat;
-            var channels = format.nChannels;
-            var samplesPerSec = format.nSamplesPerSec;
-            var sampleFormat = format.SampleFormat();
+            // Note: This runs on CPU only (in .NET) but it can just as easily be ported to run on OpenCL
+            GargleSamples(samples, SHAPE == 0);
+        }
 
-            // We know how many samples per sec and how
-            // many channels so we can calculate the modulation period in samples.
-            //
-            int period = (samplesPerSec*channels)/GARGLE_RATE;
+        private void GargleSamples(float[,] samples, bool triangle)
+        {
+            int period = Audio.OutputFormat.nSamplesPerSec/GARGLE_RATE;
 
-            while (cb > 0)
+            var channels = samples.GetLength(0);
+            var length = samples.GetLength(1);
+            for (int i = 0; i < length; i++)
             {
-                // If m_Shape is 0 (triangle) then we multiply by a triangular waveform
-                // that runs 0..Period/2..0..Period/2..0... else by a square one that
-                // is either 0 or Period/2 (same maximum as the triangle) or zero.
+                // m_Phase is the number of samples from the start of the period.
+                // We keep this running from one call to the next,
+                // but if the period changes so as to make this more
+                // than Period then we reset to 0 with a bang.  This may cause
+                // an audible click or pop (but, hey! it's only a sample!)
                 //
+                m_Phase++;
+
+                if (m_Phase > period)
+                    m_Phase = 0;
+
+                var m = m_Phase; // m is what we modulate with
+                for (int c = 0; c < channels; c++)
                 {
-                    // m_Phase is the number of samples from the start of the period.
-                    // We keep this running from one call to the next,
-                    // but if the period changes so as to make this more
-                    // than Period then we reset to 0 with a bang.  This may cause
-                    // an audible click or pop (but, hey! it's only a sample!)
-                    //
-                    ++m_Phase;
-
-                    if (m_Phase > period)
-                        m_Phase = 0;
-
-                    int m = m_Phase; // m is what we modulate with
-
                     if (triangle)
                     {
                         // Triangle
-                        if (m > period/2) m = period - m; // handle downslope
+                        if (m > period / 2) m = period - m; // handle downslope
                     }
                     else
                     {
                         // Square wave
-                        if (m <= period/2) m = period/2;
+                        if (m <= period / 2) m = period / 2;
                         else m = 0;
                     }
-
-                    switch (sampleFormat)
-                    {
-                        case AudioSampleFormat.Pcm8:
-                            // 8 bit sound uses 0..255 representing -128..127
-                            // Any overflow, even by 1, would sound very bad.
-                            // so we clip paranoically after modulating.
-                            // I think it should never clip by more than 1
-                            //
-                            {
-                                int i = *pb - 128; // sound sample, zero based
-
-                                i = (i*m*2)/period; // modulate
-                                if (i > 127) i = 127; // clip
-                                if (i < -128) i = -128;
-
-                                *pb = (byte) (i + 128); // reset zero offset to 128
-                            }
-                            pb++;
-                            cb--;
-                            break;
-
-                        case AudioSampleFormat.Pcm16:
-                            // 16 bit sound uses 16 bits properly (0 means 0)
-                            // We still clip paranoically
-                            //
-                            {
-                                var psi = (short*) pb;
-                                int i = *psi; // in a register, we might hope
-
-                                i = (i*m*2)/period; // modulate
-                                if (i > 32767) i = 32767; // clip
-                                if (i < -32768) i = -32768;
-
-                                *psi = (short) i;
-                            }
-                            pb += 2;
-                            cb -= 2;
-                            break;
-
-                        case AudioSampleFormat.Float:
-                            {
-                                var psi = (float*) pb;
-                                float i = *psi;
-
-                                i = (i*m*2)/period; // modulate
-                                if (i > 1.0f) i = 1.0f; // clip
-                                if (i < -1.0f) i = -1.0f;
-
-                                *psi = i;
-                            }
-                            pb += 4;
-                            cb -= 4;
-                            break;
-                    }
+                    var v = samples[c, i];
+                    // Note: No clipping required - the framework clips it to [-1.0f..1.0f] for us
+                    samples[c, i] = (v * m * 2) / period;
                 }
             }
         }
