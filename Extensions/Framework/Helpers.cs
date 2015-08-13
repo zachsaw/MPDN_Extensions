@@ -487,7 +487,8 @@ namespace Mpdn.Extensions.Framework
         {
             var channels = output.GetLength(0);
             var sampleCount = output.GetLength(1);
-            const float mid = -((float)((1 << 24) / 2));
+            const float mid = ((float)((1 << 24) / 2));
+            const float min = -((float)(((1 << 24) / 2)-1));
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
@@ -495,11 +496,11 @@ namespace Mpdn.Extensions.Framework
                 for (int i = 0; i < channels; i++)
                 {
                     var index = (tid * channels) + i;
-                    var b0 = samples[index].B0;
-                    var b1 = samples[index].B1;
-                    var b2 = samples[index].B2;
-                    var v = b0 + (b1 << 8) + (b2 << 16);
-                    output[i, tid] = (v / mid) - 1.0f;
+                    var b0 = (int) samples[index].B0;
+                    var b1 = (int) samples[index].B1;
+                    var b2 = (int) samples[index].B2;
+                    var v = b0 | (b1 << 8) | (b2 << 16) | ((b2 * 0x80 != 0) ? (0xff << 24) : 0);
+                    output[i, tid] = ((v - min)/mid) - 1.0f;
                 }
                 tid += thread.gridDim.x;
             }
@@ -510,7 +511,8 @@ namespace Mpdn.Extensions.Framework
         {
             var channels = samples.GetLength(0);
             var sampleCount = samples.GetLength(1);
-            const float mid = -((float) ((1 << 24) / 2));
+            const float mid = ((float)((1 << 24) / 2));
+            const float min = -((float)(((1 << 24) / 2)-1));
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
@@ -518,7 +520,7 @@ namespace Mpdn.Extensions.Framework
                 for (int i = 0; i < channels; i++)
                 {
                     var f = Math.Max(-1.0f, Math.Min(1.0f, samples[i, tid]));
-                    var val = (byte)((f + 1.0f) * mid);
+                    var val = (int)((f + 1.0f) * mid + min);
                     var index = (tid*channels) + i;
                     output[index].B0 = (byte)(val & 0xFF);
                     output[index].B1 = (byte)(val >> 8);
