@@ -89,7 +89,6 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Compile Include="Examples\AudioScripts\Gargle.cs" />
-    <Compile Include="Examples\AudioScripts\Passthrough.cs" />
     <Compile Include="Examples\AudioScripts\Silencer.cs" />
     <Compile Include="Examples\RenderScripts\Example.Basic.cs" />
     <Compile Include="Examples\RenderScripts\Example.CustomTextures.cs" />

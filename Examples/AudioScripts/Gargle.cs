@@ -16,7 +16,6 @@
 // 
 
 using System;
-using DirectShowLib;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Examples.AudioScripts
@@ -25,10 +24,6 @@ namespace Mpdn.Examples.AudioScripts
     {
         private const int GARGLE_RATE = 10;
         private const int SHAPE = 0; // 0=Triangle, 1=Sqaure
-
-        private short m_Channels;
-        private int m_SamplesPerSec;
-        private int m_BytesPerSample;
 
         private int m_Phase;
 
@@ -45,38 +40,36 @@ namespace Mpdn.Examples.AudioScripts
             }
         }
 
-        public override void OnGetMediaType(WaveFormatExtensible format)
+        protected override bool SupportBitStreaming
         {
-            m_Channels = format.nChannels;
-            m_SamplesPerSec = format.nSamplesPerSec;
-            m_BytesPerSample = format.wBitsPerSample/8;
+            get { return false; }
         }
 
-        public override bool Process()
+        protected override AudioSampleFormat[] SupportedSampleFormats
         {
-            AudioHelpers.CopySample(Audio.Input, Audio.Output); // passthrough from input to output
+            get { return new[] {AudioSampleFormat.Pcm8, AudioSampleFormat.Pcm16, AudioSampleFormat.Float, }; }
+        }
 
-            IntPtr samples;
-            Audio.Output.GetPointer(out samples);
+        protected override void Process(IntPtr samples, int length)
+        {
             GargleSamples(samples, Audio.Output.GetActualDataLength(), SHAPE == 0); // gargle output
-
-            return true; // true = we handled the audio processing
         }
 
         private unsafe void GargleSamples(IntPtr samples, int cb, bool triangle)
         {
             var pb = (byte*) samples;
-            var bytesPerSample = m_BytesPerSample;
+            var format = Audio.OutputFormat;
+            var channels = format.nChannels;
+            var samplesPerSec = format.nSamplesPerSec;
+            var sampleFormat = format.SampleFormat();
 
             // We know how many samples per sec and how
             // many channels so we can calculate the modulation period in samples.
             //
-            int period = (m_SamplesPerSec*m_Channels)/GARGLE_RATE;
+            int period = (samplesPerSec*channels)/GARGLE_RATE;
 
             while (cb > 0)
             {
-                --cb;
-
                 // If m_Shape is 0 (triangle) then we multiply by a triangular waveform
                 // that runs 0..Period/2..0..Period/2..0... else by a square one that
                 // is either 0 or Period/2 (same maximum as the triangle) or zero.
@@ -107,46 +100,61 @@ namespace Mpdn.Examples.AudioScripts
                         else m = 0;
                     }
 
-                    if (bytesPerSample == 1)
+                    switch (sampleFormat)
                     {
-                        // 8 bit sound uses 0..255 representing -128..127
-                        // Any overflow, even by 1, would sound very bad.
-                        // so we clip paranoically after modulating.
-                        // I think it should never clip by more than 1
-                        //
-                        int i = *pb - 128; // sound sample, zero based
+                        case AudioSampleFormat.Pcm8:
+                            // 8 bit sound uses 0..255 representing -128..127
+                            // Any overflow, even by 1, would sound very bad.
+                            // so we clip paranoically after modulating.
+                            // I think it should never clip by more than 1
+                            //
+                            {
+                                int i = *pb - 128; // sound sample, zero based
 
-                        i = (i*m*2)/period; // modulate
-                        if (i > 127) i = 127; // clip
-                        if (i < -128) i = -128;
+                                i = (i*m*2)/period; // modulate
+                                if (i > 127) i = 127; // clip
+                                if (i < -128) i = -128;
 
-                        *pb = (byte) (i + 128); // reset zero offset to 128
+                                *pb = (byte) (i + 128); // reset zero offset to 128
+                            }
+                            pb++;
+                            cb--;
+                            break;
 
+                        case AudioSampleFormat.Pcm16:
+                            // 16 bit sound uses 16 bits properly (0 means 0)
+                            // We still clip paranoically
+                            //
+                            {
+                                var psi = (short*) pb;
+                                int i = *psi; // in a register, we might hope
+
+                                i = (i*m*2)/period; // modulate
+                                if (i > 32767) i = 32767; // clip
+                                if (i < -32768) i = -32768;
+
+                                *psi = (short) i;
+                            }
+                            pb += 2;
+                            cb -= 2;
+                            break;
+
+                        case AudioSampleFormat.Float:
+                            {
+                                var psi = (float*) pb;
+                                float i = *psi;
+
+                                i = (i*m*2)/period; // modulate
+                                if (i > 1.0f) i = 1.0f; // clip
+                                if (i < -1.0f) i = -1.0f;
+
+                                *psi = i;
+                            }
+                            pb += 4;
+                            cb -= 4;
+                            break;
                     }
-                    else if (bytesPerSample == 2)
-                    {
-                        // 16 bit sound uses 16 bits properly (0 means 0)
-                        // We still clip paranoically
-                        //
-                        var psi = (short*) pb;
-                        int i = *psi; // in a register, we might hope
-
-                        i = (i*m*2)/period; // modulate
-                        if (i > 32767) i = 32767; // clip
-                        if (i < -32768) i = -32768;
-
-                        *psi = (short) i;
-                        ++pb; // nudge it on another 8 bits here to get a 16 bit step
-                        --cb; // and nudge the count too.
-
-                    }
-                    else
-                    {
-                        // Too many samples - just leave it alone!
-                    }
-
                 }
-                ++pb; // move on 8 bits to next sound sample
             }
         }
     }

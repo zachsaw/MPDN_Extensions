@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
+using System;
+using System.Linq;
 using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Extensions.Framework.Config;
@@ -30,11 +32,30 @@ namespace Mpdn.Extensions.Framework
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
+        protected abstract bool SupportBitStreaming { get; }
+        protected abstract AudioSampleFormat[] SupportedSampleFormats { get; }
+        protected abstract void Process(IntPtr samples, int length);
+
         #region Implementation
 
-        public virtual bool Process()
+        public bool Process()
         {
-            return false;
+            if (!SupportBitStreaming && Audio.InputFormat.IsBitStreaming())
+                return false;
+
+            if (!SupportedSampleFormats.Contains(Audio.InputFormat.SampleFormat()))
+                return false;
+
+            var input = Audio.Input;
+            var output = Audio.Output;
+
+            AudioHelpers.CopySample(input, output); // passthrough from input to output
+
+            IntPtr samples;
+            output.GetPointer(out samples);
+            Process(samples, output.GetActualDataLength());
+
+            return true;
         }
 
         public virtual void OnGetMediaType(WaveFormatExtensible format)

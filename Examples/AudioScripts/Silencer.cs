@@ -16,7 +16,6 @@
 // 
 
 using System;
-using DirectShowLib;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Examples.AudioScripts
@@ -24,9 +23,6 @@ namespace Mpdn.Examples.AudioScripts
     public class Silencer : Extensions.Framework.AudioScript
     {
         private const int CHANNEL_TO_SILENT = 0;
-
-        private short m_Channels;
-        private int m_BytesPerSample;
 
         public override ExtensionUiDescriptor Descriptor
         {
@@ -41,54 +37,67 @@ namespace Mpdn.Examples.AudioScripts
             }
         }
 
-        public override void OnGetMediaType(WaveFormatExtensible format)
+        protected override bool SupportBitStreaming
         {
-            m_Channels = format.nChannels;
-            m_BytesPerSample = format.wBitsPerSample/8;
+            get { return false; }
         }
 
-        public override bool Process()
+        protected override AudioSampleFormat[] SupportedSampleFormats
         {
-            AudioHelpers.CopySample(Audio.Input, Audio.Output); // passthrough from input to output
+            get { return new[] {AudioSampleFormat.Pcm8, AudioSampleFormat.Pcm16, AudioSampleFormat.Float, }; }
+        }
 
-            IntPtr samples;
-            Audio.Output.GetPointer(out samples);
+        protected override void Process(IntPtr samples, int length)
+        {
             SilenceSamples(samples, Audio.Output.GetActualDataLength(), CHANNEL_TO_SILENT); // Silence output
-
-            return true; // true = we handled the audio processing
         }
 
-        private unsafe void SilenceSamples(IntPtr samples, int cb, int channel)
+        private static unsafe void SilenceSamples(IntPtr samples, int cb, int channel)
         {
             var pb = (byte*) samples;
-            var bytesPerSample = m_BytesPerSample;
+            var format = Audio.OutputFormat;
+            var channels = format.nChannels;
+            var sampleFormat = format.SampleFormat();
             var currentChannel = 0;
 
             while (cb > 0)
             {
-                --cb;
-                switch (bytesPerSample)
+                switch (sampleFormat)
                 {
-                    case 1:
+                    case AudioSampleFormat.Pcm8:
                         if (currentChannel == channel)
                         {
                             // 8 bit sound uses 0..255 representing -128..127
                             *pb = 128; // 128 means 0
                         }
+                        pb++;
+                        cb--;
                         break;
-                    case 2:
+
+                    case AudioSampleFormat.Pcm16:
                         if (currentChannel == channel)
                         {
                             // 16 bit sound uses 16 bits properly (0 means 0)
                             var psi = (short*) pb;
                             *psi = 0;
                         }
-                        ++pb; // nudge it on another 8 bits here to get a 16 bit step
-                        --cb; // and nudge the count too.
+
+                        pb += 2;
+                        cb -= 2;
+                        break;
+
+                    case AudioSampleFormat.Float:
+                        if (currentChannel == channel)
+                        {
+                            var psi = (float*) pb;
+                            *psi = 0;
+                        }
+
+                        pb += 4;
+                        cb -= 4;
                         break;
                 }
-                ++pb; // move on 8 bits to next sound sample
-                currentChannel = (currentChannel + 1)%m_Channels;
+                currentChannel = (currentChannel + 1)%channels;
             }
         }
     }

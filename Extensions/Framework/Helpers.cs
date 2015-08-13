@@ -30,6 +30,7 @@ using Mpdn.Config;
 using Mpdn.DirectShow;
 using Mpdn.RenderScript;
 using Control = System.Windows.Forms.Control;
+using WaveFormatExtensible = DirectShowLib.WaveFormatExtensible;
 
 namespace Mpdn.Extensions.Framework
 {
@@ -264,9 +265,24 @@ namespace Mpdn.Extensions.Framework
         }
     }
 
+    public enum AudioSampleFormat
+    {
+        Unknown,
+        Float,
+        Double,
+        Pcm8,
+        Pcm16,
+        Pcm24,
+        Pcm32
+    }
+
     public static class AudioHelpers
     {
         private const int S_OK = 0;
+
+        private const short WAVE_FORMAT_PCM = 1;
+        private const short WAVE_FORMAT_IEEE_FLOAT = 3;
+        private const short WAVE_FORMAT_EXTENSIBLE = unchecked((short) 0xFFFE);
 
         [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
         public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
@@ -311,6 +327,69 @@ namespace Mpdn.Extensions.Framework
 
             // Copy the actual data length
             dest.SetActualDataLength(sourceSize);
+        }
+
+        public static AudioSampleFormat SampleFormat(this WaveFormatExtensible format)
+        {
+            return GetSampleFormat(format);
+        }
+
+        public static AudioSampleFormat GetSampleFormat(WaveFormatExtensible format)
+        {
+            if (format.nSamplesPerSec == 0)
+                return AudioSampleFormat.Unknown;
+
+            switch (format.wFormatTag)
+            {
+                case WAVE_FORMAT_IEEE_FLOAT:
+                    switch (format.wBitsPerSample)
+                    {
+                        case 32: return AudioSampleFormat.Float;
+                        case 64: return AudioSampleFormat.Double;
+                    }
+                    break;
+                case WAVE_FORMAT_PCM:
+                    switch (format.wBitsPerSample)
+                    {
+                        case 8:  return AudioSampleFormat.Pcm8;
+                        case 16: return AudioSampleFormat.Pcm16;
+                        case 24: return AudioSampleFormat.Pcm24;
+                        case 32: return AudioSampleFormat.Pcm32;
+                    }
+                    break;
+                case WAVE_FORMAT_EXTENSIBLE:
+                    if (format.SubFormat == MediaSubType.IEEE_FLOAT)
+                    {
+                        switch (format.wBitsPerSample)
+                        {
+                            case 32: return AudioSampleFormat.Float;
+                            case 64: return AudioSampleFormat.Double;
+                        }
+                    }
+                    else if (format.SubFormat == MediaSubType.PCM)
+                    {
+                        switch (format.wBitsPerSample)
+                        {
+                            case 8:  return AudioSampleFormat.Pcm8;
+                            case 16: return AudioSampleFormat.Pcm16;
+                            case 24: return AudioSampleFormat.Pcm24;
+                            case 32: return AudioSampleFormat.Pcm32;
+                        }
+                    }
+                    break;
+            }
+
+            return AudioSampleFormat.Unknown;
+        }
+
+        public static bool IsBitStreaming(this WaveFormatExtensible format)
+        {
+            return IsBitstreaming(format);
+        }
+
+        public static bool IsBitstreaming(WaveFormatExtensible format)
+        {
+            return GetSampleFormat(format) == AudioSampleFormat.Unknown;
         }
     }
 
