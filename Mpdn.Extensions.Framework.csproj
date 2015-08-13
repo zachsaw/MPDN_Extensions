@@ -42,12 +42,19 @@
     <Reference Include="ClearScript">
       <HintPath>Extensions\Libs\ClearScript.dll</HintPath>
     </Reference>
+    <Reference Include="Cudafy.NET, Version=1.29.5576.13786, Culture=neutral, PublicKeyToken=63a4c9931616906b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Extensions\Libs\Cudafy.NET.dll</HintPath>
+    </Reference>
     <Reference Include="DirectShowLib-2005, Version=2.1.0.0, Culture=neutral, PublicKeyToken=67e7b740cdfc2d3f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>MPDN\DirectShowLib-2005.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.AvalonEdit">
       <HintPath>Extensions\Libs\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.CSharp">
+      <HintPath>Extensions\Libs\Mono.CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Mpdn.Core">
       <HintPath>MPDN\Mpdn.Core.dll</HintPath>
@@ -138,8 +145,8 @@ xcopy /d /y /s "$(SolutionDir)Sources\*.resx" "$(SolutionDir)Extensions\"
 </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>copy /y "$(TargetDir)$(TargetName).dll" "$(ProjectDir)MPDN\Extensions"
-copy /y "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)MPDN\Extensions"
+    <PostBuildEvent>copy /y "$(TargetDir)$(TargetName).dll" "$(ProjectDir)MPDN\Extensions\"
+copy /y "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)MPDN\Extensions\"
 echo .cs\ &gt; excludedfiles.txt
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Extensions\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"
 xcopy /y /e /exclude:excludedfiles.txt "$(SolutionDir)Examples\RenderScripts\*.*" "$(ProjectDir)MPDN\Extensions\RenderScripts\"

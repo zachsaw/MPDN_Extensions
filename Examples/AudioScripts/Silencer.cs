@@ -42,62 +42,12 @@ namespace Mpdn.Examples.AudioScripts
             get { return false; }
         }
 
-        protected override AudioSampleFormat[] SupportedSampleFormats
+        protected override void Process(float[,] samples)
         {
-            get { return new[] {AudioSampleFormat.Pcm8, AudioSampleFormat.Pcm16, AudioSampleFormat.Float, }; }
-        }
-
-        protected override void Process(IntPtr samples, int length)
-        {
-            SilenceSamples(samples, Audio.Output.GetActualDataLength(), CHANNEL_TO_SILENT); // Silence output
-        }
-
-        private static unsafe void SilenceSamples(IntPtr samples, int cb, int channel)
-        {
-            var pb = (byte*) samples;
-            var format = Audio.OutputFormat;
-            var channels = format.nChannels;
-            var sampleFormat = format.SampleFormat();
-            var currentChannel = 0;
-
-            while (cb > 0)
+            var length = samples.GetLength(1);
+            for (int i = 0; i < length; i++)
             {
-                switch (sampleFormat)
-                {
-                    case AudioSampleFormat.Pcm8:
-                        if (currentChannel == channel)
-                        {
-                            // 8 bit sound uses 0..255 representing -128..127
-                            *pb = 128; // 128 means 0
-                        }
-                        pb++;
-                        cb--;
-                        break;
-
-                    case AudioSampleFormat.Pcm16:
-                        if (currentChannel == channel)
-                        {
-                            // 16 bit sound uses 16 bits properly (0 means 0)
-                            var psi = (short*) pb;
-                            *psi = 0;
-                        }
-
-                        pb += 2;
-                        cb -= 2;
-                        break;
-
-                    case AudioSampleFormat.Float:
-                        if (currentChannel == channel)
-                        {
-                            var psi = (float*) pb;
-                            *psi = 0;
-                        }
-
-                        pb += 4;
-                        cb -= 4;
-                        break;
-                }
-                currentChannel = (currentChannel + 1)%channels;
+                samples[CHANNEL_TO_SILENT, i] = 0;
             }
         }
     }

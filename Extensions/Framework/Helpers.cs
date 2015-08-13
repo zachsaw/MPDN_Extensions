@@ -24,6 +24,9 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Cudafy;
+using Cudafy.Host;
+using Cudafy.Translator;
 using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Config;
@@ -390,6 +393,54 @@ namespace Mpdn.Extensions.Framework
         public static bool IsBitstreaming(WaveFormatExtensible format)
         {
             return GetSampleFormat(format) == AudioSampleFormat.Unknown;
+        }
+    }
+
+    public static class AudioKernels
+    {
+        [Cudafy]
+        public static void GetSamplesFloat(GThread thread, float[] samples, float[,] output)
+        {
+            var channels = output.GetLength(0);
+            var sampleCount = output.GetLength(1);
+
+            int tid = thread.blockIdx.x;
+            while (tid < sampleCount)
+            {
+                for (int i = 0; i < channels; i++)
+                {
+                    output[i, tid] = samples[(tid*channels) + i];
+                }
+                tid += thread.gridDim.x;
+            }
+        }
+
+        [Cudafy]
+        public static void PutSamplesFloat(GThread thread, float[,] samples, float[] output)
+        {
+            var channels = samples.GetLength(0);
+            var sampleCount = samples.GetLength(1);
+
+            int tid = thread.blockIdx.x;
+            while (tid < sampleCount)
+            {
+                for (int i = 0; i < channels; i++)
+                {
+                    output[(tid*channels) + i] = samples[i, tid];
+                }
+                tid += thread.gridDim.x;
+            }
+        }
+
+        private static CudafyModule s_KernelModule;
+
+        public static CudafyModule KernelModule
+        {
+            get
+            {
+                return s_KernelModule ??
+                       (s_KernelModule = CudafyTranslator.Cudafy(eArchitecture.OpenCL, typeof (AudioKernels)));
+            }
         }
     }
 

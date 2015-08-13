@@ -45,14 +45,9 @@ namespace Mpdn.Examples.AudioScripts
             get { return false; }
         }
 
-        protected override AudioSampleFormat[] SupportedSampleFormats
+        protected override void Process(float[,] samples)
         {
-            get { return new[] {AudioSampleFormat.Pcm8, AudioSampleFormat.Pcm16, AudioSampleFormat.Float, }; }
-        }
-
-        protected override void Process(IntPtr samples, int length)
-        {
-            GargleSamples(samples, Audio.Output.GetActualDataLength(), SHAPE == 0); // gargle output
+//            GargleSamples(samples, Audio.Output.GetActualDataLength(), SHAPE == 0); // gargle output
         }
 
         private unsafe void GargleSamples(IntPtr samples, int cb, bool triangle)
