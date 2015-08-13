@@ -16,7 +16,6 @@
 // 
 
 using System;
-using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Examples.AudioScripts
 {
@@ -35,11 +34,6 @@ namespace Mpdn.Examples.AudioScripts
                     Description = "Simple audio silencer example"
                 };
             }
-        }
-
-        protected override bool SupportBitStreaming
-        {
-            get { return false; }
         }
 
         protected override void Process(float[,] samples)

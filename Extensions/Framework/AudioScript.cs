@@ -35,37 +35,95 @@ namespace Mpdn.Extensions.Framework
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
+        private const int THREAD_COUNT = 512;
+
         private GPGPU m_Gpu;
 
-        protected abstract bool SupportBitStreaming { get; }
+        private Func<IntPtr, int, int, float[,]> m_GetInputSamplesFunc;
+        private Func<float[,], IntPtr, bool> m_PutOutputSamplesFunc;
+        private AudioSampleFormat m_SampleFormat = AudioSampleFormat.Unknown;
+
         protected abstract void Process(float[,] samples);
 
         #region Implementation
 
         public bool Process()
         {
-            if (!SupportBitStreaming && Audio.InputFormat.IsBitStreaming())
+            if (Audio.InputFormat.IsBitStreaming())
                 return false;
+
+            // WARNING: We assume input and output formats are the same
 
             var input = Audio.Input;
             var output = Audio.Output;
 
             // passthrough from input to output
-            // WARNING: This assumes input and output formats are the same
             AudioHelpers.CopySample(input, output);
 
             IntPtr samples;
             output.GetPointer(out samples);
-            var length = output.GetActualDataLength() / sizeof(float);
-            var channels = Audio.OutputFormat.nChannels;
+            var outputFormat = Audio.InputFormat;
+            var bytesPerSample = outputFormat.wBitsPerSample/8;
+            var length = output.GetActualDataLength() / bytesPerSample;
+            var channels = outputFormat.nChannels;
 
-            var inputSamples = GetInputSamples<float>(samples, channels, length);
+            var sampleFormat = outputFormat.SampleFormat();
+            if (m_SampleFormat == AudioSampleFormat.Unknown || (m_SampleFormat != sampleFormat))
+            {
+                m_GetInputSamplesFunc = GetInputSamplesFunc(sampleFormat);
+                m_PutOutputSamplesFunc = PutOutputSamplesFunc(sampleFormat);
+                m_SampleFormat = sampleFormat;
+            }
+
+            var inputSamples = m_GetInputSamplesFunc(samples, channels, length);
             if (inputSamples == null)
                 return false;
 
             Process(inputSamples);
 
-            return PutOutputSamples<float>(inputSamples, samples);
+            return m_PutOutputSamplesFunc(inputSamples, samples);
+        }
+
+        private Func<IntPtr, int, int, float[,]> GetInputSamplesFunc(AudioSampleFormat sampleFormat)
+        {
+            switch (sampleFormat)
+            {
+                case AudioSampleFormat.Float:
+                    return GetInputSamples<float>;
+                case AudioSampleFormat.Double:
+                    return GetInputSamples<double>;
+                case AudioSampleFormat.Pcm8:
+                    return GetInputSamples<byte>;
+                case AudioSampleFormat.Pcm16:
+                    return GetInputSamples<short>;
+                case AudioSampleFormat.Pcm24:
+                    return GetInputSamples<AudioKernels.UInt24>;
+                case AudioSampleFormat.Pcm32:
+                    return GetInputSamples<int>;
+                default:
+                    throw new ArgumentOutOfRangeException("sampleFormat");
+            }
+        }
+
+        private Func<float[,], IntPtr, bool> PutOutputSamplesFunc(AudioSampleFormat sampleFormat)
+        {
+            switch (sampleFormat)
+            {
+                case AudioSampleFormat.Float:
+                    return PutOutputSamples<float>;
+                case AudioSampleFormat.Double:
+                    return PutOutputSamples<double>;
+                case AudioSampleFormat.Pcm8:
+                    return PutOutputSamples<byte>;
+                case AudioSampleFormat.Pcm16:
+                    return PutOutputSamples<short>;
+                case AudioSampleFormat.Pcm24:
+                    return PutOutputSamples<AudioKernels.UInt24>;
+                case AudioSampleFormat.Pcm32:
+                    return PutOutputSamples<int>;
+                default:
+                    throw new ArgumentOutOfRangeException("sampleFormat");
+            }
         }
 
         private bool PutOutputSamples<T>(float[,] samples, IntPtr output) where T : struct
@@ -81,8 +139,8 @@ namespace Mpdn.Extensions.Framework
                 try
                 {
                     gpu.CopyToDevice(samples, devSamples);
-                    var launch = gpu.Launch(Math.Min(512, length), 1);
-                    launch.PutSamplesFloat(devSamples, devOutput);
+                    gpu.Launch(Math.Min(THREAD_COUNT, length), 1, string.Format("PutSamples{0}", typeof (T).Name),
+                        devSamples, devOutput);
                     gpu.CopyFromDevice(devOutput, 0, output, 0, length);
                 }
                 finally
@@ -110,8 +168,8 @@ namespace Mpdn.Extensions.Framework
                 try
                 {
                     gpu.CopyToDevice(samples, 0, devSamples, 0, length);
-                    var launch = gpu.Launch(Math.Min(512, length), 1);
-                    launch.GetSamplesFloat(devSamples, devOutput);
+                    gpu.Launch(Math.Min(THREAD_COUNT, length), 1, string.Format("GetSamples{0}", typeof (T).Name),
+                        devSamples, devOutput);
                     gpu.CopyFromDevice(devOutput, result);
                 }
                 finally
@@ -132,6 +190,8 @@ namespace Mpdn.Extensions.Framework
         {
             try
             {
+                m_SampleFormat = AudioSampleFormat.Unknown;
+
                 if (m_Gpu == null)
                     return;
 

@@ -40,11 +40,6 @@ namespace Mpdn.Examples.AudioScripts
             }
         }
 
-        protected override bool SupportBitStreaming
-        {
-            get { return false; }
-        }
-
         protected override void Process(float[,] samples)
         {
 //            GargleSamples(samples, Audio.Output.GetActualDataLength(), SHAPE == 0); // gargle output
