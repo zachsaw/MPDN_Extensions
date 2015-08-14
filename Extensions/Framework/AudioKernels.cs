@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using System;
 using System.Runtime.InteropServices;
 using Cudafy;
 using Cudafy.Translator;
@@ -23,6 +22,29 @@ namespace Mpdn.Extensions.Framework
 {
     public static class AudioKernels
     {
+        // ReSharper disable InconsistentNaming
+        public struct int24
+        {
+            public const int MinValue = -8388608;
+            public const int MaxValue = 8388607;
+        }
+        // ReSharper restore InconsistentNaming
+
+        [Cudafy]
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Int24
+        {
+            public byte B0;
+            public byte B1;
+            public byte B2;
+        }
+
+        [Cudafy]
+        private static float Clip(float val)
+        {
+            return GMath.Max(-1.0f, GMath.Min(1.0f, val));
+        }
+
         [Cudafy]
         public static void GetSamplesByte(GThread thread, byte[] samples, float[,] output)
         {
@@ -53,7 +75,7 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Math.Max(-1.0f, Math.Min(1.0f, samples[i, tid]));
+                    var f = Clip(samples[i, tid]);
                     output[(tid * channels) + i] = (byte)((f + 1.0f) * mid);
                 }
                 tid += thread.gridDim.x;
@@ -92,28 +114,11 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Math.Max(-1.0f, Math.Min(1.0f, samples[i, tid]));
+                    var f = Clip(samples[i, tid]);
                     output[(tid * channels) + i] = (short)((f + 1.0f) * mid + min);
                 }
                 tid += thread.gridDim.x;
             }
-        }
-
-        // ReSharper disable InconsistentNaming
-        public struct int24
-        {
-            public const int MinValue = -8388608;
-            public const int MaxValue = 8388607;
-        }
-        // ReSharper restore InconsistentNaming
-
-        [Cudafy]
-        [StructLayout(LayoutKind.Sequential)]
-        public struct Int24
-        {
-            public byte B0;
-            public byte B1;
-            public byte B2;
         }
 
         [Cudafy]
@@ -157,7 +162,7 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Math.Max(-1.0f, Math.Min(1.0f, samples[i, tid]));
+                    var f = Clip(samples[i, tid]);
                     var val = (int)((f + 1.0f) * mid + min);
                     var index = (tid * channels) + i;
                     output[index].B0 = (byte)(val & 0xFF);
@@ -200,7 +205,7 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Math.Max(-1.0f, Math.Min(1.0f, samples[i, tid]));
+                    var f = Clip(samples[i, tid]);
                     output[(tid * channels) + i] = (int)((f + 1.0f) * mid + min);
                 }
                 tid += thread.gridDim.x;
@@ -235,7 +240,7 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Math.Max(-1.0f, Math.Min(1.0f, samples[i, tid]));
+                    var f = Clip(samples[i, tid]);
                     output[(tid * channels) + i] = f;
                 }
                 tid += thread.gridDim.x;
@@ -243,8 +248,55 @@ namespace Mpdn.Extensions.Framework
         }
 
         [Cudafy]
-        public static void GetSamplesDouble(GThread thread, double[] samples, float[,] output)
+        private static unsafe float ConvertDoubleToFloat(ulong d)
         {
+            ulong sign;
+            ulong exponent;
+            ulong mantissa;
+
+            // IEEE binary64 format
+            sign = (d >> 63) & 1; // 1
+            exponent = (d >> 52) & 0x7FF; // 11
+            mantissa = d & 0x000FFFFFFFFFFFFFul; // 52
+            exponent -= 1023;
+
+            // IEEE binary32 format
+            exponent += 127; // rebase
+            exponent &= 0xFF;
+            mantissa >>= (52 - 23); // left justify
+
+            var result = (uint) (mantissa | (exponent << 23) | (sign << 31));
+            return *(float*) &result;
+        }
+
+        [Cudafy]
+        private static unsafe ulong ConvertFloatToDouble(float f)
+        {
+            uint d = *(uint*) &f;
+
+            ulong sign;
+            ulong exponent;
+            ulong mantissa;
+
+            // IEEE binary32 format
+            sign = (d >> 31) & 1; // 1
+            exponent = (d >> 23) & 0xFF; // 8
+            mantissa = d & 0x7FFFFF; // 23
+            exponent += 1023;
+
+            // IEEE binary64 format
+            exponent -= 127; // rebase
+            exponent &= 0x7FF;
+            mantissa <<= (52 - 23); // right justify
+
+            return mantissa | (exponent << 52) | (sign << 63);
+        }
+
+        [Cudafy]
+        public static void GetSamplesDouble(GThread thread, ulong[] samples, float[,] output)
+        {
+            // Warning: Untested (LAV Audio Decoder doesn't support output of double format)
+
             var channels = output.GetLength(0);
             var sampleCount = output.GetLength(1);
 
@@ -253,15 +305,17 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    output[i, tid] = (float)samples[(tid * channels) + i];
+                    output[i, tid] = ConvertDoubleToFloat(samples[(tid * channels) + i]);
                 }
                 tid += thread.gridDim.x;
             }
         }
 
         [Cudafy]
-        public static void PutSamplesDouble(GThread thread, float[,] samples, double[] output)
+        public static void PutSamplesDouble(GThread thread, float[,] samples, ulong[] output)
         {
+            // Warning: Untested (LAV Audio Decoder doesn't support output of double format)
+
             var channels = samples.GetLength(0);
             var sampleCount = samples.GetLength(1);
 
@@ -270,8 +324,8 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Math.Max(-1.0f, Math.Min(1.0f, samples[i, tid]));
-                    output[(tid * channels) + i] = f;
+                    var f = Clip(samples[i, tid]);
+                    output[(tid * channels) + i] = ConvertFloatToDouble(f);
                 }
                 tid += thread.gridDim.x;
             }

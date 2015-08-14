@@ -96,6 +96,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Compile Include="Examples\AudioScripts\Gargle.cs" />
     <Compile Include="Examples\AudioScripts\Gain.cs" />
     <Compile Include="Examples\AudioScripts\Silencer.cs" />
     <Compile Include="Examples\RenderScripts\Example.Basic.cs" />
@@ -113,7 +114,7 @@
     <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Examples\AudioScripts\Gargle.cs" />
+    <Compile Include="Extensions\AudioScripts\Reclock.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />

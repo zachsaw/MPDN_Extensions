@@ -22,6 +22,8 @@ using Cudafy.Host;
 using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Extensions.Framework.Config;
+using Mpdn.OpenCl;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework
 {
@@ -52,7 +54,7 @@ namespace Mpdn.Extensions.Framework
 
         protected virtual void OnLoadAudioKernel() { }
 
-        public bool Process()
+        public virtual bool Process()
         {
             if (Audio.InputFormat.IsBitStreaming())
                 return false;
@@ -73,31 +75,22 @@ namespace Mpdn.Extensions.Framework
             var channels = format.nChannels;
             var sampleFormat = format.SampleFormat();
 
-            return CpuOnly
-                ? ProcessCpu(sampleFormat, samples, channels, length, output)
-                : Process(sampleFormat, samples, channels, length, output);
+            return Process(sampleFormat, samples, channels, length, output);
         }
 
         private bool Process(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
         {
-            if (m_SampleFormat == AudioSampleFormat.Unknown || (m_SampleFormat != sampleFormat))
-            {
-                m_ProcessFunc = GetProcessFunc(sampleFormat);
-                m_SampleFormat = sampleFormat;
-            }
-
+            UpdateSampleFormat(sampleFormat);
             return m_ProcessFunc(samples, channels, length, output);
         }
 
-        private bool ProcessCpu(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
+        private void UpdateSampleFormat(AudioSampleFormat sampleFormat)
         {
-            if (m_SampleFormat == AudioSampleFormat.Unknown || (m_SampleFormat != sampleFormat))
-            {
-                m_ProcessFunc = GetProcessCpuFunc(sampleFormat);
-                m_SampleFormat = sampleFormat;
-            }
+            if (m_SampleFormat != AudioSampleFormat.Unknown && (m_SampleFormat == sampleFormat)) 
+                return;
 
-            return m_ProcessFunc(samples, channels, length, output);
+            m_ProcessFunc = CpuOnly ? GetProcessCpuFunc(sampleFormat) : GetProcessFunc(sampleFormat);
+            m_SampleFormat = sampleFormat;
         }
 
         private Func<IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat)
@@ -284,13 +277,23 @@ namespace Mpdn.Extensions.Framework
             try
             {
                 var devices = CudafyHost.GetDeviceProperties(eGPUType.OpenCL).ToArray();
-                var index = devices.TakeWhile(d => d.Integrated).Count();
-                if (index >= devices.Count())
+                var device = devices.FirstOrDefault(d => d.Integrated); // use integrated GPU if possible
+                if (device == null || IsInUseForVideoRendering(device))
                 {
-                    Trace.WriteLine("GPGPU Warning: Unable to use CPU as GPGPU!");
-                    index = 0;
+                    // Fallback to CPU (prefer AMD Accelerated Parallel Processing first as it is faster)
+                    const string cpuId = " CPU ";
+                    device = devices.FirstOrDefault(d => d.Name.Contains(cpuId) && d.PlatformName.Contains("AMD"));
+                    if (device == null)
+                    {
+                        // Settle for any CPU OpenCL device (most likely Intel OpenCL) as the last resort
+                        device = devices.FirstOrDefault(d => d.Name.Contains(cpuId));
+                        if (device == null)
+                        {
+                            throw new OpenClException("Error: CPU OpenCL drivers not installed");
+                        }
+                    }
                 }
-                m_Gpu = CudafyHost.GetDevice(eGPUType.OpenCL, index);
+                m_Gpu = CudafyHost.GetDevice(eGPUType.OpenCL, device.DeviceId);
                 m_Gpu.LoadModule(AudioKernels.KernelModule);
                 OnLoadAudioKernel();
             }
@@ -300,6 +303,11 @@ namespace Mpdn.Extensions.Framework
             }
             
             // Provides script a chance to change the output format
+        }
+
+        private static bool IsInUseForVideoRendering(GPGPUProperties device)
+        {
+            return device.Name == Renderer.Dx9GpuInfo.Details.Description;
         }
 
         public virtual void OnNewSegment(long startTime, long endTime, double rate)
