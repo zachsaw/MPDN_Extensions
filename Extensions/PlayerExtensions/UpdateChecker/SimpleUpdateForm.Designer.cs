@@ -41,7 +41,7 @@
             // installButton
             // 
             this.installButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.installButton.Location = new System.Drawing.Point(12, 64);
+            this.installButton.Location = new System.Drawing.Point(12, 92);
             this.installButton.Name = "installButton";
             this.installButton.Size = new System.Drawing.Size(75, 23);
             this.installButton.TabIndex = 0;
@@ -53,7 +53,7 @@
             // 
             this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(253, 64);
+            this.cancelButton.Location = new System.Drawing.Point(287, 92);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 1;
@@ -77,7 +77,7 @@
             // forgetUpdateButton
             // 
             this.forgetUpdateButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.forgetUpdateButton.Location = new System.Drawing.Point(133, 64);
+            this.forgetUpdateButton.Location = new System.Drawing.Point(150, 92);
             this.forgetUpdateButton.Name = "forgetUpdateButton";
             this.forgetUpdateButton.Size = new System.Drawing.Size(75, 23);
             this.forgetUpdateButton.TabIndex = 3;
@@ -92,7 +92,7 @@
             this.downloadProgressBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.downloadProgressBar.Location = new System.Drawing.Point(0, 0);
             this.downloadProgressBar.Name = "downloadProgressBar";
-            this.downloadProgressBar.Size = new System.Drawing.Size(340, 23);
+            this.downloadProgressBar.Size = new System.Drawing.Size(374, 23);
             this.downloadProgressBar.TabIndex = 4;
             this.downloadProgressBar.Visible = false;
             // 
@@ -137,7 +137,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(340, 99);
+            this.ClientSize = new System.Drawing.Size(374, 127);
             this.ControlBox = false;
             this.Controls.Add(this.extensionVersionLinkLabel);
             this.Controls.Add(this.playerVersionLinkLabel);
