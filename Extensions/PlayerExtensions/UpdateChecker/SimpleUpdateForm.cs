@@ -193,6 +193,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             StopDownload();
         }
 
+        private void OnFormClosing(object sender, FormClosingEventArgs e)
+        {
+            StopDownload();
+        }
+
         /// <summary>
         ///     Stop the download and close the Form
         /// </summary>

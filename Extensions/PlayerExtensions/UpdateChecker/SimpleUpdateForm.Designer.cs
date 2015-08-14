@@ -138,7 +138,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(374, 127);
-            this.ControlBox = false;
             this.Controls.Add(this.extensionVersionLinkLabel);
             this.Controls.Add(this.playerVersionLinkLabel);
             this.Controls.Add(this.extensionLabel);
@@ -147,11 +146,14 @@
             this.Controls.Add(this.playerLabel);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.installButton);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "SimpleUpdateForm";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "New Update Available";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.OnFormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 
