@@ -30,14 +30,18 @@
         {
             this.installButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
+            this.playerLabel = new System.Windows.Forms.Label();
             this.forgetUpdateButton = new System.Windows.Forms.Button();
             this.downloadProgressBar = new Mpdn.Extensions.PlayerExtensions.UpdateChecker.TextProgressBar();
+            this.extensionLabel = new System.Windows.Forms.Label();
+            this.playerVersionLinkLabel = new System.Windows.Forms.LinkLabel();
+            this.extensionVersionLinkLabel = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
             // 
             // installButton
             // 
-            this.installButton.Location = new System.Drawing.Point(12, 52);
+            this.installButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.installButton.Location = new System.Drawing.Point(12, 64);
             this.installButton.Name = "installButton";
             this.installButton.Size = new System.Drawing.Size(75, 23);
             this.installButton.TabIndex = 0;
@@ -47,8 +51,9 @@
             // 
             // cancelButton
             // 
+            this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(253, 52);
+            this.cancelButton.Location = new System.Drawing.Point(253, 64);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 1;
@@ -56,21 +61,23 @@
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.CancelButtonClick);
             // 
-            // label1
+            // playerLabel
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.playerLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(81, 26);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(178, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "A new update for MPDN is available";
+            this.playerLabel.AutoSize = true;
+            this.playerLabel.Location = new System.Drawing.Point(81, 26);
+            this.playerLabel.Name = "playerLabel";
+            this.playerLabel.Size = new System.Drawing.Size(112, 13);
+            this.playerLabel.TabIndex = 2;
+            this.playerLabel.Text = "New Player available: ";
+            this.playerLabel.Visible = false;
             // 
             // forgetUpdateButton
             // 
-            this.forgetUpdateButton.Location = new System.Drawing.Point(133, 52);
+            this.forgetUpdateButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.forgetUpdateButton.Location = new System.Drawing.Point(133, 64);
             this.forgetUpdateButton.Name = "forgetUpdateButton";
             this.forgetUpdateButton.Size = new System.Drawing.Size(75, 23);
             this.forgetUpdateButton.TabIndex = 3;
@@ -89,17 +96,55 @@
             this.downloadProgressBar.TabIndex = 4;
             this.downloadProgressBar.Visible = false;
             // 
+            // extensionLabel
+            // 
+            this.extensionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.extensionLabel.AutoSize = true;
+            this.extensionLabel.Location = new System.Drawing.Point(81, 43);
+            this.extensionLabel.Name = "extensionLabel";
+            this.extensionLabel.Size = new System.Drawing.Size(134, 13);
+            this.extensionLabel.TabIndex = 5;
+            this.extensionLabel.Text = "New Extensions available: ";
+            this.extensionLabel.Visible = false;
+            // 
+            // playerVersionLinkLabel
+            // 
+            this.playerVersionLinkLabel.AutoSize = true;
+            this.playerVersionLinkLabel.Location = new System.Drawing.Point(217, 26);
+            this.playerVersionLinkLabel.Name = "playerVersionLinkLabel";
+            this.playerVersionLinkLabel.Size = new System.Drawing.Size(48, 13);
+            this.playerVersionLinkLabel.TabIndex = 6;
+            this.playerVersionLinkLabel.TabStop = true;
+            this.playerVersionLinkLabel.Text = "pVersion";
+            this.playerVersionLinkLabel.Visible = false;
+            // 
+            // extensionVersionLinkLabel
+            // 
+            this.extensionVersionLinkLabel.AutoSize = true;
+            this.extensionVersionLinkLabel.Location = new System.Drawing.Point(217, 43);
+            this.extensionVersionLinkLabel.Name = "extensionVersionLinkLabel";
+            this.extensionVersionLinkLabel.Size = new System.Drawing.Size(48, 13);
+            this.extensionVersionLinkLabel.TabIndex = 7;
+            this.extensionVersionLinkLabel.TabStop = true;
+            this.extensionVersionLinkLabel.Text = "eVersion";
+            this.extensionVersionLinkLabel.Visible = false;
+            // 
             // SimpleUpdateForm
             // 
             this.AcceptButton = this.installButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(340, 87);
+            this.ClientSize = new System.Drawing.Size(340, 99);
             this.ControlBox = false;
+            this.Controls.Add(this.extensionVersionLinkLabel);
+            this.Controls.Add(this.playerVersionLinkLabel);
+            this.Controls.Add(this.extensionLabel);
             this.Controls.Add(this.downloadProgressBar);
             this.Controls.Add(this.forgetUpdateButton);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.playerLabel);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.installButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -116,8 +161,11 @@
 
         private System.Windows.Forms.Button installButton;
         private System.Windows.Forms.Button cancelButton;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label playerLabel;
         private System.Windows.Forms.Button forgetUpdateButton;
         private TextProgressBar downloadProgressBar;
+        private System.Windows.Forms.Label extensionLabel;
+        private System.Windows.Forms.LinkLabel playerVersionLinkLabel;
+        private System.Windows.Forms.LinkLabel extensionVersionLinkLabel;
     }
 }

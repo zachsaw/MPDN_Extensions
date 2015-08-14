@@ -19,19 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using CommonMark;
 using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.Framework.Controls;
-using Newtonsoft.Json;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
-    [ComVisible(true)]
     public partial class UpdateAvailableForm : Form
     {
         protected readonly UpdateCheckerSettings Settings;
@@ -63,29 +55,9 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
             Settings = settings;
             Text = "New Player available: " + version;
+            changelogViewerWebBrowser.BeforeLoadPreviousChangelog +=
+                ChangelogViewerWebBrowserOnBeforeLoadPreviousChangelog;
             SetChangelog(version);
-            changelogViewerWebBrowser.IsWebBrowserContextMenuEnabled = false;
-        }
-
-        protected static List<string> HtmlHeaders
-        {
-            get
-            {
-                return new List<string>
-                {
-                    "<!doctype html>",
-                    "<html>",
-                    "<head>",
-                    "<style>" +
-                    "body { background: #fff; margin: 0 auto; } " +
-                    "h1 { font-size: 15px; color: #1562b6; padding-top: 5px; border: 0px !important; border-bottom: 2px solid #1562b6 !important; }" +
-                    "h2 { font-size: 13px; color: #1562b6; padding-top: 5px; border: 0px !important; border-bottom: 1px solid #1562b6 !important; }" +
-                    ".center {text-align: center}" +
-                    "</style>",
-                    "</head>",
-                    "<body>"
-                };
-            }
         }
 
         public override sealed string Text
@@ -94,55 +66,25 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             set { base.Text = value; }
         }
 
-        private void SetChangelog(Version version)
+        private void ChangelogViewerWebBrowserOnBeforeLoadPreviousChangelog(object sender,
+            ChangelogWebViewer.LoadingChangelogEvent args)
         {
-            var lines = HtmlHeaders;
-            lines.AddRange(ParseChangeLog(version.ChangelogLines));
-            lines.Add(
-                "<div class=\"center\"><a href=\"#\" onclick=\"window.external.LoadPreviousChangeLog();\">Load previous changelogs</a></div>");
-            lines.Add("</body>");
-            lines.Add("</html>");
-            changelogViewerWebBrowser.DocumentText = string.Join("\n", lines);
-            changelogViewerWebBrowser.ObjectForScripting = this;
+            args.ChangelogLines = LoadPreviousChangelog();
         }
 
-        public virtual void LoadPreviousChangeLog()
+        private void SetChangelog(Version version)
         {
-            var html = HtmlHeaders;
-            using (new HourGlass())
-            {
-                var webClient = new WebClient();
-                WebClientHelper.SetHeaders(webClient);
-                var changelog = webClient.DownloadString(string.Format("{0}ChangeLog.txt", UpdateChecker.LatestFolderUrl));
-                html.Add("<h1>Changelogs</h1>");
-                foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
-                {
-                    if (line.Contains("Changelog") && Version.ContainsVersionString(line))
-                    {
-                        html.Add(string.Format("<h2>{0}</h2><ol>", line));
-                    } else if (string.IsNullOrWhiteSpace(line))
-                    {
-                        html.Add("</ol>");
-                    }
-                    else
-                    {
-                        html.Add(string.Format("<li>{0}</li>", line));
-                    }
-                }
-            }
-            html.Add("</body>");
-            html.Add("</html>");
-            changelogViewerWebBrowser.DocumentText = string.Join("\n", html);
+            changelogViewerWebBrowser.SetChangelog(ParseChangeLog(version.ChangelogLines));
+        }
+
+        public virtual List<string> LoadPreviousChangelog()
+        {
+            return ChangelogHelper.LoadPreviousMpdnChangelog();
         }
 
         protected virtual List<string> ParseChangeLog(List<string> changelog)
         {
-            var lines = new List<string> {"<h1>Changelog</h1>", "<div id='changelog'><ol>"};
-
-            lines.AddRange(
-                changelog.Select(line => string.IsNullOrWhiteSpace(line) ? null : string.Format("<li>{0}</li>", line)));
-            lines.Add("</ol></div>");
-            return lines;
+            return ChangelogHelper.ParseMpdnChangelog(changelog);
         }
 
         private void DownloadButtonClick(object sender, EventArgs e)
@@ -185,7 +127,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 return SplitMenuChoices.First(file => file.Name == Settings.LastMpdnReleaseChosen);
             }
 
-          return SplitMenuChoices.First(file => file.Name.Contains(ArchitectureHelper.GetPlayerArtchitecture().ToString())) ?? SplitMenuChoices[0];
+            return
+                SplitMenuChoices.First(
+                    file => file.Name.Contains(ArchitectureHelper.GetPlayerArtchitecture().ToString())) ??
+                SplitMenuChoices[0];
         }
 
         private void DownloadFile(string url)
@@ -253,10 +198,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             m_File.CancelDownload();
         }
 
-        #region ProgressBarWithText
-
-        #endregion
-
         #region SplitButtonToolStripItem
 
         public sealed class SplitButtonToolStripItem : ToolStripMenuItem
@@ -283,9 +224,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         }
 
         #endregion
+
+        #region ProgressBarWithText
+
+        #endregion
     }
 
-    [ComVisible(true)]
     public class ExtensionUpdateAvailableForm : UpdateAvailableForm
     {
         public ExtensionUpdateAvailableForm(Version version, UpdateCheckerSettings settings)
@@ -310,36 +254,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected override List<string> ParseChangeLog(List<string> changelog)
         {
-            var lines = new List<string>
-            {
-                "<h1>Changelog</h1>",
-                "<div id='changelog'>",
-                CommonMarkConverter.Convert(string.Join("\n", changelog)),
-                "</div>"
-            };
-            return lines;
+            return ChangelogHelper.ParseExtensionChangelog(changelog);
         }
 
-        public override void LoadPreviousChangeLog()
+        public override List<string> LoadPreviousChangelog()
         {
-
-            var html = HtmlHeaders;
-            html.Add("<h1>Changelogs</h1>");
-            using (new HourGlass())
-            {
-                var webClient = new WebClient();
-                WebClientHelper.SetHeaders(webClient);
-                var releases = JsonConvert.DeserializeObject<List<GitHubVersion>>(webClient.DownloadString("https://api.github.com/repos/zachsaw/MPDN_Extensions/releases"));
-                foreach (var gitHubVersion in releases)
-                {
-                    html.Add(string.Format("<h2>{0}</h2>", gitHubVersion.tag_name));
-                    html.Add(CommonMarkConverter.Convert(gitHubVersion.body));
-                }
-            }
-            html.Add("</body>");
-            html.Add("</html>");
-            changelogViewerWebBrowser.DocumentText = string.Join("\n", html);
-
+            return ChangelogHelper.LoadPreviousExtensionsChangelog();
         }
     }
 }

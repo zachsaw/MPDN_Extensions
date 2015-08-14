@@ -220,6 +220,15 @@
     </Compile>
     <Compile Include="Extensions\PlayerExtensions\RemoteControl_AuthHandler.cs" />
     <Compile Include="Extensions\PlayerExtensions\RendererControl.cs" />
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\ChangelogWebViewer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\SimpleUpdate.ChangelogForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\UpdateChecker\SimpleUpdate.ChangelogForm.Designer.cs">
+      <DependentUpon>SimpleUpdate.ChangelogForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\PlayerExtensions\UpdateChecker\SimpleUpdateForm.cs">
       <SubType>Form</SubType>
     </Compile>

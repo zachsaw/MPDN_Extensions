@@ -16,10 +16,16 @@
 // 
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using CommonMark;
 using Microsoft.Win32;
+using Mpdn.Extensions.Framework.Controls;
+using Newtonsoft.Json;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
@@ -97,6 +103,78 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 string.Format("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MediaPlayerDotNet_{0}",
                     ArchitectureHelper.GetPlayerArtchitecture())
                 , "DisplayVersion");
+        }
+    }
+
+    public static class ChangelogHelper
+    {
+        public static List<string> ParseMpdnChangelog(List<string> changelog)
+        {
+            var lines = new List<string> {"<h1>Changelog</h1>", "<div id='changelog'><ol>"};
+
+            lines.AddRange(
+                changelog.Select(line => String.IsNullOrWhiteSpace(line) ? null : String.Format("<li>{0}</li>", line)));
+            lines.Add("</ol></div>");
+            return lines;
+        }
+
+        public static List<string> LoadPreviousMpdnChangelog()
+        {
+            var html = new List<string>();
+            using (new HourGlass())
+            {
+                var webClient = new WebClient();
+                WebClientHelper.SetHeaders(webClient);
+                var changelog = webClient.DownloadString(String.Format("{0}ChangeLog.txt", UpdateChecker.LatestFolderUrl));
+                html.Add("<h1>Changelogs</h1>");
+                foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
+                {
+                    if (line.Contains("Changelog") && Version.ContainsVersionString(line))
+                    {
+                        html.Add(String.Format("<h2>{0}</h2><ol>", line));
+                    }
+                    else if (String.IsNullOrWhiteSpace(line))
+                    {
+                        html.Add("</ol>");
+                    }
+                    else
+                    {
+                        html.Add(String.Format("<li>{0}</li>", line));
+                    }
+                }
+            }
+            return html;
+        }
+
+        public static List<string> ParseExtensionChangelog(List<string> changelog)
+        {
+            var lines = new List<string>
+            {
+                "<h1>Changelog</h1>",
+                "<div id='changelog'>",
+                CommonMarkConverter.Convert(String.Join("\n", changelog)),
+                "</div>"
+            };
+            return lines;
+        }
+
+        public static List<string> LoadPreviousExtensionsChangelog()
+        {
+            var html = new List<string> {"<h1>Changelogs</h1>"};
+            using (new HourGlass())
+            {
+                var webClient = new WebClient();
+                WebClientHelper.SetHeaders(webClient);
+                var releases =
+                    JsonConvert.DeserializeObject<List<GitHubVersion>>(
+                        webClient.DownloadString("https://api.github.com/repos/zachsaw/MPDN_Extensions/releases"));
+                foreach (var gitHubVersion in releases)
+                {
+                    html.Add(String.Format("<h2>{0}</h2>", gitHubVersion.tag_name));
+                    html.Add(CommonMarkConverter.Convert(gitHubVersion.body));
+                }
+            }
+            return html;
         }
     }
 }
