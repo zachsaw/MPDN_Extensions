@@ -16,6 +16,8 @@
 // 
 
 using System;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Windows.Forms;
@@ -42,18 +44,45 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             Icon = Gui.Icon;
             m_Type = type;
             m_Settings = settings;
+            extensionVersionLinkLabel.LinkClicked +=ExtensionVersionLinkLabelOnLinkClicked;
+            playerVersionLinkLabel.LinkClicked +=PlayerVersionLinkLabelOnLinkClicked;
             switch (m_Type)
             {
                 case UpdateType.Both:
-                    infoLabel.Text = string.Format("New Player available: {0}\nNew Extension available: {1}", m_Settings.MpdnVersionOnServer, m_Settings.ExtensionVersionOnServer); 
+                    EnableExtensionInfo();
+                    EnablePlayerInfo();
                     break;
                 case UpdateType.Extensions:
-                    infoLabel.Text = string.Format("New Extension available: {0}", m_Settings.ExtensionVersionOnServer);
+                    EnableExtensionInfo();
                     break;
                 case UpdateType.Player:
-                    infoLabel.Text = string.Format("New Player available: {0}", m_Settings.MpdnVersionOnServer);
+                    EnablePlayerInfo();
                     break;
             }
+        }
+
+        private void EnablePlayerInfo()
+        {
+            playerVersionLinkLabel.Text = m_Settings.MpdnVersionOnServer.ToString();
+            playerLabel.Visible = true;
+            playerVersionLinkLabel.Visible = true;
+        }
+
+        private void EnableExtensionInfo()
+        {
+            extensionVersionLinkLabel.Text = m_Settings.ExtensionVersionOnServer.ToString();
+            extensionLabel.Visible = true;
+            extensionVersionLinkLabel.Visible = true;
+        }
+
+        private void PlayerVersionLinkLabelOnLinkClicked(object sender, LinkLabelLinkClickedEventArgs linkLabelLinkClickedEventArgs)
+        {
+            new ChangelogForm(UpdateType.Player, m_Settings.MpdnVersionOnServer).ShowDialog(this);
+        }
+
+        private void ExtensionVersionLinkLabelOnLinkClicked(object sender, LinkLabelLinkClickedEventArgs linkLabelLinkClickedEventArgs)
+        {
+            new ChangelogForm(UpdateType.Extensions, m_Settings.ExtensionVersionOnServer).ShowDialog(this);
         }
 
         private void ForgetUpdateButtonClick(object sender, EventArgs e)
