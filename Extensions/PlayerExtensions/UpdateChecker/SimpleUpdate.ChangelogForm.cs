@@ -22,7 +22,7 @@ using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
-    public partial class ChangelogForm : Form
+    public sealed partial class ChangelogForm : Form
     {
         public ChangelogForm(SimpleUpdateForm.UpdateType type, Version version)
         {
@@ -43,6 +43,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 default:
                     throw new InvalidEnumArgumentException("Only takes Player and Extensions");
             }
+            Text = string.Format("{0} Changelog", type);
         }
 
         private void CloseButtonClick(object sender, EventArgs e)

@@ -1,6 +1,6 @@
 ﻿namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
-    partial class ChangelogForm
+    sealed partial class ChangelogForm
     {
         /// <summary>
         /// Required designer variable.
