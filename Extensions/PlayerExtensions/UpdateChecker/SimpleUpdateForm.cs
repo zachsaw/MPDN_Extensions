@@ -100,7 +100,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     m_Settings.ForgetMpdnVersion = true;
                     break;
             }
-            StopDownload();
+            Close();
         }
 
         private void InstallButtonClick(object sender, EventArgs e)
@@ -190,7 +190,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void CancelButtonClick(object sender, EventArgs e)
         {
-            StopDownload();
+            Close();
         }
 
         private void OnFormClosing(object sender, FormClosingEventArgs e)
@@ -204,7 +204,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private void StopDownload()
         {
             if (m_DownloadingWebFile != null) m_DownloadingWebFile.CancelDownload();
-            Close();
         }
     }
 }
