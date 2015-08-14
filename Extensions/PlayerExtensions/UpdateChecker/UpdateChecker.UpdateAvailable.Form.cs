@@ -69,7 +69,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void ChangelogViewerWebBrowserOnBeforeLoadPreviousChangelog(object sender, ChangelogWebViewer.LoadingChangelogEvent args)
         {
-            args.ChangelogLines = LoadPreviousChangeLog();
+            args.ChangelogLines = LoadPreviousChangelog();
         }
 
 
@@ -84,41 +84,14 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             changelogViewerWebBrowser.SetChangelog(ParseChangeLog(version.ChangelogLines));
         }
 
-        public virtual List<string> LoadPreviousChangeLog()
+        public virtual List<string> LoadPreviousChangelog()
         {
-            var html = new List<string>();
-            using (new HourGlass())
-            {
-                var webClient = new WebClient();
-                WebClientHelper.SetHeaders(webClient);
-                var changelog = webClient.DownloadString(string.Format("{0}ChangeLog.txt", UpdateChecker.LatestFolderUrl));
-                html.Add("<h1>Changelogs</h1>");
-                foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
-                {
-                    if (line.Contains("Changelog") && Version.ContainsVersionString(line))
-                    {
-                        html.Add(string.Format("<h2>{0}</h2><ol>", line));
-                    } else if (string.IsNullOrWhiteSpace(line))
-                    {
-                        html.Add("</ol>");
-                    }
-                    else
-                    {
-                        html.Add(string.Format("<li>{0}</li>", line));
-                    }
-                }
-            }
-            return html;
+            return ChangelogHelper.LoadPreviousMpdnChangelog();
         }
 
         protected virtual List<string> ParseChangeLog(List<string> changelog)
         {
-            var lines = new List<string> {"<h1>Changelog</h1>", "<div id='changelog'><ol>"};
-
-            lines.AddRange(
-                changelog.Select(line => string.IsNullOrWhiteSpace(line) ? null : string.Format("<li>{0}</li>", line)));
-            lines.Add("</ol></div>");
-            return lines;
+            return ChangelogHelper.ParseMpdnChangelog(changelog);
         }
 
         private void DownloadButtonClick(object sender, EventArgs e)
@@ -286,33 +259,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected override List<string> ParseChangeLog(List<string> changelog)
         {
-            var lines = new List<string>
-            {
-                "<h1>Changelog</h1>",
-                "<div id='changelog'>",
-                CommonMarkConverter.Convert(string.Join("\n", changelog)),
-                "</div>"
-            };
-            return lines;
+            return ChangelogHelper.ParseExtensionChangelog(changelog);
         }
 
-        public override List<string> LoadPreviousChangeLog()
+        public override List<string> LoadPreviousChangelog()
         {
-
-            var html = new List<string> {"<h1>Changelogs</h1>"};
-            using (new HourGlass())
-            {
-                var webClient = new WebClient();
-                WebClientHelper.SetHeaders(webClient);
-                var releases = JsonConvert.DeserializeObject<List<GitHubVersion>>(webClient.DownloadString("https://api.github.com/repos/zachsaw/MPDN_Extensions/releases"));
-                foreach (var gitHubVersion in releases)
-                {
-                    html.Add(string.Format("<h2>{0}</h2>", gitHubVersion.tag_name));
-                    html.Add(CommonMarkConverter.Convert(gitHubVersion.body));
-                }
-            }
-            return html;
-
+            return ChangelogHelper.LoadPreviousExtensionsChangelog();
         }
     }
 }
