@@ -40,7 +40,22 @@ namespace Mpdn.Extensions.AudioScripts
 
         public override bool Process()
         {
-            if (Player.Filters.Video.Count == 0)
+            var stats = Player.Stats.Details;
+            if (stats == null)
+                return false;
+
+            if (stats.ActualSourceVideoIntervalUsec < 1e-8)
+                return false; // audio only - no need to reclock
+
+            var refclk = stats.RefClockDeviation;
+            if (refclk > 10 || refclk < -10) // no data
+                return false;
+
+            const int oneSecond = 1000000;
+            var videoHz = oneSecond / stats.ActualSourceVideoIntervalUsec;
+            var displayHz = oneSecond / stats.DisplayRefreshIntervalUsec;
+            var ratio = displayHz / videoHz;
+            if (ratio > (100 + MAX_PERCENT_ADJUST) / 100 || ratio < (100 - MAX_PERCENT_ADJUST) / 100)
                 return false;
 
             var input = Audio.Input;
@@ -48,20 +63,6 @@ namespace Mpdn.Extensions.AudioScripts
 
             // passthrough from input to output
             AudioHelpers.CopySample(input, output, true);
-
-            var stats = Player.Stats.Details;
-            const int oneSecond = 1000000;
-            var videoHz = oneSecond / stats.ActualSourceVideoIntervalUsec;
-            var displayHz = oneSecond/stats.DisplayRefreshIntervalUsec;
-            var ratio = displayHz / videoHz;
-            if (ratio > (100 + MAX_PERCENT_ADJUST)/100 || ratio < (100 - MAX_PERCENT_ADJUST)/100)
-                return true;
-
-            var refclk = stats.RefClockDeviation;
-            if (refclk > 10 || refclk < -10) // no data
-            {
-                refclk = 0;
-            }
 
             // Use of 0.999999 is to allow a tiny amount of measurement error in displayHz
             // This allows us to adjust refclk to just a fraction under the displayHz
