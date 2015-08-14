@@ -19,19 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using CommonMark;
 using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.Framework.Controls;
-using Newtonsoft.Json;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
-    [ComVisible(true)]
     public partial class UpdateAvailableForm : Form
     {
         protected readonly UpdateCheckerSettings Settings;
@@ -63,20 +55,21 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
             Settings = settings;
             Text = "New Player available: " + version;
-            changelogViewerWebBrowser.BeforeLoadPreviousChangelog +=ChangelogViewerWebBrowserOnBeforeLoadPreviousChangelog;
+            changelogViewerWebBrowser.BeforeLoadPreviousChangelog +=
+                ChangelogViewerWebBrowserOnBeforeLoadPreviousChangelog;
             SetChangelog(version);
         }
-
-        private void ChangelogViewerWebBrowserOnBeforeLoadPreviousChangelog(object sender, ChangelogWebViewer.LoadingChangelogEvent args)
-        {
-            args.ChangelogLines = LoadPreviousChangelog();
-        }
-
 
         public override sealed string Text
         {
             get { return base.Text; }
             set { base.Text = value; }
+        }
+
+        private void ChangelogViewerWebBrowserOnBeforeLoadPreviousChangelog(object sender,
+            ChangelogWebViewer.LoadingChangelogEvent args)
+        {
+            args.ChangelogLines = LoadPreviousChangelog();
         }
 
         private void SetChangelog(Version version)
@@ -134,7 +127,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 return SplitMenuChoices.First(file => file.Name == Settings.LastMpdnReleaseChosen);
             }
 
-          return SplitMenuChoices.First(file => file.Name.Contains(ArchitectureHelper.GetPlayerArtchitecture().ToString())) ?? SplitMenuChoices[0];
+            return
+                SplitMenuChoices.First(
+                    file => file.Name.Contains(ArchitectureHelper.GetPlayerArtchitecture().ToString())) ??
+                SplitMenuChoices[0];
         }
 
         private void DownloadFile(string url)
@@ -202,10 +198,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             m_File.CancelDownload();
         }
 
-        #region ProgressBarWithText
-
-        #endregion
-
         #region SplitButtonToolStripItem
 
         public sealed class SplitButtonToolStripItem : ToolStripMenuItem
@@ -232,9 +224,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         }
 
         #endregion
+
+        #region ProgressBarWithText
+
+        #endregion
     }
 
-    [ComVisible(true)]
     public class ExtensionUpdateAvailableForm : UpdateAvailableForm
     {
         public ExtensionUpdateAvailableForm(Version version, UpdateCheckerSettings settings)
