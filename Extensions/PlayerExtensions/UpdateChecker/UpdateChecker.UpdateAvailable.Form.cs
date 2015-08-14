@@ -63,30 +63,15 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
             Settings = settings;
             Text = "New Player available: " + version;
+            changelogViewerWebBrowser.BeforeLoadPreviousChangelog +=ChangelogViewerWebBrowserOnBeforeLoadPreviousChangelog;
             SetChangelog(version);
-            changelogViewerWebBrowser.IsWebBrowserContextMenuEnabled = false;
         }
 
-        protected static List<string> HtmlHeaders
+        private void ChangelogViewerWebBrowserOnBeforeLoadPreviousChangelog(object sender, ChangelogWebViewer.LoadingChangelogEvent args)
         {
-            get
-            {
-                return new List<string>
-                {
-                    "<!doctype html>",
-                    "<html>",
-                    "<head>",
-                    "<style>" +
-                    "body { background: #fff; margin: 0 auto; } " +
-                    "h1 { font-size: 15px; color: #1562b6; padding-top: 5px; border: 0px !important; border-bottom: 2px solid #1562b6 !important; }" +
-                    "h2 { font-size: 13px; color: #1562b6; padding-top: 5px; border: 0px !important; border-bottom: 1px solid #1562b6 !important; }" +
-                    ".center {text-align: center}" +
-                    "</style>",
-                    "</head>",
-                    "<body>"
-                };
-            }
+            args.ChangelogLines = LoadPreviousChangeLog();
         }
+
 
         public override sealed string Text
         {
@@ -96,19 +81,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         private void SetChangelog(Version version)
         {
-            var lines = HtmlHeaders;
-            lines.AddRange(ParseChangeLog(version.ChangelogLines));
-            lines.Add(
-                "<div class=\"center\"><a href=\"#\" onclick=\"window.external.LoadPreviousChangeLog();\">Load previous changelogs</a></div>");
-            lines.Add("</body>");
-            lines.Add("</html>");
-            changelogViewerWebBrowser.DocumentText = string.Join("\n", lines);
-            changelogViewerWebBrowser.ObjectForScripting = this;
+            changelogViewerWebBrowser.SetChangelog(ParseChangeLog(version.ChangelogLines));
         }
 
-        public virtual void LoadPreviousChangeLog()
+        public virtual List<string> LoadPreviousChangeLog()
         {
-            var html = HtmlHeaders;
+            var html = new List<string>();
             using (new HourGlass())
             {
                 var webClient = new WebClient();
@@ -130,9 +108,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     }
                 }
             }
-            html.Add("</body>");
-            html.Add("</html>");
-            changelogViewerWebBrowser.DocumentText = string.Join("\n", html);
+            return html;
         }
 
         protected virtual List<string> ParseChangeLog(List<string> changelog)
@@ -320,11 +296,10 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             return lines;
         }
 
-        public override void LoadPreviousChangeLog()
+        public override List<string> LoadPreviousChangeLog()
         {
 
-            var html = HtmlHeaders;
-            html.Add("<h1>Changelogs</h1>");
+            var html = new List<string> {"<h1>Changelogs</h1>"};
             using (new HourGlass())
             {
                 var webClient = new WebClient();
@@ -336,9 +311,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     html.Add(CommonMarkConverter.Convert(gitHubVersion.body));
                 }
             }
-            html.Add("</body>");
-            html.Add("</html>");
-            changelogViewerWebBrowser.DocumentText = string.Join("\n", html);
+            return html;
 
         }
     }

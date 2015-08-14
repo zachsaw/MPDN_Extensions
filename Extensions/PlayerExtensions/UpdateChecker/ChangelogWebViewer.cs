@@ -55,16 +55,33 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             }
         }
 
-        private void SetChangelog(IEnumerable<string> changelogLines)
+        public ChangelogWebViewer()
+        {
+            ObjectForScripting = this;
+            IsWebBrowserContextMenuEnabled = false;
+            WebBrowserShortcutsEnabled = false;
+        }
+        /// <summary>
+        /// Set the changelog in the WebBrowser
+        /// </summary>
+        /// <param name="changelogLines"></param>
+        public void SetChangelog(IEnumerable<string> changelogLines)
+        {
+            SetChangelog(changelogLines, false);  
+        }
+
+        private void SetChangelog(IEnumerable<string> changelogLines, bool isPrevious)
         {
             var lines = HtmlHeaders;
             lines.AddRange(changelogLines);
-            lines.Add(
-                "<div class=\"center\"><a href=\"#\" onclick=\"window.external.LoadPreviousChangelog();\">Load previous changelogs</a></div>");
+            if (!isPrevious)
+            {
+                lines.Add(
+                    "<div class=\"center\"><a href=\"#\" onclick=\"window.external.LoadPreviousChangelog();\">Load previous changelogs</a></div>");
+            }
             lines.Add("</body>");
             lines.Add("</html>");
             DocumentText = string.Join("\n", lines);
-            ObjectForScripting = this;
         }
 
         public void LoadPreviousChangelog()
@@ -73,7 +90,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             BeforeLoadPreviousChangelog.Handle(handler => handler(this, changelogEvent));
             if (changelogEvent.ChangelogLines != null)
             {
-                SetChangelog(changelogEvent.ChangelogLines);
+                SetChangelog(changelogEvent.ChangelogLines, true);
             }
         }
     }

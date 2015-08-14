@@ -50,7 +50,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.label1 = new System.Windows.Forms.Label();
             this.checkBoxDisable = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.changelogViewerWebBrowser = new System.Windows.Forms.WebBrowser();
+            this.changelogViewerWebBrowser = new ChangelogWebViewer();
             this.CloseButton = new System.Windows.Forms.Button();
             this.forgetUpdate = new System.Windows.Forms.Button();
             this.downloadButton = new wyDay.Controls.SplitButton();
@@ -101,7 +101,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             this.changelogViewerWebBrowser.Name = "changelogViewerWebBrowser";
             this.changelogViewerWebBrowser.Size = new System.Drawing.Size(601, 209);
             this.changelogViewerWebBrowser.TabIndex = 0;
-            this.changelogViewerWebBrowser.WebBrowserShortcutsEnabled = false;
             // 
             // CloseButton
             // 
@@ -184,6 +183,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         private System.Windows.Forms.Button forgetUpdate;
         private SplitButton downloadButton;
         private TextProgressBar downloadProgressBar;
-        protected System.Windows.Forms.WebBrowser changelogViewerWebBrowser;
+        protected ChangelogWebViewer changelogViewerWebBrowser;
     }
 }
