@@ -63,7 +63,9 @@ namespace Mpdn.Extensions.AudioScripts
                 refclk = 0;
             }
 
-            var adjust = ratio*(1.0 - refclk);
+            // Use of 0.999999 is to allow a tiny amount of measurement error in displayHz
+            // This allows us to adjust refclk to just a fraction under the displayHz
+            var adjust = ratio*(0.999999 - refclk);
             long start, end;
             output.GetTime(out start, out end);
             long endDelta = end - start;
