@@ -396,7 +396,26 @@ namespace Mpdn.Extensions.Framework
 
         public static void LoadAudioKernel(this GPGPU gpu, Type type)
         {
-            gpu.LoadModule(CudafyTranslator.Cudafy(eArchitecture.OpenCL, type), false);
+            gpu.LoadModule(GetCudafyModule(type), false);
+        }
+
+        private static CudafyModule GetCudafyModule(Type type)
+        {
+            var filename = string.Format("{0}.cdfy", Path.Combine(AudioKernelCacheRoot, type.ToString()));
+            var km = CudafyModule.TryDeserialize(filename);
+            if (km != null && km.TryVerifyChecksums()) 
+                return km;
+
+            km = CudafyTranslator.Cudafy(eArchitecture.OpenCL, type);
+            Directory.CreateDirectory(AudioKernelCacheRoot);
+            km.Serialize(filename);
+
+            return km;
+        }
+
+        private static string AudioKernelCacheRoot
+        {
+            get { return AppPath.GetUserDataDir("CudafyCache"); }
         }
     }
 

@@ -294,7 +294,7 @@ namespace Mpdn.Extensions.Framework
                     }
                 }
                 m_Gpu = CudafyHost.GetDevice(eGPUType.OpenCL, device.DeviceId);
-                m_Gpu.LoadModule(AudioKernels.KernelModule);
+                m_Gpu.LoadAudioKernel(typeof(AudioKernels));
                 OnLoadAudioKernel();
             }
             catch (Exception ex)

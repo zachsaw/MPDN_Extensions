@@ -16,7 +16,6 @@
 // 
 using System.Runtime.InteropServices;
 using Cudafy;
-using Cudafy.Translator;
 
 namespace Mpdn.Extensions.Framework
 {
@@ -328,17 +327,6 @@ namespace Mpdn.Extensions.Framework
                     output[(tid * channels) + i] = ConvertFloatToDouble(f);
                 }
                 tid += thread.gridDim.x;
-            }
-        }
-
-        private static CudafyModule s_KernelModule;
-
-        public static CudafyModule KernelModule
-        {
-            get
-            {
-                return s_KernelModule ??
-                       (s_KernelModule = CudafyTranslator.Cudafy(eArchitecture.OpenCL, typeof(AudioKernels)));
             }
         }
     }
