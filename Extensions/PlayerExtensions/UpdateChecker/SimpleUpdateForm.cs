@@ -42,6 +42,18 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             Icon = Gui.Icon;
             m_Type = type;
             m_Settings = settings;
+            switch (m_Type)
+            {
+                case UpdateType.Both:
+                    infoLabel.Text = string.Format("New Player available: {0}\nNew Extension available: {1}", m_Settings.MpdnVersionOnServer, m_Settings.ExtensionVersionOnServer); 
+                    break;
+                case UpdateType.Extensions:
+                    infoLabel.Text = string.Format("New Extension available: {0}", m_Settings.ExtensionVersionOnServer);
+                    break;
+                case UpdateType.Player:
+                    infoLabel.Text = string.Format("New Player available: {0}", m_Settings.MpdnVersionOnServer);
+                    break;
+            }
         }
 
         private void ForgetUpdateButtonClick(object sender, EventArgs e)

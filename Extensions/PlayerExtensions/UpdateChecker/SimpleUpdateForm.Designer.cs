@@ -30,7 +30,7 @@
         {
             this.installButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
+            this.infoLabel = new System.Windows.Forms.Label();
             this.forgetUpdateButton = new System.Windows.Forms.Button();
             this.downloadProgressBar = new Mpdn.Extensions.PlayerExtensions.UpdateChecker.TextProgressBar();
             this.SuspendLayout();
@@ -58,17 +58,17 @@
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.CancelButtonClick);
             // 
-            // label1
+            // infoLabel
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.infoLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(81, 26);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(178, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "A new update for MPDN is available";
+            this.infoLabel.AutoSize = true;
+            this.infoLabel.Location = new System.Drawing.Point(81, 26);
+            this.infoLabel.Name = "infoLabel";
+            this.infoLabel.Size = new System.Drawing.Size(178, 13);
+            this.infoLabel.TabIndex = 2;
+            this.infoLabel.Text = "A new update for MPDN is available";
             // 
             // forgetUpdateButton
             // 
@@ -102,7 +102,7 @@
             this.ControlBox = false;
             this.Controls.Add(this.downloadProgressBar);
             this.Controls.Add(this.forgetUpdateButton);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.infoLabel);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.installButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -119,7 +119,7 @@
 
         private System.Windows.Forms.Button installButton;
         private System.Windows.Forms.Button cancelButton;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label infoLabel;
         private System.Windows.Forms.Button forgetUpdateButton;
         private TextProgressBar downloadProgressBar;
     }
