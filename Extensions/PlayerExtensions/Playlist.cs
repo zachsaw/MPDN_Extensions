@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions.Playlist
@@ -61,7 +62,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private const string SUBCATEGORY = "Playlist";
         private const int ICON_BASE_SIZE = 16;
-        private string OS_VERSION = Environment.OSVersion.ToString();
+        private readonly string OS_VERSION = GetOSFriendlyName();
 
         private readonly PlaylistForm m_Form = new PlaylistForm();
         private readonly PlayerMenuItem m_MenuItem = new PlayerMenuItem();
@@ -367,7 +368,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     if (Settings.LockWindowSize)
                     {
-                        if (OS_VERSION.Contains("6.3")) //check if OS is Windows 10
+                        if (OS_VERSION.Contains("Windows 10"))
                         {
                             m_Form.Height = m_MpdnForm.Height + borderWidth;
                         }
@@ -385,7 +386,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     if (Settings.LockWindowSize)
                     {
-                        if (OS_VERSION.Contains("6.3")) //check if OS is Windows 10
+                        if (OS_VERSION.Contains("Windows 10"))
                         {
                             m_Form.Width = m_MpdnForm.Width;
                             m_Form.Height = m_MpdnForm.Height - borderWidth;
@@ -402,7 +403,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (Settings.LockWindowSize)
             {
-                if (OS_VERSION.Contains("6.3")) //check if OS is Windows 10
+                if (OS_VERSION.Contains("Windows 10"))
                 {
                     m_Form.Left = m_MpdnForm.Right - (borderWidth * 2);
                     m_Form.Top = m_MpdnForm.Top;
@@ -415,7 +416,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             else
             {
-                if (OS_VERSION.Contains("6.3")) //check if OS is Windows 10
+                if (OS_VERSION.Contains("Windows 10"))
                 {
                     m_Form.Left = m_MpdnForm.Right - (borderWidth * 2) - 5;
                     m_Form.Top = m_MpdnForm.Top;
@@ -502,6 +503,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private static bool CursorIsOnResizeAnchor()
         {
             return Cursor.Current == Cursors.SizeNWSE || Cursor.Current == Cursors.SizeNESW;
+        }
+
+        public static string GetOSFriendlyName()
+        {
+            const string subKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
+            var key = Registry.LocalMachine;
+            var skey = key.OpenSubKey(subKey);
+            return skey.GetValue("ProductName").ToString();
         }
 
         #endregion
@@ -713,6 +722,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnMpdnFormKeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.C)
+            {
+                CloseMedia();
+            }
+
             if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Tab)
             {
                 if (Player.FullScreenMode.Active || !m_Form.Visible || m_Form.ContainsFocus) return;

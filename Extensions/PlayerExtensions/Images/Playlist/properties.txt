@@ -11,6 +11,8 @@ selectionFontColor
 playFontColor
 columnHeaderFontColor
 formColor
+dataGridColor
+dataGridAllColor
 selectionColor
 greyOutColor
 playColor
@@ -22,3 +24,7 @@ statusBorderColor
 #This determines whether the header can be styled or not
 #Can be true, false or unset
 columnHeaderTransparency
+
+#Background image layout
+#Can be set to stretch, center or zoom
+backgroundImageLayout

@@ -88,6 +88,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private Color m_PlayFontColor = Color.Empty;
         private Color m_ColumnHeaderFontColor = Color.Empty;
         private Color m_FormColor = Color.Empty;
+        private Color m_DataGridColor = Color.Empty;
+        private Color m_DataGridAllColor = Color.Empty;
         private Color m_SelectionColor = Color.Empty;
         private Color m_GreyOutColor = Color.Empty;
         private Color m_PlayColor = Color.Empty;
@@ -96,6 +98,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private Color m_StatusBorderColor = Color.Empty;
         private bool m_ColumnHeaderTransparency;
         private bool m_DropShadow;
+        private string m_BackgroundImageLayout;
 
         private string m_LoadedPlaylist;
 
@@ -308,16 +311,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     bool mpdnRememberBounds = Player.Config.Settings.GeneralSettings.RememberWindowSizePos;
                     var mpdnBounds = Player.Config.Settings.GeneralSettings.WindowBounds;
 
-                    var screen = Screen.FromControl(owner);
-                    var screenBounds = screen.WorkingArea;
-
                     if (mpdnRememberBounds)
                     {
-                        Width = mpdnBounds.Right + mpdnBounds.Width >= (screenBounds.Width / 2)
-                            ? screenBounds.Width - (mpdnBounds.Width + mpdnBounds.Left)
-                            : Width;
+                        Width = mpdnBounds.Width;
                     }
-                    else Width = right + width >= (screenBounds.Width / 2) ? (screenBounds.Width / 2) - width / 2 : Width;
+                    else Width = Player.ActiveForm.Width;
 
                     if (LockWindowSize)
                     {
@@ -405,13 +403,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     if (i.EndChapter != -1)
                     {
                         dgv_PlayList.Rows.Add(string.Empty, fileCount, path, directory, file,
-                            String.Join(",", i.SkipChapters),
+                            string.Join(",", i.SkipChapters),
                             i.EndChapter, i.Duration);
                     }
                     else
                     {
                         dgv_PlayList.Rows.Add(string.Empty, fileCount, path, directory, file,
-                            String.Join(",", i.SkipChapters), null, i.Duration);
+                            string.Join(",", i.SkipChapters), null, i.Duration);
                     }
                 }
                 else dgv_PlayList.Rows.Add(string.Empty, fileCount, path, directory, file, null, null, i.Duration);
@@ -1001,14 +999,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
 
                 PopulatePlaylist();
-
-                m_SelectedRowIndex = m_SelectedRowIndex < 0
-                    ? 0
-                    : m_SelectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : m_SelectedRowIndex;
-
-                dgv_PlayList.CurrentCell = Playlist.Count > 0
-                    ? dgv_PlayList.Rows[m_SelectedRowIndex].Cells[m_TitleCellIndex]
-                    : dgv_PlayList.CurrentCell = null;
             }
             catch (Exception ex)
             {
@@ -1036,14 +1026,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 }
 
                 PopulatePlaylist();
-
-                m_SelectedRowIndex = m_SelectedRowIndex < 0
-                    ? 0
-                    : m_SelectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : m_SelectedRowIndex;
-
-                dgv_PlayList.CurrentCell = Playlist.Count > 0
-                    ? dgv_PlayList.Rows[m_SelectedRowIndex].Cells[m_TitleCellIndex]
-                    : dgv_PlayList.CurrentCell = null;
             }
             catch (Exception ex)
             {
@@ -1061,14 +1043,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 Playlist.RemoveAll(p => !File.Exists(p.FilePath));
 
                 PopulatePlaylist();
-
-                m_SelectedRowIndex = m_SelectedRowIndex < 0
-                    ? 0
-                    : m_SelectedRowIndex > Playlist.Count - 1 ? Playlist.Count - 1 : m_SelectedRowIndex;
-
-                dgv_PlayList.CurrentCell = Playlist.Count > 0
-                    ? dgv_PlayList.Rows[m_SelectedRowIndex].Cells[m_TitleCellIndex]
-                    : dgv_PlayList.CurrentCell = null;
             }
             catch (Exception ex)
             {
@@ -1185,6 +1159,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_PlayFontColor = Color.Empty;
             m_ColumnHeaderFontColor = Color.Empty;
             m_FormColor = Color.Empty;
+            m_DataGridAllColor = Color.Empty;
             m_SelectionColor = Color.Empty;
             m_GreyOutColor = Color.Empty;
             m_PlayColor = Color.Empty;
@@ -1194,6 +1169,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_StatusBorderColor = Color.Empty;
             m_ColumnHeaderTransparency = false;
             m_DropShadow = false;
+            m_BackgroundImageLayout = string.Empty;
 
             if (!Directory.Exists(PLAYLIST_ICONS_DIR)) return;
 
@@ -1238,7 +1214,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             GuiThread.DoAsync(() =>
             {
                 statusStrip1.Visible = loadedIcons > 0;
-                statusStrip1.Height = IconSize;
+                statusStrip1.Height = IconSize + 9;
 
                 int minWidth = Convert.ToInt32(GetDpi() + (IconSize * 14) + 75);
 
@@ -1270,16 +1246,36 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             GuiThread.DoAsync(() =>
             {
+                statusStrip1.BorderColor = m_StatusBorderColor;
+
                 if (m_ColumnHeaderTransparency) dgv_PlayList.SetColumnHeaderTransparent();
                 else dgv_PlayList.ResetColumnHeader();
+                if (m_DataGridAllColor != Color.Empty) dgv_PlayList.SetAllColor(m_DataGridAllColor);
+                else if (m_DataGridColor != Color.Empty) dgv_PlayList.BackgroundColor = m_DataGridColor;
+                else dgv_PlayList.BackgroundColor = Color.White;
 
-                statusStrip1.BorderColor = m_StatusBorderColor;
                 if (m_FormColor != Color.Empty) BackColor = m_FormColor;
                 if (m_ColumnHeaderFontColor != Color.Empty) dgv_PlayList.ColumnHeadersDefaultCellStyle.ForeColor = m_ColumnHeaderFontColor;
                 if (m_ColumnHeaderColor != Color.Empty) dgv_PlayList.ColumnHeadersDefaultCellStyle.BackColor = m_ColumnHeaderColor;
                 if (m_FontColor != Color.Empty) dgv_PlayList.DefaultCellStyle.ForeColor = m_FontColor;
                 if (m_SelectionColor != Color.Empty) dgv_PlayList.DefaultCellStyle.SelectionBackColor = m_SelectionColor;
                 if (m_SelectionFontColor != Color.Empty) dgv_PlayList.DefaultCellStyle.SelectionForeColor = m_SelectionFontColor;
+
+                switch (m_BackgroundImageLayout)
+                {
+                    case "stretch":
+                        dgv_PlayList.BackgroundImageLayout = ImageLayout.Stretch;
+                        break;
+                    case "center":
+                        dgv_PlayList.BackgroundImageLayout = ImageLayout.Center;
+                        break;
+                    case "zoom":
+                        dgv_PlayList.BackgroundImageLayout = ImageLayout.Zoom;
+                        break;
+                    default:
+                        dgv_PlayList.BackgroundImageLayout = ImageLayout.Stretch;
+                        break;
+                }
 
                 SetPlayStyling();
                 dgv_PlayList.Invalidate();
@@ -1328,7 +1324,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                         string line;
                         while ((line = r.ReadLine()) != null)
                         {
-                            string[] colors = new string[16];
+                            string[] colors = new string[1];
 
                             if (line.Contains(":")) colors = line.Split(':')[1].Split(',');
 
@@ -1366,6 +1362,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                             if (line.Contains("formColor"))
                             {
                                 m_FormColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("dataGridColor"))
+                            {
+                                m_DataGridColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
+                                    int.Parse(colors[2]),
+                                    int.Parse(colors[3]));
+                            }
+                            if (line.Contains("dataGridAllColor"))
+                            {
+                                m_DataGridAllColor = Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]),
                                     int.Parse(colors[2]),
                                     int.Parse(colors[3]));
                             }
@@ -1412,6 +1420,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                                     int.Parse(colors[3]));
                             }
                             if (line.Contains("columnHeaderTransparency")) m_ColumnHeaderTransparency = bool.Parse(line.Split(':')[1]);
+                            if (line.Contains("backgroundImageLayout")) m_BackgroundImageLayout = line.Split(':')[1].Trim();
                         }
                     }
                 }
@@ -1550,8 +1559,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             for (var i = 1; i < dgv_PlayList.Columns.Count; i++)
             {
                 var c = dgv_PlayList.Columns[i];
-                c.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                c.MinimumWidth = list[i - 1];
+                if (c.Name == "Number" || c.Name == "Duration")
+                {
+                    c.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                }
+                else
+                {
+                    c.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    c.MinimumWidth = list[i - 1];
+                }
             }
         }
 
@@ -1829,8 +1845,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if ((e.State & DataGridViewElementStates.Selected) == DataGridViewElementStates.Selected &&
                 m_SelectionColor != Color.Empty)
             {
-                var b = new SolidBrush(m_SelectionColor);
-                e.Graphics.FillRectangle(b, e.RowBounds);
+                var selBrush = new SolidBrush(m_SelectionColor);
+                e.Graphics.FillRectangle(selBrush, e.RowBounds);
             }
 
             bool paintPlayRow = CurrentItem != null && e.RowIndex > -1 && e.RowIndex == m_CurrentPlayIndex;
@@ -2292,8 +2308,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ButtonSettingsClick(object sender, EventArgs e)
         {
-            m_PlayListUi.ShowConfigDialog(this);
-            m_PlayListUi.Reinitialize();
+            if (m_PlayListUi.ShowConfigDialog(this)) m_PlayListUi.Reinitialize();
         }
 
         #endregion
@@ -2307,8 +2322,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void PlaylistForm_Shown(object sender, EventArgs e)
         {
-            SetColumnSize();
             FitColumnsToHeader();
+            SetColumnSize();
         }
 
         private void PlaylistForm_KeyDown(object sender, KeyEventArgs e)
@@ -2542,7 +2557,46 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             base.PaintBackground(graphics, clipBounds, gridBounds);
             if (BackgroundImage == null) return;
-            graphics.DrawImage(BackgroundImage, gridBounds);
+
+            switch (BackgroundImageLayout)
+            {
+                case ImageLayout.Center:
+                    DrawImageKeepAspectRatio(graphics, gridBounds);
+                    break;
+                case ImageLayout.Zoom:
+                    DrawImageZoomed(graphics, gridBounds);
+                    break;
+                default:
+                    graphics.DrawImage(BackgroundImage, gridBounds);
+                    break;
+            }
+        }
+
+        private void DrawImageKeepAspectRatio(Graphics g, Rectangle bounds)
+        {
+            double ratioX = (double)bounds.Width / (double)BackgroundImage.Width;
+            double ratioY = (double)bounds.Height / (double)BackgroundImage.Height;
+            double ratio = ratioX < ratioY ? ratioX : ratioY;
+
+            var scaleWidth = (int)(BackgroundImage.Width * ratio);
+            var scaleHeight = (int)(BackgroundImage.Height * ratio);
+
+            int posX = Convert.ToInt32((bounds.Width - (BackgroundImage.Width * ratio)) / 2);
+            int posY = Convert.ToInt32((bounds.Height - (BackgroundImage.Height * ratio)) / 2);
+
+            g.DrawImage(BackgroundImage, posX, posY, scaleWidth, scaleHeight);
+        }
+
+        private void DrawImageZoomed(Graphics g, Rectangle bounds)
+        {
+            double ratioX = (double)bounds.Width / (double)BackgroundImage.Width;
+            double ratioY = (double)bounds.Height / (double)BackgroundImage.Height;
+            double ratio = ratioX < ratioY ? ratioY : ratioX;
+
+            var scaleWidth = (int)(BackgroundImage.Width * ratio);
+            var scaleHeight = (int)(BackgroundImage.Height * ratio);
+
+            g.DrawImage(BackgroundImage, 0, 0, scaleWidth, scaleHeight);
         }
 
         public void ResetCells()
@@ -2555,6 +2609,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             AlternatingRowsDefaultCellStyle.BackColor = Color.Transparent;
             DefaultCellStyle.BackColor = Color.Transparent;
+        }
+
+        public void SetAllColor(Color newColor)
+        {
+            AlternatingRowsDefaultCellStyle.BackColor = newColor;
+            DefaultCellStyle.BackColor = newColor;
+            BackgroundColor = newColor;
         }
 
         public void ResetColumnHeader()
