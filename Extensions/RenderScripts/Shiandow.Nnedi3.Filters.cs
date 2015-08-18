@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -96,23 +98,72 @@ namespace Mpdn.Extensions.RenderScripts
             }
             */
 
-            public static IFilter CreateFilter(IShader11 shader, IFilter input, NNedi3Neurons neurons, bool alwaysUploadWeights = false)
+            public static Nnedi3Filter CreateFilter(IShader11 shader, IFilter input, NNedi3Neurons neurons)
             {
                 switch (neurons)
                 {
                     case NNedi3Neurons.Neurons16:
-                        return new Nnedi3N16Filter(shader, input, alwaysUploadWeights);
+                        return new Nnedi3N16Filter(shader, input);
                     case NNedi3Neurons.Neurons32:
-                        return new Nnedi3N32Filter(shader, input, alwaysUploadWeights);
+                        return new Nnedi3N32Filter(shader, input);
                     case NNedi3Neurons.Neurons64:
-                        return new Nnedi3N64Filter(shader, input, alwaysUploadWeights);
+                        return new Nnedi3N64Filter(shader, input);
                     case NNedi3Neurons.Neurons128:
-                        return new Nnedi3N128Filter(shader, input, alwaysUploadWeights);
+                        return new Nnedi3N128Filter(shader, input);
                     case NNedi3Neurons.Neurons256:
-                        return new Nnedi3N256Filter(shader, input, alwaysUploadWeights);
+                        return new Nnedi3N256Filter(shader, input);
                     default:
                         throw new ArgumentOutOfRangeException("neurons");
                 }
+            }
+        }
+
+        public class Nnedi3Filter : Shader11Filter, IDisposable
+        {
+            private IDisposable m_Weights1;
+            private IDisposable m_Weights2;
+            private IDisposable m_WeightsSum;
+
+            ~Nnedi3Filter()
+            {
+                Dispose(false);
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                DisposeHelper.Dispose(ref m_Weights1);
+                DisposeHelper.Dispose(ref m_Weights2);
+                DisposeHelper.Dispose(ref m_WeightsSum);
+            }
+
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            public Nnedi3Filter(ShaderFilterSettings<IShader11> settings, params IFilter<IBaseTexture>[] inputFilters) : base(settings, inputFilters)
+            {
+            }
+
+            public Nnedi3Filter(IShader11 shader, params IFilter<IBaseTexture>[] inputFilters) : base(shader, inputFilters)
+            {
+            }
+
+            protected void CreateWeights<T, TSum>(T weights1, T weights2, TSum weightsSum)
+                where T : struct
+                where TSum : struct
+            {
+                m_Weights1 = Renderer.CreateConstantBuffer(weights1);
+                m_Weights2 = Renderer.CreateConstantBuffer(weights2);
+                m_WeightsSum = Renderer.CreateConstantBuffer(weightsSum);
+            }
+
+            protected void UploadWeights()
+            {
+                Shader.SetConstantBuffer(2, m_Weights1);
+                Shader.SetConstantBuffer(3, m_Weights2);
+                Shader.SetConstantBuffer(4, m_WeightsSum);
             }
         }
 
@@ -157,36 +208,23 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
 
-        public class Nnedi3N16Filter : Shader11Filter
+        public class Nnedi3N16Filter : Nnedi3Filter
         {
-            private readonly bool m_AlwaysUploadWeights;
-
-            private readonly Weights16 m_Weights1;
-            private readonly Weights16 m_Weights2;
-            private readonly WeightsSum16 m_WeightsSum;
-            private bool m_WeightsUploaded;
-
-            public Nnedi3N16Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool alwaysUploadWeights = false)
+            public Nnedi3N16Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter)
                 : base(shader, inputFilter)
             {
-                m_AlwaysUploadWeights = alwaysUploadWeights;
-
-                m_Weights1 = new Weights16(Weights16.Weights1);
-                m_Weights2 = new Weights16(Weights16.Weights2);
-                m_WeightsSum = new WeightsSum16(WeightsSum16.Weights);
+                CreateWeights(
+                    new Weights16(Weights16.Weights1),
+                    new Weights16(Weights16.Weights2),
+                    new WeightsSum16(WeightsSum16.Weights));
             }
 
             protected override void LoadInputs(IList<IBaseTexture> inputs)
             {
                 base.LoadInputs(inputs);
 
-                if (!m_AlwaysUploadWeights && m_WeightsUploaded)
-                    return;
-
-                Shader.SetConstantBuffer(2, m_Weights1);
-                Shader.SetConstantBuffer(3, m_Weights2);
-                Shader.SetConstantBuffer(4, m_WeightsSum);
-                m_WeightsUploaded = true;
+                LoadSizeConstants(inputs, 0);
+                UploadWeights();
             }
         }
 
@@ -233,36 +271,23 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
 
-        public class Nnedi3N32Filter : Shader11Filter
+        public class Nnedi3N32Filter : Nnedi3Filter
         {
-            private readonly bool m_AlwaysUploadWeights;
-
-            private readonly Weights32 m_Weights1;
-            private readonly Weights32 m_Weights2;
-            private readonly WeightsSum32 m_WeightsSum;
-            private bool m_WeightsUploaded;
-
-            public Nnedi3N32Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool alwaysUploadWeights = false)
+            public Nnedi3N32Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter)
                 : base(shader, inputFilter)
             {
-                m_AlwaysUploadWeights = alwaysUploadWeights;
-
-                m_Weights1 = new Weights32(Weights32.Weights1);
-                m_Weights2 = new Weights32(Weights32.Weights2);
-                m_WeightsSum = new WeightsSum32(WeightsSum32.Weights);
+                CreateWeights(
+                    new Weights32(Weights32.Weights1),
+                    new Weights32(Weights32.Weights2),
+                    new WeightsSum32(WeightsSum32.Weights));
             }
 
             protected override void LoadInputs(IList<IBaseTexture> inputs)
             {
                 base.LoadInputs(inputs);
 
-                if (!m_AlwaysUploadWeights && m_WeightsUploaded)
-                    return;
-
-                Shader.SetConstantBuffer(2, m_Weights1);
-                Shader.SetConstantBuffer(3, m_Weights2);
-                Shader.SetConstantBuffer(4, m_WeightsSum);
-                m_WeightsUploaded = true;
+                LoadSizeConstants(inputs, 0);
+                UploadWeights();
             }
         }
 
@@ -309,36 +334,23 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
 
-        public class Nnedi3N64Filter : Shader11Filter
+        public class Nnedi3N64Filter : Nnedi3Filter
         {
-            private readonly bool m_AlwaysUploadWeights;
-
-            private readonly Weights64 m_Weights1;
-            private readonly Weights64 m_Weights2;
-            private readonly WeightsSum64 m_WeightsSum;
-            private bool m_WeightsUploaded;
-
-            public Nnedi3N64Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool alwaysUploadWeights = false)
+            public Nnedi3N64Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter)
                 : base(shader, inputFilter)
             {
-                m_AlwaysUploadWeights = alwaysUploadWeights;
-
-                m_Weights1 = new Weights64(Weights64.Weights1);
-                m_Weights2 = new Weights64(Weights64.Weights2);
-                m_WeightsSum = new WeightsSum64(WeightsSum64.Weights);
+                CreateWeights(
+                    new Weights64(Weights64.Weights1),
+                    new Weights64(Weights64.Weights2),
+                    new WeightsSum64(WeightsSum64.Weights));
             }
 
             protected override void LoadInputs(IList<IBaseTexture> inputs)
             {
                 base.LoadInputs(inputs);
 
-                if (!m_AlwaysUploadWeights && m_WeightsUploaded)
-                    return;
-
-                Shader.SetConstantBuffer(2, m_Weights1);
-                Shader.SetConstantBuffer(3, m_Weights2);
-                Shader.SetConstantBuffer(4, m_WeightsSum);
-                m_WeightsUploaded = true;
+                LoadSizeConstants(inputs, 0);
+                UploadWeights();
             }
         }
 
@@ -385,36 +397,23 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
 
-        public class Nnedi3N128Filter : Shader11Filter
+        public class Nnedi3N128Filter : Nnedi3Filter
         {
-            private readonly bool m_AlwaysUploadWeights;
-
-            private readonly Weights128 m_Weights1;
-            private readonly Weights128 m_Weights2;
-            private readonly WeightsSum128 m_WeightsSum;
-            private bool m_WeightsUploaded;
-
-            public Nnedi3N128Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool alwaysUploadWeights = false)
+            public Nnedi3N128Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter)
                 : base(shader, inputFilter)
             {
-                m_AlwaysUploadWeights = alwaysUploadWeights;
-
-                m_Weights1 = new Weights128(Weights128.Weights1);
-                m_Weights2 = new Weights128(Weights128.Weights2);
-                m_WeightsSum = new WeightsSum128(WeightsSum128.Weights);
+                CreateWeights(
+                    new Weights128(Weights128.Weights1),
+                    new Weights128(Weights128.Weights2),
+                    new WeightsSum128(WeightsSum128.Weights));
             }
 
             protected override void LoadInputs(IList<IBaseTexture> inputs)
             {
                 base.LoadInputs(inputs);
 
-                if (!m_AlwaysUploadWeights && m_WeightsUploaded)
-                    return;
-
-                Shader.SetConstantBuffer(2, m_Weights1);
-                Shader.SetConstantBuffer(3, m_Weights2);
-                Shader.SetConstantBuffer(4, m_WeightsSum);
-                m_WeightsUploaded = true;
+                LoadSizeConstants(inputs, 0);
+                UploadWeights();
             }
         }
 
@@ -461,36 +460,23 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
 
-        public class Nnedi3N256Filter : Shader11Filter
+        public class Nnedi3N256Filter : Nnedi3Filter
         {
-            private readonly bool m_AlwaysUploadWeights;
-
-            private readonly Weights256 m_Weights1;
-            private readonly Weights256 m_Weights2;
-            private readonly WeightsSum256 m_WeightsSum;
-            private bool m_WeightsUploaded;
-
-            public Nnedi3N256Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool alwaysUploadWeights = false)
+            public Nnedi3N256Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter)
                 : base(shader, inputFilter)
             {
-                m_AlwaysUploadWeights = alwaysUploadWeights;
-
-                m_Weights1 = new Weights256(Weights256.Weights1);
-                m_Weights2 = new Weights256(Weights256.Weights2);
-                m_WeightsSum = new WeightsSum256(WeightsSum256.Weights);
+                CreateWeights(
+                    new Weights256(Weights256.Weights1),
+                    new Weights256(Weights256.Weights2),
+                    new WeightsSum256(WeightsSum256.Weights));
             }
 
             protected override void LoadInputs(IList<IBaseTexture> inputs)
             {
                 base.LoadInputs(inputs);
 
-                if (!m_AlwaysUploadWeights && m_WeightsUploaded)
-                    return;
-
-                Shader.SetConstantBuffer(2, m_Weights1);
-                Shader.SetConstantBuffer(3, m_Weights2);
-                Shader.SetConstantBuffer(4, m_WeightsSum);
-                m_WeightsUploaded = true;
+                LoadSizeConstants(inputs, 0);
+                UploadWeights();
             }
         }
 

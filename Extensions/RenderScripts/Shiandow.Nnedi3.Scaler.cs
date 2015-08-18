@@ -15,6 +15,8 @@
 // License along with this library.
 
 using System;
+using System.Collections.Generic;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3.Filters;
 using Mpdn.RenderScript;
@@ -44,6 +46,19 @@ namespace Mpdn.Extensions.RenderScripts
             private static readonly int[] s_NeuronCount = {16, 32, 64, 128, 256};
             private static readonly string[] s_CodePath = {"A", "B", "C", "D", "E"};
 
+            private readonly List<Nnedi3Filter> m_Filters = new List<Nnedi3Filter>();
+
+            public override void Reset()
+            {
+                base.Reset();
+
+                foreach (var f in m_Filters)
+                {
+                    DisposeHelper.Dispose(f);
+                }
+                m_Filters.Clear();
+            }
+
             public override IFilter CreateFilter(IFilter input)
             {
                 if (!Renderer.IsDx11Avail)
@@ -52,12 +67,12 @@ namespace Mpdn.Extensions.RenderScripts
                     return input; // DX11 is not available; fallback
                 }
 
-                Func<TextureSize, TextureSize> Transformation = s => new TextureSize(2 * s.Height, s.Width);
+                Func<TextureSize, TextureSize> transform = s => new TextureSize(2 * s.Height, s.Width);
 
                 var NNEDI3p1 = LoadShader11(string.Format("NNEDI3_{0}_{1}.cso", s_NeuronCount[(int)Neurons1], s_CodePath[(int)CodePath]));
                 var NNEDI3p2 = LoadShader11(string.Format("NNEDI3_{0}_{1}.cso", s_NeuronCount[(int)Neurons2], s_CodePath[(int)CodePath]));
-                var Interleave = CompileShader("Interleave.hlsl").Configure(transform: Transformation);
-                var Combine = CompileShader("Combine.hlsl").Configure(transform: Transformation);
+                var Interleave = CompileShader("Interleave.hlsl").Configure(transform: transform);
+                var Combine = CompileShader("Combine.hlsl").Configure(transform: transform);
 
                 var sourceSize = input.OutputSize;
                 if (!IsUpscalingFrom(sourceSize))
@@ -70,9 +85,11 @@ namespace Mpdn.Extensions.RenderScripts
                 
                 IFilter resultY, result;
 
-                var pass1 = NNedi3Helpers.CreateFilter(NNEDI3p1, yuv, Neurons1, true);
+                var pass1 = NNedi3Helpers.CreateFilter(NNEDI3p1, yuv, Neurons1);
+                m_Filters.Add(pass1);
                 resultY = new ShaderFilter(Interleave, yuv, pass1);
-                var pass2 = NNedi3Helpers.CreateFilter(NNEDI3p2, resultY, Neurons2, Neurons1 != Neurons2);
+                var pass2 = NNedi3Helpers.CreateFilter(NNEDI3p2, resultY, Neurons2);
+                m_Filters.Add(pass2);
                 result = new ShaderFilter(Combine, resultY, pass2, chroma);
 
                 return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),

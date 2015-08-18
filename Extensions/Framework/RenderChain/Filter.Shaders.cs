@@ -201,6 +201,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public class Shader11Filter : GenericShaderFilter<IShader11>
     {
+        private readonly List<IDisposable> m_Buffers = new List<IDisposable>();
+
         public Shader11Filter(ShaderFilterSettings<IShader11> settings, params IBaseFilter[] inputFilters)
             : base(settings, inputFilters)
         {
@@ -211,45 +213,51 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
         }
 
-        protected int Counter { get; private set; }
+        protected void LoadSizeConstants(IList<IBaseTexture> inputs, int index)
+        {
+            var input = inputs[index];
+            if (input is ITexture2D)
+            {
+                var tex = (ITexture2D) input;
+                var buffer =
+                    Renderer.CreateConstantBuffer(new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height));
+                m_Buffers.Add(buffer);
+                Shader.SetTextureConstant(index, tex, LinearSampling[index], false);
+                Shader.SetConstantBuffer(string.Format("size{0}", index), buffer, false);
+            }
+            else
+            {
+                var tex = (ITexture3D) input;
+                var buffer = Renderer.CreateConstantBuffer(new Vector4(tex.Width, tex.Height, tex.Depth, 0));
+                m_Buffers.Add(buffer);
+                Shader.SetTextureConstant(index, tex, LinearSampling[index], false);
+                Shader.SetConstantBuffer(string.Format("size3d{0}", index), buffer, false);
+            }
+        }
 
         protected override void LoadInputs(IList<IBaseTexture> inputs)
         {
-            var i = 0;
-            foreach (var input in inputs)
+            for (int i = 0; 4*i < Args.Length; i++)
             {
-                if (input is ITexture2D)
-                {
-                    var tex = (ITexture2D) input;
-                    Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
-                    Shader.SetConstantBuffer(String.Format("size{0}", i),
-                        new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
-                }
-                else
-                {
-                    var tex = (ITexture3D) input;
-                    Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
-                    Shader.SetConstantBuffer(String.Format("size3d{0}", i),
-                        new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
-                }
-                i++;
+                var buffer =
+                    Renderer.CreateConstantBuffer(new Vector4(Args[4*i], Args[4*i + 1], Args[4*i + 2], Args[4*i + 3]));
+                m_Buffers.Add(buffer);
+                Shader.SetConstantBuffer(string.Format("args{0}", i), buffer, false);
             }
 
-            for (i = 0; 4*i < Args.Length; i++)
-            {
-                Shader.SetConstantBuffer(String.Format("args{0}", i),
-                    new Vector4(Args[4*i], Args[4*i + 1], Args[4*i + 2], Args[4*i + 3]), false);
-            }
-
-            // Legacy constants 
-            var output = OutputTarget;
-            Shader.SetConstantBuffer(0, new Vector4(output.Width, output.Height, Counter++ & 0x7fffff, 
-                Renderer.FrameTimeStampMicrosec / 1000000.0f), false);
+            // Additional constants can be loaded via LoadSizeConstants()
         }
 
         protected override void Render(IShader11 shader)
         {
             Renderer.Render(OutputTarget, shader);
+
+            foreach (var b in m_Buffers)
+            {
+                DisposeHelper.Dispose(b);
+            }
+
+            m_Buffers.Clear();
         }
     }
 

@@ -478,7 +478,7 @@ namespace Mpdn.Extensions.Framework
     {
         public static int InterfaceVersion
         {
-            get { return 3; }
+            get { return 4; }
         }
 
         public static IList<Assembly> Assemblies

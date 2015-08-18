@@ -92,9 +92,7 @@
     <Compile Include="Extensions\Framework\AudioScript.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviderBase.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviders.cs" />
-    <Compile Include="Extensions\Framework\Config\ExtensionsUi.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Extensions\Framework\Config\ExtensionsUi.cs" />
     <Compile Include="Extensions\Framework\Config\IConfigProvider.cs" />
     <Compile Include="Extensions\Framework\Config\IScriptSettings.cs" />
     <Compile Include="Extensions\Framework\Config\ScriptSettings.cs" />
