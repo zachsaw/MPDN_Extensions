@@ -57,7 +57,7 @@ cbuffer size0 : register(b1)
 
 struct Weights
 {
-	float4 val[WT];
+    float4 val[WT];
 };
 
 StructuredBuffer<Weights> w1 : register(t1);
@@ -66,7 +66,7 @@ StructuredBuffer<float2>  w  : register(t3);
 
 #define W1(nns, wt) w1[nns].val[wt]
 #define W2(nns, wt) w2[nns].val[wt]
-#define WS(nns)		w[nns]
+#define WS(nns)     w[nns]
 
 #else
 
@@ -87,7 +87,7 @@ cbuffer weights3 : register(b4)
 
 #define W1(nns, wt) w1[nns][wt]
 #define W2(nns, wt) w2[nns][wt]
-#define WS(nns)		w[nns]
+#define WS(nns)     w[nns]
 
 #endif
 
