@@ -15,7 +15,6 @@
 // License along with this library.
 
 using System;
-using System.Collections.Generic;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3.Filters;
@@ -126,7 +125,7 @@ namespace Mpdn.Extensions.RenderScripts
                         Guid = new Guid("B210A4E6-E3F9-4FEE-9840-5D6EDB0BFE05"),
                         Name = "NNEDI3",
                         Description = "NNEDI3 image doubler",
-                        Copyright = "Adapted by Shiandow for MPDN"
+                        Copyright = "Adapted by Shiandow and Zachs for MPDN"
                     };
                 }
             }
