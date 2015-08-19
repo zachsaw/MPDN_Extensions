@@ -26,6 +26,7 @@
 // (5) flexible image channel handling
 
 // Ported to SM5.0 by Shiandow for use in MPDN
+// with further modifications and optimizations by Zach Saw
 
 //#define EXTRA_CHECKS
 
@@ -52,6 +53,23 @@ cbuffer size0 : register(b1)
     float ppy;
 };
 
+#ifdef BUF_STRUCTURED
+
+struct Weights
+{
+	float4 val[WT];
+};
+
+StructuredBuffer<Weights> w1 : register(t1);
+StructuredBuffer<Weights> w2 : register(t2);
+StructuredBuffer<float2>  w  : register(t3);
+
+#define W1(nns, wt) w1[nns].val[wt]
+#define W2(nns, wt) w2[nns].val[wt]
+#define WS(nns)		w[nns]
+
+#else
+
 cbuffer weights1 : register(b2)
 {
     float4 w1[nns][WT];
@@ -66,6 +84,12 @@ cbuffer weights3 : register(b4)
 {
     float2 w[nns];
 }
+
+#define W1(nns, wt) w1[nns][wt]
+#define W2(nns, wt) w2[nns][wt]
+#define WS(nns)		w[nns]
+
+#endif
 
 SamplerState ss;
 
@@ -130,19 +154,19 @@ float4 main( PS_IN In ) : SV_TARGET
         {
 #ifdef VECTOR_DOT
             float4 pix = t[i];
-            sum[0] += dot(pix, w1[n][i]);
-            sum[1] += dot(pix, w2[n][i]);
+            sum[0] += dot(pix, W1(n, i));
+            sum[1] += dot(pix, W2(n, i));
 #else
             [unroll] for (int j = 0; j<4; j++)
             {
                 float pix = t[i][j];
-                sum[0] += pix*w1[n][i][j];
-                sum[1] += pix*w2[n][i][j];
+                sum[0] += pix*W1(n, i)[j];
+                sum[1] += pix*W2(n, i)[j];
             }
 #endif
         }
-        sum[0] = sum[0]*mstd[2] + w[n][0];
-        sum[1] = sum[1]*mstd[2] + w[n][1];
+        sum[0] = sum[0]*mstd[2] + WS(n)[0];
+        sum[1] = sum[1]*mstd[2] + WS(n)[1];
 #ifdef EXTRA_CHECKS
         sum[0] = exp(clamp(sum[0], -80.0, 80.0));
 #else

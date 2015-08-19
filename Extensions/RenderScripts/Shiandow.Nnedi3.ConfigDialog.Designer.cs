@@ -57,13 +57,14 @@ namespace Mpdn.Extensions.RenderScripts
             this.comboBoxNeurons2 = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
+            this.checkBoxStructured = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(193, 230);
+            this.buttonCancel.Location = new System.Drawing.Point(193, 286);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1005;
@@ -74,7 +75,7 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(112, 230);
+            this.buttonOk.Location = new System.Drawing.Point(112, 286);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 1004;
@@ -118,21 +119,15 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.comboBoxPath.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxPath.FormattingEnabled = true;
-            this.comboBoxPath.Items.AddRange(new object[] {
-            "Prefer Scalar",
-            "Prefer Vector",
-            "Avoid Branches",
-            "Prefer Scalar & Small Code",
-            "Prefer Vector & Small Code"});
-            this.comboBoxPath.Location = new System.Drawing.Point(101, 145);
+            this.comboBoxPath.Location = new System.Drawing.Point(64, 199);
             this.comboBoxPath.Name = "comboBoxPath";
             this.comboBoxPath.Size = new System.Drawing.Size(152, 21);
-            this.comboBoxPath.TabIndex = 3;
+            this.comboBoxPath.TabIndex = 4;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(61, 178);
+            this.label3.Location = new System.Drawing.Point(61, 231);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(192, 26);
             this.label3.TabIndex = 1010;
@@ -142,7 +137,7 @@ namespace Mpdn.Extensions.RenderScripts
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(53, 73);
+            this.label4.Location = new System.Drawing.Point(52, 73);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(42, 13);
             this.label4.TabIndex = 1012;
@@ -181,13 +176,25 @@ namespace Mpdn.Extensions.RenderScripts
             this.label6.TabIndex = 1015;
             this.label6.Text = "* Selecting higher neurons for first pass \r\n   gives better quality";
             // 
+            // checkBoxStructured
+            // 
+            this.checkBoxStructured.AutoSize = true;
+            this.checkBoxStructured.Location = new System.Drawing.Point(64, 176);
+            this.checkBoxStructured.Name = "checkBoxStructured";
+            this.checkBoxStructured.Size = new System.Drawing.Size(177, 17);
+            this.checkBoxStructured.TabIndex = 3;
+            this.checkBoxStructured.Text = "Alternate weight access method";
+            this.checkBoxStructured.UseVisualStyleBackColor = true;
+            this.checkBoxStructured.CheckedChanged += new System.EventHandler(this.StructuredCheckedChanged);
+            // 
             // NNedi3ConfigDialog
             // 
             this.AcceptButton = this.buttonOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(280, 265);
+            this.ClientSize = new System.Drawing.Size(280, 321);
+            this.Controls.Add(this.checkBoxStructured);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
@@ -224,7 +231,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.ComboBox comboBoxNeurons2;
             private System.Windows.Forms.Label label5;
             private System.Windows.Forms.Label label6;
-
+            private System.Windows.Forms.CheckBox checkBoxStructured;
         }
     }
 }

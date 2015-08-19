@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.Controls;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -107,23 +108,6 @@ namespace Mpdn.Extensions.RenderScripts
                 checkBoxAntiRinging.Enabled = s.AllowDeRing;
                 setterAntiRingStrength.Enabled = s.AllowDeRing;
                 labelStrength.Enabled = s.AllowDeRing;
-            }
-
-            private class ComboBoxItem<T>
-            {
-                private readonly string m_Text;
-                public readonly T Value;
-
-                public ComboBoxItem(string text, T value)
-                {
-                    m_Text = text;
-                    Value = value;
-                }
-
-                public override string ToString()
-                {
-                    return m_Text;
-                }
             }
         }
 

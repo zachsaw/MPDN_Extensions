@@ -38,7 +38,9 @@ namespace Mpdn.Extensions.RenderScripts
         {
             ScalarMad,
             VectorDot,
-            UnrolledVectorDot
+            UnrolledVectorDot,
+            ScalarMadSmall,
+            VectorDotSmall
         }
 
         public static unsafe class NNedi3Helpers
@@ -64,54 +66,51 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            /*
-            // This causes .NET JIT internal limitation error, so we have to explicitly declare a filter class for each NNEDi3 neuron count
-            public class Nnedi3Filter<TWeights, TWeightsSum> : Shader11Filter
-                where TWeights : struct 
-                where TWeightsSum : struct 
+            public static Weights[] CreateWeights(float[,,] w)
             {
-                private readonly TWeights m_Weights1;
-                private readonly TWeights m_Weights2;
-                private readonly TWeightsSum m_WeightsSum;
-                private bool m_WeightsUploaded;
-
-                public Nnedi3Filter(IShader11 shader, TWeights weights1, TWeights weights2, TWeightsSum weightsSum, IFilter<IBaseTexture> inputFilter)
-                    : base(shader, inputFilter)
+                var nns = w.GetLength(0);
+                var result = new Weights[nns];
+                for (int n = 0; n < nns; n++)
+                for (int i = 0; i < 8; i++)
+                for (int j = 0; j < 4; j++)
                 {
-                    m_Weights1 = weights1;
-                    m_Weights2 = weights2;
-                    m_WeightsSum = weightsSum;
-                }
-
-                protected override void LoadInputs(IList<IBaseTexture> inputs)
-                {
-                    base.LoadInputs(inputs);
-
-                    if (!m_WeightsUploaded)
+                    fixed (float* p = result[n].W)
                     {
-                        Shader.SetConstantBuffer(2, m_Weights1);
-                        Shader.SetConstantBuffer(3, m_Weights2);
-                        Shader.SetConstantBuffer(4, m_WeightsSum);
-                        m_WeightsUploaded = true;
+                        p[i*4 + j] = w[n, i, j];
                     }
                 }
+                return result;
             }
-            */
 
-            public static Nnedi3Filter CreateFilter(IShader11 shader, IFilter input, NNedi3Neurons neurons)
+            public static WeightsSum[] CreateWeights(float[,] w)
+            {
+                var nns = w.GetLength(0);
+                var result = new WeightsSum[nns];
+                for (int n = 0; n < nns; n++)
+                for (int i = 0; i < 2; i++)
+                {
+                    fixed (float* p = result[n].W)
+                    {
+                        p[i] = w[n, i];
+                    }
+                }
+                return result;
+            }
+
+            public static Nnedi3Filter CreateFilter(IShader11 shader, IFilter input, NNedi3Neurons neurons, bool structured)
             {
                 switch (neurons)
                 {
                     case NNedi3Neurons.Neurons16:
-                        return new Nnedi3N16Filter(shader, input);
+                        return new Nnedi3N16Filter(shader, input, structured);
                     case NNedi3Neurons.Neurons32:
-                        return new Nnedi3N32Filter(shader, input);
+                        return new Nnedi3N32Filter(shader, input, structured);
                     case NNedi3Neurons.Neurons64:
-                        return new Nnedi3N64Filter(shader, input);
+                        return new Nnedi3N64Filter(shader, input, structured);
                     case NNedi3Neurons.Neurons128:
-                        return new Nnedi3N128Filter(shader, input);
+                        return new Nnedi3N128Filter(shader, input, structured);
                     case NNedi3Neurons.Neurons256:
-                        return new Nnedi3N256Filter(shader, input);
+                        return new Nnedi3N256Filter(shader, input, structured);
                     default:
                         throw new ArgumentOutOfRangeException("neurons");
                 }
@@ -120,9 +119,16 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3Filter : Shader11Filter, IDisposable
         {
+            private readonly bool m_Structured;
+
             private IDisposable m_Weights1;
             private IDisposable m_Weights2;
             private IDisposable m_WeightsSum;
+
+            public Nnedi3Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured) : base(shader, inputFilter)
+            {
+                m_Structured = structured;
+            }
 
             ~Nnedi3Filter()
             {
@@ -142,29 +148,67 @@ namespace Mpdn.Extensions.RenderScripts
                 GC.SuppressFinalize(this);
             }
 
-            public Nnedi3Filter(ShaderFilterSettings<IShader11> settings, params IFilter<IBaseTexture>[] inputFilters) : base(settings, inputFilters)
+            protected void CreateWeightsStruct(Weights[] weights1, Weights[] weights2, WeightsSum[] weightsSum)
             {
+                if (!m_Structured)
+                {
+                    throw new InvalidOperationException();
+                }
+                m_Weights1 = Renderer.CreateStructuredBuffer(weights1);
+                m_Weights2 = Renderer.CreateStructuredBuffer(weights2);
+                m_WeightsSum = Renderer.CreateStructuredBuffer(weightsSum);
             }
 
-            public Nnedi3Filter(IShader11 shader, params IFilter<IBaseTexture>[] inputFilters) : base(shader, inputFilters)
-            {
-            }
-
-            protected void CreateWeights<T, TSum>(T weights1, T weights2, TSum weightsSum)
+            protected void CreateWeightsConst<T, TSum>(T weights1, T weights2, TSum weightsSum)
                 where T : struct
                 where TSum : struct
             {
+                if (m_Structured)
+                {
+                    throw new InvalidOperationException();
+                }
                 m_Weights1 = Renderer.CreateConstantBuffer(weights1);
                 m_Weights2 = Renderer.CreateConstantBuffer(weights2);
                 m_WeightsSum = Renderer.CreateConstantBuffer(weightsSum);
             }
 
-            protected void UploadWeights()
+            private void UploadWeights()
             {
-                Shader.SetConstantBuffer(2, m_Weights1);
-                Shader.SetConstantBuffer(3, m_Weights2);
-                Shader.SetConstantBuffer(4, m_WeightsSum);
+                if (m_Structured)
+                {
+                    Shader.SetStructuredBuffer(1, m_Weights1);
+                    Shader.SetStructuredBuffer(2, m_Weights2);
+                    Shader.SetStructuredBuffer(3, m_WeightsSum);
+                }
+                else
+                {
+                    Shader.SetConstantBuffer(2, m_Weights1);
+                    Shader.SetConstantBuffer(3, m_Weights2);
+                    Shader.SetConstantBuffer(4, m_WeightsSum);
+                }
             }
+
+            protected override void LoadInputs(IList<IBaseTexture> inputs)
+            {
+                base.LoadInputs(inputs);
+
+                LoadSizeConstants(inputs, 0);
+                UploadWeights();
+            }
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public unsafe struct Weights
+        {
+            [FieldOffset(0)]
+            public fixed float W[8 * 4];
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public unsafe struct WeightsSum
+        {
+            [FieldOffset(0)]
+            public fixed float W[2];
         }
 
         #region 16 Neurons
@@ -210,21 +254,23 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3N16Filter : Nnedi3Filter
         {
-            public Nnedi3N16Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter)
-                : base(shader, inputFilter)
+            public Nnedi3N16Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured)
+                : base(shader, inputFilter, structured)
             {
-                CreateWeights(
-                    new Weights16(Weights16.Weights1),
-                    new Weights16(Weights16.Weights2),
-                    new WeightsSum16(WeightsSum16.Weights));
-            }
-
-            protected override void LoadInputs(IList<IBaseTexture> inputs)
-            {
-                base.LoadInputs(inputs);
-
-                LoadSizeConstants(inputs, 0);
-                UploadWeights();
+                if (structured)
+                {
+                    CreateWeightsStruct(
+                        NNedi3Helpers.CreateWeights(Weights16.Weights1),
+                        NNedi3Helpers.CreateWeights(Weights16.Weights2),
+                        NNedi3Helpers.CreateWeights(WeightsSum16.Weights));
+                }
+                else
+                {
+                    CreateWeightsConst(
+                        new Weights16(Weights16.Weights1),
+                        new Weights16(Weights16.Weights2),
+                        new WeightsSum16(WeightsSum16.Weights));
+                }
             }
         }
 
@@ -273,21 +319,23 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3N32Filter : Nnedi3Filter
         {
-            public Nnedi3N32Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter)
-                : base(shader, inputFilter)
+            public Nnedi3N32Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured)
+                : base(shader, inputFilter, structured)
             {
-                CreateWeights(
-                    new Weights32(Weights32.Weights1),
-                    new Weights32(Weights32.Weights2),
-                    new WeightsSum32(WeightsSum32.Weights));
-            }
-
-            protected override void LoadInputs(IList<IBaseTexture> inputs)
-            {
-                base.LoadInputs(inputs);
-
-                LoadSizeConstants(inputs, 0);
-                UploadWeights();
+                if (structured)
+                {
+                    CreateWeightsStruct(
+                        NNedi3Helpers.CreateWeights(Weights32.Weights1),
+                        NNedi3Helpers.CreateWeights(Weights32.Weights2),
+                        NNedi3Helpers.CreateWeights(WeightsSum32.Weights));
+                }
+                else
+                {
+                    CreateWeightsConst(
+                        new Weights32(Weights32.Weights1),
+                        new Weights32(Weights32.Weights2),
+                        new WeightsSum32(WeightsSum32.Weights));
+                }
             }
         }
 
@@ -336,21 +384,23 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3N64Filter : Nnedi3Filter
         {
-            public Nnedi3N64Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter)
-                : base(shader, inputFilter)
+            public Nnedi3N64Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured)
+                : base(shader, inputFilter, structured)
             {
-                CreateWeights(
-                    new Weights64(Weights64.Weights1),
-                    new Weights64(Weights64.Weights2),
-                    new WeightsSum64(WeightsSum64.Weights));
-            }
-
-            protected override void LoadInputs(IList<IBaseTexture> inputs)
-            {
-                base.LoadInputs(inputs);
-
-                LoadSizeConstants(inputs, 0);
-                UploadWeights();
+                if (structured)
+                {
+                    CreateWeightsStruct(
+                        NNedi3Helpers.CreateWeights(Weights64.Weights1),
+                        NNedi3Helpers.CreateWeights(Weights64.Weights2),
+                        NNedi3Helpers.CreateWeights(WeightsSum64.Weights));
+                }
+                else
+                {
+                    CreateWeightsConst(
+                        new Weights64(Weights64.Weights1),
+                        new Weights64(Weights64.Weights2),
+                        new WeightsSum64(WeightsSum64.Weights));
+                }
             }
         }
 
@@ -399,21 +449,23 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3N128Filter : Nnedi3Filter
         {
-            public Nnedi3N128Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter)
-                : base(shader, inputFilter)
+            public Nnedi3N128Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured)
+                : base(shader, inputFilter, structured)
             {
-                CreateWeights(
-                    new Weights128(Weights128.Weights1),
-                    new Weights128(Weights128.Weights2),
-                    new WeightsSum128(WeightsSum128.Weights));
-            }
-
-            protected override void LoadInputs(IList<IBaseTexture> inputs)
-            {
-                base.LoadInputs(inputs);
-
-                LoadSizeConstants(inputs, 0);
-                UploadWeights();
+                if (structured)
+                {
+                    CreateWeightsStruct(
+                        NNedi3Helpers.CreateWeights(Weights128.Weights1),
+                        NNedi3Helpers.CreateWeights(Weights128.Weights2),
+                        NNedi3Helpers.CreateWeights(WeightsSum128.Weights));
+                }
+                else
+                {
+                    CreateWeightsConst(
+                        new Weights128(Weights128.Weights1),
+                        new Weights128(Weights128.Weights2),
+                        new WeightsSum128(WeightsSum128.Weights));
+                }
             }
         }
 
@@ -462,21 +514,23 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3N256Filter : Nnedi3Filter
         {
-            public Nnedi3N256Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter)
-                : base(shader, inputFilter)
+            public Nnedi3N256Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured)
+                : base(shader, inputFilter, structured)
             {
-                CreateWeights(
-                    new Weights256(Weights256.Weights1),
-                    new Weights256(Weights256.Weights2),
-                    new WeightsSum256(WeightsSum256.Weights));
-            }
-
-            protected override void LoadInputs(IList<IBaseTexture> inputs)
-            {
-                base.LoadInputs(inputs);
-
-                LoadSizeConstants(inputs, 0);
-                UploadWeights();
+                if (structured)
+                {
+                    CreateWeightsStruct(
+                        NNedi3Helpers.CreateWeights(Weights256.Weights1),
+                        NNedi3Helpers.CreateWeights(Weights256.Weights2),
+                        NNedi3Helpers.CreateWeights(WeightsSum256.Weights));
+                }
+                else
+                {
+                    CreateWeightsConst(
+                        new Weights256(Weights256.Weights1),
+                        new Weights256(Weights256.Weights2),
+                        new WeightsSum256(WeightsSum256.Weights));
+                }
             }
         }
 

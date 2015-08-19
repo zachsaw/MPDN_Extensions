@@ -98,6 +98,7 @@
     <Compile Include="Extensions\Framework\Config\ScriptSettings.cs" />
     <Compile Include="Extensions\Framework\Config\ScriptSettingsBase.cs" />
     <Compile Include="Extensions\Framework\Controls\AvalonEditHost.cs" />
+    <Compile Include="Extensions\Framework\Controls\ComboBoxItem.cs" />
     <Compile Include="Extensions\Framework\Controls\HotkeyBox.cs">
       <SubType>Component</SubType>
     </Compile>

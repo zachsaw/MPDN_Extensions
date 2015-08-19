@@ -35,32 +35,38 @@ namespace Mpdn.Extensions.RenderScripts
                 Neurons1 = NNedi3Neurons.Neurons16;
                 Neurons2 = NNedi3Neurons.Neurons16;
                 CodePath = NNedi3Path.ScalarMad;
+                Structured = true;
             }
 
             public NNedi3Neurons Neurons1 { get; set; }
             public NNedi3Neurons Neurons2 { get; set; }
             public NNedi3Path CodePath { get; set; }
+            public bool Structured { get; set; }
 
             #endregion
 
             private static readonly int[] s_NeuronCount = {16, 32, 64, 128, 256};
             private static readonly string[] s_CodePath = {"A", "B", "C", "D", "E"};
 
-            private readonly List<Nnedi3Filter> m_Filters = new List<Nnedi3Filter>();
+            private Nnedi3Filter m_Filter1;
+            private Nnedi3Filter m_Filter2;
 
             public override void Reset()
             {
                 base.Reset();
+                Cleanup();
+            }
 
-                foreach (var f in m_Filters)
-                {
-                    DisposeHelper.Dispose(f);
-                }
-                m_Filters.Clear();
+            private void Cleanup()
+            {
+                DisposeHelper.Dispose(ref m_Filter1);
+                DisposeHelper.Dispose(ref m_Filter2);
             }
 
             public override IFilter CreateFilter(IFilter input)
             {
+                Cleanup();
+
                 if (!Renderer.IsDx11Avail)
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
@@ -69,10 +75,10 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Func<TextureSize, TextureSize> transform = s => new TextureSize(2 * s.Height, s.Width);
 
-                var NNEDI3p1 = LoadShader11(string.Format("NNEDI3_{0}_{1}.cso", s_NeuronCount[(int)Neurons1], s_CodePath[(int)CodePath]));
-                var NNEDI3p2 = LoadShader11(string.Format("NNEDI3_{0}_{1}.cso", s_NeuronCount[(int)Neurons2], s_CodePath[(int)CodePath]));
-                var Interleave = CompileShader("Interleave.hlsl").Configure(transform: transform);
-                var Combine = CompileShader("Combine.hlsl").Configure(transform: transform);
+                var shaderPass1 = LoadShader11(GetShaderFileName(Neurons1));
+                var shaderPass2 = LoadShader11(GetShaderFileName(Neurons2));
+                var interleave = CompileShader("Interleave.hlsl").Configure(transform: transform);
+                var combine = CompileShader("Combine.hlsl").Configure(transform: transform);
 
                 var sourceSize = input.OutputSize;
                 if (!IsUpscalingFrom(sourceSize))
@@ -82,18 +88,20 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
                     TextureChannels.ChromaOnly, new Vector2(-0.25f, -0.25f), Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
-                
-                IFilter resultY, result;
 
-                var pass1 = NNedi3Helpers.CreateFilter(NNEDI3p1, yuv, Neurons1);
-                m_Filters.Add(pass1);
-                resultY = new ShaderFilter(Interleave, yuv, pass1);
-                var pass2 = NNedi3Helpers.CreateFilter(NNEDI3p2, resultY, Neurons2);
-                m_Filters.Add(pass2);
-                result = new ShaderFilter(Combine, resultY, pass2, chroma);
+                m_Filter1 = NNedi3Helpers.CreateFilter(shaderPass1, yuv, Neurons1, Structured);
+                var resultY = new ShaderFilter(interleave, yuv, m_Filter1);
+                m_Filter2 = NNedi3Helpers.CreateFilter(shaderPass2, resultY, Neurons2, Structured);
+                var result = new ShaderFilter(combine, resultY, m_Filter2, chroma);
 
                 return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),
                     Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+            }
+
+            private string GetShaderFileName(NNedi3Neurons neurons)
+            {
+                return string.Format("NNEDI3_{0}_{1}{2}.cso", s_NeuronCount[(int) neurons], s_CodePath[(int) CodePath],
+                    Structured ? "_S" : string.Empty);
             }
         }
 

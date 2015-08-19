@@ -25,6 +25,7 @@ using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.Framework.Exceptions;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.Framework.Scripting;
+using BoxItem = Mpdn.Extensions.Framework.Controls.ComboBoxItem<Mpdn.Extensions.Framework.RenderChain.Preset>;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -32,21 +33,6 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public partial class ConditionalConfigDialog : ConditionalConfigDialogBase
         {
-            private class BoxItem
-            {
-                public Preset Preset { get; private set; }
-
-                public BoxItem(Preset preset)
-                {
-                    Preset = preset;
-                }
-
-                public override string ToString()
-                {
-                    return Preset.Name;
-                }
-            }
-
             public ConditionalConfigDialog()
             {
                 InitializeComponent();
@@ -68,7 +54,7 @@ namespace Mpdn.Extensions.RenderScripts
                     if (s.Category.ToLowerInvariant() == "hidden")
                         continue;
 
-                    comboBoxPreset.Items.Add(new BoxItem(s.ToPreset()));
+                    comboBoxPreset.Items.Add(CreateBoxItem(s.ToPreset()));
                 }
                 if (Settings.Preset != null && Settings.Preset.Script != null)
                 {
@@ -77,18 +63,23 @@ namespace Mpdn.Extensions.RenderScripts
                     var index = comboBoxPreset.SelectedIndex;
                     if (index >= 0)
                     {
-                        comboBoxPreset.Items[index] = new BoxItem(Settings.Preset);
+                        comboBoxPreset.Items[index] = CreateBoxItem(Settings.Preset);
                     }
                 }
 
                 UpdateControls();
             }
 
+            private static BoxItem CreateBoxItem(Preset preset)
+            {
+                return new BoxItem(preset.Name, preset);
+            }
+
             protected override void SaveSettings()
             {
                 Settings.Condition = conditionBox.Text;
                 var item = (BoxItem) comboBoxPreset.SelectedItem;
-                Settings.Preset = item == null ? null : item.Preset;
+                Settings.Preset = item == null ? null : item.Value;
             }
 
             private void DialogClosing(object sender, FormClosingEventArgs e)
@@ -138,10 +129,10 @@ namespace Mpdn.Extensions.RenderScripts
             private void ConfigButtonClick(object sender, EventArgs e)
             {
                 var item = (BoxItem) comboBoxPreset.SelectedItem;
-                if (item == null || !item.Preset.HasConfigDialog()) 
+                if (item == null || !item.Value.HasConfigDialog()) 
                     return;
 
-                if (item.Preset.ShowConfigDialog(this))
+                if (item.Value.ShowConfigDialog(this))
                 {
                     UpdateControls();
                 }
@@ -161,8 +152,8 @@ namespace Mpdn.Extensions.RenderScripts
                     labelDesc.Text = string.Empty;
                     return;
                 }
-                configButton.Enabled = item.Preset.HasConfigDialog();
-                labelDesc.Text = item.Preset.Description;
+                configButton.Enabled = item.Value.HasConfigDialog();
+                labelDesc.Text = item.Value.Description;
             }
 
             private void LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
