@@ -34,7 +34,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Neurons1 = NNedi3Neurons.Neurons16;
                 Neurons2 = NNedi3Neurons.Neurons16;
                 CodePath = NNedi3Path.ScalarMad;
-                Structured = true;
+                Structured = false;
             }
 
             public NNedi3Neurons Neurons1 { get; set; }
