@@ -37,9 +37,8 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return m_Hotkey; }
                 set
                 {
-                    DeregisterHotkey();
                     m_Hotkey = value ?? "";
-                    RegisterHotkey();
+                    UpdateHotkey();
                 }
             }
 
@@ -55,7 +54,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get
                 {
                     var preset = SelectedOption;
-                    return preset == null ? string.Empty : preset.Name;
+                    return preset == null ? string.Empty : preset.Name; 
                 }
                 set
                 {
@@ -106,17 +105,28 @@ namespace Mpdn.Extensions.RenderScripts
             #region Hotkey Handling
 
             private readonly Guid m_HotkeyGuid;
-
             private string m_Hotkey;
+            private bool m_Registered;
 
             private void RegisterHotkey()
             {
                 DynamicHotkeys.RegisterHotkey(m_HotkeyGuid, Hotkey, IncrementSelection);
+                m_Registered = true;
             }
 
             private void DeregisterHotkey()
             {
                 DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
+                m_Registered = false;
+            }
+
+            private void UpdateHotkey()
+            {
+                if (m_Registered)
+                {
+                    DeregisterHotkey();
+                    RegisterHotkey();
+                }
             }
 
             private void IncrementSelection()
