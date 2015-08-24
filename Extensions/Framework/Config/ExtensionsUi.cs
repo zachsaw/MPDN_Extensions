@@ -100,6 +100,16 @@ namespace Mpdn.Extensions.Framework.Config
 
         public abstract ExtensionUiDescriptor Descriptor { get; }
 
+        public bool SaveToString(out string result)
+        {
+            return ScriptConfig.SaveToString(out result);
+        }
+
+        public bool LoadFromString(string input)
+        {
+            return ScriptConfig.LoadFromString(input);
+        }
+
         #region Implementation
 
         private IScriptSettings<TSettings> ScriptConfig { get; set; }
