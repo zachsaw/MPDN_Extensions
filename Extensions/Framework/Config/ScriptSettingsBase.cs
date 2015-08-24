@@ -58,7 +58,7 @@ namespace Mpdn.Extensions.Framework.Config
 
         public virtual bool LoadFromString(string input)
         {
-            return Settings.Load(out m_LastException);
+            return Settings.LoadFromString(input, out m_LastException);
         }
 
         public virtual bool SaveToString(out string output)
