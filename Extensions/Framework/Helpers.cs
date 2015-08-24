@@ -31,6 +31,7 @@ using Mpdn.AudioScript;
 using Mpdn.Config;
 using Mpdn.DirectShow;
 using Mpdn.RenderScript;
+using Mpdn.Extensions.Framework.Config;
 using Control = System.Windows.Forms.Control;
 using WaveFormatExtensible = DirectShowLib.WaveFormatExtensible;
 
@@ -90,6 +91,31 @@ namespace Mpdn.Extensions.Framework
                 return Path.Combine(GetDirectoryName(Assembly.GetAssembly(typeof(IPlayerExtension)).Location),
                     "Extensions");
             }
+        }
+    }
+
+    public static class ConfigHelper
+    {
+        public static string SaveToString<TSettings>(TSettings settings)
+            where TSettings : class, new()
+        {
+            string result;
+
+            var config = new MemConfig<TSettings>(settings);
+            if (config.SaveToString(out result))
+                return result;
+            else
+                return null;
+        }
+
+        public static TSettings LoadFromString<TSettings>(string input)
+            where TSettings : class, new()
+        {
+            var config = new MemConfig<TSettings>();
+            if (config.LoadFromString(input))
+                return config.Config;
+            else
+                return null;
         }
     }
 
@@ -791,7 +817,7 @@ namespace Mpdn.Extensions.Framework
         {
             PlayerControl.ClearScreen();
         }
-
+            
         public static void ShowOptionsDialog()
         {
             PlayerControl.ShowOptionsDialog();
