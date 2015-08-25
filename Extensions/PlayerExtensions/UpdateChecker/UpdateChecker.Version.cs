@@ -1,34 +1,36 @@
-﻿// This file is a part of MPDN Extensions.
-// https://github.com/zachsaw/MPDN_Extensions
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3.0 of the License, or (at your option) any later version.
-// 
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library.
-// 
+﻿/* This file is a part of MPDN Extensions.
+ * https:github.com/zachsaw/MPDN_Extensions
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
 
-using System;
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
+ */
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 {
     public class Version
     {
         private static readonly Regex s_VersionRegex = new Regex(@"([0-9]+)\.([0-9]+)\.([0-9]+)");
+        private static readonly Regex s_ExtensionApiVersionRegex = new Regex(@"Extensions API Level (\d+)");
 
         public Version()
         {
             ChangelogLines = new List<string>();
+            ExtensionApiVersion = Extension.InterfaceVersion;
         }
 
         public Version(string version) : this()
@@ -42,12 +44,34 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public uint Major { get; set; }
         public uint Minor { get; set; }
         public uint Revision { get; set; }
+        public int ExtensionApiVersion { get; set; }
         public List<string> ChangelogLines { get; set; }
-
 
         public static bool ContainsVersionString(string text)
         {
             return s_VersionRegex.IsMatch(text);
+        }
+        /// <summary>
+        /// Check if the text contain an Extension API version
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static bool ContainsExtensionApiVersion(string text)
+        {
+            return s_ExtensionApiVersionRegex.IsMatch(text);
+        }
+        /// <summary>
+        /// Get the extension Api Version if present in the text.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns>Api Version if found, else -1</returns>
+        public static int GetExtensionApiVersion(string text)
+        {
+            if (ContainsExtensionApiVersion(text))
+            {
+                return int.Parse(s_ExtensionApiVersionRegex.Match(text).Groups[1].Value);
+            }
+            return -1;
         }
 
         public static bool operator >(Version v1, Version v2)
@@ -62,7 +86,6 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var iv2 = GetInteger(v2);
             return iv1 > iv2;
         }
-        
 
         private static int GetInteger(Version v)
         {
@@ -99,14 +122,15 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected bool Equals(Version other)
         {
-            return Equals(ChangelogLines, other.ChangelogLines) && Revision == other.Revision && Minor == other.Minor && Major == other.Major;
+            return Equals(ChangelogLines, other.ChangelogLines) && Revision == other.Revision && Minor == other.Minor &&
+                   Major == other.Major;
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((Version) obj);
         }
 

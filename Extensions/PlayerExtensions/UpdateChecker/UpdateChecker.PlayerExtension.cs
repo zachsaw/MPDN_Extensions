@@ -112,6 +112,24 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             var playerNeedUpdate = Settings.MpdnVersionOnServer > m_CurrentVersion;
             var extensionNeedUpdate = Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion();
+            //Check API Version match when both updates available
+            if (playerNeedUpdate && extensionNeedUpdate &&
+                Settings.MpdnVersionOnServer.ExtensionApiVersion !=
+                Settings.ExtensionVersionOnServer.ExtensionApiVersion)
+            {
+                return false;
+            }
+            //Don't update player if the update is going to break the extensions.
+            if (playerNeedUpdate && Settings.MpdnVersionOnServer.ExtensionApiVersion != Extension.InterfaceVersion)
+            {
+                return false;
+            }
+            //Don't update the extension if the new extensions aren't going to work with the current player.
+            if (extensionNeedUpdate &&
+                Settings.ExtensionVersionOnServer.ExtensionApiVersion != Extension.InterfaceVersion)
+            {
+                return false;
+            }
             return Settings.UseSimpleUpdate
                 ? DisplaySimpleForm(force, playerNeedUpdate, extensionNeedUpdate)
                 : DisplayAdvancedForm(force, playerNeedUpdate, extensionNeedUpdate);
@@ -234,7 +252,15 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 }
                 else if (serverVersion != null && !string.IsNullOrWhiteSpace(line))
                 {
-                    serverVersion.ChangelogLines.Add(line);
+                    var extensionApiVersion = Version.GetExtensionApiVersion(line);
+                    if (extensionApiVersion != -1)
+                    {
+                        serverVersion.ExtensionApiVersion = extensionApiVersion;
+                    }
+                    else
+                    {
+                        serverVersion.ChangelogLines.Add(line);
+                    }
                 }
             }
 
@@ -296,6 +322,14 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                 if (changelogStarted)
                 {
                     version.ChangelogLines.Add(line);
+                }
+                else
+                {
+                    var extensionApiVersion = Version.GetExtensionApiVersion(line);
+                    if (extensionApiVersion != -1)
+                    {
+                        version.ExtensionApiVersion = extensionApiVersion;
+                    }
                 }
                 if (line.StartsWith("#### Changelog"))
                 {
