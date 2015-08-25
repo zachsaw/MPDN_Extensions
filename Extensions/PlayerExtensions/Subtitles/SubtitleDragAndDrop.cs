@@ -63,6 +63,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
         private void PlayerOnDragDrop(object sender, PlayerControlEventArgs<DragEventArgs> playerControlEventArgs)
         {
             var files = (string[]) playerControlEventArgs.InputArgs.Data.GetData(DataFormats.FileDrop);
+
+            if (files != null)
             foreach (var file in files.Where(SubtitleManager.IsSubtitleFile))
             {
                 playerControlEventArgs.Handled = true;

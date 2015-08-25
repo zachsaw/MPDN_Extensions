@@ -477,7 +477,7 @@ namespace Mpdn.Extensions.Framework.Controls
 
         #region Buttons
 
-        private void ButtonConfigureClick(object sender, EventArgs e)
+        private void ButtonConfigureClicked(object sender, EventArgs e)
         {
             if (listViewChain.SelectedItems.Count <= 0)
                 return;
@@ -486,19 +486,19 @@ namespace Mpdn.Extensions.Framework.Controls
             ConfigureItem(item);
         }
 
-        private void ButtonAddClick(object sender, EventArgs e)
+        private void ButtonAddClicked(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewAvail.SelectedItems)
                 AddScript((IRenderChainUi)item.Tag);
         }
 
-        private void ButtonMinusClick(object sender, EventArgs e)
+        private void ButtonMinusClicked(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewChain.SelectedItems)
                 RemoveItem(item);
         }
 
-        private void ButtonClearClick(object sender, EventArgs e)
+        private void ButtonClearClicked(object sender, EventArgs e)
         {
             while (listViewChain.Items.Count > 0)
             {
@@ -507,13 +507,13 @@ namespace Mpdn.Extensions.Framework.Controls
             UpdateButtons();
         }
 
-        private void ButtonUpClick(object sender, EventArgs e)
+        private void ButtonUpClicked(object sender, EventArgs e)
         {
             MoveListViewItems(listViewChain, MoveDirection.Up);
             UpdateButtons();
         }
 
-        private void ButtonDownClick(object sender, EventArgs e)
+        private void ButtonDownClicked(object sender, EventArgs e)
         {
             MoveListViewItems(listViewChain, MoveDirection.Down);
             UpdateButtons();
@@ -626,7 +626,7 @@ namespace Mpdn.Extensions.Framework.Controls
 
         #region (Un)Grouping
 
-        private void MenuGroupItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        private void MenuChainGroupClicked(object sender, ToolStripItemClickedEventArgs e)
         {
             var script = (IRenderChainUi)e.ClickedItem.Tag;
             var grouppreset = script.MakeNewPreset();
@@ -646,7 +646,7 @@ namespace Mpdn.Extensions.Framework.Controls
             listViewChain.SelectedIndices.Add(index);
         }
 
-        private void MenuUngroupClicked(object sender, EventArgs e)
+        private void MenuChainUngroupClicked(object sender, EventArgs e)
         {
             if (listViewChain.SelectedItems.Count == 1)
             {
@@ -706,6 +706,38 @@ namespace Mpdn.Extensions.Framework.Controls
                 && preset.ShowConfigDialog(ParentForm.Owner)
                 && listViewChain.SelectedItems.Count > 0)
                 UpdateItemText(listViewChain.SelectedItems[0]);
+        }
+
+        #endregion
+
+        #region Copy / Pasting
+
+        private void MenuChainCopyClicked(object sender, EventArgs e)
+        {
+            List<Preset> items = listViewChain.SelectedItems
+                .Cast<ListViewItem>()
+                .Select(item => (Preset)item.Tag)
+                .ToList();
+
+            var text = ConfigHelper.SaveToString(items);
+            Clipboard.SetText(text);
+        }
+
+        private void MenuChainCutClicked(object sender, EventArgs e)
+        {
+            MenuChainCopyClicked(sender, e);
+            ButtonMinusClicked(sender, e);
+        }
+
+        private void MenuChainPasteClicked(object sender, EventArgs e)
+        {
+            if (Clipboard.ContainsText())
+            {
+                var text = Clipboard.GetText();
+                var items = ConfigHelper.LoadFromString<List<Preset>>(text);
+                if (items != null)
+                    AddPresets(items, SelectedIndex+1);
+            }
         }
 
         #endregion

@@ -39,6 +39,10 @@
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.menuChain = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuConfigure = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.cutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.menuClear = new System.Windows.Forms.ToolStripMenuItem();
@@ -95,7 +99,7 @@
             this.splitContainer.Panel2.Controls.Add(this.labelCopyright);
             this.splitContainer.Panel2.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.splitContainer.Size = new System.Drawing.Size(877, 551);
-            this.splitContainer.SplitterDistance = 433;
+            this.splitContainer.SplitterDistance = 432;
             this.splitContainer.TabIndex = 10;
             this.splitContainer.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitterMoved);
             // 
@@ -111,25 +115,25 @@
             // 
             this.buttonMinus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonMinus.Enabled = false;
-            this.buttonMinus.Location = new System.Drawing.Point(403, 524);
+            this.buttonMinus.Location = new System.Drawing.Point(402, 524);
             this.buttonMinus.Name = "buttonMinus";
             this.buttonMinus.Size = new System.Drawing.Size(27, 24);
             this.buttonMinus.TabIndex = 2;
             this.buttonMinus.Text = "-";
             this.buttonMinus.UseVisualStyleBackColor = true;
-            this.buttonMinus.Click += new System.EventHandler(this.ButtonMinusClick);
+            this.buttonMinus.Click += new System.EventHandler(this.ButtonMinusClicked);
             // 
             // buttonClear
             // 
             this.buttonClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonClear.Enabled = false;
-            this.buttonClear.Location = new System.Drawing.Point(370, 524);
+            this.buttonClear.Location = new System.Drawing.Point(369, 524);
             this.buttonClear.Name = "buttonClear";
             this.buttonClear.Size = new System.Drawing.Size(27, 24);
             this.buttonClear.TabIndex = 3;
             this.buttonClear.Text = "c";
             this.buttonClear.UseVisualStyleBackColor = true;
-            this.buttonClear.Click += new System.EventHandler(this.ButtonClearClick);
+            this.buttonClear.Click += new System.EventHandler(this.ButtonClearClicked);
             // 
             // listViewChain
             // 
@@ -146,7 +150,7 @@
             this.listViewChain.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewChain.Location = new System.Drawing.Point(3, 3);
             this.listViewChain.Name = "listViewChain";
-            this.listViewChain.Size = new System.Drawing.Size(427, 515);
+            this.listViewChain.Size = new System.Drawing.Size(426, 515);
             this.listViewChain.TabIndex = 4;
             this.listViewChain.UseCompatibleStateImageBehavior = false;
             this.listViewChain.View = System.Windows.Forms.View.Details;
@@ -154,7 +158,7 @@
             this.listViewChain.SelectedIndexChanged += new System.EventHandler(this.ListViewChainSelectedIndexChanged);
             this.listViewChain.DragDrop += new System.Windows.Forms.DragEventHandler(this.ListDragDrop);
             this.listViewChain.DragEnter += new System.Windows.Forms.DragEventHandler(this.ListDragEnter);
-            this.listViewChain.DoubleClick += new System.EventHandler(this.ButtonConfigureClick);
+            this.listViewChain.DoubleClick += new System.EventHandler(this.ButtonConfigureClicked);
             // 
             // columnHeader4
             // 
@@ -176,6 +180,10 @@
             // 
             this.menuChain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuConfigure,
+            this.toolStripSeparator3,
+            this.copyToolStripMenuItem,
+            this.cutToolStripMenuItem,
+            this.pasteToolStripMenuItem,
             this.toolStripSeparator1,
             this.menuRemove,
             this.menuClear,
@@ -184,7 +192,7 @@
             this.menuGroup,
             this.menuUngroup});
             this.menuChain.Name = "contextMenuStrip1";
-            this.menuChain.Size = new System.Drawing.Size(165, 148);
+            this.menuChain.Size = new System.Drawing.Size(165, 220);
             this.menuChain.Opening += new System.ComponentModel.CancelEventHandler(this.MenuChainOpening);
             // 
             // menuConfigure
@@ -193,7 +201,36 @@
             this.menuConfigure.Size = new System.Drawing.Size(164, 22);
             this.menuConfigure.Text = "Configure...";
             this.menuConfigure.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuConfigureItemClicked);
-            this.menuConfigure.Click += new System.EventHandler(this.ButtonConfigureClick);
+            this.menuConfigure.Click += new System.EventHandler(this.ButtonConfigureClicked);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(161, 6);
+            // 
+            // copyToolStripMenuItem
+            // 
+            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            this.copyToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.copyToolStripMenuItem.Text = "Copy";
+            this.copyToolStripMenuItem.Click += new System.EventHandler(this.MenuChainCopyClicked);
+            // 
+            // cutToolStripMenuItem
+            // 
+            this.cutToolStripMenuItem.Name = "cutToolStripMenuItem";
+            this.cutToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.X)));
+            this.cutToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.cutToolStripMenuItem.Text = "Cut";
+            this.cutToolStripMenuItem.Click += new System.EventHandler(this.MenuChainCutClicked);
+            // 
+            // pasteToolStripMenuItem
+            // 
+            this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
+            this.pasteToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
+            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.pasteToolStripMenuItem.Text = "Paste";
+            this.pasteToolStripMenuItem.Click += new System.EventHandler(this.MenuChainPasteClicked);
             // 
             // toolStripSeparator1
             // 
@@ -206,14 +243,14 @@
             this.menuRemove.ShortcutKeys = System.Windows.Forms.Keys.Delete;
             this.menuRemove.Size = new System.Drawing.Size(164, 22);
             this.menuRemove.Text = "Remove";
-            this.menuRemove.Click += new System.EventHandler(this.ButtonMinusClick);
+            this.menuRemove.Click += new System.EventHandler(this.ButtonMinusClicked);
             // 
             // menuClear
             // 
             this.menuClear.Name = "menuClear";
             this.menuClear.Size = new System.Drawing.Size(164, 22);
             this.menuClear.Text = "Clear";
-            this.menuClear.Click += new System.EventHandler(this.ButtonClearClick);
+            this.menuClear.Click += new System.EventHandler(this.ButtonClearClicked);
             // 
             // menuSelectAll
             // 
@@ -233,14 +270,14 @@
             this.menuGroup.Name = "menuGroup";
             this.menuGroup.Size = new System.Drawing.Size(164, 22);
             this.menuGroup.Text = "Group";
-            this.menuGroup.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuGroupItemClicked);
+            this.menuGroup.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuChainGroupClicked);
             // 
             // menuUngroup
             // 
             this.menuUngroup.Name = "menuUngroup";
             this.menuUngroup.Size = new System.Drawing.Size(164, 22);
             this.menuUngroup.Text = "Ungroup";
-            this.menuUngroup.Click += new System.EventHandler(this.MenuUngroupClicked);
+            this.menuUngroup.Click += new System.EventHandler(this.MenuChainUngroupClicked);
             // 
             // buttonConfigure
             // 
@@ -252,7 +289,7 @@
             this.buttonConfigure.TabIndex = 5;
             this.buttonConfigure.Text = "Configure...";
             this.buttonConfigure.UseVisualStyleBackColor = true;
-            this.buttonConfigure.Click += new System.EventHandler(this.ButtonConfigureClick);
+            this.buttonConfigure.Click += new System.EventHandler(this.ButtonConfigureClicked);
             // 
             // NameLable
             // 
@@ -270,7 +307,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.NameBox.Location = new System.Drawing.Point(179, 526);
             this.NameBox.Name = "NameBox";
-            this.NameBox.Size = new System.Drawing.Size(185, 20);
+            this.NameBox.Size = new System.Drawing.Size(184, 20);
             this.NameBox.TabIndex = 10;
             this.NameBox.TextChanged += new System.EventHandler(this.NameChanged);
             this.NameBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NameKeyDown);
@@ -301,7 +338,7 @@
             this.buttonUp.TabIndex = 0;
             this.buttonUp.Text = "▲";
             this.buttonUp.UseVisualStyleBackColor = true;
-            this.buttonUp.Click += new System.EventHandler(this.ButtonUpClick);
+            this.buttonUp.Click += new System.EventHandler(this.ButtonUpClicked);
             // 
             // buttonDown
             // 
@@ -317,7 +354,7 @@
             this.buttonDown.TabIndex = 1;
             this.buttonDown.Text = "▼";
             this.buttonDown.UseVisualStyleBackColor = true;
-            this.buttonDown.Click += new System.EventHandler(this.ButtonDownClick);
+            this.buttonDown.Click += new System.EventHandler(this.ButtonDownClicked);
             // 
             // listViewAvail
             // 
@@ -334,7 +371,7 @@
             this.listViewAvail.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewAvail.Location = new System.Drawing.Point(3, 3);
             this.listViewAvail.Name = "listViewAvail";
-            this.listViewAvail.Size = new System.Drawing.Size(434, 515);
+            this.listViewAvail.Size = new System.Drawing.Size(435, 515);
             this.listViewAvail.TabIndex = 0;
             this.listViewAvail.UseCompatibleStateImageBehavior = false;
             this.listViewAvail.View = System.Windows.Forms.View.Details;
@@ -342,7 +379,7 @@
             this.listViewAvail.SelectedIndexChanged += new System.EventHandler(this.ListViewSelectedIndexChanged);
             this.listViewAvail.DragDrop += new System.Windows.Forms.DragEventHandler(this.ListDragDropRemove);
             this.listViewAvail.DragEnter += new System.Windows.Forms.DragEventHandler(this.ListDragEnter);
-            this.listViewAvail.DoubleClick += new System.EventHandler(this.ButtonAddClick);
+            this.listViewAvail.DoubleClick += new System.EventHandler(this.ButtonAddClicked);
             // 
             // columnHeader3
             // 
@@ -372,7 +409,7 @@
             this.menuAdd.Name = "menuAdd";
             this.menuAdd.Size = new System.Drawing.Size(96, 22);
             this.menuAdd.Text = "Add";
-            this.menuAdd.Click += new System.EventHandler(this.ButtonAddClick);
+            this.menuAdd.Click += new System.EventHandler(this.ButtonAddClicked);
             // 
             // buttonAdd
             // 
@@ -384,7 +421,7 @@
             this.buttonAdd.TabIndex = 1;
             this.buttonAdd.Text = "+";
             this.buttonAdd.UseVisualStyleBackColor = true;
-            this.buttonAdd.Click += new System.EventHandler(this.ButtonAddClick);
+            this.buttonAdd.Click += new System.EventHandler(this.ButtonAddClicked);
             // 
             // labelCopyright
             // 
@@ -392,7 +429,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelCopyright.Location = new System.Drawing.Point(36, 523);
             this.labelCopyright.Name = "labelCopyright";
-            this.labelCopyright.Size = new System.Drawing.Size(401, 24);
+            this.labelCopyright.Size = new System.Drawing.Size(402, 24);
             this.labelCopyright.TabIndex = 2;
             this.labelCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -450,6 +487,9 @@
         private System.Windows.Forms.ToolStripMenuItem menuUngroup;
         private System.Windows.Forms.ContextMenuStrip menuAvail;
         private System.Windows.Forms.ToolStripMenuItem menuAdd;
-
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem cutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
     }
 }
