@@ -148,7 +148,8 @@ namespace Mpdn.Extensions.RenderScripts
                 m_Weights = new ISourceTexture[lobes];
                 var dataPointsX = GetDataPointCount(scaleFactorX);
                 var dataPointsY = GetDataPointCount(scaleFactorY);
-                var data = new Half[dataPointsY, dataPointsX * 4];
+                var channels = lobes == 2 ? 2 : 4;
+                var data = new Half[dataPointsY, dataPointsX * channels];
                 for (int z = 0; z < lobes; z++)
                 {
                     for (int y = 0; y < dataPointsY; y++)
@@ -158,14 +159,15 @@ namespace Mpdn.Extensions.RenderScripts
                             var offsetX = x/(double) dataPointsX;
                             var offsetY = y/(double) dataPointsX;
 
-                            for (int i = 0; i < 4; i++)
+                            for (int i = 0; i < lobes; i++)
                             {
                                 var distance = GetDistance(i + offsetX, z + offsetY);
-                                data[y, x*4 + i] = GetWeight(distance, tapCount);
+                                data[y, x*channels + i] = GetWeight(distance, tapCount);
                             }
                         }
                     }
-                    m_Weights[z] = Renderer.CreateTexture(dataPointsX, dataPointsY);
+                    m_Weights[z] = Renderer.CreateTexture(dataPointsX, dataPointsY,
+                        channels == 2 ? TextureFormat.Float16_RG : TextureFormat.Float16);
                     Renderer.UpdateTexture(m_Weights[z], data);
                 }
             }
