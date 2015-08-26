@@ -277,7 +277,7 @@ namespace Mpdn.Extensions.Framework
             try
             {
                 var devices = CudafyHost.GetDeviceProperties(eGPUType.OpenCL).ToArray();
-                var device = devices.FirstOrDefault(d => d.Integrated); // use integrated GPU if possible
+                var device = devices.FirstOrDefault(d => d.Integrated && d.PlatformName.Contains("Intel(R)")); // use Intel iGPU if possible
                 if (device == null || IsInUseForVideoRendering(device))
                 {
                     // Fallback to CPU (prefer AMD Accelerated Parallel Processing first as it is faster)
