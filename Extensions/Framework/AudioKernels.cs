@@ -27,6 +27,7 @@ namespace Mpdn.Extensions.Framework
             public const int MinValue = -8388608;
             public const int MaxValue = 8388607;
         }
+
         // ReSharper restore InconsistentNaming
 
         [Cudafy]
@@ -39,24 +40,18 @@ namespace Mpdn.Extensions.Framework
         }
 
         [Cudafy]
-        private static float Clip(float val)
-        {
-            return GMath.Max(-1.0f, GMath.Min(1.0f, val));
-        }
-
-        [Cudafy]
         public static void GetSamplesByte(GThread thread, byte[] samples, float[,] output)
         {
             var channels = output.GetLength(0);
             var sampleCount = output.GetLength(1);
-            const float mid = 128;
+            const float mid = -sbyte.MinValue;
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    output[i, tid] = (samples[(tid * channels) + i] / mid) - 1.0f;
+                    output[i, tid] = (samples[(tid*channels) + i] - mid)/mid;
                 }
                 tid += thread.gridDim.x;
             }
@@ -67,15 +62,15 @@ namespace Mpdn.Extensions.Framework
         {
             var channels = samples.GetLength(0);
             var sampleCount = samples.GetLength(1);
-            const float mid = 128;
+            const float mid = -sbyte.MinValue;
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Clip(samples[i, tid]);
-                    output[(tid * channels) + i] = (byte)((f + 1.0f) * mid);
+                    var f = samples[i, tid]*mid + mid;
+                    output[(tid*channels) + i] = (byte) (f > mid - 1 ? f : f < -mid ? -mid : f);
                 }
                 tid += thread.gridDim.x;
             }
@@ -87,14 +82,13 @@ namespace Mpdn.Extensions.Framework
             var channels = output.GetLength(0);
             var sampleCount = output.GetLength(1);
             const float mid = -short.MinValue;
-            const float min = -short.MaxValue;
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    output[i, tid] = ((samples[(tid * channels) + i] - min) / mid) - 1.0f;
+                    output[i, tid] = samples[(tid*channels) + i]/mid;
                 }
                 tid += thread.gridDim.x;
             }
@@ -106,15 +100,14 @@ namespace Mpdn.Extensions.Framework
             var channels = samples.GetLength(0);
             var sampleCount = samples.GetLength(1);
             const float mid = -short.MinValue;
-            const float min = -short.MaxValue;
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Clip(samples[i, tid]);
-                    output[(tid * channels) + i] = (short)((f + 1.0f) * mid + min);
+                    var f = samples[i, tid]*mid;
+                    output[(tid*channels) + i] = (short) (f > mid - 1 ? f : f < -mid ? -mid : f);
                 }
                 tid += thread.gridDim.x;
             }
@@ -126,14 +119,13 @@ namespace Mpdn.Extensions.Framework
             var channels = output.GetLength(0);
             var sampleCount = output.GetLength(1);
             const float mid = -int24.MinValue;
-            const float min = -int24.MaxValue;
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var index = (tid * channels) + i;
+                    var index = (tid*channels) + i;
                     var b0 = samples[index].B0;
                     var b1 = samples[index].B1;
                     var b2 = samples[index].B2;
@@ -142,7 +134,7 @@ namespace Mpdn.Extensions.Framework
                     {
                         v |= ~0xffffff;
                     }
-                    output[i, tid] = ((v - min) / mid) - 1.0f;
+                    output[i, tid] = v/mid;
                 }
                 tid += thread.gridDim.x;
             }
@@ -154,19 +146,18 @@ namespace Mpdn.Extensions.Framework
             var channels = samples.GetLength(0);
             var sampleCount = samples.GetLength(1);
             const float mid = -int24.MinValue;
-            const float min = -int24.MaxValue;
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Clip(samples[i, tid]);
-                    var val = (int)((f + 1.0f) * mid + min);
-                    var index = (tid * channels) + i;
-                    output[index].B0 = (byte)(val & 0xFF);
-                    output[index].B1 = (byte)(val >> 8);
-                    output[index].B2 = (byte)(val >> 16);
+                    var f = samples[i, tid]*mid;
+                    var val = (int) (f > mid - 1 ? f : f < -mid ? -mid : f);
+                    var index = (tid*channels) + i;
+                    output[index].B0 = (byte) (val & 0xFF);
+                    output[index].B1 = (byte) (val >> 8);
+                    output[index].B2 = (byte) (val >> 16);
                 }
                 tid += thread.gridDim.x;
             }
@@ -177,15 +168,14 @@ namespace Mpdn.Extensions.Framework
         {
             var channels = output.GetLength(0);
             var sampleCount = output.GetLength(1);
-            const float mid = -((float)int.MinValue);
-            const float min = -int.MaxValue;
+            const float mid = -((float) int.MinValue);
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    output[i, tid] = ((samples[(tid * channels) + i] - min) / mid) - 1.0f;
+                    output[i, tid] = samples[(tid*channels) + i]/mid;
                 }
                 tid += thread.gridDim.x;
             }
@@ -196,16 +186,15 @@ namespace Mpdn.Extensions.Framework
         {
             var channels = samples.GetLength(0);
             var sampleCount = samples.GetLength(1);
-            const float mid = -((float)int.MinValue);
-            const float min = -int.MaxValue;
+            const float mid = -((float) int.MinValue);
 
             int tid = thread.blockIdx.x;
             while (tid < sampleCount)
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Clip(samples[i, tid]);
-                    output[(tid * channels) + i] = (int)((f + 1.0f) * mid + min);
+                    var f = samples[i, tid]*mid;
+                    output[(tid*channels) + i] = (int) (f > mid - 1 ? f : f < -mid ? -mid : f);
                 }
                 tid += thread.gridDim.x;
             }
@@ -222,7 +211,7 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    output[i, tid] = samples[(tid * channels) + i];
+                    output[i, tid] = samples[(tid*channels) + i];
                 }
                 tid += thread.gridDim.x;
             }
@@ -239,8 +228,8 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Clip(samples[i, tid]);
-                    output[(tid * channels) + i] = f;
+                    var f = samples[i, tid];
+                    output[(tid*channels) + i] = f > 1.0f ? 1.0f : f < -1.0f ? -1.0f : f;
                 }
                 tid += thread.gridDim.x;
             }
@@ -304,7 +293,7 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    output[i, tid] = ConvertDoubleToFloat(samples[(tid * channels) + i]);
+                    output[i, tid] = ConvertDoubleToFloat(samples[(tid*channels) + i]);
                 }
                 tid += thread.gridDim.x;
             }
@@ -323,8 +312,9 @@ namespace Mpdn.Extensions.Framework
             {
                 for (int i = 0; i < channels; i++)
                 {
-                    var f = Clip(samples[i, tid]);
-                    output[(tid * channels) + i] = ConvertFloatToDouble(f);
+                    var f = samples[i, tid];
+                    f = f > 1.0f ? 1.0f : f < -1.0f ? -1.0f : f;
+                    output[(tid*channels) + i] = ConvertFloatToDouble(f);
                 }
                 tid += thread.gridDim.x;
             }
