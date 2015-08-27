@@ -307,7 +307,9 @@ namespace Mpdn.Extensions.Framework
 
         private static bool IsInUseForVideoRendering(GPGPUProperties device)
         {
-            return device.Name == Renderer.Dx9GpuInfo.Details.Description;
+            var name1 = device.Name.Trim();
+            var name2 = Renderer.Dx9GpuInfo.Details.Description.Trim();
+            return name1.Contains(name2) || name2.Contains(name1);
         }
 
         public virtual void OnNewSegment(long startTime, long endTime, double rate)
