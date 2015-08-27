@@ -28,8 +28,8 @@ namespace Mpdn.Extensions.AudioScripts
 
         protected override void LoadSettings()
         {
-            textBoxThreshold.Value = (decimal) Settings.ThresholdDb;
-            textBoxGain.Value = (decimal) Settings.MakeupGainDb;
+            textBoxThreshold.Value = (decimal) Settings.ThresholddB;
+            textBoxGain.Value = (decimal) Settings.MakeupGaindB;
             textBoxRatio.Value = (decimal) Settings.Ratio;
             textBoxAttack.Value = (decimal) (Settings.AttackMs/1000.0);
             textBoxRelease.Value = (decimal) (Settings.ReleaseMs/1000.0);
@@ -37,8 +37,8 @@ namespace Mpdn.Extensions.AudioScripts
 
         protected override void SaveSettings()
         {
-            Settings.ThresholdDb = (float) textBoxThreshold.Value;
-            Settings.MakeupGainDb = (float) textBoxGain.Value;
+            Settings.ThresholddB = (float) textBoxThreshold.Value;
+            Settings.MakeupGaindB = (float) textBoxGain.Value;
             Settings.Ratio = (float) textBoxRatio.Value;
             Settings.AttackMs = (int) (textBoxAttack.Value*1000);
             Settings.ReleaseMs = (int) (textBoxRelease.Value*1000);

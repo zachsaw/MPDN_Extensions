@@ -121,6 +121,7 @@ namespace Mpdn.Extensions.Framework
             var result = new float[channels, sampleCount];
             try
             {
+                // TODO reuse allocated device memory
                 var devInputSamples = gpu.Allocate<T>(length);
                 var devInputResult = gpu.Allocate(result);
                 var devOutputResult = gpu.Allocate<T>(length);
@@ -193,6 +194,7 @@ namespace Mpdn.Extensions.Framework
             var gpu = m_Gpu;
             try
             {
+                // TODO reuse allocated device memory
                 var devSamples = gpu.Allocate<float>(channels, sampleCount);
                 var devOutput = gpu.Allocate<T>(length);
                 try
@@ -223,6 +225,7 @@ namespace Mpdn.Extensions.Framework
             var result = new float[channels, length / channels];
             try
             {
+                // TODO reuse allocated device memory
                 var devSamples = gpu.Allocate<T>(length);
                 var devOutput = gpu.Allocate(result);
                 try

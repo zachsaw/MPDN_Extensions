@@ -420,19 +420,23 @@ namespace Mpdn.Extensions.Framework
             return GetSampleFormat(format) == AudioSampleFormat.Unknown;
         }
 
-        public static void LoadAudioKernel(this GPGPU gpu, Type type)
+        public static void LoadAudioKernel(this GPGPU gpu, Type type, params Type[] types)
         {
-            gpu.LoadModule(GetCudafyModule(type), false);
+            gpu.LoadModule(GetCudafyModule(type, types), false);
         }
 
-        private static CudafyModule GetCudafyModule(Type type)
+        private static CudafyModule GetCudafyModule(Type type, params Type[] types)
         {
-            var filename = string.Format("{0}.cdfy", Path.Combine(AudioKernelCacheRoot, type.ToString()));
+            var joined = string.Join(",", type.ToString(), string.Join(",", types.Select(t => t.ToString()))).TrimEnd(',');
+            var filename = string.Format("{0}.cdfy", Path.Combine(AudioKernelCacheRoot, joined));
             var km = CudafyModule.TryDeserialize(filename);
             if (km != null && km.TryVerifyChecksums()) 
                 return km;
 
-            km = CudafyTranslator.Cudafy(eArchitecture.OpenCL, type);
+            var ts = new Type[types.Length + 1];
+            ts[0] = type;
+            Array.Copy(types, 0, ts, 1, types.Length);
+            km = CudafyTranslator.Cudafy(eArchitecture.OpenCL, ts);
             Directory.CreateDirectory(AudioKernelCacheRoot);
             km.Serialize(filename);
 

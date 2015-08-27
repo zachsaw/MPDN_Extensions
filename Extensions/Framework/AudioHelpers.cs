@@ -15,11 +15,11 @@
 // License along with this library.
 // 
 
-using System;
+using Cudafy;
 
 namespace Mpdn.Extensions.Framework
 {
-    public class Decibels
+    public static class Decibels
     {
         // 20 / ln( 10 )
         private const float LOG_2_DB = 8.6858896380650365530225783783321f;
@@ -32,9 +32,10 @@ namespace Mpdn.Extensions.Framework
         /// </summary>
         /// <param name="lin">linear value</param>
         /// <returns>decibel value</returns>
+        [Cudafy]
         public static float FromLinear(float lin)
         {
-            return (float) Math.Log(lin)*LOG_2_DB;
+            return GMath.Log(lin)*LOG_2_DB;
         }
 
         /// <summary>
@@ -42,9 +43,10 @@ namespace Mpdn.Extensions.Framework
         /// </summary>
         /// <param name="dB">decibel value</param>
         /// <returns>linear value</returns>
+        [Cudafy]
         public static float ToLinear(float dB)
         {
-            return (float) Math.Exp(dB*DB_2_LOG);
+            return GMath.Exp(dB*DB_2_LOG);
         }
     }
 }

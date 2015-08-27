@@ -21,29 +21,31 @@
 
 using System;
 using System.Diagnostics;
+using Cudafy;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.AudioScripts
 {
     public class DynamicRangeCompressorSettings
     {
-        public float ThresholdDb { get; set; }
+        public float ThresholddB { get; set; }
         public float Ratio { get; set; }
-        public float MakeupGainDb { get; set; }
+        public float MakeupGaindB { get; set; }
         public int AttackMs { get; set; }
         public int ReleaseMs { get; set; }
 
         public DynamicRangeCompressorSettings()
         {
-            ThresholdDb = -15;
+            ThresholddB = -15;
             Ratio = 3;
-            MakeupGainDb = 3;
+            MakeupGaindB = 3;
             AttackMs = 200; // 0.2s
             ReleaseMs = 1000; // 1s
         }
     }
 
-    public class DynamicRangeCompressor : AudioScript<DynamicRangeCompressorSettings, DynamicRangeCompressorConfigDialog>
+    public class DynamicRangeCompressor :
+        AudioScript<DynamicRangeCompressorSettings, DynamicRangeCompressorConfigDialog>
     {
         // DC offset to prevent denormal
         protected const float DC_OFFSET = 1.0e-25f;
@@ -54,6 +56,9 @@ namespace Mpdn.Extensions.AudioScripts
         private int m_SampleRate;
         private int m_AttackMs;
         private int m_ReleaseMs;
+        private int m_SampleCount;
+
+        private float[] m_DevOverdBs;
 
         public override ExtensionUiDescriptor Descriptor
         {
@@ -63,15 +68,15 @@ namespace Mpdn.Extensions.AudioScripts
                 {
                     Guid = new Guid("C29B883B-AF2B-45F7-9FDA-1F8A67004E2E"),
                     Name = "DynamicRangeCompressor",
-                    Description = "Performs simple DRC",
+                    Description = "Performs simple DRC with OpenCL",
                     Copyright = "Adapted from NAudio SimpleCompressor by Zachs"
                 };
             }
         }
 
-        protected override bool CpuOnly
+        protected override void OnLoadAudioKernel()
         {
-            get { return true; }
+            Gpu.LoadAudioKernel(typeof (Decibels), typeof (DynamicRangeCompressorKernel));
         }
 
         public override void OnNewSegment(long startTime, long endTime, double rate)
@@ -79,6 +84,21 @@ namespace Mpdn.Extensions.AudioScripts
             base.OnNewSegment(startTime, endTime, rate);
 
             m_EnvdB = DC_OFFSET;
+        }
+
+        public override void OnMediaClosed()
+        {
+            DisposeGpuResources();
+            base.OnMediaClosed();
+        }
+
+        private void DisposeGpuResources()
+        {
+            if (m_DevOverdBs == null)
+                return;
+
+            Gpu.Free(m_DevOverdBs);
+            m_DevOverdBs = null;
         }
 
         protected override void Process(float[,] samples, short channels, int sampleCount)
@@ -94,62 +114,50 @@ namespace Mpdn.Extensions.AudioScripts
                 m_EnvdB = DC_OFFSET;
             }
 
-            Compress(samples, Settings.ThresholdDb, Settings.Ratio, Settings.MakeupGainDb);
+            Compress(samples, sampleCount, Settings.ThresholddB, Settings.Ratio, Settings.MakeupGaindB);
         }
 
-        private void Compress(float[,] samples, float thresholdDb, float ratio, float makeupGainDb)
+        private void Compress(float[,] samples, int sampleCount, float thresholddB, float ratio, float makeupGaindB)
         {
-            var channels = samples.GetLength(0);
-            var length = samples.GetLength(1);
-            for (int i = 0; i < length; i++)
+            const int threadCount = 512;
+
+            var makeupGainLin = Decibels.ToLinear(makeupGaindB);
+            if (m_SampleCount != sampleCount)
             {
-                var allChMax = float.MinValue;
-                for (int c = 0; c < channels; c++)
-                {
-                    var s = Math.Abs(samples[c, i]);
-                    allChMax = Math.Max(s, allChMax);
-                }
+                DisposeGpuResources();
+                m_DevOverdBs = Gpu.Allocate<float>(sampleCount);
+            }
+            var devOverdBs = m_DevOverdBs;
+            Gpu.Launch(threadCount, 1).GetOverDecibels(samples, thresholddB, devOverdBs);
+            var overdBs = new float[sampleCount];
+            Gpu.CopyFromDevice(devOverdBs, overdBs);
 
-                allChMax += DC_OFFSET;
-                var allChMaxdB = Decibels.FromLinear(allChMax);
-
-                var overdB = allChMaxdB - thresholdDb;
-                if (overdB < 0)
-                    overdB = 0;
-
+            // This bit is serial, can't be done on GPU
+            for (int i = 0; i < sampleCount; i++)
+            {
                 // attack/release
-                overdB += DC_OFFSET;
-                Run(overdB, ref m_EnvdB);
-                overdB = m_EnvdB - DC_OFFSET;
-
-                var gr = -overdB*(ratio - 1.0f);
-                gr = Decibels.ToLinear(gr)*Decibels.ToLinear(makeupGainDb);
-
-                for (int c = 0; c < channels; c++)
+                var overdB = overdBs[i];
+                // assumes that:
+                // positive delta = attack
+                // negative delta = release
+                // good for linear & log values
+                if (overdB > m_EnvdB)
                 {
-                    samples[c, i] *= gr;
+                    m_Attack.Run(overdB, ref m_EnvdB); // attack
                 }
+                else
+                {
+                    m_Release.Run(overdB, ref m_EnvdB); // release
+                }
+                overdBs[i] = m_EnvdB;
             }
-        }
 
-        private void Run(float inValue, ref float state)
-        {
-            // assumes that:
-            // positive delta = attack
-            // negative delta = release
-            // good for linear & log values
-            if (inValue > state)
-            {
-                m_Attack.Run(inValue, ref state); // attack
-            }
-            else
-            {
-                m_Release.Run(inValue, ref state); // release
-            }
+            Gpu.CopyToDevice(overdBs, devOverdBs);
+            Gpu.Launch(threadCount, 1).ApplyGains(samples, devOverdBs, ratio, makeupGainLin);
         }
     }
 
-    class EnvelopeDetector
+    internal class EnvelopeDetector
     {
         private float m_SampleRate;
         private float m_TimeConstantMs;
@@ -170,10 +178,7 @@ namespace Mpdn.Extensions.AudioScripts
 
         public float TimeConstant
         {
-            get
-            {
-                return m_TimeConstantMs;
-            }
+            get { return m_TimeConstantMs; }
             set
             {
                 Debug.Assert(value > 0.0);
@@ -184,10 +189,7 @@ namespace Mpdn.Extensions.AudioScripts
 
         public float SampleRate
         {
-            get
-            {
-                return m_SampleRate;
-            }
+            get { return m_SampleRate; }
             set
             {
                 Debug.Assert(value > 0.0);
@@ -198,12 +200,73 @@ namespace Mpdn.Extensions.AudioScripts
 
         public void Run(float inValue, ref float state)
         {
-            state = inValue + m_Coef * (state - inValue);
+            state = inValue + m_Coef*(state - inValue);
         }
 
         private void SetCoef()
         {
-            m_Coef = (float) Math.Exp(-1.0 / (0.001 * m_TimeConstantMs * m_SampleRate));
+            m_Coef = (float) Math.Exp(-1.0/(0.001*m_TimeConstantMs*m_SampleRate));
+        }
+    }
+
+    public static class DynamicRangeCompressorKernel
+    {
+        // DC offset to prevent denormal
+        private const float DC_OFFSET = 1.0e-25f;
+
+        [Cudafy]
+        public static void GetOverDecibels(GThread thread, float[,] samples, float thresholddB, float[] overdBs)
+        {
+            var channels = samples.GetLength(0);
+            var sampleCount = samples.GetLength(1);
+
+            int tid = thread.blockIdx.x;
+            while (tid < sampleCount)
+            {
+                var allChMax = float.MinValue;
+                for (int c = 0; c < channels; c++)
+                {
+                    var s = samples[c, tid];
+                    s = s > 0 ? s : -s; // fabs(s)
+                    allChMax = GMath.Max(s, allChMax);
+                }
+
+                allChMax += DC_OFFSET;
+                var allChMaxdB = Decibels.FromLinear(allChMax);
+
+                var overdB = GMath.Max(allChMaxdB - thresholddB, 0);
+                overdB += DC_OFFSET;
+
+                overdBs[tid] = overdB;
+
+                tid += thread.gridDim.x;
+            }
+        }
+
+        [Cudafy]
+        public static void ApplyGains(GThread thread, float[,] samples, float[] overdBs, float ratio,
+            float makeupGainLin)
+        {
+            var channels = samples.GetLength(0);
+            var sampleCount = samples.GetLength(1);
+
+            int tid = thread.blockIdx.x;
+            while (tid < sampleCount)
+            {
+                var overdB = overdBs[tid] - DC_OFFSET;
+
+                var gr = -overdB*(ratio - 1.0f);
+                gr = Decibels.ToLinear(gr)*makeupGainLin;
+
+                for (int c = 0; c < channels; c++)
+                {
+                    var s = samples[c, tid];
+                    s *= gr;
+                    samples[c, tid] = s;
+                }
+
+                tid += thread.gridDim.x;
+            }
         }
     }
 }

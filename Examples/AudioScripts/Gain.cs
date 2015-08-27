@@ -62,7 +62,9 @@ namespace Mpdn.Examples.AudioScripts
                 {
                     // The framework will clip anything that is overamplified
                     // so quality won't be the best but this is just an example
-                    samples[i, tid] *= amplication;
+                    var s = samples[i, tid];
+                    s *= amplication;
+                    samples[i, tid] = s;
                 }
                 tid += thread.gridDim.x;
             }
