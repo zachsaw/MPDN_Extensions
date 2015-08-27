@@ -88,6 +88,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\Framework\AudioHelpers.cs" />
     <Compile Include="Extensions\Framework\AudioKernels.cs" />
     <Compile Include="Extensions\Framework\AudioScript.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviderBase.cs" />
