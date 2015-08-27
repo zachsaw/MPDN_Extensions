@@ -44,6 +44,11 @@ namespace Mpdn.Extensions.Framework
         private AudioSampleFormat m_SampleFormat = AudioSampleFormat.Unknown;
         private Func<IntPtr, short, int, IMediaSample, bool> m_ProcessFunc;
 
+        private object m_DevInputSamples;
+        private object m_DevOutputSamples;
+        private float[,] m_DevNormSamples;
+        private int m_Length;
+
         protected abstract void Process(float[,] samples, short channels, int sampleCount);
 
         #region Implementation
@@ -91,6 +96,67 @@ namespace Mpdn.Extensions.Framework
 
             m_ProcessFunc = CpuOnly ? GetProcessCpuFunc(sampleFormat) : GetProcessFunc(sampleFormat);
             m_SampleFormat = sampleFormat;
+
+            DisposeGpuResources();
+        }
+
+        private void UpdateGpuResources(int length)
+        {
+            if (m_Length == length)
+                return;
+
+            DisposeGpuResources();
+            m_Length = length;
+        }
+
+        private void DisposeGpuResources()
+        {
+            DisposeDevInputSamples();
+            DisposeDevOutputSamples();
+            DisposeDevNormSamples();
+            m_Length = 0;
+        }
+
+        private void DisposeDevNormSamples()
+        {
+            if (m_DevNormSamples == null) 
+                return;
+
+            Gpu.Free(m_DevNormSamples);
+            m_DevNormSamples = null;
+        }
+
+        private void DisposeDevOutputSamples()
+        {
+            if (m_DevOutputSamples == null) 
+                return;
+
+            Gpu.Free(m_DevOutputSamples);
+            m_DevOutputSamples = null;
+        }
+
+        private void DisposeDevInputSamples()
+        {
+            if (m_DevInputSamples == null) 
+                return;
+
+            Gpu.Free(m_DevInputSamples);
+            m_DevInputSamples = null;
+        }
+
+        private T[] GetDevInputSamples<T>(int length) where T : struct
+        {
+            return (T[]) (m_DevInputSamples ?? (m_DevInputSamples = Gpu.Allocate<T>(length)));
+        }
+
+        private T[] GetDevOutputSamples<T>(int length) where T : struct
+        {
+            return (T[]) (m_DevOutputSamples ?? (m_DevOutputSamples = Gpu.Allocate<T>(length)));
+        }
+
+        private float[,] GetDevNormSamples(int channels, int sampleCount)
+        {
+            return m_DevNormSamples ?? (m_DevNormSamples = Gpu.Allocate<float>(channels, sampleCount));
         }
 
         private Func<IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat)
@@ -116,36 +182,26 @@ namespace Mpdn.Extensions.Framework
 
         private bool ProcessInternal<T>(IntPtr samples, short channels, int length, IMediaSample output) where T : struct
         {
+            UpdateGpuResources(length);
+
             var gpu = m_Gpu;
             var sampleCount = length/channels;
-            var result = new float[channels, sampleCount];
             try
             {
-                // TODO reuse allocated device memory
-                var devInputSamples = gpu.Allocate<T>(length);
-                var devInputResult = gpu.Allocate(result);
-                var devOutputResult = gpu.Allocate<T>(length);
-                try
-                {
-                    gpu.CopyToDevice(samples, 0, devInputSamples, 0, length);
-                    gpu.Launch(THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
-                        devInputSamples, devInputResult);
-                    Process(devInputResult, channels, sampleCount);
-                    output.GetPointer(out samples);
-                    gpu.Launch(THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
-                        devInputResult, devOutputResult);
-                    gpu.CopyFromDevice(devOutputResult, 0, samples, 0, length);
-                }
-                finally
-                {
-                    gpu.Free(devInputSamples);
-                    gpu.Free(devInputResult);
-                    gpu.Free(devOutputResult);
-                }
+                var devInputSamples = GetDevInputSamples<T>(length);
+                var devInputResult = GetDevNormSamples(channels, sampleCount);
+                var devOutputResult = GetDevOutputSamples<T>(length);
+                gpu.CopyToDevice(samples, 0, devInputSamples, 0, length);
+                gpu.Launch(THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
+                    devInputSamples, devInputResult);
+                Process(devInputResult, channels, sampleCount);
+                output.GetPointer(out samples);
+                gpu.Launch(THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
+                    devInputResult, devOutputResult);
+                gpu.CopyFromDevice(devOutputResult, 0, samples, 0, length);
             }
             catch (Exception ex)
             {
-                gpu.FreeAll();
                 Trace.WriteLine(ex.Message);
                 return false;
             }
@@ -175,6 +231,8 @@ namespace Mpdn.Extensions.Framework
 
         private bool ProcessCpuInternal<T>(IntPtr samples, short channels, int length, IMediaSample output) where T : struct
         {
+            UpdateGpuResources(length);
+
             var inputSamples = GetInputSamplesCpu<T>(samples, channels, length);
             if (inputSamples == null)
                 return false;
@@ -194,25 +252,15 @@ namespace Mpdn.Extensions.Framework
             var gpu = m_Gpu;
             try
             {
-                // TODO reuse allocated device memory
-                var devSamples = gpu.Allocate<float>(channels, sampleCount);
-                var devOutput = gpu.Allocate<T>(length);
-                try
-                {
-                    gpu.CopyToDevice(samples, devSamples);
-                    gpu.Launch(THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
-                        devSamples, devOutput);
-                    gpu.CopyFromDevice(devOutput, 0, output, 0, length);
-                }
-                finally
-                {
-                    gpu.Free(devSamples);
-                    gpu.Free(devOutput);
-                }
+                var devSamples = GetDevNormSamples(channels, sampleCount);
+                var devOutput = GetDevOutputSamples<T>(length);
+                gpu.CopyToDevice(samples, devSamples);
+                gpu.Launch(THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
+                    devSamples, devOutput);
+                gpu.CopyFromDevice(devOutput, 0, output, 0, length);
             }
             catch (Exception ex)
             {
-                gpu.FreeAll();
                 Trace.WriteLine(ex.Message);
                 return false;
             }
@@ -225,21 +273,12 @@ namespace Mpdn.Extensions.Framework
             var result = new float[channels, length / channels];
             try
             {
-                // TODO reuse allocated device memory
-                var devSamples = gpu.Allocate<T>(length);
-                var devOutput = gpu.Allocate(result);
-                try
-                {
-                    gpu.CopyToDevice(samples, 0, devSamples, 0, length);
-                    gpu.Launch(THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
-                        devSamples, devOutput);
-                    gpu.CopyFromDevice(devOutput, result);
-                }
-                finally
-                {
-                    gpu.Free(devSamples);
-                    gpu.Free(devOutput);
-                }
+                var devSamples = GetDevInputSamples<T>(length);
+                var devOutput = GetDevNormSamples(channels, length / channels);
+                gpu.CopyToDevice(samples, 0, devSamples, 0, length);
+                gpu.Launch(THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
+                    devSamples, devOutput);
+                gpu.CopyFromDevice(devOutput, result);
             }
             catch (Exception ex)
             {
@@ -257,6 +296,8 @@ namespace Mpdn.Extensions.Framework
 
                 if (m_Gpu == null)
                     return;
+
+                DisposeGpuResources();
 
                 m_Gpu.FreeAll();
                 m_Gpu.HostFreeAll();

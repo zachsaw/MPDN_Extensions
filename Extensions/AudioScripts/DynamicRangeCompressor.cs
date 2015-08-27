@@ -92,15 +92,6 @@ namespace Mpdn.Extensions.AudioScripts
             base.OnMediaClosed();
         }
 
-        private void DisposeGpuResources()
-        {
-            if (m_DevOverdBs == null)
-                return;
-
-            Gpu.Free(m_DevOverdBs);
-            m_DevOverdBs = null;
-        }
-
         protected override void Process(float[,] samples, short channels, int sampleCount)
         {
             var sampleRate = Audio.InputFormat.nSamplesPerSec;
@@ -122,11 +113,7 @@ namespace Mpdn.Extensions.AudioScripts
             const int threadCount = 512;
 
             var makeupGainLin = Decibels.ToLinear(makeupGaindB);
-            if (m_SampleCount != sampleCount)
-            {
-                DisposeGpuResources();
-                m_DevOverdBs = Gpu.Allocate<float>(sampleCount);
-            }
+            AllocateGpuResources(sampleCount);
             var devOverdBs = m_DevOverdBs;
             Gpu.Launch(threadCount, 1).GetOverDecibels(samples, thresholddB, devOverdBs);
             var overdBs = new float[sampleCount];
@@ -154,6 +141,26 @@ namespace Mpdn.Extensions.AudioScripts
 
             Gpu.CopyToDevice(overdBs, devOverdBs);
             Gpu.Launch(threadCount, 1).ApplyGains(samples, devOverdBs, ratio, makeupGainLin);
+        }
+
+        private void DisposeGpuResources()
+        {
+            if (m_DevOverdBs == null)
+                return;
+
+            Gpu.Free(m_DevOverdBs);
+            m_DevOverdBs = null;
+            m_SampleCount = 0;
+        }
+
+        private void AllocateGpuResources(int sampleCount)
+        {
+            if (m_SampleCount == sampleCount) 
+                return;
+
+            DisposeGpuResources();
+            m_DevOverdBs = Gpu.Allocate<float>(sampleCount);
+            m_SampleCount = sampleCount;
         }
     }
 
