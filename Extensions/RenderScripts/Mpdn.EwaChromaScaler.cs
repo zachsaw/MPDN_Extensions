@@ -15,19 +15,16 @@
 // License along with this library.
 
 using System;
-using System.Drawing;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
-using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
-using WeightFilter = Mpdn.Extensions.Framework.RenderChain.TextureSourceFilter<Mpdn.ISourceTexture>;
 
 namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.EwaScaler
     {
-        public class EwaScalerChroma : EwaScaler
+        public class EwaChromaScaler : EwaScaler, IChromaScaler
         {
             protected override string ShaderPath
             {
@@ -36,40 +33,49 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
+                return CreateChromaFilter(input, true, new YSourceFilter(), new ChromaSourceFilter(),
+                    s => new TextureSize(s.Width*2, s.Height*2), Renderer.ChromaOffset);
+            }
+
+            public IFilter CreateChromaFilter(IFilter input, Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset)
+            {
+                return CreateChromaFilter(input, false, input, input, targetSize, chromaOffset);
+            }
+
+            private IFilter CreateChromaFilter(IFilter input, bool fromSource, IFilter lumaSource, IFilter chromaSource,
+                Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset)
+            {
                 DiscardTextures();
 
-                if (Renderer.InputFormat.IsRgb())
+                var sourceSize = chromaSource.OutputSize;
+                if (fromSource && (Renderer.InputFormat.IsRgb() || !IsUpscalingFrom(sourceSize)))
                     return input;
 
-                var sourceSize = input.OutputSize;
-                if (!IsUpscalingFrom(sourceSize))
-                    return input;
+                var targetSize2 = targetSize(sourceSize);
+                CreateWeights(sourceSize, targetSize2);
 
-                var targetSize = Renderer.LumaSize;
-                CreateWeights((Size) sourceSize, targetSize);
-
-                var offset = Renderer.ChromaOffset + new Vector2(0.5f, 0.5f);
-                int lobes = TapCount.ToInt() / 2;
+                var offset = chromaOffset + new Vector2(0.5f, 0.5f);
+                int lobes = TapCount.ToInt()/2;
                 var shader = CompileShader("EwaScaler.hlsl",
                     macroDefinitions:
                         string.Format("LOBES = {0}; AR = {1}; CHROMA = 1;",
                             lobes, AntiRingingEnabled ? 1 : 0))
                     .Configure(
-                        transform: size => targetSize,
+                        transform: size => targetSize2,
                         arguments: new[] {AntiRingingStrength, offset.X, offset.Y},
                         linearSampling: true
                     );
 
-                var yuvFilters = new IFilter[] {new YSourceFilter(), new USourceFilter(), new VSourceFilter()};
-                return GetEwaFilter(shader, yuvFilters).ConvertToRgb();
+                var result = GetEwaFilter(shader, new[] {lumaSource, chromaSource});
+                return fromSource ? result.ConvertToRgb() : result;
             }
         }
 
-        public class EwaScalerChromaScaler : RenderChainUi<EwaScalerChroma, EwaScalerConfigDialog>
+        public class EwaScalerChromaScalerUi : RenderChainUi<EwaChromaScaler, EwaScalerConfigDialog>
         {
             protected override string ConfigFileName
             {
-                get { return "Mpdn.EwaScalerChroma"; }
+                get { return "Mpdn.EwaChromaScaler"; }
             }
 
             public override string Category

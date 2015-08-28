@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.RenderScript;
-using TransformFunc = System.Func<Mpdn.Extensions.Framework.RenderChain.TextureSize, Mpdn.Extensions.Framework.RenderChain.TextureSize>;
 using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.Extensions.Framework.RenderChain

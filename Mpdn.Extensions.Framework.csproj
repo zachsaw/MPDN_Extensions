@@ -119,6 +119,7 @@
     <Compile Include="Extensions\Framework\Exceptions\MpdnScriptEngineException.cs" />
     <Compile Include="Extensions\Framework\Exceptions\RenderScriptException.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
+    <Compile Include="Extensions\Framework\IChromaScaler.cs" />
     <Compile Include="Extensions\Framework\PlayerExtension.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filter.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filter.Shaders.cs" />

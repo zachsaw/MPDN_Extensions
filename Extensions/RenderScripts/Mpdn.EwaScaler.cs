@@ -23,7 +23,6 @@ using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
-using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 using WeightFilter = Mpdn.Extensions.Framework.RenderChain.TextureSourceFilter<Mpdn.ISourceTexture>;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -135,7 +134,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return Math.Sqrt(point1*point1 + point2*point2);
             }
 
-            protected void CreateWeights(Size sourceSize, Size targetSize)
+            protected void CreateWeights(TextureSize sourceSize, TextureSize targetSize)
             {
                 if (m_Weights != null)
                     return;
