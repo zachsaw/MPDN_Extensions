@@ -22,10 +22,7 @@ sampler s3    : register(s3);
 sampler s4    : register(s4);
 
 #ifdef CHROMA
-
 sampler s5    : register(s5);
-sampler s6    : register(s6);
-
 #endif
 
 float4  p0    : register(c0);
@@ -59,11 +56,9 @@ float4  args0 : register(c4);
 #define px (p1[0])
 #define py (p1[1])
 
-#define UV(xy)                 (float2(tex2D(s1, xy)[0], tex2D(s2, xy)[0]))
-
 #ifdef CHROMA
     #define color_t            float2
-    #define Get(x,y)           (UV(pos + inputTexelSize*int2((x),(y))))
+    #define Get(x,y)           ((tex2D(s1, pos + inputTexelSize*int2((x),(y)))).yz)
     #define GetResult(c)       (float4(tex2D(s0, tex)[0], c, 1))
 #else
     #define color_t            float3
@@ -72,10 +67,10 @@ float4  args0 : register(c4);
 #endif
 
 #ifdef CHROMA
-    #define Weights1(x,y)      (tex2D(s3, float2(x,y)))
-    #define Weights2(x,y)      (tex2D(s4, float2(x,y)))
-    #define Weights3(x,y)      (tex2D(s5, float2(x,y)))
-    #define Weights4(x,y)      (tex2D(s6, float2(x,y)))
+    #define Weights1(x,y)      (tex2D(s2, float2(x,y)))
+    #define Weights2(x,y)      (tex2D(s3, float2(x,y)))
+    #define Weights3(x,y)      (tex2D(s4, float2(x,y)))
+    #define Weights4(x,y)      (tex2D(s5, float2(x,y)))
 #else
     #define Weights1(x,y)      (tex2D(s1, float2(x,y)))
     #define Weights2(x,y)      (tex2D(s2, float2(x,y)))

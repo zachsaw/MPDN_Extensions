@@ -17,6 +17,7 @@
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Mpdn.EwaScaler;
 using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3.Filters;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -50,9 +51,16 @@ namespace Mpdn.Extensions.RenderScripts
             private Nnedi3Filter m_Filter1;
             private Nnedi3Filter m_Filter2;
 
+            private RenderChain m_ChromaScaler = new EwaChromaScaler(); // TODO allow user to select a chroma scaler
+
             public override void Reset()
             {
                 base.Reset();
+                if (m_ChromaScaler != null)
+                {
+                    m_ChromaScaler.Reset();
+                    m_ChromaScaler = null;
+                }
                 Cleanup();
             }
 
@@ -85,8 +93,11 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var yuv = input.ConvertToYuv();
 
-                var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
-                    TextureChannels.ChromaOnly, new Vector2(-0.25f, -0.25f), Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+                var chroma = ((IChromaScaler) m_ChromaScaler).CreateChromaFilter(yuv,
+                    size => new TextureSize(size.Width*2, size.Height*2), new Vector2(-0.25f, -0.25f));
+
+//                var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2)
+//                    TextureChannels.ChromaOnly, new Vector2(-0.25f, -0.25f), Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
 
                 m_Filter1 = NNedi3Helpers.CreateFilter(shaderPass1, yuv, Neurons1, Structured);
                 var resultY = new ShaderFilter(interleave, yuv, m_Filter1);

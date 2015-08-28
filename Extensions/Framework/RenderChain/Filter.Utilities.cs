@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -116,6 +117,23 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected override void Render(ITexture2D input)
         {
             Renderer.ConvertToYuv(OutputTarget, input, Colorimetric, OutputLimitedRange);
+        }
+    }
+
+    public sealed class ChromaSourceFilter : ShaderFilter
+    {
+        public ChromaSourceFilter()
+            : base(GetShader(), new USourceFilter(), new VSourceFilter())
+        {
+        }
+
+        private static IShader GetShader()
+        {
+            var asmPath = typeof (IRenderScript).Assembly.Location;
+            var shaderDataFilePath =
+                Path.Combine(PathHelper.GetDirectoryName(asmPath),
+                    "Extensions", "RenderScripts", "Common");
+            return ShaderCache.CompileShader(Path.Combine(shaderDataFilePath, "MergeChromaYZFromSource.hlsl"));
         }
     }
 

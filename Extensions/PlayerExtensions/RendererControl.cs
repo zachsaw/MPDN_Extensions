@@ -58,10 +58,14 @@ namespace Mpdn.Extensions.PlayerExtensions
             base.Initialize();
             Player.StateChanged += OnPlayerStateChanged;
             Player.Config.Changed += OnSettingsChanged;
+            Player.Config.Committing += OnSettingsCommitting;
+            Player.Config.Committed += OnSettingsCommitted;
         }
 
         public override void Destroy()
         {
+            Player.Config.Committed -= OnSettingsCommitted;
+            Player.Config.Committing -= OnSettingsCommitting;
             Player.Config.Changed -= OnSettingsChanged;
             Player.StateChanged -= OnPlayerStateChanged;
             base.Destroy();
@@ -191,6 +195,20 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
 
             UpdateControls();
+        }
+
+        private void OnSettingsCommitting(object sender, EventArgs e)
+        {
+            // Make MPDN save the original settings
+            RendererSettings.OutputLevels = m_OriginalOutputLevels;
+            RendererSettings.ImproveChromaReconstruction = m_OriginalImproveChroma;
+        }
+
+        private void OnSettingsCommitted(object sender, EventArgs e)
+        {
+            // Restore our temporary settings
+            RendererSettings.OutputLevels = m_OutputLevels;
+            RendererSettings.ImproveChromaReconstruction = m_ImproveChroma;
         }
 
         private void ClearSelections()
