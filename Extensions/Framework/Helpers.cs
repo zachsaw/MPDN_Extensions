@@ -631,6 +631,18 @@ namespace Mpdn.Extensions.Framework
                 remove { PlayerControl.SettingsChanged -= value; }
             }
 
+            public static event EventHandler Committing
+            {
+                add { PlayerControl.SettingsCommitting += value; }
+                remove { PlayerControl.SettingsCommitting -= value; }
+            }
+
+            public static event EventHandler Committed
+            {
+                add { PlayerControl.SettingsCommitted += value; }
+                remove { PlayerControl.SettingsCommitted -= value; }
+            }
+
             public static string Path
             {
                 get { return PlayerControl.ConfigRootPath; }
