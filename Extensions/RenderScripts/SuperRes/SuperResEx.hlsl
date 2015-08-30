@@ -70,23 +70,31 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 
     // Calculate faithfulness force
     float weightSum = 0;
-    float3 diff = 0;
+    float4 diff = 0;
+    float inf = 1;
+    float sup = 0;
 
     [unroll] for (int X = -1; X <= 1; X++)
-	[unroll] for (int Y = -1; Y <= 1; Y++)
+    [unroll] for (int Y = -1; Y <= 1; Y++)
     {
-		float dI2 = sqr(acuity*(Luma(c0) - GetY(X,Y)));
+        float dI2 = sqr(acuity*(Luma(c0) - GetY(X,Y)));
         float dXY2 = sqr(float2(X,Y) - offset);
-        float weight = exp(-dXY2/(2*radius*radius))*pow(1 + dI2/power, - power);
+        float weight = (exp(-dXY2/(2*radius*radius)) - exp(-sqr(float2(1.5,1.5))/(2*radius*radius)))*pow(1 + dI2/power, - power);
 
         diff += weight*Diff(X,Y);
         weightSum += weight;
+        inf = min(GetY(X,Y),inf.x);
+        sup = max(GetY(X,Y),sup.x);
     }
     diff /= weightSum;
     c0.xyz -= strength * diff;
 
     // Convert back to linear light;
-    [branch] if (Pass != Passes) c0.xyz = GammaInv(saturate(c0.xyz));
+#ifndef FinalPass
+    // if (frac(p0.z/2.0) < 0.5) 
+    c0.xyz += softness*(clamp(Luma(c0.xyz), inf, sup) - Luma(c0.xyz));
+    c0.xyz = GammaInv(c0.xyz);
+#endif
 
     return c0;
 }

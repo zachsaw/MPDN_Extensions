@@ -51,7 +51,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Passes = 3;
                 Strength = 1.0f;
-                Softness = 0.0f;
+                Softness = 1.0f;
 
                 HQdownscaling = true;
 
@@ -109,9 +109,14 @@ namespace Mpdn.Extensions.RenderScripts
 
                 // Compile Shaders
                 var Diff = CompileShader("Diff.hlsl")
-                    .Configure( format: TextureFormat.Float16 );
+                    .Configure(format: TextureFormat.Float16);
 
                 var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions)
+                    .Configure(
+                        arguments: new[] { Strength, Softness }
+                    );
+
+                var FinalSuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions + "FinalPass = 1;")
                     .Configure(
                         arguments: new[] { Strength, Softness }
                     );
@@ -130,8 +135,6 @@ namespace Mpdn.Extensions.RenderScripts
                 // Initial scaling
                 if (initial != original)
                 {
-                    // original = new ShaderFilter(GammaToLinear, original);
-
                     // Always correct offset (if any)
                     var filter = initial as ResizeFilter;
                     if (filter != null)
@@ -141,7 +144,6 @@ namespace Mpdn.Extensions.RenderScripts
                 }
                 else
                 {
-                    // original = new ShaderFilter(GammaToLinear, original);
                     result = new ResizeFilter(new ShaderFilter(GammaToLinear, original), targetSize);
                 }
 
@@ -155,7 +157,7 @@ namespace Mpdn.Extensions.RenderScripts
                     diff = new ShaderFilter(Diff, loRes, original); // Compare with original  
 
                     // Update result
-                    result = new ShaderFilter(SuperRes.Configure( arguments: new[] { Strength, Softness, i, Passes } ), result, diff, original);
+                    result = new ShaderFilter(i != Passes ? SuperRes : FinalSuperRes, result, diff);
                 }
 
                 return result;
