@@ -168,7 +168,7 @@
             // 
             // columnHeader5
             // 
-            this.columnHeader5.Text = "Script Chain";
+            this.columnHeader5.Text = "Name";
             this.columnHeader5.Width = 136;
             // 
             // columnHeader6
