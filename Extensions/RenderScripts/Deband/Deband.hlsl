@@ -27,7 +27,6 @@ float4 size1 : register(c4);
 
 #define acuity args0[0]
 #define power  args0[1]
-#define	margin args0[2]
 
 #define sqr(x) dot(x,x)
 #define norm(x) (rsqrt(rsqrt(sqr(sqr(x)))))
@@ -75,14 +74,18 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 	// Statistical analysis
 	X *= acuity;
 	#define sqr(x) ((x)*(x))
-	float3 SSres = sqr(mul(float4(0.5,-0.5,-0.5,0.5),X).xyz);
-	float3 SStot = (sqr(X[0].xyz) + sqr(X[1].xyz) + sqr(X[2].xyz) + sqr(X[3].xyz)) - sqr(mul(float4(0.5,0.5,0.5,0.5),X).xyz);
-	float3 R = 1 - (SSres/SStot);
+	float3 SSres = sqr(mul(float4(0.5,-0.5,-0.5,0.5),X).xyz); // Residual sum of squares
+	float3 SStot = (sqr(X[0].xyz) + sqr(X[1].xyz) + sqr(X[2].xyz) + sqr(X[3].xyz)) - sqr(mul(float4(0.5,0.5,0.5,0.5),X).xyz); // Total sum of squares
+	float3 R = 1 - (SSres/SStot); // Coefficient of determination
 	float3 p = saturate(abs(c0 - avg)*acuity);
-	SSres = (SSres + saturate(p - 0.5))/2.0; // 5 samples - 3 dof = 2.
+	float n = 5; // samples
+	float k = 3; // degrees of freedom
+	SSres = (SSres + max(0, sqr((c0 - avg)*acuity) - p*(1-p)))/(n-k); // Include current value as sample.
 
 	// Merge with high res values
-	float3 str = p*(1-p)*power/(SSres*(1 - power) + p*(1-p)*power);
+	float3 varX = p*(1-p)*power;
+	float3 varY = SSres*(1 - power);
+	float3 str = varX/(varX + varY);
 	c0.rgb += str*(avg - c0);
 
 	// Debugging
@@ -94,7 +97,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 		float x = tempNoise(tex, p0[2]/4);
 		x = x*sqrt(12);
 		float3 p = frac(c0*acuity);
-		c0.rgb += x*sqrt(p*(p-1))/acuity;
+		c0.rgb += x*varX*rsqrt(0.5*(varX + varY))/acuity;
 	}
 #endif
 
