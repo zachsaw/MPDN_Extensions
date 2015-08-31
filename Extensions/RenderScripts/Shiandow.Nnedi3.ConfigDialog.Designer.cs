@@ -58,13 +58,16 @@ namespace Mpdn.Extensions.RenderScripts
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.checkBoxStructured = new System.Windows.Forms.CheckBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.comboBoxChroma = new System.Windows.Forms.ComboBox();
+            this.buttonConfig = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(193, 286);
+            this.buttonCancel.Location = new System.Drawing.Point(193, 376);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1005;
@@ -75,7 +78,7 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(112, 286);
+            this.buttonOk.Location = new System.Drawing.Point(112, 376);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 1004;
@@ -85,6 +88,7 @@ namespace Mpdn.Extensions.RenderScripts
             // comboBoxNeurons1
             // 
             this.comboBoxNeurons1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxNeurons1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxNeurons1.FormattingEnabled = true;
             this.comboBoxNeurons1.Items.AddRange(new object[] {
             "16",
@@ -118,6 +122,7 @@ namespace Mpdn.Extensions.RenderScripts
             // comboBoxPath
             // 
             this.comboBoxPath.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxPath.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxPath.FormattingEnabled = true;
             this.comboBoxPath.Location = new System.Drawing.Point(64, 199);
             this.comboBoxPath.Name = "comboBoxPath";
@@ -146,6 +151,7 @@ namespace Mpdn.Extensions.RenderScripts
             // comboBoxNeurons2
             // 
             this.comboBoxNeurons2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxNeurons2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxNeurons2.FormattingEnabled = true;
             this.comboBoxNeurons2.Items.AddRange(new object[] {
             "16",
@@ -187,13 +193,46 @@ namespace Mpdn.Extensions.RenderScripts
             this.checkBoxStructured.UseVisualStyleBackColor = true;
             this.checkBoxStructured.CheckedChanged += new System.EventHandler(this.StructuredCheckedChanged);
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(24, 271);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(117, 13);
+            this.label7.TabIndex = 1017;
+            this.label7.Text = "Custom Chroma Scaler:";
+            // 
+            // comboBoxChroma
+            // 
+            this.comboBoxChroma.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxChroma.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.comboBoxChroma.FormattingEnabled = true;
+            this.comboBoxChroma.Location = new System.Drawing.Point(64, 298);
+            this.comboBoxChroma.Name = "comboBoxChroma";
+            this.comboBoxChroma.Size = new System.Drawing.Size(152, 21);
+            this.comboBoxChroma.TabIndex = 5;
+            this.comboBoxChroma.SelectedIndexChanged += new System.EventHandler(this.ChromaSelectedIndexChanged);
+            // 
+            // buttonConfig
+            // 
+            this.buttonConfig.Location = new System.Drawing.Point(64, 325);
+            this.buttonConfig.Name = "buttonConfig";
+            this.buttonConfig.Size = new System.Drawing.Size(75, 23);
+            this.buttonConfig.TabIndex = 6;
+            this.buttonConfig.Text = "Configure...";
+            this.buttonConfig.UseVisualStyleBackColor = true;
+            this.buttonConfig.Click += new System.EventHandler(this.ButtonConfigClick);
+            // 
             // NNedi3ConfigDialog
             // 
             this.AcceptButton = this.buttonOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(280, 321);
+            this.ClientSize = new System.Drawing.Size(280, 411);
+            this.Controls.Add(this.buttonConfig);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.comboBoxChroma);
             this.Controls.Add(this.checkBoxStructured);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -232,6 +271,9 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Label label5;
             private System.Windows.Forms.Label label6;
             private System.Windows.Forms.CheckBox checkBoxStructured;
+            private System.Windows.Forms.Label label7;
+            private System.Windows.Forms.ComboBox comboBoxChroma;
+            private System.Windows.Forms.Button buttonConfig;
         }
     }
 }

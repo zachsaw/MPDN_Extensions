@@ -133,15 +133,15 @@ float8 nnedi3process(__local float (* restrict in)[74], __global const float* re
 #define OFFSET 0
 #define GetIX(x) get_group_id(0) * 64 + (x) - 3
 #define GetIY(y) get_group_id(1) * 8 + (y) - 1 - OFFSET
-#define GET_ read_imagef(srcImg, Sampler, (swapXy) ? ((int2) (y, x)) : ((int2) (x, y)))
+#define GET_(x, y, swapXy) read_imagef(srcImg, Sampler, (swapXy) ? ((int2) (y, x)) : ((int2) (x, y)))
 
 #ifdef CHROMA_U
-#define GET(x, y, swapXy) GET_.s1
+#define GET(x, y, swapXy) GET_(x, y, swapXy).s1
 #else
 #ifdef CHROMA_V
-#define GET(x, y, swapXy) GET_.s2
+#define GET(x, y, swapXy) GET_(x, y, swapXy).s2
 #else
-#define GET(x, y, swapXy) GET_.s0
+#define GET(x, y, swapXy) GET_(x, y, swapXy).s0
 #endif
 #endif
 

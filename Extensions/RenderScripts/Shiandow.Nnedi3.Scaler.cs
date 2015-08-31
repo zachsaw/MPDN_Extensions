@@ -15,9 +15,10 @@
 // License along with this library.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.RenderScripts.Mpdn.EwaScaler;
 using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3.Filters;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -36,12 +37,16 @@ namespace Mpdn.Extensions.RenderScripts
                 Neurons2 = NNedi3Neurons.Neurons16;
                 CodePath = NNedi3Path.ScalarMad;
                 Structured = false;
+                ChromaScalerGuid = Guid.Empty;
+                ChromaScalers = new List<Preset>();
             }
 
             public NNedi3Neurons Neurons1 { get; set; }
             public NNedi3Neurons Neurons2 { get; set; }
             public NNedi3Path CodePath { get; set; }
             public bool Structured { get; set; }
+            public List<Preset> ChromaScalers { get; set; }
+            public Guid ChromaScalerGuid { get; set; }
 
             #endregion
 
@@ -51,15 +56,21 @@ namespace Mpdn.Extensions.RenderScripts
             private Nnedi3Filter m_Filter1;
             private Nnedi3Filter m_Filter2;
 
-            private RenderChain m_ChromaScaler = new EwaChromaScaler(); // TODO allow user to select a chroma scaler
+            private Preset ChromaScaler
+            {
+                get
+                {
+                    return ChromaScalers.FirstOrDefault(s => s.Script.Descriptor.Guid == ChromaScalerGuid) ??
+                           RenderChainUi.Identity.ToPreset();
+                }
+            }
 
             public override void Reset()
             {
                 base.Reset();
-                if (m_ChromaScaler != null)
+                foreach (var s in ChromaScalers)
                 {
-                    m_ChromaScaler.Reset();
-                    m_ChromaScaler = null;
+                    s.Reset();
                 }
                 Cleanup();
             }
@@ -92,12 +103,7 @@ namespace Mpdn.Extensions.RenderScripts
                     return input;
 
                 var yuv = input.ConvertToYuv();
-
-                var chroma = ((IChromaScaler) m_ChromaScaler).CreateChromaFilter(yuv,
-                    size => new TextureSize(size.Width*2, size.Height*2), new Vector2(-0.25f, -0.25f));
-
-//                var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2)
-//                    TextureChannels.ChromaOnly, new Vector2(-0.25f, -0.25f), Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+                var chroma = GetChromaFilter(yuv, new Vector2(-0.25f, -0.25f));
 
                 m_Filter1 = NNedi3Helpers.CreateFilter(shaderPass1, yuv, Neurons1, Structured);
                 var resultY = new ShaderFilter(interleave, yuv, m_Filter1);
@@ -106,6 +112,20 @@ namespace Mpdn.Extensions.RenderScripts
 
                 return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),
                     Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+            }
+
+            private IFilter GetChromaFilter(IFilter yuv, Vector2 chromaOffset)
+            {
+                return ChromaScaler.Script.IsIdentity()
+                    ? GetInternalChromaScaler(yuv, size => new TextureSize(size.Width*2, size.Height*2), chromaOffset)
+                    : ((IChromaScaler) ChromaScaler.Chain).CreateChromaFilter(yuv,
+                        size => new TextureSize(size.Width*2, size.Height*2), chromaOffset);
+            }
+
+            private static IFilter GetInternalChromaScaler(IFilter input, Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset)
+            {
+                return new ResizeFilter(input, targetSize(input.OutputSize), TextureChannels.ChromaOnly, chromaOffset,
+                    Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
             }
 
             private string GetShaderFileName(NNedi3Neurons neurons)
