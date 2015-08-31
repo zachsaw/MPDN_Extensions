@@ -51,8 +51,8 @@ namespace Mpdn.Extensions.RenderScripts
                 if (fromSource && (Renderer.InputFormat.IsRgb() || !IsUpscalingFrom(sourceSize)))
                     return input;
 
-                var targetSize2 = targetSize(sourceSize);
-                CreateWeights(sourceSize, targetSize2);
+                var destSize = targetSize(sourceSize);
+                CreateWeights(sourceSize, destSize);
 
                 var offset = chromaOffset + new Vector2(0.5f, 0.5f);
                 int lobes = TapCount.ToInt()/2;
@@ -61,7 +61,7 @@ namespace Mpdn.Extensions.RenderScripts
                         string.Format("LOBES = {0}; AR = {1}; CHROMA = 1;",
                             lobes, AntiRingingEnabled ? 1 : 0))
                     .Configure(
-                        transform: size => targetSize2,
+                        transform: size => destSize,
                         arguments: new[] {AntiRingingStrength, offset.X, offset.Y},
                         linearSampling: true
                     );

@@ -42,7 +42,7 @@ namespace Mpdn.Extensions.RenderScripts
 
         #endregion
 
-        public class BicubicChroma : RenderChain
+        public class BicubicChroma : RenderChain, IChromaScaler
         {
             #region Settings
 
@@ -92,21 +92,29 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                if (Renderer.InputFormat.IsRgb())
+                return CreateChromaFilter(input, true, new YSourceFilter(), new ChromaSourceFilter(),
+                    s => new TextureSize(s.Width*2, s.Height*2), Renderer.ChromaOffset);
+            }
+
+            public IFilter CreateChromaFilter(IFilter input, Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset)
+            {
+                return CreateChromaFilter(input, false, input, input, targetSize, chromaOffset);
+            }
+
+            private IFilter CreateChromaFilter(IFilter input, bool fromSource, IFilter lumaSource, IFilter chromaSource,
+                Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset)
+            {
+                var sourceSize = chromaSource.OutputSize;
+                if (fromSource && (Renderer.InputFormat.IsRgb() || !IsUpscalingFrom(sourceSize)))
                     return input;
 
-                var yInput = new YSourceFilter();
-                var uInput = new USourceFilter();
-                var vInput = new VSourceFilter();
+                Vector2 offset = chromaOffset + new Vector2(0.5f, 0.5f);
 
-                Vector2 offset = Renderer.ChromaOffset + new Vector2(0.5f, 0.5f);
+                var chromaShader = CompileShader("Chroma.hlsl")
+                    .Configure(transform: size => targetSize(sourceSize), arguments: new[] {B, C, offset[0], offset[1]});
 
-                var chromaShader = CompileShader("Chroma.hlsl").Configure(arguments: new[] { B, C, offset[0], offset[1] });
-
-                var chroma = new ShaderFilter(chromaShader, yInput, uInput, vInput);
-                var rgb = chroma.ConvertToRgb();
-
-                return rgb;
+                var result = new ShaderFilter(chromaShader, lumaSource, chromaSource);
+                return fromSource ? result.ConvertToRgb() : result;
             }
         }
 

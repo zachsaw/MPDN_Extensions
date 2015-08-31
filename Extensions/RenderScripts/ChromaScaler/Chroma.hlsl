@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-sampler sY : register(s0);
-sampler sU : register(s1);
-sampler sV : register(s2);
+sampler sY  : register(s0);
+sampler sUV : register(s1);
 
 float4 p0 :  register(c0);
 float2 p1 :  register(c1);
@@ -37,7 +36,7 @@ float4 args0 : register(c3);
 #define Weight(x) (BCWeights(BC[0],BC[1],abs(x)))
 #define taps 2
 
-#define UV(xy)     (float2(tex2D(sU, xy)[0], tex2D(sV, xy)[0]))
+#define UV(xy)     (tex2D(sUV, xy).yz)
 #define GetUV(x,y) (UV(pos + float2(px,py)*int2(x,y)))
 #define GetY       (tex2D(sY, tex)[0])
 
