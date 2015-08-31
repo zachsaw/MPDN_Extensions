@@ -59,8 +59,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.label6 = new System.Windows.Forms.Label();
             this.checkBoxStructured = new System.Windows.Forms.CheckBox();
             this.label7 = new System.Windows.Forms.Label();
-            this.comboBoxChroma = new System.Windows.Forms.ComboBox();
-            this.buttonConfig = new System.Windows.Forms.Button();
+            this.chromaSelector = new Framework.Controls.ChromaScalerSelector();
             this.SuspendLayout();
             // 
             // buttonCancel
@@ -202,26 +201,12 @@ namespace Mpdn.Extensions.RenderScripts
             this.label7.TabIndex = 1017;
             this.label7.Text = "Custom Chroma Scaler:";
             // 
-            // comboBoxChroma
+            // chromaSelector
             // 
-            this.comboBoxChroma.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxChroma.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.comboBoxChroma.FormattingEnabled = true;
-            this.comboBoxChroma.Location = new System.Drawing.Point(64, 298);
-            this.comboBoxChroma.Name = "comboBoxChroma";
-            this.comboBoxChroma.Size = new System.Drawing.Size(152, 21);
-            this.comboBoxChroma.TabIndex = 5;
-            this.comboBoxChroma.SelectedIndexChanged += new System.EventHandler(this.ChromaSelectedIndexChanged);
-            // 
-            // buttonConfig
-            // 
-            this.buttonConfig.Location = new System.Drawing.Point(64, 325);
-            this.buttonConfig.Name = "buttonConfig";
-            this.buttonConfig.Size = new System.Drawing.Size(75, 23);
-            this.buttonConfig.TabIndex = 6;
-            this.buttonConfig.Text = "Configure...";
-            this.buttonConfig.UseVisualStyleBackColor = true;
-            this.buttonConfig.Click += new System.EventHandler(this.ButtonConfigClick);
+            this.chromaSelector.Location = new System.Drawing.Point(64, 296);
+            this.chromaSelector.Name = "chromaSelector";
+            this.chromaSelector.Size = new System.Drawing.Size(182, 59);
+            this.chromaSelector.TabIndex = 5;
             // 
             // NNedi3ConfigDialog
             // 
@@ -230,9 +215,8 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(280, 411);
-            this.Controls.Add(this.buttonConfig);
+            this.Controls.Add(this.chromaSelector);
             this.Controls.Add(this.label7);
-            this.Controls.Add(this.comboBoxChroma);
             this.Controls.Add(this.checkBoxStructured);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -272,8 +256,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Label label6;
             private System.Windows.Forms.CheckBox checkBoxStructured;
             private System.Windows.Forms.Label label7;
-            private System.Windows.Forms.ComboBox comboBoxChroma;
-            private System.Windows.Forms.Button buttonConfig;
+            private Framework.Controls.ChromaScalerSelector chromaSelector;
         }
     }
 }

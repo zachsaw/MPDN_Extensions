@@ -75,6 +75,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
@@ -99,6 +100,12 @@
     <Compile Include="Extensions\Framework\Config\ScriptSettings.cs" />
     <Compile Include="Extensions\Framework\Config\ScriptSettingsBase.cs" />
     <Compile Include="Extensions\Framework\Controls\AvalonEditHost.cs" />
+    <Compile Include="Extensions\Framework\Controls\ChromaScalerSelector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Extensions\Framework\Controls\ChromaScalerSelector.Designer.cs">
+      <DependentUpon>ChromaScalerSelector.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\Framework\Controls\ComboBoxItem.cs" />
     <Compile Include="Extensions\Framework\Controls\HotkeyBox.cs">
       <SubType>Component</SubType>
