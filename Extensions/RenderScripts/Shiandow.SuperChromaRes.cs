@@ -25,7 +25,7 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
-        public class SuperChromaRes : RenderChain
+        public class SuperChromaRes : RenderChain, IChromaScaler
         {
             #region Settings
 
@@ -62,26 +62,22 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                if (Renderer.InputFormat.IsRgb())
-                    return input;
+                var chromaFilter = input as ChromaFilter;
+                if (chromaFilter != null)
+                    chromaFilter.ChromaScaler = this;
+                return input;
+            }
 
+            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
+            {
                 IFilter hiRes;
 
-                var chromaSize = (TextureSize)Renderer.ChromaSize;
-                var targetSize = input.OutputSize;
-
-                // Original values
-                var yInput = new YSourceFilter();
-                var uInput = new USourceFilter();
-                var vInput = new VSourceFilter();
+                var chromaSize = chromaInput.OutputSize;
+                var targetSize = lumaInput.OutputSize;
 
                 float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
                 int bitdepth = Renderer.InputFormat.GetBitDepth();        
                 bool limited = Renderer.Colorimetric.IsLimitedRange();                
-
-                // Skip if downscaling
-                if (targetSize.Width <= chromaSize.Width && targetSize.Height <= chromaSize.Height)
-                    return input;
 
                 Vector2 offset = Renderer.ChromaOffset;
                 Vector2 adjointOffset = -offset * targetSize / chromaSize;
@@ -119,7 +115,9 @@ namespace Mpdn.Extensions.RenderScripts
                 var LabToLinear = CompileShader("../../Common/LabToLinear.hlsl");
                 var LinearToLab = CompileShader("../../Common/LinearToLab.hlsl");
 
-                hiRes = Prescaler ? new ShaderFilter(CrossBilateral, yInput, uInput, vInput) : input.ConvertToYuv();
+                hiRes = Prescaler 
+                    ? (IFilter) new ShaderFilter(CrossBilateral, lumaInput, chromaInput) 
+                    : (IFilter) new ChromaFilter(lumaInput, chromaInput);
 
                 for (int i = 1; i <= Passes; i++)
                 {
@@ -128,13 +126,13 @@ namespace Mpdn.Extensions.RenderScripts
                     // Compare to chroma
                     linear = new ShaderFilter(GammaToLinear, hiRes.ConvertToRgb());
                     linear = new ResizeFilter(linear, chromaSize, adjointOffset, upscaler, downscaler);
-                    diff = new ShaderFilter(Diff, linear, uInput, vInput);
+                    diff = new ShaderFilter(Diff, linear, chromaInput);
 
                     // Update result
                     hiRes = new ShaderFilter(SuperRes, hiRes, diff);
                 }
 
-                return hiRes.ConvertToRgb();
+                return hiRes;
             }
         }
 

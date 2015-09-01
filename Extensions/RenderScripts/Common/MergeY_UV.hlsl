@@ -1,4 +1,4 @@
-﻿// This file is a part of MPDN Extensions.
+// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -13,15 +13,14 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
+// 
+sampler s0 : register(s0);
+sampler s1 : register(s1);
 
-using System;
-using Mpdn.Extensions.Framework.RenderChain;
-using SharpDX;
-
-namespace Mpdn.Extensions.Framework
+float4 main(float2 tex : TEXCOORD0) : COLOR
 {
-    public interface IChromaScaler
-    {
-        IFilter CreateChromaFilter(IFilter input, Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset);
-    }
+	float y = tex2D(s0, tex).x;
+    float2 uv = tex2D(s1, tex).yz;
+    
+    return float4(y, uv, 1);
 }

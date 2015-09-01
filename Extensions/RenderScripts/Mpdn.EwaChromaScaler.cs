@@ -33,26 +33,19 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                return CreateChromaFilter(input, true, new YSourceFilter(), new ChromaSourceFilter(),
-                    s => new TextureSize(s.Width*2, s.Height*2), Renderer.ChromaOffset);
+                var chromaFilter = input as ChromaFilter;
+                if (chromaFilter != null)
+                    chromaFilter.ChromaScaler = this;
+                return input;
             }
 
-            public IFilter CreateChromaFilter(IFilter input, Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset)
-            {
-                return CreateChromaFilter(input, false, input, input, targetSize, chromaOffset);
-            }
-
-            private IFilter CreateChromaFilter(IFilter input, bool fromSource, IFilter lumaSource, IFilter chromaSource,
-                Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset)
+            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
             {
                 DiscardTextures();
 
-                var sourceSize = chromaSource.OutputSize;
-                if (fromSource && (Renderer.InputFormat.IsRgb() || !IsUpscalingFrom(sourceSize)))
-                    return input;
-
-                var destSize = targetSize(sourceSize);
-                CreateWeights(sourceSize, destSize);
+                var sourceSize = chromaInput.OutputSize;
+                var targetSize = lumaInput.OutputSize;
+                CreateWeights(sourceSize, targetSize);
 
                 var offset = chromaOffset + new Vector2(0.5f, 0.5f);
                 int lobes = TapCount.ToInt()/2;
@@ -61,13 +54,13 @@ namespace Mpdn.Extensions.RenderScripts
                         string.Format("LOBES = {0}; AR = {1}; CHROMA = 1;",
                             lobes, AntiRingingEnabled ? 1 : 0))
                     .Configure(
-                        transform: size => destSize,
+                        transform: size => targetSize,
                         arguments: new[] {AntiRingingStrength, offset.X, offset.Y},
                         linearSampling: true
                     );
 
-                var result = GetEwaFilter(shader, new[] {lumaSource, chromaSource});
-                return fromSource ? result.ConvertToRgb() : result;
+                var result = GetEwaFilter(shader, new[] { lumaInput, chromaInput });
+                return result;
             }
         }
 

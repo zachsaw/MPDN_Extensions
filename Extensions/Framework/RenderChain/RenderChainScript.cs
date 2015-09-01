@@ -23,7 +23,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class RenderChainScript : IRenderScript, IDisposable
     {
-        private SourceFilter m_SourceFilter;
+        private IFilter m_SourceFilter;
         private IFilter<ITexture2D> m_Filter;
 
         protected readonly RenderChain Chain;
@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return new ScriptInterfaceDescriptor
                 {
                     WantYuv = true,
-                    Prescale = (m_SourceFilter.LastDependentIndex > 0),
+                    Prescale = false,
                     PrescaleSize = (Size)m_SourceFilter.OutputSize
                 };
             }
@@ -68,9 +68,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public void Update()
         {
-            m_SourceFilter = new SourceFilter();
-            var rgbInput = m_SourceFilter.Transform(x => new RgbFilter(x));
-            m_Filter = CreateSafeFilter(Chain, rgbInput)
+            m_SourceFilter = Renderer.InputFormat.IsYuv()
+                ? (IFilter) new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter())
+                : (IFilter) new SourceFilter();
+
+            m_Filter = CreateSafeFilter(Chain, m_SourceFilter)
                 .SetSize(Renderer.TargetSize)
                 .Compile();
             m_Filter.Initialize();

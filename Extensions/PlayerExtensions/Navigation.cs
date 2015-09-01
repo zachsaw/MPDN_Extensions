@@ -74,12 +74,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 return new[]
                 {
-                    GetVerb("Forward (5 seconds)", "Right", Jump(5), m_MenuItems[0]),
-                    GetVerb("Backward (5 seconds)", "Left", Jump(-5), m_MenuItems[1]),
+                    GetVerb("Forward (5 seconds)", "Right", JumpKeyFrame(5), m_MenuItems[0]),
+                    GetVerb("Backward (5 seconds)", "Left", JumpKeyFrame(-5), m_MenuItems[1]),
                     GetVerb("Forward (1 frame)", "Ctrl+Right", StepFrame(), m_MenuItems[2]),
                     GetVerb("Backward (1 frame)", "Ctrl+Left", JumpFrame(-1), m_MenuItems[3]),
-                    GetVerb("Forward (next keyframe)", "Ctrl+Shift+Right", JumpKeyFrame(30), m_MenuItems[4]),
-                    GetVerb("Backward (previous keyframe)", "Ctrl+Shift+Left", JumpKeyFrame(-30), m_MenuItems[5]),
+                    GetVerb("Forward (next keyframe)", "Ctrl+Shift+Right", Jump(30), m_MenuItems[4]),
+                    GetVerb("Backward (previous keyframe)", "Ctrl+Shift+Left", Jump(-30), m_MenuItems[5]),
                     GetVerb("Play next chapter", "Shift+Right", PlayChapter(true), m_MenuItems[6]),
                     GetVerb("Play previous chapter", "Shift+Left", PlayChapter(false), m_MenuItems[7]),
                     GetVerb("Play next file in folder", "Ctrl+PageDown", PlayFileInFolder(true), m_MenuItems[8]),

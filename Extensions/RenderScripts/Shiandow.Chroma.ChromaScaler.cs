@@ -92,29 +92,18 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                return CreateChromaFilter(input, true, new YSourceFilter(), new ChromaSourceFilter(),
-                    s => new TextureSize(s.Width*2, s.Height*2), Renderer.ChromaOffset);
+                var chromaFilter = input as ChromaFilter;
+                if (chromaFilter != null)
+                    chromaFilter.ChromaScaler = this;
+                return input;
             }
 
-            public IFilter CreateChromaFilter(IFilter input, Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset)
+            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
             {
-                return CreateChromaFilter(input, false, input, input, targetSize, chromaOffset);
-            }
-
-            private IFilter CreateChromaFilter(IFilter input, bool fromSource, IFilter lumaSource, IFilter chromaSource,
-                Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset)
-            {
-                var sourceSize = chromaSource.OutputSize;
-                if (fromSource && (Renderer.InputFormat.IsRgb() || !IsUpscalingFrom(sourceSize)))
-                    return input;
-
                 Vector2 offset = chromaOffset + new Vector2(0.5f, 0.5f);
+                var chromaShader = CompileShader("Chroma.hlsl").Configure(arguments: new[] { B, C, offset[0], offset[1] });
 
-                var chromaShader = CompileShader("Chroma.hlsl")
-                    .Configure(transform: size => targetSize(sourceSize), arguments: new[] {B, C, offset[0], offset[1]});
-
-                var result = new ShaderFilter(chromaShader, lumaSource, chromaSource);
-                return fromSource ? result.ConvertToRgb() : result;
+                return new ShaderFilter(chromaShader, lumaInput, chromaInput);
             }
         }
 

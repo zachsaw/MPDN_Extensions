@@ -238,6 +238,23 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
     }
 
+    public sealed class MergeFilter : ShaderFilter
+    {
+        public MergeFilter(IFilter inputY, IFilter inputUV)
+            : base(GetShader(), inputY, inputUV)
+        {
+        }
+
+        private static IShader GetShader()
+        {
+            var asmPath = typeof(IRenderScript).Assembly.Location;
+            var shaderDataFilePath =
+                Path.Combine(PathHelper.GetDirectoryName(asmPath),
+                    "Extensions", "RenderScripts", "Common");
+            return ShaderCache.CompileShader(Path.Combine(shaderDataFilePath, "MergeY_UV.hlsl"));
+        }
+    }
+
     public static class ConversionHelper
     {
         public static IFilter ConvertToRgb(this IFilter filter)
