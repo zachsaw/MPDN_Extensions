@@ -103,29 +103,15 @@ namespace Mpdn.Extensions.RenderScripts
                     return input;
 
                 var yuv = input.ConvertToYuv();
-                var chroma = GetChromaFilter(yuv, new Vector2(-0.25f, -0.25f));
 
                 m_Filter1 = NNedi3Helpers.CreateFilter(shaderPass1, yuv, Neurons1, Structured);
                 var resultY = new ShaderFilter(interleave, yuv, m_Filter1);
                 m_Filter2 = NNedi3Helpers.CreateFilter(shaderPass2, resultY, Neurons2, Structured);
-                var result = new ShaderFilter(combine, resultY, m_Filter2, chroma);
+                var luma = new ShaderFilter(interleave, resultY, m_Filter2);
 
-                return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),
-                    Renderer.LumaUpscaler, Renderer.LumaDownscaler);
-            }
+                var result = ((IChromaScaler)m_ChromaScaler).CreateChromaFilter(luma, yuv, new Vector2(-0.25f, -0.25f));
 
-            private IFilter GetChromaFilter(IFilter yuv, Vector2 chromaOffset)
-            {
-                return ChromaScaler.Script.IsIdentity()
-                    ? GetInternalChromaScaler(yuv, size => new TextureSize(size.Width*2, size.Height*2), chromaOffset)
-                    : ((IChromaScaler) ChromaScaler.Chain).CreateChromaFilter(yuv,
-                        size => new TextureSize(size.Width*2, size.Height*2), chromaOffset);
-            }
-
-            private static IFilter GetInternalChromaScaler(IFilter input, Func<TextureSize, TextureSize> targetSize, Vector2 chromaOffset)
-            {
-                return new ResizeFilter(input, targetSize(input.OutputSize), TextureChannels.ChromaOnly, chromaOffset,
-                    Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+                return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }
 
             private string GetShaderFileName(NNedi3Neurons neurons)

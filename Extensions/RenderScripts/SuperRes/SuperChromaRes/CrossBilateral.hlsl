@@ -21,8 +21,7 @@
 
 // -- Misc --
 sampler s0 : register(s0);
-sampler sU : register(s1);
-sampler sV : register(s2);
+sampler sUV : register(s1);
 
 float4 p0	  : register(c0);
 float2 p1	  : register(c1);
@@ -43,7 +42,7 @@ float4 args0  : register(c3);
 //Current high res value
 #define GetY(x,y)      (tex2D(s0,ddxddy*(pos+chromaOffset+int2(x,y)+0.5))[0])
 //Low res values
-#define GetUV(x,y)    (float2(tex2D(sU,ddxddy*(pos+int2(x,y)+0.5))[0], tex2D(sV,ddxddy*(pos+int2(x,y)+0.5))[0]))
+#define GetUV(x,y)    (tex2D(sUV,ddxddy*(pos+int2(x,y)+0.5)).yz)
 
 // -- Colour space Processing --
 #define Kb args0[2]
