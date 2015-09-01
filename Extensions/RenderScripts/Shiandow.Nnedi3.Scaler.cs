@@ -109,7 +109,7 @@ namespace Mpdn.Extensions.RenderScripts
                 m_Filter2 = NNedi3Helpers.CreateFilter(shaderPass2, resultY, Neurons2, Structured);
                 var luma = new ShaderFilter(interleave, resultY, m_Filter2);
 
-                var result = ((IChromaScaler)m_ChromaScaler).CreateChromaFilter(luma, yuv, new Vector2(-0.25f, -0.25f));
+                var result = ((IChromaScaler)ChromaScaler).CreateChromaFilter(luma, yuv, new Vector2(-0.25f, -0.25f));
 
                 return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }

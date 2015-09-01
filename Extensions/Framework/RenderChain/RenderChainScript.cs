@@ -68,14 +68,24 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public void Update()
         {
-            m_SourceFilter = Renderer.InputFormat.IsYuv()
-                ? (IFilter) new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter())
-                : (IFilter) new SourceFilter();
+            m_SourceFilter = MakeSourceFilter();
 
             m_Filter = CreateSafeFilter(Chain, m_SourceFilter)
                 .SetSize(Renderer.TargetSize)
                 .Compile();
             m_Filter.Initialize();
+        }
+
+        public IFilter MakeSourceFilter()
+        {
+            if (Renderer.InputFormat.IsYuv())
+            {
+                if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
+                    return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
+                else
+                    return new SourceFilter().Transform(x => x.ConvertToRgb());
+            }
+            else return new SourceFilter();
         }
 
         public void Render()
