@@ -30,9 +30,9 @@ namespace Mpdn.Extensions.Framework.Controls
             InitializeComponent();
         }
 
-        public List<Preset> ChromaScalers
+        public List<ChromaScalerPreset> ChromaScalers
         {
-            get { return comboBoxChroma.Items.Cast<ComboBoxItem<Preset>>().Select(s => s.Value).ToList(); }
+            get { return comboBoxChroma.Items.Cast<ComboBoxItem<ChromaScalerPreset>>().Select(s => s.Value).ToList(); }
         }
 
         public Guid SelectedChromScalerGuid
@@ -40,7 +40,7 @@ namespace Mpdn.Extensions.Framework.Controls
             get { return SelectedChromaScaler.Script.Descriptor.Guid; }
         }
 
-        public void Initialize(IList<Preset> chromaScalers, Guid selected)
+        public void Initialize(IList<ChromaScalerPreset> chromaScalers, Guid selected)
         {
             PopulateChromaScalers(chromaScalers, comboBoxChroma);
             SelectChromaScaler(selected);
@@ -48,7 +48,7 @@ namespace Mpdn.Extensions.Framework.Controls
 
         private Preset SelectedChromaScaler
         {
-            get { return ((ComboBoxItem<Preset>) comboBoxChroma.SelectedItem).Value; }
+            get { return ((ComboBoxItem<ChromaScalerPreset>) comboBoxChroma.SelectedItem).Value; }
         }
 
         private void SelectChromaScaler(Guid selected)
@@ -66,7 +66,7 @@ namespace Mpdn.Extensions.Framework.Controls
             }
         }
 
-        private static void PopulateChromaScalers(IEnumerable<Preset> scalers, ComboBox boxChroma)
+        private static void PopulateChromaScalers(IEnumerable<ChromaScalerPreset> scalers, ComboBox boxChroma)
         {
             var chromaScalers = Extension.RenderScripts
                 .OfType<IRenderChainUi>()

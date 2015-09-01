@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using YAXLib;
+using SharpDX;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
@@ -203,6 +204,25 @@ namespace Mpdn.Extensions.Framework.RenderChain
             {
                 option.Reset();
             }
+        }
+    }
+
+    public class ChromaScalerPreset : Preset, IChromaScaler
+    {
+        public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
+        {
+            IChromaScaler chromaScaler;
+
+            try
+            {
+                chromaScaler = (IChromaScaler)Chain;
+            }
+            catch (InvalidCastException e)
+            {
+                throw new InvalidOperationException("Renderscript is not a Chroma Scaler.", e);
+            }
+
+            return chromaScaler.CreateChromaFilter(lumaInput, chromaInput, chromaOffset);
         }
     }
 }

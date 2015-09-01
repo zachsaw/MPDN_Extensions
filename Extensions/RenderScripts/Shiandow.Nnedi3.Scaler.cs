@@ -38,14 +38,14 @@ namespace Mpdn.Extensions.RenderScripts
                 CodePath = NNedi3Path.ScalarMad;
                 Structured = false;
                 ChromaScalerGuid = Guid.Empty;
-                ChromaScalers = new List<Preset>();
+                ChromaScalers = new List<ChromaScalerPreset>();
             }
 
             public NNedi3Neurons Neurons1 { get; set; }
             public NNedi3Neurons Neurons2 { get; set; }
             public NNedi3Path CodePath { get; set; }
             public bool Structured { get; set; }
-            public List<Preset> ChromaScalers { get; set; }
+            public List<ChromaScalerPreset> ChromaScalers { get; set; }
             public Guid ChromaScalerGuid { get; set; }
 
             #endregion
@@ -56,12 +56,12 @@ namespace Mpdn.Extensions.RenderScripts
             private Nnedi3Filter m_Filter1;
             private Nnedi3Filter m_Filter2;
 
-            private Preset ChromaScaler
+            private IChromaScaler ChromaScaler
             {
                 get
                 {
                     return ChromaScalers.FirstOrDefault(s => s.Script.Descriptor.Guid == ChromaScalerGuid) ??
-                           RenderChainUi.Identity.ToPreset();
+                           (IChromaScaler)new DefaultChromaScaler();
                 }
             }
 
@@ -109,7 +109,7 @@ namespace Mpdn.Extensions.RenderScripts
                 m_Filter2 = NNedi3Helpers.CreateFilter(shaderPass2, resultY, Neurons2, Structured);
                 var luma = new ShaderFilter(interleave, resultY, m_Filter2);
 
-                var result = ((IChromaScaler)ChromaScaler).CreateChromaFilter(luma, yuv, new Vector2(-0.25f, -0.25f));
+                var result = ChromaScaler.CreateChromaFilter(luma, yuv, new Vector2(-0.25f, -0.25f));
 
                 return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }
