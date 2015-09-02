@@ -88,7 +88,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
-                    return new ChromaFilter(lumaInput, chromaInput, null, chromaOffset); // OpenCL is not available; fallback
+                    return new MergeFilter(lumaInput, chromaInput); // OpenCL is not available; fallback
                 }
 
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2 * s.Width, s.Height);

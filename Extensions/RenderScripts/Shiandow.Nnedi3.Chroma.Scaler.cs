@@ -92,7 +92,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (!Renderer.IsDx11Avail)
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
-                    return new ChromaFilter(lumaInput, chromaInput, null, chromaOffset); // DX11 is not available; fallback
+                    return new MergeFilter(lumaInput, chromaInput); // DX11 is not available; fallback
                 }
 
                 Func<TextureSize, TextureSize> transform = s => new TextureSize(2 * s.Height, s.Width);
