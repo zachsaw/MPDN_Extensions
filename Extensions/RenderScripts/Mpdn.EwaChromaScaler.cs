@@ -17,7 +17,6 @@
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.RenderScript;
 using SharpDX;
 
 namespace Mpdn.Extensions.RenderScripts

@@ -302,6 +302,12 @@
       <DependentUpon>Mpdn.Lut3D.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.Lut3D.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.Nnedi3.NeuronsSelector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.Nnedi3.NeuronsSelector.Designer.cs">
+      <DependentUpon>Mpdn.Nnedi3.NeuronsSelector.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -374,6 +380,12 @@
       <DependentUpon>Shiandow.Nedi.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.Nedi.NediScaler.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Chroma.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Chroma.ConfigDialog.Designer.cs">
+      <DependentUpon>Shiandow.Nnedi3.Chroma.ConfigDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -381,6 +393,7 @@
       <DependentUpon>Shiandow.Nnedi3.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Filters.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Chroma.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperChromaRes.ConfigDialog.cs">
       <SubType>Form</SubType>

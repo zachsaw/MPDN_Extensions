@@ -44,8 +44,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
-                comboBoxNeurons1.SelectedIndex = (int) Settings.Neurons1;
-                comboBoxNeurons2.SelectedIndex = (int) Settings.Neurons2;
+                neuronsSelector.Initialize((int) Settings.Neurons1, (int) Settings.Neurons2);
                 comboBoxPath.SelectedIndex = (int) Settings.CodePath;
                 checkBoxStructured.Checked = Settings.Structured;
                 chromaSelector.Initialize(Settings.ChromaScalers, Settings.ChromaScalerGuid);
@@ -53,8 +52,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void SaveSettings()
             {
-                Settings.Neurons1 = (NNedi3Neurons) comboBoxNeurons1.SelectedIndex;
-                Settings.Neurons2 = (NNedi3Neurons) comboBoxNeurons2.SelectedIndex;
+                Settings.Neurons1 = (NNedi3Neurons) neuronsSelector.Neurons1;
+                Settings.Neurons2 = (NNedi3Neurons)neuronsSelector.Neurons2;
                 Settings.CodePath = (NNedi3Path) ((ComboBoxItem<CodePath>) comboBoxPath.SelectedItem).Value.Item2;
                 Settings.Structured = checkBoxStructured.Checked;
                 Settings.ChromaScalers = chromaSelector.ChromaScalers;

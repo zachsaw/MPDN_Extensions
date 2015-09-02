@@ -48,25 +48,20 @@ namespace Mpdn.Extensions.RenderScripts
             {
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
-            this.comboBoxNeurons1 = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.comboBoxPath = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.comboBoxNeurons2 = new System.Windows.Forms.ComboBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
             this.checkBoxStructured = new System.Windows.Forms.CheckBox();
             this.label7 = new System.Windows.Forms.Label();
             this.chromaSelector = new Framework.Controls.ChromaScalerSelector();
+            this.neuronsSelector = new NeuronsSelector();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(193, 376);
+            this.buttonCancel.Location = new System.Drawing.Point(173, 376);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1005;
@@ -77,37 +72,12 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(112, 376);
+            this.buttonOk.Location = new System.Drawing.Point(92, 376);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 1004;
             this.buttonOk.Text = "OK";
             this.buttonOk.UseVisualStyleBackColor = true;
-            // 
-            // comboBoxNeurons1
-            // 
-            this.comboBoxNeurons1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxNeurons1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.comboBoxNeurons1.FormattingEnabled = true;
-            this.comboBoxNeurons1.Items.AddRange(new object[] {
-            "16",
-            "32",
-            "64",
-            "128",
-            "256"});
-            this.comboBoxNeurons1.Location = new System.Drawing.Point(100, 43);
-            this.comboBoxNeurons1.Name = "comboBoxNeurons1";
-            this.comboBoxNeurons1.Size = new System.Drawing.Size(67, 21);
-            this.comboBoxNeurons1.TabIndex = 1;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(24, 18);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(54, 13);
-            this.label1.TabIndex = 1007;
-            this.label1.Text = "Neurons*:";
             // 
             // label2
             // 
@@ -123,7 +93,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.comboBoxPath.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxPath.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxPath.FormattingEnabled = true;
-            this.comboBoxPath.Location = new System.Drawing.Point(64, 199);
+            this.comboBoxPath.Location = new System.Drawing.Point(54, 197);
             this.comboBoxPath.Name = "comboBoxPath";
             this.comboBoxPath.Size = new System.Drawing.Size(152, 21);
             this.comboBoxPath.TabIndex = 4;
@@ -131,60 +101,17 @@ namespace Mpdn.Extensions.RenderScripts
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(61, 231);
+            this.label3.Location = new System.Drawing.Point(51, 229);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(192, 26);
             this.label3.TabIndex = 1010;
             this.label3.Text = "* Try all optimization options and select \r\n   the fastest for the chosen neurons" +
     "";
             // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(52, 73);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(42, 13);
-            this.label4.TabIndex = 1012;
-            this.label4.Text = "Pass 2:";
-            // 
-            // comboBoxNeurons2
-            // 
-            this.comboBoxNeurons2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxNeurons2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.comboBoxNeurons2.FormattingEnabled = true;
-            this.comboBoxNeurons2.Items.AddRange(new object[] {
-            "16",
-            "32",
-            "64",
-            "128",
-            "256"});
-            this.comboBoxNeurons2.Location = new System.Drawing.Point(101, 70);
-            this.comboBoxNeurons2.Name = "comboBoxNeurons2";
-            this.comboBoxNeurons2.Size = new System.Drawing.Size(67, 21);
-            this.comboBoxNeurons2.TabIndex = 2;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(52, 46);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(42, 13);
-            this.label5.TabIndex = 1014;
-            this.label5.Text = "Pass 1:";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(61, 102);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(193, 26);
-            this.label6.TabIndex = 1015;
-            this.label6.Text = "* Selecting higher neurons for first pass \r\n   gives better quality";
-            // 
             // checkBoxStructured
             // 
             this.checkBoxStructured.AutoSize = true;
-            this.checkBoxStructured.Location = new System.Drawing.Point(64, 176);
+            this.checkBoxStructured.Location = new System.Drawing.Point(54, 174);
             this.checkBoxStructured.Name = "checkBoxStructured";
             this.checkBoxStructured.Size = new System.Drawing.Size(177, 17);
             this.checkBoxStructured.TabIndex = 3;
@@ -203,10 +130,17 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             // chromaSelector
             // 
-            this.chromaSelector.Location = new System.Drawing.Point(64, 296);
+            this.chromaSelector.Location = new System.Drawing.Point(54, 294);
             this.chromaSelector.Name = "chromaSelector";
-            this.chromaSelector.Size = new System.Drawing.Size(182, 59);
+            this.chromaSelector.Size = new System.Drawing.Size(177, 59);
             this.chromaSelector.TabIndex = 5;
+            // 
+            // neuronsSelector
+            // 
+            this.neuronsSelector.Location = new System.Drawing.Point(27, 19);
+            this.neuronsSelector.Name = "neuronsSelector";
+            this.neuronsSelector.Size = new System.Drawing.Size(175, 123);
+            this.neuronsSelector.TabIndex = 0;
             // 
             // NNedi3ConfigDialog
             // 
@@ -214,19 +148,14 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(280, 411);
+            this.ClientSize = new System.Drawing.Size(260, 411);
+            this.Controls.Add(this.neuronsSelector);
             this.Controls.Add(this.chromaSelector);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.checkBoxStructured);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.comboBoxNeurons2);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.comboBoxPath);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.comboBoxNeurons1);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -245,18 +174,13 @@ namespace Mpdn.Extensions.RenderScripts
 
             private System.Windows.Forms.Button buttonCancel;
             private System.Windows.Forms.Button buttonOk;
-            private System.Windows.Forms.ComboBox comboBoxNeurons1;
-            private System.Windows.Forms.Label label1;
             private System.Windows.Forms.Label label2;
             private System.Windows.Forms.ComboBox comboBoxPath;
             private System.Windows.Forms.Label label3;
-            private System.Windows.Forms.Label label4;
-            private System.Windows.Forms.ComboBox comboBoxNeurons2;
-            private System.Windows.Forms.Label label5;
-            private System.Windows.Forms.Label label6;
             private System.Windows.Forms.CheckBox checkBoxStructured;
             private System.Windows.Forms.Label label7;
             private Framework.Controls.ChromaScalerSelector chromaSelector;
+            private RenderScripts.NeuronsSelector neuronsSelector;
         }
     }
 }

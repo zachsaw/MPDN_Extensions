@@ -240,18 +240,24 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public sealed class MergeFilter : ShaderFilter
     {
-        public MergeFilter(IFilter inputY, IFilter inputUV)
-            : base(GetShader(), inputY, inputUV)
+        public MergeFilter(IFilter inputY, IFilter inputUv)
+            : base(GetShader(true), inputY, inputUv)
         {
         }
 
-        private static IShader GetShader()
+        public MergeFilter(IFilter inputY, IFilter inputU, IFilter inputV)
+            : base(GetShader(false), inputY, inputU, inputV)
+        {
+        }
+
+        private static IShader GetShader(bool mergedUv)
         {
             var asmPath = typeof(IRenderScript).Assembly.Location;
             var shaderDataFilePath =
                 Path.Combine(PathHelper.GetDirectoryName(asmPath),
                     "Extensions", "RenderScripts", "Common");
-            return ShaderCache.CompileShader(Path.Combine(shaderDataFilePath, "MergeY_UV.hlsl"));
+            var shaderFile = mergedUv ? "MergeY_UV.hlsl" : "MergeY_U_V.hlsl";
+            return ShaderCache.CompileShader(Path.Combine(shaderDataFilePath, shaderFile));
         }
     }
 
