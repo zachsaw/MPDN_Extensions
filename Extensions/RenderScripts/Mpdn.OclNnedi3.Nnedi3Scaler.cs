@@ -16,6 +16,7 @@
 // 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.OpenCl;
@@ -43,10 +44,14 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 Neurons1 = OclNNedi3Neurons.Neurons16;
                 Neurons2 = OclNNedi3Neurons.Neurons16;
+                ChromaScalers = new List<ChromaScalerPreset>();
+                ChromaScalerGuid = Guid.Empty;
             }
 
             public OclNNedi3Neurons Neurons1 { get; set; }
             public OclNNedi3Neurons Neurons2 { get; set; }
+            public List<ChromaScalerPreset> ChromaScalers { get; set; }
+            public Guid ChromaScalerGuid { get; set; }
 
             #endregion
 
@@ -155,6 +160,15 @@ namespace Mpdn.Extensions.RenderScripts
                 return CompileClKernel("nnedi3ocl.cl", "nnedi3", "-cl-fast-relaxed-math");
             }
 
+            private IChromaScaler ChromaScaler
+            {
+                get
+                {
+                    return ChromaScalers.FirstOrDefault(s => s.Script.Descriptor.Guid == ChromaScalerGuid) ??
+                           (IChromaScaler)new DefaultChromaScaler();
+                }
+            }
+
             public override IFilter CreateFilter(IFilter input)
             {
                 DisposeHelper.Dispose(ref m_Buffer1);
@@ -173,8 +187,6 @@ namespace Mpdn.Extensions.RenderScripts
                 var shaderH = kernel.Configure(transform: transformWidth);
                 var shaderV = kernel.Configure(transform: transformHeight);
 
-                var combine = CompileShader("Combine.hlsl");
-
                 var neuronCount1 = s_NeuronCount[(int) Neurons1];
                 var neuronCount2 = s_NeuronCount[(int) Neurons2];
                 var weights1 = s_Weights[(int) Neurons1];
@@ -192,10 +204,6 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var yuv = input.ConvertToYuv();
 
-                var chroma = new ResizeFilter(yuv, new TextureSize(sourceSize.Width*2, sourceSize.Height*2),
-                    TextureChannels.ChromaOnly, new Vector2(-0.25f, -0.25f), Renderer.ChromaUpscaler,
-                    Renderer.ChromaDownscaler);
-
                 var localWorkSizes = new[] {8, 8};
                 var nnedi3H = new NNedi3HKernelFilter(shaderH, m_Buffer1, neuronCount1,
                     new TextureSize(yuv.OutputSize.Width, yuv.OutputSize.Height), 
@@ -204,7 +212,8 @@ namespace Mpdn.Extensions.RenderScripts
                     new TextureSize(nnedi3H.OutputSize.Width, nnedi3H.OutputSize.Height), 
                     localWorkSizes, nnedi3H);
 
-                var result = new ShaderFilter(combine, nnedi3V, chroma);
+                var result = ChromaScaler.CreateChromaFilter(nnedi3V, yuv, new Vector2(-0.25f, -0.25f));
+
                 return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f),
                     Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }

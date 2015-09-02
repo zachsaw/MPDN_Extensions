@@ -31,12 +31,15 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 comboBoxNeurons1.SelectedIndex = (int) Settings.Neurons1;
                 comboBoxNeurons2.SelectedIndex = (int) Settings.Neurons2;
+                chromaSelector.Initialize(Settings.ChromaScalers, Settings.ChromaScalerGuid);
             }
 
             protected override void SaveSettings()
             {
                 Settings.Neurons1 = (OclNNedi3Neurons) comboBoxNeurons1.SelectedIndex;
                 Settings.Neurons2 = (OclNNedi3Neurons) comboBoxNeurons2.SelectedIndex;
+                Settings.ChromaScalers = chromaSelector.ChromaScalers;
+                Settings.ChromaScalerGuid = chromaSelector.SelectedChromScalerGuid;
             }
         }
 

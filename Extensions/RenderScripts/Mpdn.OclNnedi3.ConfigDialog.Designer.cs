@@ -54,13 +54,15 @@ namespace Mpdn.Extensions.RenderScripts
             this.label3 = new System.Windows.Forms.Label();
             this.comboBoxNeurons2 = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.chromaSelector = new Framework.Controls.ChromaScalerSelector();
+            this.label7 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(117, 154);
+            this.buttonCancel.Location = new System.Drawing.Point(178, 255);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1005;
@@ -71,7 +73,7 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(36, 154);
+            this.buttonOk.Location = new System.Drawing.Point(97, 255);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 1004;
@@ -81,6 +83,7 @@ namespace Mpdn.Extensions.RenderScripts
             // comboBoxNeurons1
             // 
             this.comboBoxNeurons1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxNeurons1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxNeurons1.FormattingEnabled = true;
             this.comboBoxNeurons1.Items.AddRange(new object[] {
             "16",
@@ -123,6 +126,7 @@ namespace Mpdn.Extensions.RenderScripts
             // comboBoxNeurons2
             // 
             this.comboBoxNeurons2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxNeurons2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxNeurons2.FormattingEnabled = true;
             this.comboBoxNeurons2.Items.AddRange(new object[] {
             "16",
@@ -144,13 +148,31 @@ namespace Mpdn.Extensions.RenderScripts
             this.label4.TabIndex = 1011;
             this.label4.Text = "* Selecting higher neurons for \r\n   first pass gives better quality";
             // 
+            // chromaSelector
+            // 
+            this.chromaSelector.Location = new System.Drawing.Point(47, 179);
+            this.chromaSelector.Name = "chromaSelector";
+            this.chromaSelector.Size = new System.Drawing.Size(188, 59);
+            this.chromaSelector.TabIndex = 1018;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(24, 152);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(117, 13);
+            this.label7.TabIndex = 1019;
+            this.label7.Text = "Custom Chroma Scaler:";
+            // 
             // OclNNedi3ConfigDialog
             // 
             this.AcceptButton = this.buttonOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(204, 189);
+            this.ClientSize = new System.Drawing.Size(265, 290);
+            this.Controls.Add(this.chromaSelector);
+            this.Controls.Add(this.label7);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.comboBoxNeurons2);
@@ -181,7 +203,8 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Label label3;
             private System.Windows.Forms.ComboBox comboBoxNeurons2;
             private System.Windows.Forms.Label label4;
-
+            private Framework.Controls.ChromaScalerSelector chromaSelector;
+            private System.Windows.Forms.Label label7;
         }
     }
 }
