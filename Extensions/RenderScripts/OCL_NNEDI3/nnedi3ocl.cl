@@ -134,14 +134,18 @@ float8 nnedi3process(__local float (* restrict in)[74], __global const float* re
 #define GetIX(x) get_group_id(0) * 64 + (x) - 3
 #define GetIY(y) get_group_id(1) * 8 + (y) - 1 - OFFSET
 #define GET_(x, y, swapXy) read_imagef(srcImg, Sampler, (swapXy) ? ((int2) (y, x)) : ((int2) (x, y)))
+#define SET_(pos, val) write_imagef(dstImg, pos, val)
 
 #ifdef CHROMA_U
 #define GET(x, y, swapXy) GET_(x, y, swapXy).s1
+#define SET(pos, val) SET_(pos, (float4)(1,val,1,1))
 #else
 #ifdef CHROMA_V
 #define GET(x, y, swapXy) GET_(x, y, swapXy).s2
+#define SET(pos, val) SET_(pos, (float4)(1,1,val,1))
 #else
 #define GET(x, y, swapXy) GET_(x, y, swapXy).s0
+#define SET(pos, val) SET_(pos, (float4)(val,1,1,1))
 #endif
 #endif
 
@@ -185,17 +189,15 @@ void nnedi3(__read_only image2d_t srcImg, __write_only image2d_t dstImg,
     {
         if (x + i >= srcWidth)
             continue;
-        
-        write_imagef(dstImg, 
-                     swapXy 
-                        ? (int2) (y +     OFFSET, x + i) 
-                        : (int2) (x + i, y +     OFFSET), 
-                        input[get_local_id(1) + 1 + OFFSET][get_local_id(0) * 8 + 3 + i]);
 
-        write_imagef(dstImg, 
-                     swapXy
-                        ? (int2) (y + 1 - OFFSET, x + i) 
-                        : (int2) (x + i, y + 1 - OFFSET), 
-                        ((float*) &mstd3)[i]);
+        SET(swapXy 
+			? (int2) (y +     OFFSET, x + i) 
+			: (int2) (x + i, y +     OFFSET), 
+			input[get_local_id(1) + 1 + OFFSET][get_local_id(0) * 8 + 3 + i]);
+
+        SET(swapXy
+			? (int2) (y + 1 - OFFSET, x + i) 
+			: (int2) (x + i, y + 1 - OFFSET), 
+			((float*) &mstd3)[i]);
     }
 }

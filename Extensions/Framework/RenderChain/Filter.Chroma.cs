@@ -73,7 +73,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public override TextureFormat OutputFormat
         {
-            get { return Luma.OutputFormat; } // Possibly incorrect, might need to be fixed
+            get { return Chroma.OutputFormat; } // Possibly incorrect, might need to be fixed
         }
 
         public void SetSize(TextureSize size)

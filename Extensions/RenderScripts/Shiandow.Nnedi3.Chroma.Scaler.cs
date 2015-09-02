@@ -66,6 +66,11 @@ namespace Mpdn.Extensions.RenderScripts
                 DisposeHelper.Dispose(ref m_VFilter2);
             }
 
+            protected override string ShaderPath
+            {
+                get { return typeof (NNedi3).Name; }
+            }
+
             public override IFilter CreateFilter(IFilter input)
             {
                 var chromaFilter = input as ChromaFilter;

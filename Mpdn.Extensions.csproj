@@ -308,12 +308,19 @@
     <Compile Include="Extensions\RenderScripts\Mpdn.Nnedi3.NeuronsSelector.Designer.cs">
       <DependentUpon>Mpdn.Nnedi3.NeuronsSelector.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Chroma.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Chroma.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.OclNnedi3.Chroma.ConfigDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.ConfigDialog.Designer.cs">
       <DependentUpon>Mpdn.OclNnedi3.ConfigDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Chroma.Nnedi3Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Weights.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.cs">

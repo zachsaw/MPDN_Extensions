@@ -36,6 +36,80 @@ namespace Mpdn.Extensions.RenderScripts
             Neurons256 = 4
         }
 
+        public static class GlobalWorkSizesHelper
+        {
+            public static int[] Get(int width, int height, int[] localWorkSizes)
+            {
+                var baseWidth = (float)localWorkSizes[0];
+                var baseHeight = (float)localWorkSizes[1];
+
+                var widthGroupCount = Math.Ceiling(width / (baseWidth * baseWidth));
+                var heightGroupCount = Math.Ceiling(height / baseHeight);
+                return new[] { (int)(baseWidth * widthGroupCount), (int)(baseHeight * heightGroupCount) };
+            }
+        }
+
+        public class NNedi3HKernelFilter : ClKernelFilter
+        {
+            private readonly IDisposable m_Buffer;
+            private readonly int m_NeuronCount;
+            private readonly TextureSize m_TextureSize;
+
+            public NNedi3HKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, TextureSize textureSize, int[] localWorkSizes,
+                IFilter<IBaseTexture> inputFilter)
+                : base(settings, GlobalWorkSizesHelper.Get(textureSize.Height, textureSize.Width, localWorkSizes), localWorkSizes, inputFilter)
+            {
+                m_Buffer = buffer;
+                m_NeuronCount = neuronCount;
+                m_TextureSize = textureSize;
+            }
+
+            protected override void LoadInputs(IList<IBaseTexture> inputs)
+            {
+                Shader.SetInputTextureArg(0, (ITexture2D)inputs[0]); // srcImg
+                                                                     // First pass doesn't require result to be copied back to Direct3D - so we use a 'temp' texture
+                Shader.SetTempTextureArg(1, OutputTarget); // dstImg
+                Shader.SetBufferArg(2, m_Buffer); // weights
+                Shader.SetArg(3, m_NeuronCount); // nnst
+                Shader.SetArg(4, m_TextureSize.Height); // SrcWidth
+                Shader.SetArg(5, m_TextureSize.Width); // SrcHeight
+                Shader.SetArg(6, 1); // SwapXy
+            }
+        }
+
+        public class NNedi3VKernelFilter : ClKernelFilter
+        {
+            private readonly bool m_ReloadWeights;
+            private readonly IDisposable m_Buffer;
+            private readonly int m_NeuronCount;
+            private readonly TextureSize m_TextureSize;
+
+            public NNedi3VKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, bool reloadWeights, TextureSize textureSize, int[] localWorkSizes,
+                IFilter<IBaseTexture> inputFilter)
+                : base(settings, GlobalWorkSizesHelper.Get(textureSize.Width, textureSize.Height, localWorkSizes), localWorkSizes, inputFilter)
+            {
+                m_Buffer = buffer;
+                m_NeuronCount = neuronCount;
+                m_ReloadWeights = reloadWeights;
+                m_TextureSize = textureSize;
+            }
+
+            protected override void LoadInputs(IList<IBaseTexture> inputs)
+            {
+                // Use the 'temp' texture from first pass as input
+                Shader.SetTempTextureArg(0, (ITexture2D)inputs[0]); // srcImg
+                Shader.SetOutputTextureArg(1, OutputTarget); // dstImg
+                if (m_ReloadWeights)
+                {
+                    Shader.SetBufferArg(2, m_Buffer); // weights
+                    Shader.SetArg(3, m_NeuronCount); // nnst
+                }
+                Shader.SetArg(4, m_TextureSize.Width); // SrcWidth
+                Shader.SetArg(5, m_TextureSize.Height); // SrcHeight
+                Shader.SetArg(6, 0); // SwapXy
+            }
+        }
+
         public class OclNNedi3 : RenderChain
         {
             #region Settings
@@ -67,80 +141,6 @@ namespace Mpdn.Extensions.RenderScripts
                 Weights.Weights256Neurons
             };
             private static readonly int[] s_NeuronCount = { 16, 32, 64, 128, 256 };
-
-            private static class GlobalWorkSizesHelper
-            {
-                public static int[] Get(int width, int height, int[] localWorkSizes)
-                {
-                    var baseWidth = (float) localWorkSizes[0];
-                    var baseHeight = (float) localWorkSizes[1];
-
-                    var widthGroupCount = Math.Ceiling(width/(baseWidth*baseWidth));
-                    var heightGroupCount = Math.Ceiling(height/baseHeight);
-                    return new[] { (int) (baseWidth*widthGroupCount), (int) (baseHeight*heightGroupCount) };
-                }
-            }
-
-            private class NNedi3HKernelFilter : ClKernelFilter
-            {
-                private readonly IDisposable m_Buffer;
-                private readonly int m_NeuronCount;
-                private readonly TextureSize m_TextureSize;
-
-                public NNedi3HKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, TextureSize textureSize, int[] localWorkSizes,
-                    IFilter<IBaseTexture> inputFilter)
-                    : base(settings, GlobalWorkSizesHelper.Get(textureSize.Height, textureSize.Width, localWorkSizes), localWorkSizes, inputFilter)
-                {
-                    m_Buffer = buffer;
-                    m_NeuronCount = neuronCount;
-                    m_TextureSize = textureSize;
-                }
-
-                protected override void LoadInputs(IList<IBaseTexture> inputs)
-                {
-                    Shader.SetInputTextureArg(0, (ITexture2D) inputs[0]); // srcImg
-                    // First pass doesn't require result to be copied back to Direct3D - so we use a 'temp' texture
-                    Shader.SetTempTextureArg(1, OutputTarget); // dstImg
-                    Shader.SetBufferArg(2, m_Buffer); // weights
-                    Shader.SetArg(3, m_NeuronCount); // nnst
-                    Shader.SetArg(4, m_TextureSize.Height); // SrcWidth
-                    Shader.SetArg(5, m_TextureSize.Width); // SrcHeight
-                    Shader.SetArg(6, 1); // SwapXy
-                }
-            }
-
-            private class NNedi3VKernelFilter : ClKernelFilter
-            {
-                private readonly bool m_ReloadWeights;
-                private readonly IDisposable m_Buffer;
-                private readonly int m_NeuronCount;
-                private readonly TextureSize m_TextureSize;
-
-                public NNedi3VKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, bool reloadWeights, TextureSize textureSize, int[] localWorkSizes,
-                    IFilter<IBaseTexture> inputFilter)
-                    : base(settings, GlobalWorkSizesHelper.Get(textureSize.Width, textureSize.Height, localWorkSizes), localWorkSizes, inputFilter)
-                {
-                    m_Buffer = buffer;
-                    m_NeuronCount = neuronCount;
-                    m_ReloadWeights = reloadWeights;
-                    m_TextureSize = textureSize;
-                }
-
-                protected override void LoadInputs(IList<IBaseTexture> inputs)
-                {
-                    // Use the 'temp' texture from first pass as input
-                    Shader.SetTempTextureArg(0, (ITexture2D) inputs[0]); // srcImg
-                    Shader.SetOutputTextureArg(1, OutputTarget); // dstImg
-                    if (m_ReloadWeights)
-                    {
-                        Shader.SetBufferArg(2, m_Buffer); // weights
-                        Shader.SetArg(3, m_NeuronCount); // nnst
-                    }
-                    Shader.SetArg(4, m_TextureSize.Width); // SrcWidth
-                    Shader.SetArg(5, m_TextureSize.Height); // SrcHeight
-                    Shader.SetArg(6, 0); // SwapXy
-                }
-            }
 
             public override void Reset()
             {
