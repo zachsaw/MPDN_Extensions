@@ -90,7 +90,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 if (result != null)
                 {
                     DisposeHelper.Dispose(result.Shader);
-                    File.Delete(result.CachePath);
+                    if (loadFunc != null)
+                    {
+                        File.Delete(result.CachePath);
+                    }
                     s_CompiledShaders.Remove(key);
                 }
 
@@ -103,6 +106,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 {
                     throw new SharpDX.CompilationException(e.ResultCode,
                         "Compilation Error in " + key + "\r\n\r\n" + e.Message);
+                }
+                catch (OpenClException e)
+                {
+                    throw new OpenClException("Compilation Error in " + key + "\r\n\r\n" + e.Message, e.ErrorCode);
                 }
 
                 s_CompiledShaders.Add(key, new ShaderWithDateTime(shader, lastMod, loadFunc != null));

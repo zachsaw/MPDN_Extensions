@@ -29,7 +29,7 @@
 
 //#define EXTRA_CHECKS
 
-constant sampler_t Sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
+constant sampler_t Sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
 #if !defined(cl_nv_pragma_unroll) && (__OPENCL_VERSION__ >= 110)
 #define FASTLOAD
@@ -130,9 +130,6 @@ float8 nnedi3process(__local float (* restrict in)[74], __global const float* re
     return mstd3;
 }
 
-#define OFFSET 0
-#define GetIX(x) get_group_id(0) * 64 + (x) - 3
-#define GetIY(y) get_group_id(1) * 8 + (y) - 1 - OFFSET
 #define GET_(x, y, swapXy) read_imagef(srcImg, Sampler, (swapXy) ? ((int2) (y, x)) : ((int2) (x, y)))
 #define SET_(pos, val) write_imagef(dstImg, pos, val)
 
@@ -148,6 +145,9 @@ float8 nnedi3process(__local float (* restrict in)[74], __global const float* re
 #define SET(pos, val) SET_(pos, (float4)(val,1,1,1))
 #endif
 #endif
+
+#define GetIX(x) get_group_id(0) * 64 + (x) - 3
+#define GetIY(y) get_group_id(1) * 8 + (y) - 1
 
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
 void nnedi3(__read_only image2d_t srcImg, __write_only image2d_t dstImg, 
@@ -181,9 +181,10 @@ void nnedi3(__read_only image2d_t srcImg, __write_only image2d_t dstImg,
             (__global const float *restrict) weights, nnst);
 
     uint y = get_group_id(1) * 16 + get_local_id(1) * 2;
-    if (y >= srcHeight * 2)
+    if (y + 1 >= srcHeight * 2)
         return;
 
+    float* ptr = (float*) &mstd3;
     uint x = get_group_id(0) * 64 + get_local_id(0) * 8;
     for (uint i = 0; i < 8; i++)
     {
@@ -191,13 +192,13 @@ void nnedi3(__read_only image2d_t srcImg, __write_only image2d_t dstImg,
             continue;
 
         SET(swapXy 
-			? (int2) (y +     OFFSET, x + i) 
-			: (int2) (x + i, y +     OFFSET), 
-			input[get_local_id(1) + 1 + OFFSET][get_local_id(0) * 8 + 3 + i]);
+            ? (int2) (y    , x + i) 
+            : (int2) (x + i, y    ), 
+            input[get_local_id(1) + 1][get_local_id(0) * 8 + 3 + i]);
 
         SET(swapXy
-			? (int2) (y + 1 - OFFSET, x + i) 
-			: (int2) (x + i, y + 1 - OFFSET), 
-			((float*) &mstd3)[i]);
+            ? (int2) (y + 1, x + i) 
+            : (int2) (x + i, y + 1), 
+            ptr[i]);
     }
 }

@@ -40,12 +40,12 @@ namespace Mpdn.Extensions.RenderScripts
         {
             public static int[] Get(int width, int height, int[] localWorkSizes)
             {
-                var baseWidth = (float)localWorkSizes[0];
-                var baseHeight = (float)localWorkSizes[1];
+                var baseWidth = (float) localWorkSizes[0];
+                var baseHeight = (float) localWorkSizes[1];
 
-                var widthGroupCount = Math.Ceiling(width / (baseWidth * baseWidth));
-                var heightGroupCount = Math.Ceiling(height / baseHeight);
-                return new[] { (int)(baseWidth * widthGroupCount), (int)(baseHeight * heightGroupCount) };
+                var widthGroupCount = Math.Ceiling(width/(baseWidth*baseWidth));
+                var heightGroupCount = Math.Ceiling(height/baseHeight);
+                return new[] {(int) (baseWidth*widthGroupCount), (int) (baseHeight*heightGroupCount)};
             }
         }
 
