@@ -25,7 +25,7 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.NNedi3.Chroma
     {
-        public partial class NNedi3ConfigDialog : NNedi3ConfigDialogBase
+        public partial class NNedi3ChromaConfigDialog : NNedi3ChromaConfigDialogBase
         {
             private readonly CodePath[] m_CodePaths =
             {
@@ -36,7 +36,7 @@ namespace Mpdn.Extensions.RenderScripts
                 new CodePath("Prefer Vector & Small Code", (int) NNedi3Path.VectorDotSmall)
             };
 
-            public NNedi3ConfigDialog()
+            public NNedi3ChromaConfigDialog()
             {
                 InitializeComponent();
                 UpdateCodePaths(false);
@@ -88,7 +88,7 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
 
-        public class NNedi3ConfigDialogBase : ScriptConfigDialog<NNedi3>
+        public class NNedi3ChromaConfigDialogBase : ScriptConfigDialog<NNedi3Chroma>
         {
         }
     }

@@ -18,7 +18,7 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.NNedi3.Chroma
     {
-        partial class NNedi3ConfigDialog
+        partial class NNedi3ChromaConfigDialog
         {
             /// <summary>
             /// Required designer variable.
@@ -124,7 +124,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.neuronsSelector.Size = new System.Drawing.Size(175, 123);
             this.neuronsSelector.TabIndex = 0;
             // 
-            // NNedi3ConfigDialog
+            // NNedi3ChromaConfigDialog
             // 
             this.AcceptButton = this.buttonOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);

@@ -25,11 +25,11 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.NNedi3.Chroma
     {
-        public class NNedi3 : RenderChain, IChromaScaler
+        public class NNedi3Chroma : RenderChain, IChromaScaler
         {
             #region Settings
 
-            public NNedi3()
+            public NNedi3Chroma()
             {
                 Neurons1 = NNedi3Neurons.Neurons16;
                 Neurons2 = NNedi3Neurons.Neurons16;
@@ -113,7 +113,7 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
 
-        public class NNedi3ChromaScaler : RenderChainUi<NNedi3, NNedi3ConfigDialog>
+        public class NNedi3ChromaScaler : RenderChainUi<NNedi3Chroma, NNedi3ChromaConfigDialog>
         {
             protected override string ConfigFileName
             {
