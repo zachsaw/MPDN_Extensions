@@ -45,6 +45,8 @@
             // 
             // comboBoxChroma
             // 
+            this.comboBoxChroma.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxChroma.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxChroma.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxChroma.FormattingEnabled = true;

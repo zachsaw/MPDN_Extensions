@@ -76,7 +76,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
 
         [YAXDontSerialize]
-        public Framework.RenderChain.RenderChain Chain
+        public RenderChain Chain
         {
             get { return Script.Chain; }
         }

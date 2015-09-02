@@ -55,7 +55,7 @@ namespace Mpdn.Extensions.Framework.Controls
         {
             comboBoxChroma.SelectedIndex = 0;
             int i = 0;
-            foreach (ComboBoxItem<Preset> item in comboBoxChroma.Items)
+            foreach (ComboBoxItem<ChromaScalerPreset> item in comboBoxChroma.Items)
             {
                 if (item.Value.Script.Descriptor.Guid == selected)
                 {
