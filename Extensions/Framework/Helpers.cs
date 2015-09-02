@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,19 +22,13 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Cudafy;
-using Cudafy.Host;
-using Cudafy.Translator;
 using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Config;
 using Mpdn.DirectShow;
-using Mpdn.RenderScript;
 using Mpdn.Extensions.Framework.Config;
-using Control = System.Windows.Forms.Control;
-using WaveFormatExtensible = DirectShowLib.WaveFormatExtensible;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework
 {
@@ -42,19 +37,15 @@ namespace Mpdn.Extensions.Framework
         public static void Dispose(object obj)
         {
             var disposable = obj as IDisposable;
-            if (disposable != null)
-            {
-                disposable.Dispose();
-            }
+            if (disposable == null) return;
+            disposable.Dispose();
         }
 
         public static void Dispose<T>(ref T obj) where T : class, IDisposable
         {
-            if (obj != null)
-            {
-                obj.Dispose();
-                obj = default(T);
-            }
+            if (obj == null) return;
+            obj.Dispose();
+            obj = default(T);
         }
     }
 
@@ -102,20 +93,14 @@ namespace Mpdn.Extensions.Framework
             string result;
 
             var config = new MemConfig<TSettings>(settings);
-            if (config.SaveToString(out result))
-                return result;
-            else
-                return null;
+            return config.SaveToString(out result) ? result : null;
         }
 
         public static TSettings LoadFromString<TSettings>(string input)
             where TSettings : class, new()
         {
             var config = new MemConfig<TSettings>();
-            if (config.LoadFromString(input))
-                return config.Config;
-            else
-                return null;
+            return config.LoadFromString(input) ? config.Config : null;
         }
     }
 
@@ -290,162 +275,6 @@ namespace Mpdn.Extensions.Framework
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
-    }
-
-    public enum AudioSampleFormat
-    {
-        Unknown,
-        Float,
-        Double,
-        Pcm8,
-        Pcm16,
-        Pcm24,
-        Pcm32
-    }
-
-    public static class AudioHelpers
-    {
-        private const int S_OK = 0;
-
-        private const short WAVE_FORMAT_PCM = 1;
-        private const short WAVE_FORMAT_IEEE_FLOAT = 3;
-        private const short WAVE_FORMAT_EXTENSIBLE = unchecked((short) 0xFFFE);
-
-        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
-        public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
-
-        public static void CopySample(IMediaSample src, IMediaSample dest, bool copySamples)
-        {
-            var sourceSize = src.GetActualDataLength();
-
-            if (copySamples)
-            {
-                IntPtr sourceBuffer;
-                src.GetPointer(out sourceBuffer);
-
-                IntPtr destBuffer;
-                dest.GetPointer(out destBuffer);
-
-                CopyMemory(destBuffer, sourceBuffer, sourceSize);
-            }
-
-            // Copy the sample times
-            long start, end;
-
-            if (src.GetTime(out start, out end) == S_OK)
-            {
-                dest.SetTime(start, end);
-            }
-
-            if (src.GetMediaTime(out start, out end) == S_OK)
-            {
-                dest.SetMediaTime(start, end);
-            }
-
-            // Copy the media type
-            AMMediaType mediaType;
-            src.GetMediaType(out mediaType);
-            dest.SetMediaType(mediaType);
-            DsUtils.FreeAMMediaType(mediaType);
-
-            dest.SetSyncPoint(src.IsSyncPoint() == S_OK);
-            dest.SetPreroll(src.IsPreroll() == S_OK);
-            dest.SetDiscontinuity(src.IsDiscontinuity() == S_OK);
-
-            // Copy the actual data length
-            dest.SetActualDataLength(sourceSize);
-        }
-
-        public static AudioSampleFormat SampleFormat(this WaveFormatExtensible format)
-        {
-            return GetSampleFormat(format);
-        }
-
-        public static AudioSampleFormat GetSampleFormat(WaveFormatExtensible format)
-        {
-            if (format.nSamplesPerSec == 0)
-                return AudioSampleFormat.Unknown;
-
-            switch (format.wFormatTag)
-            {
-                case WAVE_FORMAT_IEEE_FLOAT:
-                    switch (format.wBitsPerSample)
-                    {
-                        case 32: return AudioSampleFormat.Float;
-                        case 64: return AudioSampleFormat.Double;
-                    }
-                    break;
-                case WAVE_FORMAT_PCM:
-                    switch (format.wBitsPerSample)
-                    {
-                        case 8:  return AudioSampleFormat.Pcm8;
-                        case 16: return AudioSampleFormat.Pcm16;
-                        case 24: return AudioSampleFormat.Pcm24;
-                        case 32: return AudioSampleFormat.Pcm32;
-                    }
-                    break;
-                case WAVE_FORMAT_EXTENSIBLE:
-                    if (format.SubFormat == MediaSubType.IEEE_FLOAT)
-                    {
-                        switch (format.wBitsPerSample)
-                        {
-                            case 32: return AudioSampleFormat.Float;
-                            case 64: return AudioSampleFormat.Double;
-                        }
-                    }
-                    else if (format.SubFormat == MediaSubType.PCM)
-                    {
-                        switch (format.wBitsPerSample)
-                        {
-                            case 8:  return AudioSampleFormat.Pcm8;
-                            case 16: return AudioSampleFormat.Pcm16;
-                            case 24: return AudioSampleFormat.Pcm24;
-                            case 32: return AudioSampleFormat.Pcm32;
-                        }
-                    }
-                    break;
-            }
-
-            return AudioSampleFormat.Unknown;
-        }
-
-        public static bool IsBitStreaming(this WaveFormatExtensible format)
-        {
-            return IsBitstreaming(format);
-        }
-
-        public static bool IsBitstreaming(WaveFormatExtensible format)
-        {
-            return GetSampleFormat(format) == AudioSampleFormat.Unknown;
-        }
-
-        public static void LoadAudioKernel(this GPGPU gpu, Type type, params Type[] types)
-        {
-            gpu.LoadModule(GetCudafyModule(type, types), false);
-        }
-
-        private static CudafyModule GetCudafyModule(Type type, params Type[] types)
-        {
-            var joined = string.Join(",", type.ToString(), string.Join(",", types.Select(t => t.ToString()))).TrimEnd(',');
-            var filename = string.Format("{0}.cdfy", Path.Combine(AudioKernelCacheRoot, joined));
-            var km = CudafyModule.TryDeserialize(filename);
-            if (km != null && km.TryVerifyChecksums()) 
-                return km;
-
-            var ts = new Type[types.Length + 1];
-            ts[0] = type;
-            Array.Copy(types, 0, ts, 1, types.Length);
-            km = CudafyTranslator.Cudafy(eArchitecture.OpenCL, ts);
-            Directory.CreateDirectory(AudioKernelCacheRoot);
-            km.Serialize(filename);
-
-            return km;
-        }
-
-        private static string AudioKernelCacheRoot
-        {
-            get { return AppPath.GetUserDataDir("CudafyCache"); }
         }
     }
 

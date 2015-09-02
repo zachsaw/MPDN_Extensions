@@ -16,11 +16,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Mpdn.RenderScript;
-using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
 using SharpDX;
-
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
@@ -65,8 +62,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
             if (result.OutputSize != OutputSize)
                 throw new InvalidOperationException("Chroma scaler isn't allowed to change image size.");
-            else
-                return result;
+
+            return result;
         }
 
         public override TextureSize OutputSize
