@@ -100,7 +100,20 @@ struct PS_IN
 };
 
 /* Handle Input */
-#define Get(x,y) (inputTexture.Sample(ss,tex+float2(ppx*(x),ppy*(y)))[0])
+#define Get_(x,y) (inputTexture.Sample(ss,tex+float2(ppx*(x),ppy*(y))))
+
+#ifdef CHROMA_U
+#define Get(x,y) (Get_(x,y)[1])
+#define GetResult(x) (float4(1,x,1,1))
+#else
+#ifdef CHROMA_V
+#define Get(x,y) (Get_(x,y)[2])
+#define GetResult(x) (float4(1,1,x,1))
+#else
+#define Get(x,y) (Get_(x,y)[0])
+#define GetResult(x) (float4(x,1,1,1))
+#endif
+#endif
 
 /* Main code */
 float4 main( PS_IN In ) : SV_TARGET
@@ -177,8 +190,8 @@ float4 main( PS_IN In ) : SV_TARGET
     }
 
 #ifdef EXTRA_CHECKS
-    return float4(saturate(mstd[0] + (wsum > 1e-10 ? (5*vsum/wsum)*mstd[1] : 0.0)), 1, 1, 1);
+    return GetResult(saturate(mstd[0] + (wsum > 1e-10 ? (5*vsum/wsum)*mstd[1] : 0.0)));
 #else
-    return float4(saturate(mstd[0] + (5*vsum/wsum)*mstd[1]), 1, 1, 1);
+    return GetResult(saturate(mstd[0] + (5*vsum/wsum)*mstd[1]));
 #endif
 }
