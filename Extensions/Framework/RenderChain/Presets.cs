@@ -211,18 +211,22 @@ namespace Mpdn.Extensions.Framework.RenderChain
     {
         public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
         {
-            IChromaScaler chromaScaler;
-
-            try
-            {
-                chromaScaler = (IChromaScaler)Chain;
-            }
-            catch (InvalidCastException e)
-            {
-                throw new InvalidOperationException("Renderscript is not a Chroma Scaler.", e);
-            }
+            IChromaScaler chromaScaler = Chain as IChromaScaler ?? new DefaultChromaScaler();
 
             return chromaScaler.CreateChromaFilter(lumaInput, chromaInput, chromaOffset);
+        }
+    }
+
+    public static class ChromaScalerPresetHelper
+    {
+        public static ChromaScalerPreset MakeNewChromaScalerPreset(this IRenderChainUi renderScript, string name = null)
+        {
+            return renderScript.CreateNew().ToChromaScalerPreset();
+        }
+
+        public static ChromaScalerPreset ToChromaScalerPreset(this IRenderChainUi renderScript, string name = null)
+        {
+            return new ChromaScalerPreset { Name = name ?? renderScript.Descriptor.Name, Script = renderScript };
         }
     }
 }

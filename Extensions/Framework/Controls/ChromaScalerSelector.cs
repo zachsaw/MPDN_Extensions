@@ -73,13 +73,13 @@ namespace Mpdn.Extensions.Framework.Controls
                 .Select(
                     x =>
                         scalers.FirstOrDefault(s => s.Script.Descriptor.Guid == x.Descriptor.Guid) ??
-                        x.MakeNewPreset())
+                        x.MakeNewChromaScalerPreset())
                 .Where(x => x.Chain.GetType().GetInterfaces().Contains(typeof (IChromaScaler)))
                 .OrderBy(x => x.Name);
 
             var dataSource =
-                (new[] {RenderChainUi.Identity.ToPreset()}).Concat(chromaScalers)
-                    .Select(x => new ComboBoxItem<Preset>(x.Name, x))
+                (new[] {RenderChainUi.Identity.ToChromaScalerPreset()}).Concat(chromaScalers)
+                    .Select(x => new ComboBoxItem<ChromaScalerPreset>(x.Name, x))
                     .ToList();
 
             boxChroma.DataSource = dataSource;
