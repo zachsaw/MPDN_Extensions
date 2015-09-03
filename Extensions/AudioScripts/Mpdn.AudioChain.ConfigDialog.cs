@@ -19,23 +19,26 @@ using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.AudioScripts
 {
-    public partial class AudioChainConfigDialog : AudioChainConfigDialogBase
+    namespace Mpdn
     {
-        public AudioChainConfigDialog()
+        public partial class AudioChainConfigDialog : AudioChainConfigDialogBase
         {
-            InitializeComponent();
+            public AudioChainConfigDialog()
+            {
+                InitializeComponent();
+            }
+
+            protected override void LoadSettings()
+            {
+            }
+
+            protected override void SaveSettings()
+            {
+            }
         }
 
-        protected override void LoadSettings()
+        public class AudioChainConfigDialogBase : ScriptConfigDialog<AudioChainSettings>
         {
         }
-
-        protected override void SaveSettings()
-        {
-        }
-    }
-
-    public class AudioChainConfigDialogBase : ScriptConfigDialog<AudioChainSettings>
-    {
     }
 }

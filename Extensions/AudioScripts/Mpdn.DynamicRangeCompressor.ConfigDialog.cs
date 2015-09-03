@@ -19,33 +19,36 @@ using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.AudioScripts
 {
-    public partial class DynamicRangeCompressorConfigDialog : DynamicRangeCompressorConfigDialogBase
+    namespace Mpdn
     {
-        public DynamicRangeCompressorConfigDialog()
+        public partial class DynamicRangeCompressorConfigDialog : DynamicRangeCompressorConfigDialogBase
         {
-            InitializeComponent();
+            public DynamicRangeCompressorConfigDialog()
+            {
+                InitializeComponent();
+            }
+
+            protected override void LoadSettings()
+            {
+                textBoxThreshold.Value = (decimal) Settings.ThresholddB;
+                textBoxGain.Value = (decimal) Settings.MakeupGaindB;
+                textBoxRatio.Value = (decimal) Settings.Ratio;
+                textBoxAttack.Value = (decimal) (Settings.AttackMs/1000.0);
+                textBoxRelease.Value = (decimal) (Settings.ReleaseMs/1000.0);
+            }
+
+            protected override void SaveSettings()
+            {
+                Settings.ThresholddB = (float) textBoxThreshold.Value;
+                Settings.MakeupGaindB = (float) textBoxGain.Value;
+                Settings.Ratio = (float) textBoxRatio.Value;
+                Settings.AttackMs = (int) (textBoxAttack.Value*1000);
+                Settings.ReleaseMs = (int) (textBoxRelease.Value*1000);
+            }
         }
 
-        protected override void LoadSettings()
+        public class DynamicRangeCompressorConfigDialogBase : ScriptConfigDialog<DynamicRangeCompressorSettings>
         {
-            textBoxThreshold.Value = (decimal) Settings.ThresholddB;
-            textBoxGain.Value = (decimal) Settings.MakeupGaindB;
-            textBoxRatio.Value = (decimal) Settings.Ratio;
-            textBoxAttack.Value = (decimal) (Settings.AttackMs/1000.0);
-            textBoxRelease.Value = (decimal) (Settings.ReleaseMs/1000.0);
         }
-
-        protected override void SaveSettings()
-        {
-            Settings.ThresholddB = (float) textBoxThreshold.Value;
-            Settings.MakeupGaindB = (float) textBoxGain.Value;
-            Settings.Ratio = (float) textBoxRatio.Value;
-            Settings.AttackMs = (int) (textBoxAttack.Value*1000);
-            Settings.ReleaseMs = (int) (textBoxRelease.Value*1000);
-        }
-    }
-
-    public class DynamicRangeCompressorConfigDialogBase : ScriptConfigDialog<DynamicRangeCompressorSettings>
-    {
     }
 }

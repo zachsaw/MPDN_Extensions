@@ -20,31 +20,34 @@ using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.AudioScripts
 {
-    public class AudioChainSettings
+    namespace Mpdn
     {
-        public AudioChainSettings()
+        public class AudioChainSettings
         {
-        }
-    }
-
-    public class AudioChain : AudioScript<AudioChainSettings, AudioChainConfigDialog>
-    {
-        public override ExtensionUiDescriptor Descriptor
-        {
-            get
+            public AudioChainSettings()
             {
-                return new ExtensionUiDescriptor
-                {
-                    Guid = new Guid("92E3FD70-C663-4C94-9B17-2EC10D9EA8CC"),
-                    Name = "AudioChain",
-                    Description = "Audio script chaining"
-                };
             }
         }
 
-        protected override void Process(float[,] samples, short channels, int sampleCount)
+        public class AudioChain : AudioScript<AudioChainSettings, AudioChainConfigDialog>
         {
-            throw new NotImplementedException();
+            public override ExtensionUiDescriptor Descriptor
+            {
+                get
+                {
+                    return new ExtensionUiDescriptor
+                    {
+                        Guid = new Guid("92E3FD70-C663-4C94-9B17-2EC10D9EA8CC"),
+                        Name = "AudioChain",
+                        Description = "Audio script chaining"
+                    };
+                }
+            }
+
+            protected override void Process(float[,] samples, short channels, int sampleCount)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

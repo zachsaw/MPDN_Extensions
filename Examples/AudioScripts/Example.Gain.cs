@@ -21,52 +21,55 @@ using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Examples.AudioScripts
 {
-    public class Gain : Extensions.Framework.AudioScript
+    namespace Example
     {
-        public override ExtensionUiDescriptor Descriptor
+        public class Gain : Extensions.Framework.AudioScript
         {
-            get
+            public override ExtensionUiDescriptor Descriptor
             {
-                return new ExtensionUiDescriptor
+                get
                 {
-                    Guid = new Guid("02C441FE-1592-41A2-9901-5FC41DEAA3D2"),
-                    Name = "Gain",
-                    Description = "Amplifies audio by 2x with OpenCL"
-                };
-            }
-        }
-
-        protected override void OnLoadAudioKernel()
-        {
-            Gpu.LoadAudioKernel(typeof(Gain));
-        }
-
-        protected override void Process(float[,] samples, short channels, int sampleCount)
-        {
-            const int threadCount = 512;
-
-            // Note: samples resides on OpenCL device memory
-            Gpu.Launch(threadCount, 1).Amplify(samples, 2.0f);
-        }
-
-        [Cudafy]
-        public static void Amplify(GThread thread, float[,] samples, float amplication)
-        {
-            var channels = samples.GetLength(0);
-            var sampleCount = samples.GetLength(1);
-
-            int tid = thread.blockIdx.x;
-            while (tid < sampleCount)
-            {
-                for (int i = 0; i < channels; i++)
-                {
-                    // The framework will clip anything that is overamplified
-                    // so quality won't be the best but this is just an example
-                    var s = samples[i, tid];
-                    s *= amplication;
-                    samples[i, tid] = s;
+                    return new ExtensionUiDescriptor
+                    {
+                        Guid = new Guid("02C441FE-1592-41A2-9901-5FC41DEAA3D2"),
+                        Name = "Gain",
+                        Description = "Amplifies audio by 2x with OpenCL"
+                    };
                 }
-                tid += thread.gridDim.x;
+            }
+
+            protected override void OnLoadAudioKernel()
+            {
+                Gpu.LoadAudioKernel(typeof (Gain));
+            }
+
+            protected override void Process(float[,] samples, short channels, int sampleCount)
+            {
+                const int threadCount = 512;
+
+                // Note: samples resides on OpenCL device memory
+                Gpu.Launch(threadCount, 1).Amplify(samples, 2.0f);
+            }
+
+            [Cudafy]
+            public static void Amplify(GThread thread, float[,] samples, float amplication)
+            {
+                var channels = samples.GetLength(0);
+                var sampleCount = samples.GetLength(1);
+
+                int tid = thread.blockIdx.x;
+                while (tid < sampleCount)
+                {
+                    for (int i = 0; i < channels; i++)
+                    {
+                        // The framework will clip anything that is overamplified
+                        // so quality won't be the best but this is just an example
+                        var s = samples[i, tid];
+                        s *= amplication;
+                        samples[i, tid] = s;
+                    }
+                    tid += thread.gridDim.x;
+                }
             }
         }
     }
