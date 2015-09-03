@@ -58,6 +58,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override IFilter<ITexture2D> Optimize()
         {
+            // TODO: Should we skip the following if chroma is already the size of luma?
             var result = ChromaScaler.CreateChromaFilter(Luma, Chroma, ChromaOffset).ConvertToRgb();
 
             if (result.OutputSize != OutputSize)
@@ -78,7 +79,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public void SetSize(TextureSize size)
         {
-            Luma = Luma.SetSize(size);
+            // BUG: The following makes chroma (from source) scale to an arbitrary size, which would not work with chroma doublers
+            //Luma = Luma.SetSize(size);
         }
     }
 }
