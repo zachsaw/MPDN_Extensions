@@ -306,14 +306,17 @@ namespace Mpdn.Extensions.Framework.Controls
             if (listViewChain.SelectedItems.Count > 0)
             {
                 var item = listViewChain.SelectedItems[0];
-                var preset = (Preset)item.Tag;
+                var preset = (Preset) item.Tag;
 
                 m_SelectedIndex = item.Index;
                 item.Text = SELECTED_INDICATOR_STR;
                 NameBox.Text = preset.Name;
             }
             else
+            {
                 NameBox.Text = string.Empty;
+                m_SelectedIndex = -1;
+            }
 
             UpdateButtons();
         }
@@ -731,12 +734,13 @@ namespace Mpdn.Extensions.Framework.Controls
 
         private void MenuChainPasteClicked(object sender, EventArgs e)
         {
-            if (Clipboard.ContainsText())
+            if (!Clipboard.ContainsText()) return;
+
+            var text = Clipboard.GetText();
+            var items = ConfigHelper.LoadFromString<List<Preset>>(text);
+            if (items != null)
             {
-                var text = Clipboard.GetText();
-                var items = ConfigHelper.LoadFromString<List<Preset>>(text);
-                if (items != null)
-                    AddPresets(items, SelectedIndex+1);
+                AddPresets(items, SelectedIndex + 1);
             }
         }
 
