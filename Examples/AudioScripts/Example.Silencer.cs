@@ -19,33 +19,36 @@ using System;
 
 namespace Mpdn.Examples.AudioScripts
 {
-    public class Silencer : Extensions.Framework.AudioScript
+    namespace Example
     {
-        private const int CHANNEL_TO_SILENT = 0;
-
-        public override ExtensionUiDescriptor Descriptor
+        public class Silencer : Extensions.Framework.AudioScript
         {
-            get
+            private const int CHANNEL_TO_SILENT = 0;
+
+            public override ExtensionUiDescriptor Descriptor
             {
-                return new ExtensionUiDescriptor
+                get
                 {
-                    Guid = new Guid("93C32135-7F75-44EE-91C9-6BDF905D76BB"),
-                    Name = "Silencer",
-                    Description = "Simple audio silencer example"
-                };
+                    return new ExtensionUiDescriptor
+                    {
+                        Guid = new Guid("93C32135-7F75-44EE-91C9-6BDF905D76BB"),
+                        Name = "Silencer",
+                        Description = "Simple audio silencer example"
+                    };
+                }
             }
-        }
 
-        protected override bool CpuOnly
-        {
-            get { return true; }
-        }
-
-        protected override void Process(float[,] samples, short channels, int sampleCount)
-        {
-            for (int i = 0; i < sampleCount; i++)
+            protected override bool CpuOnly
             {
-                samples[CHANNEL_TO_SILENT, i] = 0;
+                get { return true; }
+            }
+
+            protected override void Process(float[,] samples, short channels, int sampleCount)
+            {
+                for (int i = 0; i < sampleCount; i++)
+                {
+                    samples[CHANNEL_TO_SILENT, i] = 0;
+                }
             }
         }
     }

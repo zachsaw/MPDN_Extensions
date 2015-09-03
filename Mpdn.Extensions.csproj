@@ -96,9 +96,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <Compile Include="Examples\AudioScripts\Gargle.cs" />
-    <Compile Include="Examples\AudioScripts\Gain.cs" />
-    <Compile Include="Examples\AudioScripts\Silencer.cs" />
+    <Compile Include="Examples\AudioScripts\Example.Gargle.cs" />
+    <Compile Include="Examples\AudioScripts\Example.Gain.cs" />
+    <Compile Include="Examples\AudioScripts\Example.Silencer.cs" />
     <Compile Include="Examples\RenderScripts\Example.Basic.cs" />
     <Compile Include="Examples\RenderScripts\Example.CustomTextures.cs" />
     <Compile Include="Examples\RenderScripts\Example.DirectCompute.cs" />
@@ -114,14 +114,21 @@
     <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\AudioScripts\DynamicRangeCompressor.ConfigDialog.cs">
+    <Compile Include="Extensions\AudioScripts\Mpdn.AudioChain.cs" />
+    <Compile Include="Extensions\AudioScripts\Mpdn.AudioChain.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Extensions\AudioScripts\DynamicRangeCompressor.ConfigDialog.designer.cs">
-      <DependentUpon>DynamicRangeCompressor.ConfigDialog.cs</DependentUpon>
+    <Compile Include="Extensions\AudioScripts\Mpdn.AudioChain.ConfigDialog.designer.cs">
+      <DependentUpon>Mpdn.AudioChain.ConfigDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\AudioScripts\DynamicRangeCompressor.cs" />
-    <Compile Include="Extensions\AudioScripts\Reclock.cs" />
+    <Compile Include="Extensions\AudioScripts\Mpdn.DynamicRangeCompressor.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\AudioScripts\Mpdn.DynamicRangeCompressor.ConfigDialog.designer.cs">
+      <DependentUpon>Mpdn.DynamicRangeCompressor.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\AudioScripts\Mpdn.DynamicRangeCompressor.cs" />
+    <Compile Include="Extensions\AudioScripts\Mpdn.Reclock.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />

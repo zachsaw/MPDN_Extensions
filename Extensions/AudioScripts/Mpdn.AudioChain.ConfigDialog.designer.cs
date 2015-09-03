@@ -14,37 +14,38 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-
-namespace Mpdn.Extensions.Framework.Controls
+namespace Mpdn.Extensions.AudioScripts
 {
-    partial class RenderChainList
+    namespace Mpdn
     {
-        /// <summary> 
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
-
-        /// <summary> 
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
+        partial class AudioChainConfigDialog
         {
-            if (disposing && (components != null))
+            /// <summary> 
+            /// Required designer variable.
+            /// </summary>
+            private System.ComponentModel.IContainer components = null;
+
+            /// <summary> 
+            /// Clean up any resources being used.
+            /// </summary>
+            /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+            protected override void Dispose(bool disposing)
             {
-                components.Dispose();
+                if (disposing && (components != null))
+                {
+                    components.Dispose();
+                }
+                base.Dispose(disposing);
             }
-            base.Dispose(disposing);
-        }
 
-        #region Component Designer generated code
+            #region Component Designer generated code
 
-        /// <summary> 
-        /// Required method for Designer support - do not modify 
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
+            /// <summary> 
+            /// Required method for Designer support - do not modify 
+            /// the contents of this method with the code editor.
+            /// </summary>
+            private void InitializeComponent()
+            {
             this.components = new System.ComponentModel.Container();
             this.splitContainer = new System.Windows.Forms.SplitContainer();
             this.splitter1 = new System.Windows.Forms.Splitter();
@@ -64,12 +65,7 @@ namespace Mpdn.Extensions.Framework.Controls
             this.menuRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.menuClear = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSelectAll = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuGroup = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuUngroup = new System.Windows.Forms.ToolStripMenuItem();
             this.buttonConfigure = new System.Windows.Forms.Button();
-            this.NameLable = new System.Windows.Forms.Label();
-            this.NameBox = new System.Windows.Forms.TextBox();
             this.panelReorder = new System.Windows.Forms.Panel();
             this.buttonUp = new System.Windows.Forms.Button();
             this.buttonDown = new System.Windows.Forms.Button();
@@ -81,6 +77,8 @@ namespace Mpdn.Extensions.Framework.Controls
             this.menuAdd = new System.Windows.Forms.ToolStripMenuItem();
             this.buttonAdd = new System.Windows.Forms.Button();
             this.labelCopyright = new System.Windows.Forms.Label();
+            this.buttonCancel = new System.Windows.Forms.Button();
+            this.buttonOk = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
             this.splitContainer.Panel2.SuspendLayout();
@@ -92,8 +90,7 @@ namespace Mpdn.Extensions.Framework.Controls
             // 
             // splitContainer
             // 
-            this.splitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer.Location = new System.Drawing.Point(18, 18);
             this.splitContainer.Margin = new System.Windows.Forms.Padding(0);
             this.splitContainer.Name = "splitContainer";
             // 
@@ -104,8 +101,6 @@ namespace Mpdn.Extensions.Framework.Controls
             this.splitContainer.Panel1.Controls.Add(this.buttonClear);
             this.splitContainer.Panel1.Controls.Add(this.listViewChain);
             this.splitContainer.Panel1.Controls.Add(this.buttonConfigure);
-            this.splitContainer.Panel1.Controls.Add(this.NameLable);
-            this.splitContainer.Panel1.Controls.Add(this.NameBox);
             this.splitContainer.Panel1.Controls.Add(this.panelReorder);
             this.splitContainer.Panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             // 
@@ -115,8 +110,8 @@ namespace Mpdn.Extensions.Framework.Controls
             this.splitContainer.Panel2.Controls.Add(this.buttonAdd);
             this.splitContainer.Panel2.Controls.Add(this.labelCopyright);
             this.splitContainer.Panel2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.splitContainer.Size = new System.Drawing.Size(877, 551);
-            this.splitContainer.SplitterDistance = 432;
+            this.splitContainer.Size = new System.Drawing.Size(848, 497);
+            this.splitContainer.SplitterDistance = 416;
             this.splitContainer.TabIndex = 10;
             this.splitContainer.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitterMoved);
             // 
@@ -124,7 +119,7 @@ namespace Mpdn.Extensions.Framework.Controls
             // 
             this.splitter1.Location = new System.Drawing.Point(0, 0);
             this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(3, 551);
+            this.splitter1.Size = new System.Drawing.Size(3, 497);
             this.splitter1.TabIndex = 7;
             this.splitter1.TabStop = false;
             // 
@@ -132,10 +127,10 @@ namespace Mpdn.Extensions.Framework.Controls
             // 
             this.buttonMinus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonMinus.Enabled = false;
-            this.buttonMinus.Location = new System.Drawing.Point(402, 524);
+            this.buttonMinus.Location = new System.Drawing.Point(386, 470);
             this.buttonMinus.Name = "buttonMinus";
             this.buttonMinus.Size = new System.Drawing.Size(27, 24);
-            this.buttonMinus.TabIndex = 8;
+            this.buttonMinus.TabIndex = 9;
             this.buttonMinus.Text = "-";
             this.buttonMinus.UseVisualStyleBackColor = true;
             this.buttonMinus.Click += new System.EventHandler(this.ButtonMinusClicked);
@@ -144,10 +139,10 @@ namespace Mpdn.Extensions.Framework.Controls
             // 
             this.buttonClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonClear.Enabled = false;
-            this.buttonClear.Location = new System.Drawing.Point(369, 524);
+            this.buttonClear.Location = new System.Drawing.Point(353, 470);
             this.buttonClear.Name = "buttonClear";
             this.buttonClear.Size = new System.Drawing.Size(27, 24);
-            this.buttonClear.TabIndex = 7;
+            this.buttonClear.TabIndex = 8;
             this.buttonClear.Text = "c";
             this.buttonClear.UseVisualStyleBackColor = true;
             this.buttonClear.Click += new System.EventHandler(this.ButtonClearClicked);
@@ -167,8 +162,8 @@ namespace Mpdn.Extensions.Framework.Controls
             this.listViewChain.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewChain.Location = new System.Drawing.Point(3, 3);
             this.listViewChain.Name = "listViewChain";
-            this.listViewChain.Size = new System.Drawing.Size(426, 515);
-            this.listViewChain.TabIndex = 2;
+            this.listViewChain.Size = new System.Drawing.Size(410, 461);
+            this.listViewChain.TabIndex = 4;
             this.listViewChain.UseCompatibleStateImageBehavior = false;
             this.listViewChain.View = System.Windows.Forms.View.Details;
             this.listViewChain.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.ItemMoveDrag);
@@ -204,20 +199,15 @@ namespace Mpdn.Extensions.Framework.Controls
             this.toolStripSeparator1,
             this.menuRemove,
             this.menuClear,
-            this.menuSelectAll,
-            this.toolStripSeparator2,
-            this.menuGroup,
-            this.menuUngroup});
+            this.menuSelectAll});
             this.menuChain.Name = "contextMenuStrip1";
-            this.menuChain.Size = new System.Drawing.Size(165, 220);
-            this.menuChain.Opening += new System.ComponentModel.CancelEventHandler(this.MenuChainOpening);
+            this.menuChain.Size = new System.Drawing.Size(165, 170);
             // 
             // menuConfigure
             // 
             this.menuConfigure.Name = "menuConfigure";
             this.menuConfigure.Size = new System.Drawing.Size(164, 22);
             this.menuConfigure.Text = "Configure...";
-            this.menuConfigure.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuConfigureItemClicked);
             this.menuConfigure.Click += new System.EventHandler(this.ButtonConfigureClicked);
             // 
             // toolStripSeparator3
@@ -277,66 +267,24 @@ namespace Mpdn.Extensions.Framework.Controls
             this.menuSelectAll.Text = "Select All";
             this.menuSelectAll.Click += new System.EventHandler(this.SelectAll);
             // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(161, 6);
-            // 
-            // menuGroup
-            // 
-            this.menuGroup.Name = "menuGroup";
-            this.menuGroup.Size = new System.Drawing.Size(164, 22);
-            this.menuGroup.Text = "Group";
-            this.menuGroup.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.MenuChainGroupClicked);
-            // 
-            // menuUngroup
-            // 
-            this.menuUngroup.Name = "menuUngroup";
-            this.menuUngroup.Size = new System.Drawing.Size(164, 22);
-            this.menuUngroup.Text = "Ungroup";
-            this.menuUngroup.Click += new System.EventHandler(this.MenuChainUngroupClicked);
-            // 
             // buttonConfigure
             // 
             this.buttonConfigure.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonConfigure.Enabled = false;
-            this.buttonConfigure.Location = new System.Drawing.Point(3, 524);
+            this.buttonConfigure.Location = new System.Drawing.Point(3, 470);
             this.buttonConfigure.Name = "buttonConfigure";
             this.buttonConfigure.Size = new System.Drawing.Size(75, 23);
-            this.buttonConfigure.TabIndex = 3;
+            this.buttonConfigure.TabIndex = 5;
             this.buttonConfigure.Text = "Configure...";
             this.buttonConfigure.UseVisualStyleBackColor = true;
             this.buttonConfigure.Click += new System.EventHandler(this.ButtonConfigureClicked);
-            // 
-            // NameLable
-            // 
-            this.NameLable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.NameLable.AutoSize = true;
-            this.NameLable.Location = new System.Drawing.Point(138, 530);
-            this.NameLable.Name = "NameLable";
-            this.NameLable.Size = new System.Drawing.Size(35, 13);
-            this.NameLable.TabIndex = 11;
-            this.NameLable.Text = "Name";
-            // 
-            // NameBox
-            // 
-            this.NameBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.NameBox.Location = new System.Drawing.Point(179, 526);
-            this.NameBox.Name = "NameBox";
-            this.NameBox.Size = new System.Drawing.Size(184, 20);
-            this.NameBox.TabIndex = 6;
-            this.NameBox.TextChanged += new System.EventHandler(this.NameChanged);
-            this.NameBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NameKeyDown);
-            this.NameBox.Leave += new System.EventHandler(this.NameLeave);
-            this.NameBox.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.NamePreviewKeyDown);
             // 
             // panelReorder
             // 
             this.panelReorder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.panelReorder.Controls.Add(this.buttonUp);
             this.panelReorder.Controls.Add(this.buttonDown);
-            this.panelReorder.Location = new System.Drawing.Point(84, 524);
+            this.panelReorder.Location = new System.Drawing.Point(84, 470);
             this.panelReorder.Name = "panelReorder";
             this.panelReorder.Size = new System.Drawing.Size(48, 24);
             this.panelReorder.TabIndex = 6;
@@ -352,7 +300,7 @@ namespace Mpdn.Extensions.Framework.Controls
             this.buttonUp.Location = new System.Drawing.Point(0, 0);
             this.buttonUp.Name = "buttonUp";
             this.buttonUp.Size = new System.Drawing.Size(24, 24);
-            this.buttonUp.TabIndex = 4;
+            this.buttonUp.TabIndex = 6;
             this.buttonUp.Text = "▲";
             this.buttonUp.UseVisualStyleBackColor = true;
             this.buttonUp.Click += new System.EventHandler(this.ButtonUpClicked);
@@ -368,7 +316,7 @@ namespace Mpdn.Extensions.Framework.Controls
             this.buttonDown.Location = new System.Drawing.Point(24, 0);
             this.buttonDown.Name = "buttonDown";
             this.buttonDown.Size = new System.Drawing.Size(24, 24);
-            this.buttonDown.TabIndex = 5;
+            this.buttonDown.TabIndex = 7;
             this.buttonDown.Text = "▼";
             this.buttonDown.UseVisualStyleBackColor = true;
             this.buttonDown.Click += new System.EventHandler(this.ButtonDownClicked);
@@ -388,8 +336,8 @@ namespace Mpdn.Extensions.Framework.Controls
             this.listViewAvail.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewAvail.Location = new System.Drawing.Point(3, 3);
             this.listViewAvail.Name = "listViewAvail";
-            this.listViewAvail.Size = new System.Drawing.Size(435, 515);
-            this.listViewAvail.TabIndex = 0;
+            this.listViewAvail.Size = new System.Drawing.Size(422, 461);
+            this.listViewAvail.TabIndex = 2;
             this.listViewAvail.UseCompatibleStateImageBehavior = false;
             this.listViewAvail.View = System.Windows.Forms.View.Details;
             this.listViewAvail.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.ItemCopyDrag);
@@ -432,10 +380,10 @@ namespace Mpdn.Extensions.Framework.Controls
             // 
             this.buttonAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonAdd.Enabled = false;
-            this.buttonAdd.Location = new System.Drawing.Point(3, 524);
+            this.buttonAdd.Location = new System.Drawing.Point(3, 470);
             this.buttonAdd.Name = "buttonAdd";
             this.buttonAdd.Size = new System.Drawing.Size(27, 24);
-            this.buttonAdd.TabIndex = 1;
+            this.buttonAdd.TabIndex = 3;
             this.buttonAdd.Text = "+";
             this.buttonAdd.UseVisualStyleBackColor = true;
             this.buttonAdd.Click += new System.EventHandler(this.ButtonAddClicked);
@@ -444,23 +392,56 @@ namespace Mpdn.Extensions.Framework.Controls
             // 
             this.labelCopyright.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelCopyright.Location = new System.Drawing.Point(36, 523);
+            this.labelCopyright.Location = new System.Drawing.Point(36, 469);
             this.labelCopyright.Name = "labelCopyright";
-            this.labelCopyright.Size = new System.Drawing.Size(402, 24);
+            this.labelCopyright.Size = new System.Drawing.Size(389, 24);
             this.labelCopyright.TabIndex = 2;
             this.labelCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // RenderChainList
+            // buttonCancel
             // 
+            this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.buttonCancel.Location = new System.Drawing.Point(791, 521);
+            this.buttonCancel.Name = "buttonCancel";
+            this.buttonCancel.Size = new System.Drawing.Size(75, 23);
+            this.buttonCancel.TabIndex = 1;
+            this.buttonCancel.Text = "Cancel";
+            this.buttonCancel.UseVisualStyleBackColor = true;
+            // 
+            // buttonOk
+            // 
+            this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.buttonOk.Location = new System.Drawing.Point(710, 521);
+            this.buttonOk.Name = "buttonOk";
+            this.buttonOk.Size = new System.Drawing.Size(75, 23);
+            this.buttonOk.TabIndex = 0;
+            this.buttonOk.Text = "OK";
+            this.buttonOk.UseVisualStyleBackColor = true;
+            // 
+            // AudioChainConfigDialog
+            // 
+            this.AcceptButton = this.buttonOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.buttonCancel;
+            this.ClientSize = new System.Drawing.Size(884, 562);
             this.Controls.Add(this.splitContainer);
-            this.Name = "RenderChainList";
-            this.Size = new System.Drawing.Size(877, 551);
-            this.Load += new System.EventHandler(this.OnLoad);
+            this.Controls.Add(this.buttonCancel);
+            this.Controls.Add(this.buttonOk);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(289, 172);
+            this.Name = "AudioChainConfigDialog";
+            this.Padding = new System.Windows.Forms.Padding(15);
+            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "Audio Chain";
+            this.Load += new System.EventHandler(this.FormLoad);
             this.SizeChanged += new System.EventHandler(this.RenderChainListSizeChanged);
             this.splitContainer.Panel1.ResumeLayout(false);
-            this.splitContainer.Panel1.PerformLayout();
             this.splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).EndInit();
             this.splitContainer.ResumeLayout(false);
@@ -469,44 +450,42 @@ namespace Mpdn.Extensions.Framework.Controls
             this.menuAvail.ResumeLayout(false);
             this.ResumeLayout(false);
 
+            }
+
+            #endregion
+
+            private System.Windows.Forms.SplitContainer splitContainer;
+            private System.Windows.Forms.Splitter splitter1;
+            private System.Windows.Forms.Button buttonMinus;
+            private System.Windows.Forms.Button buttonClear;
+            private System.Windows.Forms.ListView listViewChain;
+            private System.Windows.Forms.ColumnHeader columnHeader4;
+            private System.Windows.Forms.ColumnHeader columnHeader5;
+            private System.Windows.Forms.ColumnHeader columnHeader6;
+            private System.Windows.Forms.Button buttonConfigure;
+            private System.Windows.Forms.Panel panelReorder;
+            private System.Windows.Forms.Button buttonUp;
+            private System.Windows.Forms.Button buttonDown;
+            private System.Windows.Forms.ListView listViewAvail;
+            private System.Windows.Forms.ColumnHeader columnHeader3;
+            private System.Windows.Forms.ColumnHeader columnHeader1;
+            private System.Windows.Forms.ColumnHeader columnHeader2;
+            private System.Windows.Forms.Button buttonAdd;
+            private System.Windows.Forms.Label labelCopyright;
+            private System.Windows.Forms.ContextMenuStrip menuChain;
+            private System.Windows.Forms.ToolStripMenuItem menuConfigure;
+            private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+            private System.Windows.Forms.ToolStripMenuItem menuRemove;
+            private System.Windows.Forms.ToolStripMenuItem menuClear;
+            private System.Windows.Forms.ToolStripMenuItem menuSelectAll;
+            private System.Windows.Forms.ContextMenuStrip menuAvail;
+            private System.Windows.Forms.ToolStripMenuItem menuAdd;
+            private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+            private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+            private System.Windows.Forms.ToolStripMenuItem cutToolStripMenuItem;
+            private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
+            private System.Windows.Forms.Button buttonCancel;
+            private System.Windows.Forms.Button buttonOk;
         }
-
-        #endregion
-
-        private System.Windows.Forms.SplitContainer splitContainer;
-        private System.Windows.Forms.Splitter splitter1;
-        private System.Windows.Forms.Button buttonMinus;
-        private System.Windows.Forms.Button buttonClear;
-        private System.Windows.Forms.ListView listViewChain;
-        private System.Windows.Forms.ColumnHeader columnHeader4;
-        private System.Windows.Forms.ColumnHeader columnHeader5;
-        private System.Windows.Forms.ColumnHeader columnHeader6;
-        private System.Windows.Forms.Button buttonConfigure;
-        private System.Windows.Forms.Label NameLable;
-        private System.Windows.Forms.TextBox NameBox;
-        private System.Windows.Forms.Panel panelReorder;
-        private System.Windows.Forms.Button buttonUp;
-        private System.Windows.Forms.Button buttonDown;
-        private System.Windows.Forms.ListView listViewAvail;
-        private System.Windows.Forms.ColumnHeader columnHeader3;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
-        private System.Windows.Forms.Button buttonAdd;
-        private System.Windows.Forms.Label labelCopyright;
-        private System.Windows.Forms.ContextMenuStrip menuChain;
-        private System.Windows.Forms.ToolStripMenuItem menuConfigure;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripMenuItem menuRemove;
-        private System.Windows.Forms.ToolStripMenuItem menuClear;
-        private System.Windows.Forms.ToolStripMenuItem menuSelectAll;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripMenuItem menuGroup;
-        private System.Windows.Forms.ToolStripMenuItem menuUngroup;
-        private System.Windows.Forms.ContextMenuStrip menuAvail;
-        private System.Windows.Forms.ToolStripMenuItem menuAdd;
-        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripMenuItem cutToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
     }
 }

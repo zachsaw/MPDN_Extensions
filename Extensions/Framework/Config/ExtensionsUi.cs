@@ -154,4 +154,55 @@ namespace Mpdn.Extensions.Framework.Config
 
         #endregion
     }
+
+    public static class ExtensionUi
+    {
+        public static IExtensionUi CreateNew(this IExtensionUi scriptUi)
+        {
+            var constructor = scriptUi.GetType().GetConstructor(Type.EmptyTypes);
+            if (constructor == null)
+            {
+                throw new EntryPointNotFoundException("ExtensionUi must implement parameter-less constructor");
+            }
+
+            return (IExtensionUi) constructor.Invoke(new object[0]);
+        }
+
+        public static IExtensionUi Identity = new IdentityExtensionUi();
+
+        private class IdentityExtensionUi : IExtensionUi
+        {
+            public void Initialize()
+            {
+            }
+
+            public void Destroy()
+            {
+            }
+
+            public bool HasConfigDialog()
+            {
+                return false;
+            }
+
+            public bool ShowConfigDialog(IWin32Window owner)
+            {
+                return false;
+            }
+
+            public int Version { get { return 1; } }
+            public ExtensionUiDescriptor Descriptor
+            {
+                get
+                {
+                    return new ExtensionUiDescriptor
+                    {
+                        Guid = Guid.Empty,
+                        Name = "None",
+                        Description = "Do nothing"
+                    };
+                }
+            }
+        }
+    }
 }

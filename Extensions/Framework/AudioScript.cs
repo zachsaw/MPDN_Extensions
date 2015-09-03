@@ -17,6 +17,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Cudafy;
 using Cudafy.Host;
 using DirectShowLib;
@@ -27,13 +28,199 @@ using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework
 {
+    public interface IAudioChain : IAudioScript
+    {
+        bool Process(AudioParam input, AudioParam output);
+    }
+
+    public struct AudioParam
+    {
+        public WaveFormatExtensible Format;
+        public IMediaSample Sample;
+
+        public AudioParam(WaveFormatExtensible format, IMediaSample sample)
+        {
+            Format = format;
+            Sample = sample;
+        }
+    }
+
+    public sealed class MediaSample : IMediaSample, IDisposable
+    {
+        private readonly IMediaSample m_Sample;
+        private readonly int m_Size;
+        private readonly IntPtr m_Buffer;
+        private readonly AMMediaType m_MediaType;
+
+        private int m_ActualDataLength;
+        private bool m_IsSyncPoint;
+        private bool m_IsPreroll;
+        private bool m_IsDiscontinuity;
+        private long m_TimeStart;
+        private long m_TimeEnd;
+        private long m_MediaTimeStart;
+        private long m_MediaTimeEnd;
+
+        private bool m_Disposed;
+
+        public MediaSample(IMediaSample sample)
+        {
+            m_Sample = sample;
+            m_Size = sample.GetSize();
+            m_ActualDataLength = sample.GetActualDataLength();
+            m_IsSyncPoint = sample.IsSyncPoint() == 0;
+            m_IsPreroll = sample.IsPreroll() == 0;
+            m_IsDiscontinuity = sample.IsDiscontinuity() == 0;
+            sample.GetMediaType(out m_MediaType);
+            sample.GetTime(out m_TimeStart, out m_TimeEnd);
+            sample.GetMediaTime(out m_MediaTimeStart, out m_MediaTimeEnd);
+            m_Buffer = Marshal.AllocCoTaskMem(m_Size);
+        }
+
+        public int GetPointer(out IntPtr ppBuffer)
+        {
+            ppBuffer = m_Buffer;
+            return 0;
+        }
+
+        public int GetSize()
+        {
+            return m_Size;
+        }
+
+        public int GetTime(out long pTimeStart, out long pTimeEnd)
+        {
+            pTimeStart = m_TimeStart;
+            pTimeEnd = m_TimeEnd;
+            return 0;
+        }
+
+        public int SetTime(DsLong pTimeStart, DsLong pTimeEnd)
+        {
+            m_TimeStart = pTimeStart.ToInt64();
+            m_TimeEnd = pTimeEnd.ToInt64();
+            return 0;
+        }
+
+        public int IsSyncPoint()
+        {
+            return m_IsSyncPoint ? 0 : 1;
+        }
+
+        public int SetSyncPoint(bool bIsSyncPoint)
+        {
+            m_IsSyncPoint = bIsSyncPoint;
+            return 0;
+        }
+
+        public int IsPreroll()
+        {
+            return m_IsPreroll ? 0 : 1;
+        }
+
+        public int SetPreroll(bool bIsPreroll)
+        {
+            m_IsPreroll = bIsPreroll;
+            return 0;
+        }
+
+        public int GetActualDataLength()
+        {
+            return m_ActualDataLength;
+        }
+
+        public int SetActualDataLength(int len)
+        {
+            m_ActualDataLength = len;
+            return 0;
+        }
+
+        public int GetMediaType(out AMMediaType ppMediaType)
+        {
+            var result = m_Sample.GetMediaType(out ppMediaType);
+            if (result != 0)
+                return result;
+
+            if (ppMediaType == null)
+                return 0;
+
+            ppMediaType.fixedSizeSamples = m_MediaType.fixedSizeSamples;
+            ppMediaType.formatPtr = m_MediaType.formatPtr;
+            ppMediaType.formatSize = m_MediaType.formatSize;
+            ppMediaType.formatType = m_MediaType.formatType;
+            ppMediaType.majorType = m_MediaType.majorType;
+            ppMediaType.sampleSize = m_MediaType.sampleSize;
+            ppMediaType.subType = m_MediaType.subType;
+            ppMediaType.temporalCompression = m_MediaType.temporalCompression;
+            ppMediaType.unkPtr = m_MediaType.unkPtr;
+            return 0;
+        }
+
+        public int SetMediaType(AMMediaType pMediaType)
+        {
+            if ((m_MediaType == null && pMediaType != null) || (m_MediaType != null && pMediaType == null))
+            {
+                throw new NotSupportedException("Changing media type is not supported");
+            }
+
+            if (pMediaType == null)
+                return 0;
+
+            m_MediaType.fixedSizeSamples = pMediaType.fixedSizeSamples;
+            m_MediaType.formatPtr = pMediaType.formatPtr;
+            m_MediaType.formatSize = pMediaType.formatSize;
+            m_MediaType.formatType = pMediaType.formatType;
+            m_MediaType.majorType = pMediaType.majorType;
+            m_MediaType.sampleSize = pMediaType.sampleSize;
+            m_MediaType.subType = pMediaType.subType;
+            m_MediaType.temporalCompression = pMediaType.temporalCompression;
+            m_MediaType.unkPtr = pMediaType.unkPtr;
+            return 0;
+        }
+
+        public int IsDiscontinuity()
+        {
+            return m_IsDiscontinuity ? 0 : 1;
+        }
+
+        public int SetDiscontinuity(bool bDiscontinuity)
+        {
+            m_IsDiscontinuity = bDiscontinuity;
+            return 0;
+        }
+
+        public int GetMediaTime(out long pTimeStart, out long pTimeEnd)
+        {
+            pTimeStart = m_MediaTimeStart;
+            pTimeEnd = m_MediaTimeEnd;
+            return 0;
+        }
+
+        public int SetMediaTime(DsLong pTimeStart, DsLong pTimeEnd)
+        {
+            m_MediaTimeStart = pTimeStart.ToInt64();
+            m_MediaTimeEnd = pTimeEnd.ToInt64();
+            return 0;
+        }
+
+        public void Dispose()
+        {
+            if (m_Disposed)
+                return;
+
+            Marshal.FreeCoTaskMem(m_Buffer);
+            DsUtils.FreeAMMediaType(m_MediaType);
+            m_Disposed = true;
+        }
+    }
+
     public abstract class AudioScript : AudioScript<NoSettings> { }
 
     public abstract class AudioScript<TSettings> : AudioScript<TSettings, ScriptConfigDialog<TSettings>>
         where TSettings : class, new()
     { }
 
-    public abstract class AudioScript<TSettings, TDialog> : ExtensionUi<Config.Internal.AudioScripts, TSettings, TDialog>, IAudioScript
+    public abstract class AudioScript<TSettings, TDialog> : ExtensionUi<Config.Internal.AudioScripts, TSettings, TDialog>, IAudioChain
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
@@ -51,6 +238,11 @@ namespace Mpdn.Extensions.Framework
 
         protected abstract void Process(float[,] samples, short channels, int sampleCount);
 
+        protected AudioScript()
+        {
+            Settings = new TSettings();
+        }
+
         #region Implementation
 
         protected GPGPU Gpu { get { return m_Gpu; } }
@@ -61,26 +253,7 @@ namespace Mpdn.Extensions.Framework
 
         public virtual bool Process()
         {
-            if (Audio.InputFormat.IsBitStreaming())
-                return false;
-
-            // WARNING: We assume input and output formats are the same
-
-            var input = Audio.Input;
-            var output = Audio.Output;
-
-            // passthrough from input to output
-            AudioHelpers.CopySample(input, output, false);
-
-            IntPtr samples;
-            input.GetPointer(out samples);
-            var format = Audio.InputFormat;
-            var bytesPerSample = format.wBitsPerSample/8;
-            var length = input.GetActualDataLength()/bytesPerSample;
-            var channels = format.nChannels;
-            var sampleFormat = format.SampleFormat();
-
-            return Process(sampleFormat, samples, channels, length, output);
+            return Process(new AudioParam(Audio.InputFormat, Audio.Input), new AudioParam(Audio.OutputFormat, Audio.Output));
         }
 
         private bool Process(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
@@ -314,6 +487,27 @@ namespace Mpdn.Extensions.Framework
         public virtual void OnMediaClosed()
         {
             Cleanup();
+        }
+
+        public virtual bool Process(AudioParam input, AudioParam output)
+        {
+            if (input.Format.IsBitStreaming())
+                return false;
+
+            // WARNING: We assume input and output formats are the same
+
+            // passthrough from input to output
+            AudioHelpers.CopySample(input.Sample, output.Sample, false);
+
+            IntPtr samples;
+            input.Sample.GetPointer(out samples);
+            var format = input.Format;
+            var bytesPerSample = format.wBitsPerSample / 8;
+            var length = input.Sample.GetActualDataLength() / bytesPerSample;
+            var channels = format.nChannels;
+            var sampleFormat = format.SampleFormat();
+
+            return Process(sampleFormat, samples, channels, length, output.Sample);
         }
 
         public virtual void OnGetMediaType(WaveFormatExtensible format)
