@@ -209,11 +209,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public class ChromaScalerPreset : Preset, IChromaScaler
     {
-        public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
+        public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
         {
             IChromaScaler chromaScaler = Chain as IChromaScaler ?? new DefaultChromaScaler();
 
-            return chromaScaler.CreateChromaFilter(lumaInput, chromaInput, chromaOffset);
+            return chromaScaler.CreateChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
         }
     }
 

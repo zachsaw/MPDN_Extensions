@@ -68,19 +68,19 @@ namespace Mpdn.Extensions.RenderScripts
                 return input;
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
+            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 IFilter hiRes;
 
                 var chromaSize = chromaInput.OutputSize;
-                var targetSize = lumaInput.OutputSize;
+                var lumaSize = lumaInput.OutputSize;
 
                 float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
                 int bitdepth = Renderer.InputFormat.GetBitDepth();        
                 bool limited = Renderer.Colorimetric.IsLimitedRange();                
 
                 Vector2 offset = Renderer.ChromaOffset;
-                Vector2 adjointOffset = -offset * targetSize / chromaSize;
+                Vector2 adjointOffset = -offset * lumaSize / chromaSize;
 
                 string superResMacros = "";
                 if (IsIntegral(Strength))

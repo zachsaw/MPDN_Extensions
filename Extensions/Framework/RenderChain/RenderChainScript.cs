@@ -23,7 +23,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class RenderChainScript : IRenderScript, IDisposable
     {
-        private IFilter m_SourceFilter;
+        private IResizeableFilter m_SourceFilter;
         private IFilter<ITexture2D> m_Filter;
 
         protected readonly RenderChain Chain;
@@ -54,38 +54,36 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             get
             {
-                if (m_SourceFilter == null)
-                    return null;
-
                 return new ScriptInterfaceDescriptor
                 {
-                    WantYuv = true,
-                    Prescale = false,
-                    PrescaleSize = (Size)m_SourceFilter.OutputSize
+                    WantYuv = Renderer.InputFormat.IsYuv(),
+                    Prescale = (m_SourceFilter != null) && (m_SourceFilter.LastDependentIndex > 0),
+                    PrescaleSize = (m_SourceFilter != null) ? (Size)m_SourceFilter.OutputSize : Size.Empty
                 };
             }
         }
 
         public void Update()
         {
-            m_SourceFilter = MakeSourceFilter();
+            var initialFilter = MakeInitialFilter();
 
-            m_Filter = CreateSafeFilter(Chain, m_SourceFilter)
+            m_Filter = CreateSafeFilter(Chain, initialFilter)
                 .SetSize(Renderer.TargetSize)
                 .Compile();
             m_Filter.Initialize();
         }
 
-        public IFilter MakeSourceFilter()
+        public IFilter MakeInitialFilter()
         {
+            m_SourceFilter = null;
             if (Renderer.InputFormat.IsYuv())
             {
                 if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
                     return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
                 else
-                    return new SourceFilter().Transform(x => x.ConvertToRgb());
+                    return (m_SourceFilter = new SourceFilter()).Transform(x => x.ConvertToRgb());
             }
-            else return new SourceFilter();
+            else return (m_SourceFilter = new SourceFilter());
         }
 
         public void Render()
