@@ -60,6 +60,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected abstract void Render(IList<IBaseTexture> inputs);
 
+        public abstract TextureSize OutputSize { get; }
+        
         #region IFilter Implementation
 
         private bool Updated { get; set; }
@@ -71,8 +73,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public IBaseFilter[] InputFilters { get; private set; }
 
-        public virtual ITexture2D OutputTexture { get { return OutputTarget; } }
-        public abstract TextureSize OutputSize { get; }
+        public ITexture2D OutputTexture { get { return OutputTarget; } }
+
         public virtual TextureFormat OutputFormat
         {
             get { return Renderer.RenderQuality.GetTextureFormat(); }
