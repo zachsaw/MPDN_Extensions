@@ -85,15 +85,21 @@ namespace Mpdn.Extensions.RenderScripts
                     Structured ? "_S" : string.Empty, u ? "u" : "v");
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
+            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 Cleanup();
 
                 if (!Renderer.IsDx11Avail)
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
-                    return new MergeFilter(lumaInput, chromaInput); // DX11 is not available; fallback
+                    return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset); // DX11 is not available; fallback
                 }
+
+                var lumaSize = lumaInput.OutputSize;
+                var chromaSize = chromaInput.OutputSize;
+                
+                if (lumaSize.Width != 2*chromaSize.Width || lumaSize.Height != 2*chromaSize.Height)
+                    return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset); // Chroma shouldn't be doubled; fallback
 
                 Func<TextureSize, TextureSize> transform = s => new TextureSize(2 * s.Height, s.Width);
 

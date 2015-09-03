@@ -38,13 +38,12 @@ namespace Mpdn.Extensions.RenderScripts
                 return input;
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
+            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 DiscardTextures();
 
-                var sourceSize = chromaInput.OutputSize;
-                var targetSize = lumaInput.OutputSize;
-                CreateWeights(sourceSize, targetSize);
+                var chromaSize = chromaInput.OutputSize;
+                CreateWeights(chromaSize, targetSize);
 
                 var offset = chromaOffset + new Vector2(0.5f, 0.5f);
                 int lobes = TapCount.ToInt()/2;
@@ -58,8 +57,11 @@ namespace Mpdn.Extensions.RenderScripts
                         linearSampling: true
                     );
 
-                var result = GetEwaFilter(shader, new[] { lumaInput, chromaInput });
-                return result;
+                // Fall back to default when downscaling is needed
+                if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
+                    return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset);
+
+                return GetEwaFilter(shader, new[] { lumaInput.SetSize(targetSize), chromaInput });
             }
         }
 

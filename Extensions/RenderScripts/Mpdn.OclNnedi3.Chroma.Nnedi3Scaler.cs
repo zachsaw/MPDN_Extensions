@@ -80,7 +80,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return input;
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
+            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 DisposeHelper.Dispose(ref m_Buffer1);
                 DisposeHelper.Dispose(ref m_Buffer2);
@@ -88,8 +88,14 @@ namespace Mpdn.Extensions.RenderScripts
                 if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
-                    return new MergeFilter(lumaInput, chromaInput); // OpenCL is not available; fallback
+                    return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset); // OpenCL is not available; fallback
                 }
+
+                var lumaSize = lumaInput.OutputSize;
+                var chromaSize = chromaInput.OutputSize;
+
+                if (lumaSize.Width != 2 * chromaSize.Width || lumaSize.Height != 2 * chromaSize.Height)
+                    return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset); // Chroma shouldn't be doubled; fallback
 
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2 * s.Width, s.Height);
                 Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2 * s.Height);

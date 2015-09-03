@@ -46,7 +46,7 @@ namespace Mpdn.Extensions.Framework.Controls
             SelectChromaScaler(selected);
         }
 
-        private Preset SelectedChromaScaler
+        private ChromaScalerPreset SelectedChromaScaler
         {
             get { return ((ComboBoxItem<ChromaScalerPreset>) comboBoxChroma.SelectedItem).Value; }
         }

@@ -22,39 +22,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public abstract class BaseSourceFilter<TTexture> : IFilter<TTexture>
         where TTexture : class, IBaseTexture
     {
-        protected BaseSourceFilter(params IBaseFilter[] inputFilters)
-        {
-            InputFilters = inputFilters;
-        }
-
         public abstract TTexture OutputTexture { get; }
 
         public abstract TextureSize OutputSize { get; }
 
-        public abstract void Reset();
-
         #region IFilter Implementation
 
-        public IBaseFilter[] InputFilters { get; protected set; }
-
-        public virtual int FilterIndex
-        {
-            get { return 0; }
-        }
-
-        public virtual int LastDependentIndex { get; private set; }
-
-        public void Initialize(int time = 1)
-        {
-            LastDependentIndex = time;
-        }
-
-        public IFilter<TTexture> Compile()
-        {
-            return this;
-        }
-
-        public TextureFormat OutputFormat
+        public virtual TextureFormat OutputFormat
         {
             get
             {
@@ -64,8 +38,24 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
         }
 
+        public virtual int LastDependentIndex { get; private set; }
+
         public virtual void Render()
         {
+        }
+
+        public virtual void Reset()
+        {
+        }
+
+        public virtual void Initialize(int time = 1)
+        {
+            LastDependentIndex = time;
+        }
+
+        public virtual IFilter<TTexture> Compile()
+        {
+            return this;
         }
 
         #endregion
@@ -115,10 +105,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             get { return Renderer.LumaSize; }
         }
-
-        public override void Reset()
-        {
-        }
     }
 
     public sealed class USourceFilter : BaseSourceFilter
@@ -131,10 +117,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public override TextureSize OutputSize
         {
             get { return Renderer.ChromaSize; }
-        }
-
-        public override void Reset()
-        {
         }
     }
 
@@ -149,10 +131,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             get { return Renderer.ChromaSize; }
         }
-
-        public override void Reset()
-        {
-        }
     }
 
     public sealed class NullFilter : BaseSourceFilter
@@ -165,10 +143,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public override TextureSize OutputSize
         {
             get { return Renderer.TargetSize; }
-        }
-
-        public override void Reset()
-        {
         }
     }
 
@@ -192,10 +166,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public override TextureSize OutputSize
         {
             get { return m_Size; }
-        }
-
-        public override void Reset()
-        {
         }
     }
 }

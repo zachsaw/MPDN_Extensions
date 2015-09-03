@@ -23,64 +23,73 @@ namespace Mpdn.Extensions.Framework.RenderChain
 {
     public interface IChromaScaler
     {
-        IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset);
+        IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset);
     }
 
     public class DefaultChromaScaler : IChromaScaler
     {
-        public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
+        public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
         {
-            var fullSizeChroma = new ResizeFilter(chromaInput, lumaInput.OutputSize, TextureChannels.ChromaOnly, chromaOffset);
-            return new MergeFilter(lumaInput, fullSizeChroma);
+            var fullSizeChroma = new ResizeFilter(chromaInput, targetSize, TextureChannels.ChromaOnly, 
+                chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+
+            return new MergeFilter(lumaInput.SetSize(targetSize), fullSizeChroma);
         }
     }
 
-    public class ChromaFilter : Filter, IResizeableFilter
+    public static class ChromaHelper
+    {
+        public static IFilter CreateChromaFilter(this IChromaScaler chromaScaler, IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
+        {
+            return chromaScaler.CreateChromaFilter(lumaInput, chromaInput, lumaInput.OutputSize, chromaOffset);
+        }
+    }
+
+    public class ChromaFilter : BaseSourceFilter, IResizeableFilter
     {
         public IFilter Luma { get; set; }
         public IFilter Chroma { get; set; }
+        public TextureSize TargetSize { get; set; }
         public Vector2 ChromaOffset { get; set; }
 
         public IChromaScaler ChromaScaler { get; set; }
 
-        public ChromaFilter(IFilter lumaInput, IFilter chromaInput, IChromaScaler chromaScaler = null, Vector2? chromaOffset = null)
+        public ChromaFilter(IFilter lumaInput, IFilter chromaInput, IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null)
         {
             Luma = lumaInput;
             Chroma = chromaInput;
             ChromaOffset = chromaOffset ?? Renderer.ChromaOffset;
             ChromaScaler = chromaScaler ?? new DefaultChromaScaler();
+            TargetSize = targetSize ?? Luma.OutputSize;
         }
 
-        protected override void Render(IList<IBaseTexture> inputs)
+        public override ITexture2D OutputTexture
         {
-            throw new NotImplementedException();
-        }
-
-        protected override IFilter<ITexture2D> Optimize()
-        {
-            // TODO: Should we skip the following if chroma is already the size of luma?
-            var result = ChromaScaler.CreateChromaFilter(Luma, Chroma, ChromaOffset).ConvertToRgb();
-
-            if (result.OutputSize != OutputSize)
-                throw new InvalidOperationException("Chroma scaler isn't allowed to change image size.");
-
-            return result;
+            get { throw new NotImplementedException(); }
         }
 
         public override TextureSize OutputSize
         {
-            get { return Luma.OutputSize; }
+            get { return TargetSize; }
         }
 
         public override TextureFormat OutputFormat
         {
-            get { return Chroma.OutputFormat; } // Possibly incorrect, might need to be fixed
+            get { return Renderer.RenderQuality.GetTextureFormat(); } // Not guaranteed
+        }
+
+        public override IFilter<ITexture2D> Compile()
+        {
+            var result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset)
+                .ConvertToRgb()
+                .SetSize(OutputSize);
+
+            return result;
         }
 
         public void SetSize(TextureSize size)
         {
-            // BUG: The following makes chroma (from source) scale to an arbitrary size, which would not work with chroma doublers
-            //Luma = Luma.SetSize(size);
+            TargetSize = size;
         }
     }
 }
