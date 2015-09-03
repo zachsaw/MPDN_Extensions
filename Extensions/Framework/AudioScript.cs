@@ -238,6 +238,11 @@ namespace Mpdn.Extensions.Framework
 
         protected abstract void Process(float[,] samples, short channels, int sampleCount);
 
+        protected AudioScript()
+        {
+            Settings = new TSettings();
+        }
+
         #region Implementation
 
         protected GPGPU Gpu { get { return m_Gpu; } }

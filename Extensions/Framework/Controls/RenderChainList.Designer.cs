@@ -1,4 +1,21 @@
-﻿namespace Mpdn.Extensions.Framework.Controls
+﻿// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+// 
+
+namespace Mpdn.Extensions.Framework.Controls
 {
     partial class RenderChainList
     {
@@ -118,7 +135,7 @@
             this.buttonMinus.Location = new System.Drawing.Point(402, 524);
             this.buttonMinus.Name = "buttonMinus";
             this.buttonMinus.Size = new System.Drawing.Size(27, 24);
-            this.buttonMinus.TabIndex = 2;
+            this.buttonMinus.TabIndex = 8;
             this.buttonMinus.Text = "-";
             this.buttonMinus.UseVisualStyleBackColor = true;
             this.buttonMinus.Click += new System.EventHandler(this.ButtonMinusClicked);
@@ -130,7 +147,7 @@
             this.buttonClear.Location = new System.Drawing.Point(369, 524);
             this.buttonClear.Name = "buttonClear";
             this.buttonClear.Size = new System.Drawing.Size(27, 24);
-            this.buttonClear.TabIndex = 3;
+            this.buttonClear.TabIndex = 7;
             this.buttonClear.Text = "c";
             this.buttonClear.UseVisualStyleBackColor = true;
             this.buttonClear.Click += new System.EventHandler(this.ButtonClearClicked);
@@ -151,7 +168,7 @@
             this.listViewChain.Location = new System.Drawing.Point(3, 3);
             this.listViewChain.Name = "listViewChain";
             this.listViewChain.Size = new System.Drawing.Size(426, 515);
-            this.listViewChain.TabIndex = 4;
+            this.listViewChain.TabIndex = 2;
             this.listViewChain.UseCompatibleStateImageBehavior = false;
             this.listViewChain.View = System.Windows.Forms.View.Details;
             this.listViewChain.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.ItemMoveDrag);
@@ -286,7 +303,7 @@
             this.buttonConfigure.Location = new System.Drawing.Point(3, 524);
             this.buttonConfigure.Name = "buttonConfigure";
             this.buttonConfigure.Size = new System.Drawing.Size(75, 23);
-            this.buttonConfigure.TabIndex = 5;
+            this.buttonConfigure.TabIndex = 3;
             this.buttonConfigure.Text = "Configure...";
             this.buttonConfigure.UseVisualStyleBackColor = true;
             this.buttonConfigure.Click += new System.EventHandler(this.ButtonConfigureClicked);
@@ -308,7 +325,7 @@
             this.NameBox.Location = new System.Drawing.Point(179, 526);
             this.NameBox.Name = "NameBox";
             this.NameBox.Size = new System.Drawing.Size(184, 20);
-            this.NameBox.TabIndex = 10;
+            this.NameBox.TabIndex = 6;
             this.NameBox.TextChanged += new System.EventHandler(this.NameChanged);
             this.NameBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NameKeyDown);
             this.NameBox.Leave += new System.EventHandler(this.NameLeave);
@@ -335,7 +352,7 @@
             this.buttonUp.Location = new System.Drawing.Point(0, 0);
             this.buttonUp.Name = "buttonUp";
             this.buttonUp.Size = new System.Drawing.Size(24, 24);
-            this.buttonUp.TabIndex = 0;
+            this.buttonUp.TabIndex = 4;
             this.buttonUp.Text = "▲";
             this.buttonUp.UseVisualStyleBackColor = true;
             this.buttonUp.Click += new System.EventHandler(this.ButtonUpClicked);
@@ -351,7 +368,7 @@
             this.buttonDown.Location = new System.Drawing.Point(24, 0);
             this.buttonDown.Name = "buttonDown";
             this.buttonDown.Size = new System.Drawing.Size(24, 24);
-            this.buttonDown.TabIndex = 1;
+            this.buttonDown.TabIndex = 5;
             this.buttonDown.Text = "▼";
             this.buttonDown.UseVisualStyleBackColor = true;
             this.buttonDown.Click += new System.EventHandler(this.ButtonDownClicked);

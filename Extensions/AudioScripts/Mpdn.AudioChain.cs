@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -45,7 +45,9 @@ namespace Mpdn.Extensions.AudioScripts
                     {
                         Guid = new Guid("92E3FD70-C663-4C94-9B17-2EC10D9EA8CC"),
                         Name = "AudioChain",
-                        Description = "Audio script chaining"
+                        Description = Settings.AudioScripts.Count > 0
+                            ? string.Join(" ➔ ", Settings.AudioScripts.Select(x => x.Descriptor.Name))
+                            : "Chains together multiple audio scripts"
                     };
                 }
             }
