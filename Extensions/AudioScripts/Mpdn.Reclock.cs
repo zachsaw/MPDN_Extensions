@@ -40,7 +40,7 @@ namespace Mpdn.Extensions.AudioScripts
                 }
             }
 
-            public override bool Process()
+            public override bool Process(AudioParam input, AudioParam output)
             {
                 var stats = Player.Stats.Details;
                 if (stats == null)
@@ -60,20 +60,17 @@ namespace Mpdn.Extensions.AudioScripts
                 if (ratio > (100 + MAX_PERCENT_ADJUST)/100 || ratio < (100 - MAX_PERCENT_ADJUST)/100)
                     return false;
 
-                var input = Audio.Input;
-                var output = Audio.Output;
-
                 // passthrough from input to output
-                AudioHelpers.CopySample(input, output, true);
+                AudioHelpers.CopySample(input.Sample, output.Sample, true);
 
                 // Use of 0.999999 is to allow a tiny amount of measurement error in displayHz
                 // This allows us to adjust refclk to just a fraction under the displayHz
                 var adjust = ratio*(0.999999 - refclk);
                 long start, end;
-                output.GetTime(out start, out end);
+                output.Sample.GetTime(out start, out end);
                 long endDelta = end - start;
                 start = (long) (start*adjust);
-                output.SetTime(start, endDelta);
+                output.Sample.SetTime(start, endDelta);
 
                 return true;
             }
