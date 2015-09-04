@@ -241,6 +241,7 @@ namespace Mpdn.Extensions.Framework
         protected AudioScript()
         {
             Settings = new TSettings();
+            CudafyInitializer.Init();
         }
 
         #region Implementation
@@ -376,6 +377,7 @@ namespace Mpdn.Extensions.Framework
             catch (Exception ex)
             {
                 Trace.WriteLine(ex.Message);
+                Trace.WriteLine(ex.StackTrace);
                 return false;
             }
             return true;

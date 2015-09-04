@@ -16,13 +16,17 @@
 // 
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Cudafy;
 using Cudafy.Host;
 using Cudafy.Translator;
 using DirectShowLib;
+using Mono.Cecil;
+using Mpdn.AudioScript;
 
 namespace Mpdn.Extensions.Framework
 {
@@ -35,6 +39,41 @@ namespace Mpdn.Extensions.Framework
         Pcm16,
         Pcm24,
         Pcm32
+    }
+
+    public static class CudafyInitializer
+    {
+        private static bool s_Initialized;
+
+        public static void Init()
+        {
+            if (s_Initialized)
+                return;
+
+            s_Initialized = true;
+
+            // The following is quite a crude hack, using reflection to override the global Mono.Cecil
+            // assembly resolver but Cudafy.NET doesn't give us any alternatives
+
+            var field = typeof (GlobalAssemblyResolver).GetField("Instance",
+                BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            Trace.Assert(field != null); // if this fails, it means Mono.Cecil has changed
+            field.SetValue(null, new CudafyCustomAsmResolver());
+        }
+    }
+
+    public class CudafyCustomAsmResolver : DefaultAssemblyResolver
+    {
+        public CudafyCustomAsmResolver()
+        {
+            var path = MpdnPath.GetDirectoryName(Assembly.GetAssembly(typeof (IAudioScript)).Location);
+            path = Path.Combine(path, "Extensions");
+            var asms = new DirectoryInfo(path).GetFiles("*.dll", SearchOption.AllDirectories);
+            foreach (var asm in asms)
+            {
+                RegisterAssembly(AssemblyDefinition.ReadAssembly(asm.FullName));
+            }
+        }
     }
 
     public static class AudioHelpers
