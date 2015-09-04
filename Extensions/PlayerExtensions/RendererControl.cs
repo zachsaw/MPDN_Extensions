@@ -60,6 +60,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.Config.Changed += OnSettingsChanged;
             Player.Config.Committing += OnSettingsCommitting;
             Player.Config.Committed += OnSettingsCommitted;
+
+            m_OriginalOutputLevels = RendererSettings.OutputLevels;
+            m_OriginalImproveChroma = RendererSettings.ImproveChromaReconstruction;
         }
 
         public override void Destroy()
