@@ -51,7 +51,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Passes = 3;
                 Strength = 1.0f;
-                Softness = 1.0f;
+                Softness = 0.0f;
 
                 HQdownscaling = true;
 
