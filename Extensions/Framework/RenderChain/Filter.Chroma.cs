@@ -82,7 +82,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             var result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset)
                 .ConvertToRgb()
-                .SetSize(OutputSize);
+                .SetSize(OutputSize)
+                .Compile();
 
             return result;
         }
