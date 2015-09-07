@@ -34,7 +34,8 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 var chromaFilter = input as ChromaFilter;
                 if (chromaFilter != null)
-                    chromaFilter.ChromaScaler = this;
+                    return chromaFilter.MakeNew(this);
+
                 return input;
             }
 

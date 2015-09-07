@@ -54,11 +54,14 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             get
             {
+                if (m_SourceFilter == null)
+                    return null;
+
                 return new ScriptInterfaceDescriptor
                 {
                     WantYuv = Renderer.InputFormat.IsYuv(),
-                    Prescale = (m_SourceFilter != null) && (m_SourceFilter.LastDependentIndex > 0),
-                    PrescaleSize = (m_SourceFilter != null) ? (Size)m_SourceFilter.OutputSize : Size.Empty
+                    Prescale = (m_SourceFilter.LastDependentIndex > 0),
+                    PrescaleSize = (Size)m_SourceFilter.OutputSize
                 };
             }
         }
@@ -73,17 +76,18 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Filter.Initialize();
         }
 
-        public IFilter MakeInitialFilter()
+        public IResizeableFilter MakeInitialFilter()
         {
-            m_SourceFilter = null;
+            m_SourceFilter = new SourceFilter();
+
             if (Renderer.InputFormat.IsYuv())
             {
                 if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
-                    return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
+                    return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), new InternalChromaScaler(m_SourceFilter));
                 else
-                    return (m_SourceFilter = new SourceFilter()).Transform(x => x.ConvertToRgb());
+                    return m_SourceFilter.Transform(x => x.ConvertToRgb());
             }
-            else return (m_SourceFilter = new SourceFilter());
+            else return m_SourceFilter;
         }
 
         public void Render()
