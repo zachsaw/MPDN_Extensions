@@ -111,6 +111,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
                 return (IFilter<ITexture2D>) input.InputFilters[0];
 
+            var sourceFilter = InputFilters[0] as SourceFilter;
+            if (sourceFilter != null)
+                return sourceFilter.GetYuv();
+
             return this;
         }
 

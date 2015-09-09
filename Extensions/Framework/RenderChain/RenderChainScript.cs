@@ -23,7 +23,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class RenderChainScript : IRenderScript, IDisposable
     {
-        private IResizeableFilter m_SourceFilter;
+        private SourceFilter m_SourceFilter;
         private IFilter<ITexture2D> m_Filter;
 
         protected readonly RenderChain Chain;
@@ -57,12 +57,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 if (m_SourceFilter == null)
                     return null;
 
-                return new ScriptInterfaceDescriptor
-                {
-                    WantYuv = Renderer.InputFormat.IsYuv(),
-                    Prescale = (m_SourceFilter.LastDependentIndex > 0),
-                    PrescaleSize = (Size)m_SourceFilter.OutputSize
-                };
+                return m_SourceFilter.Descriptor;
             }
         }
 
@@ -80,14 +75,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             m_SourceFilter = new SourceFilter();
 
-            if (Renderer.InputFormat.IsYuv())
-            {
-                if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
-                    return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), new InternalChromaScaler(m_SourceFilter));
-                else
-                    return m_SourceFilter.Transform(x => x.ConvertToRgb());
-            }
-            else return m_SourceFilter;
+            if (Renderer.InputFormat.IsRgb())
+                return m_SourceFilter;
+
+            if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
+                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), new InternalChromaScaler(m_SourceFilter));
+
+            return m_SourceFilter;
         }
 
         public void Render()

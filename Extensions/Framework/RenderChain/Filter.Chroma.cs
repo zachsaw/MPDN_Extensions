@@ -46,11 +46,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_SourceFilter = sourceFilter;
         }
 
-        public InternalChromaScaler()
-        {
-            m_SourceFilter = new SourceFilter();
-        }
-
         public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
         {
             if (lumaInput is YSourceFilter && chromaInput is ChromaSourceFilter && chromaOffset == Renderer.ChromaOffset)
