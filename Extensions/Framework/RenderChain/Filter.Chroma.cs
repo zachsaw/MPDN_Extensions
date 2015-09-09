@@ -15,6 +15,7 @@
 // License along with this library.
 
 using System;
+using System.Collections.Generic;
 using Mpdn.RenderScript;
 using SharpDX;
 
@@ -38,7 +39,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public class InternalChromaScaler : IChromaScaler
     {
-        private readonly IFilter m_SourceFilter;
+        private IFilter m_SourceFilter;
 
         public InternalChromaScaler(IFilter sourceFilter)
         {

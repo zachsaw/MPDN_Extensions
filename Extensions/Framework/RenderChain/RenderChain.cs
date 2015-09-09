@@ -19,6 +19,7 @@ using System;
 using System.IO;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
+using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {

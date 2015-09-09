@@ -51,6 +51,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             get { return InputFilters[0].OutputFormat; }
         }
+
     }
 
     public sealed class RgbFilter : BasicFilter
@@ -58,8 +59,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public readonly YuvColorimetric Colorimetric;
         public readonly bool OutputLimitedRange;
         public readonly bool OutputLimitChroma;
-
-        public bool Skip { get; set; }
 
         public RgbFilter(IFilter inputFilter, bool limitedRange)
             : this(inputFilter, null, limitedRange)
@@ -76,8 +75,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override IFilter<ITexture2D> Optimize()
         {
-            var inputFilter = InputFilters[0];
-            var input = inputFilter as YuvFilter;
+            var input = InputFilters[0] as YuvFilter;
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
                 return (IFilter<ITexture2D>) input.InputFilters[0];
 
@@ -86,7 +84,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override void Render(ITexture2D input)
         {
-            if (Skip) return;
             Renderer.ConvertToRgb(OutputTarget, input, Colorimetric, OutputLimitedRange, OutputLimitChroma);
         }
     }
@@ -95,8 +92,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
     {
         public readonly YuvColorimetric Colorimetric;
         public readonly bool OutputLimitedRange;
-
-        public bool Skip { get; set; }
 
         public YuvFilter(IFilter inputFilter, bool limitedRange)
             : this(inputFilter, null, limitedRange)
@@ -121,7 +116,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override void Render(ITexture2D input)
         {
-            if (Skip) return;
             Renderer.ConvertToYuv(OutputTarget, input, Colorimetric, OutputLimitedRange);
         }
     }
