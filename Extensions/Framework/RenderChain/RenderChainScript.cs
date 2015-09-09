@@ -86,7 +86,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public void Render()
         {
-            TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
+            if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
+            {
+                TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
+            }
             m_Filter.Render();
             if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
             {
