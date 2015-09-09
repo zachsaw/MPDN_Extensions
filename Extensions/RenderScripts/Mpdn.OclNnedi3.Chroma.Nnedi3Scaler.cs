@@ -134,7 +134,7 @@ namespace Mpdn.Extensions.RenderScripts
                     new TextureSize(nnedi3Vh.OutputSize.Width, nnedi3Vh.OutputSize.Height),
                     localWorkSizes, nnedi3Vh);
 
-                return new MergeFilter(lumaInput, nnedi3Uv, nnedi3Vv);
+                return new MergeFilter(lumaInput, nnedi3Uv, nnedi3Vv).ConvertToRgb();
             }
         }
 

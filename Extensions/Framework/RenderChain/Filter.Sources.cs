@@ -15,7 +15,9 @@
 // License along with this library.
 
 using Mpdn.RenderScript;
+using Size = System.Drawing.Size;
 using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
+using System;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
@@ -68,17 +70,52 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public sealed class SourceFilter : BaseSourceFilter, IResizeableFilter
     {
         private TextureSize m_OutputSize;
+        private YuvSourceFilter YuvFilter;
 
         public void SetSize(TextureSize targetSize)
         {
             m_OutputSize = targetSize;
         }
 
+        public ScriptInterfaceDescriptor Descriptor
+        {
+            get
+            {
+                return new ScriptInterfaceDescriptor
+                {
+                    WantYuv = YuvFilter != null,
+                    Prescale = LastDependentIndex > 0,
+                    PrescaleSize = (Size)OutputSize
+                };
+            }
+        }
+
+        public IFilter GetYuv()
+        {
+            if (YuvFilter != null)
+                return YuvFilter;
+
+            if (Renderer.InputFormat.IsYuv())
+            {
+                YuvFilter = new YuvSourceFilter(this);
+                return YuvFilter;
+            }
+
+            return new YuvFilter(this);
+        }
+
         #region IFilter Implementation
+
+        private ITargetTexture OutputTarget { get; set; }
+
+        private bool Updated;
 
         public override ITexture2D OutputTexture
         {
-            get { return Renderer.InputRenderTarget; }
+            get
+            {
+                return OutputTarget ?? Renderer.InputRenderTarget;                    
+            }
         }
 
         public override TextureSize OutputSize
@@ -88,10 +125,73 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public override void Reset()
         {
-            TexturePool.PutTempTexture(OutputTexture as ITargetTexture);
+            Updated = false;
+
+            if (OutputTarget != null)
+            {
+                TexturePool.PutTexture(OutputTarget);
+            }
+
+            OutputTarget = null;
+
+            TexturePool.PutTempTexture(Renderer.InputRenderTarget);
+        }
+
+        public override void Render()
+        {
+            if (YuvFilter != null)
+            {
+                if (Updated)
+                    return;
+
+                OutputTarget = TexturePool.GetTexture(OutputSize, OutputFormat);
+
+                Renderer.ConvertToRgb(OutputTarget, Renderer.InputRenderTarget, Renderer.Colorimetric, Renderer.OutputLimitedRange, Renderer.LimitChroma);
+
+                Updated = true;
+            }
         }
 
         #endregion
+
+        private class YuvSourceFilter : BaseSourceFilter
+        {
+            public SourceFilter RgbSourceFilter;
+
+            public YuvSourceFilter(SourceFilter rgbSourceFilter)
+            {
+                RgbSourceFilter = rgbSourceFilter;
+            }
+
+            public override ITexture2D OutputTexture
+            {
+                get
+                {
+                    return Renderer.InputRenderTarget;
+                }
+            }
+
+            public override TextureSize OutputSize
+            {
+                get { return RgbSourceFilter.OutputSize; }
+            }
+
+            public override void Reset()
+            {
+                RgbSourceFilter.Reset();
+            }
+
+            public override void Initialize(int time = 1)
+            {
+                RgbSourceFilter.Initialize(time);
+            }
+
+            public override int LastDependentIndex
+            {
+                get { return RgbSourceFilter.LastDependentIndex; }
+            }
+        }
+
     }
 
     public sealed class YSourceFilter : BaseSourceFilter

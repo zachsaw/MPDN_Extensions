@@ -17,16 +17,14 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class RenderChainScript : IRenderScript, IDisposable
     {
-        private IResizeableFilter m_SourceFilter;
+        private SourceFilter m_SourceFilter;
         private IFilter<ITexture2D> m_Filter;
-        private bool m_WantYuv;
 
         protected readonly RenderChain Chain;
 
@@ -59,12 +57,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 if (m_SourceFilter == null)
                     return null;
 
-                return new ScriptInterfaceDescriptor
-                {
-                    WantYuv = m_WantYuv,
-                    Prescale = (m_SourceFilter.LastDependentIndex > 0),
-                    PrescaleSize = (Size) m_SourceFilter.OutputSize
-                };
+                return m_SourceFilter.Descriptor;
             }
         }
 
@@ -76,7 +69,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 .SetSize(Renderer.TargetSize)
                 .Compile();
             m_Filter.Initialize();
-            SetWantYuv();
         }
 
         public IResizeableFilter MakeInitialFilter()
@@ -89,7 +81,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
                 return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), new InternalChromaScaler(m_SourceFilter));
 
-            return m_SourceFilter.Transform(x => x.ConvertToRgb());
+            return m_SourceFilter;
         }
 
         public void Render()
@@ -102,21 +94,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
             m_Filter.Reset();
             TexturePool.FlushTextures();
-        }
-
-        private void SetWantYuv()
-        {
-            m_WantYuv = Renderer.InputFormat.IsYuv();
-            var filter = m_Filter as RgbFilter;
-            if (filter == null || 
-                filter.InputFilters.SingleOrDefault() != m_SourceFilter ||
-                filter.Colorimetric != Renderer.Colorimetric ||
-                filter.OutputLimitedRange != Renderer.OutputLimitedRange ||
-                filter.OutputLimitChroma != Renderer.LimitChroma)
-                return;
-
-            m_WantYuv = false;
-            filter.Skip = true;
         }
 
         private static void Scale(ITargetTexture output, ITexture2D input)

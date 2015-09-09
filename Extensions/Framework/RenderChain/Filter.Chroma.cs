@@ -15,6 +15,7 @@
 // License along with this library.
 
 using System;
+using System.Collections.Generic;
 using Mpdn.RenderScript;
 using SharpDX;
 
@@ -32,33 +33,25 @@ namespace Mpdn.Extensions.Framework.RenderChain
             var fullSizeChroma = new ResizeFilter(chromaInput, targetSize, TextureChannels.ChromaOnly, 
                 chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
 
-            return new MergeFilter(lumaInput.SetSize(targetSize), fullSizeChroma);
+            return new MergeFilter(lumaInput.SetSize(targetSize), fullSizeChroma).ConvertToRgb();
         }
     }
 
     public class InternalChromaScaler : IChromaScaler
     {
-        private readonly IFilter m_SourceFilter;
+        private IFilter m_SourceFilter;
 
         public InternalChromaScaler(IFilter sourceFilter)
         {
             m_SourceFilter = sourceFilter;
         }
 
-        public InternalChromaScaler()
-        {
-            m_SourceFilter = new SourceFilter();
-        }
-
         public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
         {
-            return
-                (lumaInput is YSourceFilter &&
-                 chromaInput is ChromaSourceFilter &&
-                 chromaOffset == Renderer.ChromaOffset
-                    ? m_SourceFilter.SetSize(targetSize)
-                    : new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset))
-                    .ConvertToRgb();
+            if (lumaInput is YSourceFilter && chromaInput is ChromaSourceFilter && chromaOffset == Renderer.ChromaOffset)
+                return m_SourceFilter.SetSize(targetSize);
+
+            return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset);
         }
     }
 
@@ -89,8 +82,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public IFilter MakeNew(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null)
         {
-            return (new ChromaFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset))
-                .ConvertToRgb();
+            return new ChromaFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset);
         }
 
         public override ITexture2D OutputTexture

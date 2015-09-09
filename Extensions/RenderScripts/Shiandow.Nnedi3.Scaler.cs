@@ -110,7 +110,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var result = ChromaScaler.CreateChromaFilter(luma, yuv, new Vector2(-0.25f, -0.25f));
 
-                return new ResizeFilter(result.ConvertToRgb(), result.OutputSize, new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+                return new ResizeFilter(result, result.OutputSize, new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }
 
             private string GetShaderFileName(NNedi3Neurons neurons)
