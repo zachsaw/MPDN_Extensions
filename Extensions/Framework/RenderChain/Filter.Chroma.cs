@@ -33,7 +33,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             var fullSizeChroma = new ResizeFilter(chromaInput, targetSize, TextureChannels.ChromaOnly, 
                 chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
 
-            return new MergeFilter(lumaInput.SetSize(targetSize), fullSizeChroma);
+            return new MergeFilter(lumaInput.SetSize(targetSize), fullSizeChroma).ConvertToRgb();
         }
     }
 
@@ -108,7 +108,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public override IFilter<ITexture2D> Compile()
         {
             var result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset)
-                .ConvertToRgb()
                 .SetSize(OutputSize)
                 .Compile();
 

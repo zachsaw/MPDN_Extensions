@@ -133,7 +133,7 @@ namespace Mpdn.Extensions.RenderScripts
                     hiRes = new ShaderFilter(SuperRes, hiRes, diff);
                 }
 
-                return hiRes;
+                return hiRes.ConvertToRgb();
             }
         }
 

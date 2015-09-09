@@ -62,7 +62,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
                     return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset);
 
-                return GetEwaFilter(shader, new[] { lumaInput.SetSize(targetSize), chromaInput });
+                return GetEwaFilter(shader, new[] { lumaInput.SetSize(targetSize), chromaInput }).ConvertToRgb();
             }
         }
 
