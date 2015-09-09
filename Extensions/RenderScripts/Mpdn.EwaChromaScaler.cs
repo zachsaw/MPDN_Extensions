@@ -59,7 +59,7 @@ namespace Mpdn.Extensions.RenderScripts
                     );
 
                 // Fall back to default when downscaling is needed
-                if (targetSize.Width < chromaSize.Width && targetSize.Height < chromaSize.Height)
+                if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
                     return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset);
 
                 return GetEwaFilter(shader, new[] { lumaInput.SetSize(targetSize), chromaInput });
