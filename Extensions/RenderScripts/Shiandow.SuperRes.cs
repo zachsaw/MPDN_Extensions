@@ -93,6 +93,12 @@ namespace Mpdn.Extensions.RenderScripts
                 return x == Math.Truncate(x);
             }
 
+            public override string Active()
+            {
+                var prescalerStatus = SelectedOption.Status();
+                return prescalerStatus != "" ? String.Format("SuperRes ({0})", prescalerStatus) : "SuperRes";
+            }
+
             public IFilter CreateFilter(IFilter original, IFilter initial)
             {
                 IFilter result;
