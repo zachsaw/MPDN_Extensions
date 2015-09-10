@@ -147,6 +147,7 @@
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.cs" />
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.NativeMethods.cs" />
     <Compile Include="Extensions\PlayerExtensions\DynamicHotkeys.cs" />
+    <Compile Include="Extensions\PlayerExtensions\ScriptChainOsdPainter.cs" />
     <Compile Include="Extensions\PlayerExtensions\FullScreenTextPainter.cs" />
     <Compile Include="Extensions\PlayerExtensions\GoTo.cs" />
     <Compile Include="Extensions\PlayerExtensions\GoToForm.cs">

@@ -204,4 +204,14 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return result + scaler.KernelTaps;
         }
     }
+
+    public static class RenderChainDescription
+    {
+        public static string Text { get; private set; }
+
+        public static void Update(string text)
+        {
+            Text = text;
+        }
+    }
 }

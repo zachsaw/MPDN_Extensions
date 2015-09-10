@@ -29,6 +29,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public RenderChainScript(RenderChain chain)
         {
+            RenderChainDescription.Update(string.Empty);
+
             Chain = chain;
             Chain.Initialize();
         }
@@ -46,6 +48,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected virtual void Dispose(bool disposing)
         {
+            RenderChainDescription.Update(string.Empty);
             Chain.Reset();
         }
 
@@ -64,7 +67,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Filter.Initialize();
 
             // TODO: prepend and append decscription of prescalers and postscalers (i.e. MPDN internal scalers) if any
-            Debug.WriteLine(Chain.Status());
+            RenderChainDescription.Update(Chain.Status());
         }
 
         public IResizeableFilter MakeInitialFilter()
