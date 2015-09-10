@@ -74,11 +74,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                var chromaFilter = input as ChromaFilter;
-                if (chromaFilter != null)
-                    return chromaFilter.MakeNew(this);
-
-                return input;
+                return this.CreateChromaFilter(input);
             }
 
             public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
@@ -89,14 +85,14 @@ namespace Mpdn.Extensions.RenderScripts
                 if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
-                    return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset); // OpenCL is not available; fallback
+                    return null; // OpenCL is not available; fallback
                 }
 
                 var lumaSize = lumaInput.OutputSize;
                 var chromaSize = chromaInput.OutputSize;
 
-                if (lumaSize.Width != 2 * chromaSize.Width || lumaSize.Height != 2 * chromaSize.Height)
-                    return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset); // Chroma shouldn't be doubled; fallback
+                if (lumaSize.Width != 2*chromaSize.Width || lumaSize.Height != 2*chromaSize.Height)
+                    return null; // Chroma shouldn't be doubled; fallback
 
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2 * s.Width, s.Height);
                 Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2 * s.Height);

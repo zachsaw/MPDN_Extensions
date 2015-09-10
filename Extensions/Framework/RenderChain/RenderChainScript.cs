@@ -16,7 +16,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
@@ -52,13 +51,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public ScriptInterfaceDescriptor Descriptor
         {
-            get
-            {
-                if (m_SourceFilter == null)
-                    return null;
-
-                return m_SourceFilter.Descriptor;
-            }
+            get { return m_SourceFilter == null ? null : m_SourceFilter.Descriptor; }
         }
 
         public void Update()
@@ -69,6 +62,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 .SetSize(Renderer.TargetSize)
                 .Compile();
             m_Filter.Initialize();
+
+            Debug.WriteLine(Chain.Status());
         }
 
         public IResizeableFilter MakeInitialFilter()
@@ -113,7 +108,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             DisposeHelper.Dispose(ref m_TextFilter);
             try
             {
-                return Chain.CreateFilter(input);
+                return Chain.MakeFilter(input);
             }
             catch (Exception ex)
             {

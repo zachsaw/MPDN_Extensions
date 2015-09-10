@@ -73,11 +73,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                var chromaFilter = input as ChromaFilter;
-                if (chromaFilter != null)
-                    return chromaFilter.MakeNew(this);
-
-                return input;
+                return this.CreateChromaFilter(input);
             }
 
             private string GetShaderFileName(NNedi3Neurons neurons, bool u)
@@ -93,14 +89,14 @@ namespace Mpdn.Extensions.RenderScripts
                 if (!Renderer.IsDx11Avail)
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
-                    return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset); // DX11 is not available; fallback
+                    return null; // DX11 is not available; fallback
                 }
 
                 var lumaSize = lumaInput.OutputSize;
                 var chromaSize = chromaInput.OutputSize;
-                
+
                 if (lumaSize.Width != 2*chromaSize.Width || lumaSize.Height != 2*chromaSize.Height)
-                    return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset); // Chroma shouldn't be doubled; fallback
+                    return null; // Chroma shouldn't be doubled; fallback
 
                 Func<TextureSize, TextureSize> transform = s => new TextureSize(2 * s.Height, s.Width);
 

@@ -32,11 +32,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                var chromaFilter = input as ChromaFilter;
-                if (chromaFilter != null)
-                    return chromaFilter.MakeNew(this);
-
-                return input;
+                return this.CreateChromaFilter(input);
             }
 
             public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
@@ -60,7 +56,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 // Fall back to default when downscaling is needed
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
-                    return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset);
+                    return null;
 
                 return GetEwaFilter(shader, new[] { lumaInput.SetSize(targetSize), chromaInput }).ConvertToRgb();
             }

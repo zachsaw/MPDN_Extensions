@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -38,14 +39,31 @@ namespace Mpdn.Extensions.Framework
         {
             var disposable = obj as IDisposable;
             if (disposable == null) return;
-            disposable.Dispose();
+            SafeDispose(disposable);
         }
 
         public static void Dispose<T>(ref T obj) where T : class, IDisposable
         {
             if (obj == null) return;
-            obj.Dispose();
+            SafeDispose(obj);
             obj = default(T);
+        }
+
+        private static void SafeDispose(IDisposable disposable)
+        {
+            try
+            {
+                disposable.Dispose();
+            }
+            catch (Exception ex)
+            {
+                // Ignore dispose exceptions (some third party libs can throw exception in Dispose)
+                if (Debugger.IsAttached)
+                {
+                    throw;
+                }
+                Trace.WriteLine(ex);
+            }
         }
     }
 

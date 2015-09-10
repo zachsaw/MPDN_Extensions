@@ -36,12 +36,6 @@ namespace Mpdn.Extensions.RenderScripts
 
             private ScriptEngine m_Engine;
 
-            public override void Initialize()
-            {
-                m_Engine = new ScriptEngine();
-                base.Initialize();
-            }
-
             public override void Reset()
             {
                 DisposeHelper.Dispose(ref m_Engine);
@@ -53,11 +47,21 @@ namespace Mpdn.Extensions.RenderScripts
                 if (string.IsNullOrWhiteSpace(Condition) || Preset == null)
                     return input;
 
-                if (m_Engine.Evaluate(this, input, GetScript(), GetType().Name))
-                {
-                    return input + Preset;
-                }
-                return input;
+                CreateEngine();
+                if (!m_Engine.Evaluate(this, input, GetScript(), GetType().Name))
+                    return input;
+
+                Status = Preset.Status;
+
+                return input + Preset;
+            }
+
+            private void CreateEngine()
+            {
+                if (m_Engine != null)
+                    return;
+
+                m_Engine = new ScriptEngine();
             }
 
             private string GetScript()

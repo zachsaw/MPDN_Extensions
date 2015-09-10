@@ -62,16 +62,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override IFilter CreateFilter(IFilter input)
             {
-                var chromaFilter = input as ChromaFilter;
-                if (chromaFilter != null)
-                {
-                    var result = chromaFilter.MakeNew(this);
-                    Status = () => result.Active() ? Active() : Inactive();
-                    return result;
-                }
-
-                Status = Inactive;
-                return input;
+                return this.CreateChromaFilter(input);
             }
 
             public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)

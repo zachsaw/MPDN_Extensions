@@ -172,11 +172,22 @@ namespace Mpdn.Extensions.Framework.RenderChain
         #endregion
     }
 
-    public static class FilterHelper
+    public static class FilterHelpers
     {
         public static bool Active(this IFilter filter)
         {
             return filter.LastDependentIndex > 0;
+        }
+
+        public static IFilter MakeFilter(this RenderChain chain, IFilter filter)
+        {
+            chain.Status = null;
+            var result = chain.CreateFilter(filter);
+            if (chain.Status == null)
+            {
+                chain.Status = filter == result ? (Func<string>) chain.Inactive : chain.Active;
+            }
+            return result;
         }
     }
 }

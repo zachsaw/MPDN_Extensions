@@ -19,7 +19,6 @@ using System;
 using System.IO;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
-using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
@@ -35,7 +34,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region Status
 
-        public Func<String> Status;
+        public Func<string> Status;
 
         public virtual string Active()
         {
@@ -44,7 +43,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public string Inactive()
         {
-            return "";
+            return string.Empty;
         }
 
         #endregion
@@ -55,7 +54,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public static implicit operator Func<IFilter, IFilter>(RenderChain map)
         {
-            return map.CreateFilter;
+            return map.MakeFilter;
         }
 
         public static implicit operator RenderChain(Func<IFilter, IFilter> map)

@@ -16,8 +16,6 @@
 
 using Mpdn.RenderScript;
 using Size = System.Drawing.Size;
-using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
-using System;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
@@ -70,7 +68,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public sealed class SourceFilter : BaseSourceFilter, IResizeableFilter
     {
         private TextureSize m_OutputSize;
-        private YuvSourceFilter YuvFilter;
+        private YuvSourceFilter m_YuvFilter;
 
         public void SetSize(TextureSize targetSize)
         {
@@ -83,7 +81,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             {
                 return new ScriptInterfaceDescriptor
                 {
-                    WantYuv = YuvFilter != null,
+                    WantYuv = m_YuvFilter != null,
                     Prescale = this.Active(),
                     PrescaleSize = (Size)OutputSize
                 };
@@ -92,13 +90,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public IFilter GetYuv()
         {
-            if (YuvFilter != null)
-                return YuvFilter;
+            if (m_YuvFilter != null)
+                return m_YuvFilter;
 
             if (Renderer.InputFormat.IsYuv())
             {
-                YuvFilter = new YuvSourceFilter(this);
-                return YuvFilter;
+                m_YuvFilter = new YuvSourceFilter(this);
+                return m_YuvFilter;
             }
 
             return new YuvFilter(this);
@@ -108,7 +106,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         private ITargetTexture OutputTarget { get; set; }
 
-        private bool Updated;
+        private bool m_Updated;
 
         public override ITexture2D OutputTexture
         {
@@ -125,7 +123,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public override void Reset()
         {
-            Updated = false;
+            m_Updated = false;
 
             if (OutputTarget != null)
             {
@@ -139,28 +137,29 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public override void Render()
         {
-            if (YuvFilter != null)
-            {
-                if (Updated)
-                    return;
+            if (m_YuvFilter == null)
+                return;
 
-                OutputTarget = TexturePool.GetTexture(OutputSize, OutputFormat);
+            if (m_Updated)
+                return;
 
-                Renderer.ConvertToRgb(OutputTarget, Renderer.InputRenderTarget, Renderer.Colorimetric, Renderer.OutputLimitedRange, Renderer.LimitChroma);
+            OutputTarget = TexturePool.GetTexture(OutputSize, OutputFormat);
 
-                Updated = true;
-            }
+            Renderer.ConvertToRgb(OutputTarget, Renderer.InputRenderTarget, Renderer.Colorimetric,
+                Renderer.OutputLimitedRange, Renderer.LimitChroma);
+
+            m_Updated = true;
         }
 
         #endregion
 
         private class YuvSourceFilter : BaseSourceFilter
         {
-            public SourceFilter RgbSourceFilter;
+            private readonly SourceFilter m_RgbSourceFilter;
 
             public YuvSourceFilter(SourceFilter rgbSourceFilter)
             {
-                RgbSourceFilter = rgbSourceFilter;
+                m_RgbSourceFilter = rgbSourceFilter;
             }
 
             public override ITexture2D OutputTexture
@@ -173,22 +172,22 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
             public override TextureSize OutputSize
             {
-                get { return RgbSourceFilter.OutputSize; }
+                get { return m_RgbSourceFilter.OutputSize; }
             }
 
             public override void Reset()
             {
-                RgbSourceFilter.Reset();
+                m_RgbSourceFilter.Reset();
             }
 
             public override void Initialize(int time = 1)
             {
-                RgbSourceFilter.Initialize(time);
+                m_RgbSourceFilter.Initialize(time);
             }
 
             public override int LastDependentIndex
             {
-                get { return RgbSourceFilter.LastDependentIndex; }
+                get { return m_RgbSourceFilter.LastDependentIndex; }
             }
         }
 
