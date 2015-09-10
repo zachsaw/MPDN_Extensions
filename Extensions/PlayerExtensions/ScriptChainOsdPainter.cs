@@ -107,7 +107,12 @@ namespace Mpdn.Extensions.PlayerExtensions
                 desc = GetInternalScalerDesc();
             }
 
-            var text = "Render Chain:\r\n    " + desc.Replace(" > ", "\r\n     > ");
+            string[] descriptions = desc.Split(';')
+                .Select(str => str.Trim())
+                .Where(str => !String.IsNullOrEmpty(str))
+                .ToArray();
+
+            var text = "Render Chain:\r\n" + String.Join("\r\n", descriptions);
             text = text.Trim('\r', '\n');
             var width = m_Text.MeasureWidth(text);
             var height = text.Count(c => c == '\n')*(TEXT_HEIGHT);

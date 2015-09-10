@@ -222,6 +222,25 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return this;
         }
 
+        public string Status()
+        {
+            if (!this.Active())
+                return "";
+
+            var inputSize = InputFilters[0].OutputSize;
+            var status = "";
+            if (OutputSize.Width > inputSize.Width || OutputSize.Height > inputSize.Height)
+                status += " > " + m_Upscaler.GetDescription();
+
+            if (OutputSize.Width == inputSize.Width && OutputSize.Height == inputSize.Height)
+                status += " = " + m_Convolver.GetDescription();
+
+            if (OutputSize.Width < inputSize.Width || OutputSize.Height < inputSize.Height)
+                status += " < " + m_Downscaler.GetDescription();
+
+            return status.Trim();
+        }
+
         public override TextureSize OutputSize
         {
             get { return m_OutputSize; }
