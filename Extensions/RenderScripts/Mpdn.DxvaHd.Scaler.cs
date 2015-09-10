@@ -94,7 +94,7 @@ namespace Mpdn.Extensions.RenderScripts
                 base.Reset();
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
                 Cleanup();
 

@@ -179,17 +179,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return filter.LastDependentIndex > 0;
         }
 
-        public static IFilter MakeFilter(this RenderChain chain, IFilter filter)
-        {
-            chain.Status = null;
-            var result = chain.CreateFilter(filter);
-            if (chain.Status == null)
-            {
-                chain.Status = filter == result ? (Func<string>) chain.Inactive : chain.Active;
-            }
-            return result;
-        }
-
         public static string GetDescription(this IScaler scaler, bool useDownscalerName = false)
         {
             if (useDownscalerName)

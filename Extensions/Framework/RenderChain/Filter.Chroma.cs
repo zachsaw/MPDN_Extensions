@@ -61,18 +61,20 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return chromaScaler.CreateChromaFilter(lumaInput, chromaInput, lumaInput.OutputSize, chromaOffset);
         }
 
-        public static IFilter CreateChromaFilter(this IChromaScaler scaler, IFilter input)
+        public static IFilter CreateChromaFilter<TChromaScaler>(this TChromaScaler scaler, IFilter input)
+            where TChromaScaler : RenderChain, IChromaScaler
         {
-            var renderChain = (RenderChain) scaler;
             var chromaFilter = input as ChromaFilter;
             if (chromaFilter != null)
             {
                 var result = chromaFilter.MakeNew(scaler);
-                renderChain.Status = () => !result.FallbackOccurred ? renderChain.Active() : renderChain.Inactive();
+                if (result.FallbackOccurred)
+                    scaler.MarkInactive();
+                
                 return result;
             }
 
-            renderChain.Status = renderChain.Inactive;
+            scaler.MarkInactive();
             return input;
         }
     }

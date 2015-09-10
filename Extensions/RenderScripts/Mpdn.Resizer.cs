@@ -68,7 +68,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 var result = input.SetSize(GetOutputSize());
                 Status = () => ResizerStatus(result);

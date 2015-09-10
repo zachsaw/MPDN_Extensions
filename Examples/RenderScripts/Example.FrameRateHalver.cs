@@ -56,7 +56,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
                 // apply the halving filter
                 return new FramerateHalvingFilter(sourceFilter);

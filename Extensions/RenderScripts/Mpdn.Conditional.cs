@@ -42,7 +42,7 @@ namespace Mpdn.Extensions.RenderScripts
                 base.Reset();
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 if (string.IsNullOrWhiteSpace(Condition) || Preset == null)
                     return input;

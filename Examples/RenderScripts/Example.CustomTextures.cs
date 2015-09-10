@@ -35,7 +35,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
                 var shader = CompileShader("CustomTextures.hlsl");
                 return new ShaderFilter(shader, sourceFilter, new TextureSourceFilter<ISourceTexture>(m_Texture1),

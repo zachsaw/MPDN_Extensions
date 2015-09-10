@@ -69,7 +69,7 @@ namespace Mpdn.Extensions.RenderScripts
                 File.WriteAllText(ScriptFileName, Helpers.DefaultScript);
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 return m_Engine.Execute(this, input, BuildScript(ScriptFileName), ScriptFileName);
             }
