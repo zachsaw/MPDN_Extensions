@@ -61,8 +61,18 @@ namespace Mpdn.Extensions.RenderScripts
                 get
                 {
                     return ChromaScalers.FirstOrDefault(s => s.Script.Descriptor.Guid == ChromaScalerGuid) ??
-                           (IChromaScaler)new DefaultChromaScaler();
+                           (IChromaScaler) new DefaultChromaScaler();
                 }
+            }
+
+            public override string Active()
+            {
+                var result = base.Active();
+                var chroma = ChromaScaler as RenderChain;
+                if (chroma == null) return result;
+                var status = chroma.Status();
+                result = string.Format("{0} ({1})", result, status == string.Empty ? "Luma only" : status);
+                return result;
             }
 
             public override void Reset()

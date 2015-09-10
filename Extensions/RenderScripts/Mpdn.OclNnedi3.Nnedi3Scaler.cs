@@ -142,6 +142,16 @@ namespace Mpdn.Extensions.RenderScripts
             };
             private static readonly int[] s_NeuronCount = { 16, 32, 64, 128, 256 };
 
+            public override string Active()
+            {
+                var result = base.Active();
+                var chroma = ChromaScaler as RenderChain;
+                if (chroma == null) return result;
+                var status = chroma.Status();
+                result = string.Format("{0} ({1})", result, status == string.Empty ? "Luma only" : status);
+                return result;
+            }
+
             public override void Reset()
             {
                 DisposeHelper.Dispose(ref m_Buffer1);
@@ -165,7 +175,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get
                 {
                     return ChromaScalers.FirstOrDefault(s => s.Script.Descriptor.Guid == ChromaScalerGuid) ??
-                           (IChromaScaler)new DefaultChromaScaler();
+                           (IChromaScaler) new DefaultChromaScaler();
                 }
             }
 
