@@ -74,7 +74,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return m_SourceFilter;
 
             if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
-                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), new InternalChromaScaler(m_SourceFilter));
+                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), new InternalChromaScaler(m_SourceFilter), Renderer.LumaSize);
 
             return m_SourceFilter;
         }
