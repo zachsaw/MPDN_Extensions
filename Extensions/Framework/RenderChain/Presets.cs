@@ -125,6 +125,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Chain.Reset();
         }
 
+        public override string Active()
+        {
+            return Chain.Status();
+        }
+
         #endregion
 
         public override string ToString()

@@ -28,9 +28,26 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected RenderChain()
         {
             ShaderCache.Load();
+            Status = Active;
         }
 
         public abstract IFilter CreateFilter(IFilter input);
+
+        #region Status
+
+        public Func<String> Status;
+
+        public virtual string Active()
+        {
+            return GetType().Name;
+        }
+
+        public string Inactive()
+        {
+            return "";
+        }
+
+        #endregion
 
         #region Operators
 

@@ -64,8 +64,13 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 var chromaFilter = input as ChromaFilter;
                 if (chromaFilter != null)
-                    return chromaFilter.MakeNew(this);
+                {
+                    var result = chromaFilter.MakeNew(this);
+                    Status = () => result.Active() ? Active() : Inactive();
+                    return result;
+                }
 
+                Status = Inactive;
                 return input;
             }
 

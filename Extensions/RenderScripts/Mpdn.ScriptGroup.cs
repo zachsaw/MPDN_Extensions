@@ -102,6 +102,11 @@ namespace Mpdn.Extensions.RenderScripts
                 base.Reset();
             }
 
+            public override string Active()
+            {
+                return SelectedOption.Status();
+            }
+
             #region Hotkey Handling
 
             private readonly Guid m_HotkeyGuid;

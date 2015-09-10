@@ -28,6 +28,12 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 return Options.Aggregate(input, (result, chain) => result + chain);
             }
+
+            public override string Active()
+            {
+                var statuses = Options.Select(chain => chain.Status()).ToArray();
+                return String.Join(" > ", statuses);
+            }
         }
 
         public class ScriptChainScript : RenderChainUi<ScriptChain, ScriptChainDialog>

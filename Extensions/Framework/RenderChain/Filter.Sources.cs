@@ -84,7 +84,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return new ScriptInterfaceDescriptor
                 {
                     WantYuv = YuvFilter != null,
-                    Prescale = LastDependentIndex > 0,
+                    Prescale = this.Active(),
                     PrescaleSize = (Size)OutputSize
                 };
             }
