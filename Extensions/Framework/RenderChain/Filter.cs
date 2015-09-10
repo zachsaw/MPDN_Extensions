@@ -189,5 +189,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
             return result;
         }
+
+        public static string GetDescription(this IScaler scaler)
+        {
+            var result = scaler.GetType().Name;
+            switch (scaler.ScalerType)
+            {
+                case ImageScaler.NearestNeighbour:
+                case ImageScaler.Bilinear:
+                case ImageScaler.Bicubic:
+                case ImageScaler.Softcubic:
+                    return result;
+            }
+            return result + scaler.KernelTaps;
+        }
     }
 }

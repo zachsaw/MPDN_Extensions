@@ -67,11 +67,13 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override string Active()
             {
-                var result = base.Active();
+                var result = string.Format("{0} {1}/{2}", base.Active(), s_NeuronCount[(int)Neurons1],
+                    s_NeuronCount[(int)Neurons2]);
                 var chroma = ChromaScaler as RenderChain;
                 if (chroma == null) return result;
                 var status = chroma.Status();
-                result = string.Format("{0} ({1})", result, status == string.Empty ? "Luma only" : status);
+                status = status == string.Empty ? Renderer.ChromaUpscaler.GetDescription() + " Chroma" : status;
+                result = string.Format("{0} ({1})", result, status);
                 return result;
             }
 

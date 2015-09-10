@@ -63,6 +63,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 .Compile();
             m_Filter.Initialize();
 
+            // TODO: prepend and append decscription of prescalers and postscalers (i.e. MPDN internal scalers) if any
             Debug.WriteLine(Chain.Status());
         }
 
