@@ -66,8 +66,18 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 .Compile();
             m_Filter.Initialize();
 
-            // TODO: prepend and append decscription of prescalers and postscalers (i.e. MPDN internal scalers) if any
-            RenderChainDescription.Update(Chain.Status());
+            UpdateStatus();
+        }
+
+        public void UpdateStatus()
+        {
+            var status = m_SourceFilter.Status() + "; " + Chain.Status();
+
+            var postScaler = m_Filter as ResizeFilter;
+            if (postScaler != null)
+                status += "; " + postScaler.Status();
+
+            RenderChainDescription.Update(status);
         }
 
         public IResizeableFilter MakeInitialFilter()
