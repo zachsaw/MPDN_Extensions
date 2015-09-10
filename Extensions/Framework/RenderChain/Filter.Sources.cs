@@ -115,7 +115,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 status += " > " + Renderer.ChromaUpscaler.GetDescription();
 
             if (lumaSize.Width < chromaSize.Width || lumaSize.Height < chromaSize.Height)
-                status += " < " + Renderer.ChromaDownscaler.GetDescription();
+                status += " < " + Renderer.ChromaDownscaler.GetDescription(true);
 
             status += "; Luma:";
 
@@ -124,7 +124,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 status += " > " + Renderer.LumaUpscaler.GetDescription();
 
             if (OutputSize.Width < inputSize.Width || OutputSize.Height < inputSize.Height)
-                status += " < " + Renderer.LumaDownscaler.GetDescription();
+                status += " < " + Renderer.LumaDownscaler.GetDescription(true);
 
             return status.Trim();
         }
