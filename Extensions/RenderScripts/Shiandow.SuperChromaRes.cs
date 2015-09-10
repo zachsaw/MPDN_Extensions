@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return x == Math.Truncate(x);
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 return this.CreateChromaFilter(input);
             }

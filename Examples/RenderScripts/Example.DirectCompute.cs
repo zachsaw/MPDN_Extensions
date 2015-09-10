@@ -31,7 +31,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
                 if (!Renderer.IsDx11Avail || Renderer.RenderQuality.PerformanceMode())
                     return new NullFilter(); // display blank screen on purpose

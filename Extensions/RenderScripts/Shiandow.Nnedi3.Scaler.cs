@@ -93,7 +93,7 @@ namespace Mpdn.Extensions.RenderScripts
                 DisposeHelper.Dispose(ref m_Filter2);
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 Cleanup();
 

@@ -107,24 +107,29 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (!this.Active())
                 return "";
 
-            var status = "Chroma:";
-
+            var chromastatus = "";
             var lumaSize = Renderer.LumaSize;
             var chromaSize = Renderer.ChromaSize;
             if (lumaSize.Width > chromaSize.Width || lumaSize.Height > chromaSize.Height)
-                status += " > " + Renderer.ChromaUpscaler.GetDescription();
+                chromastatus += " > " + Renderer.ChromaUpscaler.GetDescription();
 
             if (lumaSize.Width < chromaSize.Width || lumaSize.Height < chromaSize.Height)
-                status += " < " + Renderer.ChromaDownscaler.GetDescription();
+                chromastatus += " < " + Renderer.ChromaDownscaler.GetDescription(true);
 
-            status += "; Luma:";
-
+            var lumastatus = "";
             var inputSize = Renderer.VideoSize;
             if (OutputSize.Width > inputSize.Width || OutputSize.Height > inputSize.Height)
-                status += " > " + Renderer.LumaUpscaler.GetDescription();
+                lumastatus += " > " + Renderer.LumaUpscaler.GetDescription();
 
             if (OutputSize.Width < inputSize.Width || OutputSize.Height < inputSize.Height)
-                status += " < " + Renderer.LumaDownscaler.GetDescription();
+                lumastatus += " < " + Renderer.LumaDownscaler.GetDescription(true);
+
+            if (chromastatus != "")
+                chromastatus = "Chroma:" + chromastatus;
+            if (lumastatus != "")
+                lumastatus = "Luma:" + lumastatus;
+
+            var status = chromastatus + "; " + lumastatus;
 
             return status.Trim();
         }

@@ -90,7 +90,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "ChromaScaler"; }
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 return this.CreateChromaFilter(input);
             }

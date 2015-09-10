@@ -42,7 +42,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 IFilter xbr;
 

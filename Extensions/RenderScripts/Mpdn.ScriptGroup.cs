@@ -85,7 +85,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return Options.FindIndex(o => o.Guid == guid);
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 return SelectedOption != null ? input + SelectedOption : input;
             }
@@ -102,9 +102,16 @@ namespace Mpdn.Extensions.RenderScripts
                 base.Reset();
             }
 
-            public override string Active()
+            public override Func<string> Status
             {
-                return SelectedOption.Status();
+                get { return SelectedOption != null ? SelectedOption.Status : Inactive; }
+                protected set { throw new NotImplementedException(); }
+            }
+
+            public override void MarkInactive()
+            {
+                if (SelectedOption != null)
+                    SelectedOption.MarkInactive();
             }
 
             #region Hotkey Handling

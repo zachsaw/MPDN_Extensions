@@ -71,7 +71,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return typeof (NNedi3).Name; }
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 return this.CreateChromaFilter(input);
             }

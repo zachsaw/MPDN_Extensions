@@ -24,8 +24,9 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class ScriptChain : PresetCollection
         {
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
+                Status = Active;
                 return Options.Aggregate(input, (result, chain) => result + chain);
             }
 

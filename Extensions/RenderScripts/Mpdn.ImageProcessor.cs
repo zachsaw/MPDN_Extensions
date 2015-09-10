@@ -54,7 +54,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return ShaderDataFilePath; }
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 return ShaderFileNames.Aggregate(input,
                     (current, filename) =>

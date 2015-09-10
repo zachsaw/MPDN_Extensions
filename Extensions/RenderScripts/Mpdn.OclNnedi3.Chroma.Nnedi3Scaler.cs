@@ -72,7 +72,7 @@ namespace Mpdn.Extensions.RenderScripts
                     string.Format("-cl-fast-relaxed-math -D {0}", u ? "CHROMA_U=1" : "CHROMA_V=1"));
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 return this.CreateChromaFilter(input);
             }

@@ -32,7 +32,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
                 var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling: true);
                 return new ShaderFilter(shader, sourceFilter, new TextureSourceFilter<ISourceTexture3D>(m_Texture3D));

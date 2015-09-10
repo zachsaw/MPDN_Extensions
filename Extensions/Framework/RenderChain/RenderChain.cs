@@ -30,11 +30,27 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Status = Active;
         }
 
-        public abstract IFilter CreateFilter(IFilter input);
+        protected abstract IFilter CreateFilter(IFilter input);
+
+        public IFilter MakeFilter(IFilter filter)
+        {
+            Status = null;
+            var result = CreateFilter(filter);
+            if (Status == null)
+            {
+                Status = filter == result ? (Func<String>) Inactive : Active;
+            }
+            return result;
+        }
 
         #region Status
 
-        public Func<string> Status;
+        public virtual Func<string> Status { get; protected set; }
+
+        public virtual void MarkInactive()
+        {
+            Status = Inactive;
+        }
 
         public virtual string Active()
         {
@@ -195,7 +211,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Compiler = compiler;
         }
 
-        public override IFilter CreateFilter(IFilter input)
+        protected override IFilter CreateFilter(IFilter input)
         {
             return m_Compiler(input);
         }

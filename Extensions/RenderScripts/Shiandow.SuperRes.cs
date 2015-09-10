@@ -83,7 +83,7 @@ namespace Mpdn.Extensions.RenderScripts
                 m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.66f, false) : new Bilinear();
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 return CreateFilter(input, input + SelectedOption);
             }

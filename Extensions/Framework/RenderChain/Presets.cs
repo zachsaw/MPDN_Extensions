@@ -100,7 +100,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Guid = Guid.NewGuid();
         }
 
-        public override IFilter CreateFilter(IFilter input)
+        protected override IFilter CreateFilter(IFilter input)
         {
             return Script != null ? input + Chain : input;
         }
@@ -119,15 +119,20 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             base.Reset();
 
-            if (Script == null)
-                return;
-
-            Chain.Reset();
+            if (Script != null)
+                Chain.Reset();
         }
 
-        public override string Active()
+        public override Func<string> Status
         {
-            return Chain.Status();
+            get { return Script != null ? Chain.Status : Inactive; }
+            protected set { throw new NotImplementedException(); }
+        }
+
+        public override void MarkInactive()
+        {
+            if (Script != null)
+                Chain.MarkInactive();
         }
 
         #endregion
@@ -180,7 +185,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Options = new List<Preset>();
         }
 
-        public override IFilter CreateFilter(IFilter input)
+        protected override IFilter CreateFilter(IFilter input)
         {
             throw new NotImplementedException();
         }

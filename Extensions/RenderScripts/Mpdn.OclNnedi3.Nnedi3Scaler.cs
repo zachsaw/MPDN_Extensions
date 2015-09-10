@@ -181,7 +181,7 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 DisposeHelper.Dispose(ref m_Buffer1);
                 DisposeHelper.Dispose(ref m_Buffer2);

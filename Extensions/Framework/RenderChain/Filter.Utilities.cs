@@ -233,10 +233,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 status += " > " + m_Upscaler.GetDescription();
 
             if (OutputSize.Width == inputSize.Width && OutputSize.Height == inputSize.Height)
-                status += " = " + m_Convolver.GetDescription();
+                status += " = " + m_Convolver.GetDescription(true);
 
             if (OutputSize.Width < inputSize.Width || OutputSize.Height < inputSize.Height)
-                status += " < " + m_Downscaler.GetDescription();
+                status += " < " + m_Downscaler.GetDescription(true);
 
             return status.Trim();
         }

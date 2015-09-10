@@ -36,7 +36,7 @@ namespace Mpdn.Extensions.RenderScripts
                 grain = true;
             }
 
-            public override IFilter CreateFilter(IFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 if (Renderer.InputFormat.IsRgb())
                     return input;
