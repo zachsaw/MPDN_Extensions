@@ -105,7 +105,7 @@ namespace Mpdn.Extensions.RenderScripts
             public override Func<string> Status
             {
                 get { return SelectedOption != null ? SelectedOption.Status : Inactive; }
-                protected set { throw new NotImplementedException(); }
+                protected set { }
             }
 
             public override void MarkInactive()

@@ -126,7 +126,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public override Func<string> Status
         {
             get { return Script != null ? Chain.Status : Inactive; }
-            protected set { throw new NotImplementedException(); }
+            protected set { }
         }
 
         public override void MarkInactive()
