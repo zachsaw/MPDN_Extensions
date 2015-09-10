@@ -20,6 +20,7 @@ using System.Linq;
 using System.Threading;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -74,16 +75,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_VideoBoxSize = Gui.VideoBox.ClientSize;
         }
 
-        public static long AtomicRead(long target)
-        {
-            return Interlocked.CompareExchange(ref target, 0, 0);
-        }
-
-        public static void AtomicWrite(ref long target, long value)
-        {
-            Interlocked.Exchange(ref target, value);
-        }
-
         private void OnPaintOverlay(object sender, EventArgs eventArgs)
         {
             // Warning: This is called from a foreign thread
@@ -93,7 +84,14 @@ namespace Mpdn.Extensions.PlayerExtensions
                 m_Text.Hide();
                 return;
             }
-            var text = "Render Chain:\r\n" + RenderChainDescription.Text.Replace(" > ", "\r\n > ");
+
+            var desc = (RenderChainDescription.Text ?? string.Empty).Trim();
+            if (Extension.RenderScript == null)
+            {
+                desc = "Internal MPDN scalers";
+            }
+
+            var text = "Render Chain:\r\n" + desc.Replace(" > ", "\r\n > ");
             text = text.Trim('\r', '\n');
             var width = m_Text.MeasureWidth(text);
             var height = text.Count(c => c == '\n')*(TEXT_HEIGHT);
