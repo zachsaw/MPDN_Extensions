@@ -17,18 +17,20 @@
 using System;
 using System.Drawing;
 using System.Linq;
-using System.Threading;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
+using Timer = System.Windows.Forms.Timer;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
     public class ScriptChainOsdPainter : PlayerExtension<ScriptChainOsdPainterSettings>
     {
         private const int TEXT_HEIGHT = 16;
+        private Timer m_Timer;
         private IText m_Text;
         private Size m_VideoBoxSize;
+        private bool m_Resizing;
 
         public override ExtensionUiDescriptor Descriptor
         {
@@ -45,7 +47,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public override void Initialize()
         {
-            m_Text = Player.CreateText("Arial", TEXT_HEIGHT, TextFontStyle.Regular);
+            m_Text = Player.CreateText("Verdana", TEXT_HEIGHT, TextFontStyle.Regular);
             m_VideoBoxSize = Gui.VideoBox.ClientSize;
             DynamicHotkeys.RegisterHotkey(Guid.NewGuid(), "Ctrl+K", () =>
             {
@@ -58,6 +60,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                 Gui.VideoBox.Invalidate();
             });
 
+            m_Timer = new Timer { Interval = 30 };
+            m_Timer.Tick += TimerOnTick;
             Player.PaintOverlay += OnPaintOverlay;
             Gui.VideoBox.SizeChanged += VideoBoxResize;
         }
@@ -70,14 +74,26 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_Text.Dispose();
         }
 
+        private void TimerOnTick(object sender, EventArgs eventArgs)
+        {
+            m_Timer.Stop();
+            m_VideoBoxSize = Gui.VideoBox.ClientSize;
+            m_Resizing = false;
+        }
+
         private void VideoBoxResize(object sender, EventArgs eventArgs)
         {
-            m_VideoBoxSize = Gui.VideoBox.ClientSize;
+            m_Resizing = true;
+            m_Timer.Stop();
+            m_Timer.Start();
         }
 
         private void OnPaintOverlay(object sender, EventArgs eventArgs)
         {
             // Warning: This is called from a foreign thread
+
+            if (m_Resizing)
+                return;
 
             if (!Settings.Enabled)
             {
@@ -88,19 +104,43 @@ namespace Mpdn.Extensions.PlayerExtensions
             var desc = (RenderChainDescription.Text ?? string.Empty).Trim();
             if (Extension.RenderScript == null)
             {
-                desc = "Internal MPDN scalers";
+                desc = GetInternalScalerDesc();
             }
 
-            var text = "Render Chain:\r\n" + desc.Replace(" > ", "\r\n > ");
+            var text = "Render Chain:\r\n    " + desc.Replace(" > ", "\r\n     > ");
             text = text.Trim('\r', '\n');
             var width = m_Text.MeasureWidth(text);
             var height = text.Count(c => c == '\n')*(TEXT_HEIGHT);
             var size = m_VideoBoxSize;
             const int rightOffset = 5;
             const int bottomOffset = 5;
-            var location = new Point(size.Width - width - rightOffset - 25, 30);
+            var location = new Point(size.Width - width - rightOffset - 40, 30);
             m_Text.Show(text, location, Color.FromArgb(255, 0xBB, 0xBB, 0xBB),
-                Color.FromArgb(255*60/100, Color.Black), new Padding(5, 5, rightOffset, bottomOffset + height));
+                Color.FromArgb(255*40/100, Color.Black), new Padding(5, 5, rightOffset, bottomOffset + height));
+        }
+
+        private static string GetInternalScalerDesc()
+        {
+            var targetSize = Renderer.TargetSize;
+            var lumaSize = Renderer.LumaSize;
+            var chromaSize = Renderer.ChromaSize;
+            var lumaUpscaler = Renderer.LumaUpscaler;
+            var chromaUpscaler = Renderer.ChromaUpscaler;
+            var lumaDownscaler = Renderer.LumaDownscaler;
+            var chromaDownscaler = Renderer.ChromaDownscaler;
+            var lumaScalerX = (targetSize.Width == lumaSize.Width)
+                ? "None"
+                : (targetSize.Width > lumaSize.Width) ? lumaUpscaler.GetDescription() : lumaDownscaler.GetDescription(true);
+            var lumaScalerY = (targetSize.Height == lumaSize.Height)
+                ? "None"
+                : (targetSize.Height > lumaSize.Height) ? lumaUpscaler.GetDescription() : lumaDownscaler.GetDescription(true);
+            var chromaScalerX = (targetSize.Width == chromaSize.Width)
+                ? "None"
+                : (targetSize.Width > chromaSize.Width) ? chromaUpscaler.GetDescription() : chromaDownscaler.GetDescription(true);
+            var chromaScalerY = (targetSize.Height == chromaSize.Height)
+                ? "None"
+                : (targetSize.Height > chromaSize.Height) ? chromaUpscaler.GetDescription() : chromaDownscaler.GetDescription(true);
+            return string.Format("Luma X: {0} Y: {1}\r\n    Chroma X: {2} Y: {3}", lumaScalerX, lumaScalerY, chromaScalerX, chromaScalerY);
         }
     }
 

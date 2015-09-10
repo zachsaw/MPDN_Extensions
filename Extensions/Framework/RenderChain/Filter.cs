@@ -190,8 +190,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return result;
         }
 
-        public static string GetDescription(this IScaler scaler)
+        public static string GetDescription(this IScaler scaler, bool useDownscalerName = false)
         {
+            if (useDownscalerName)
+            {
+                switch (scaler.ScalerType)
+                {
+                    case ImageScaler.NearestNeighbour:
+                        return "Box";
+                    case ImageScaler.Bilinear:
+                        return "Triangle";
+                }
+            }
+
             var result = scaler.GetType().Name;
             switch (scaler.ScalerType)
             {
