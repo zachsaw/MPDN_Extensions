@@ -31,7 +31,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override string Active()
             {
-                var statuses = Options.Select(chain => chain.Status()).ToArray();
+                var statuses = Options.Select(chain => chain.Status()).Select(str => !String.IsNullOrEmpty(str)).ToArray();
                 return String.Join(" > ", statuses);
             }
         }
