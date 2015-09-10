@@ -102,6 +102,33 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return new YuvFilter(this);
         }
 
+        public string Status()
+        {
+            if (!this.Active())
+                return "";
+
+            var status = "Chroma:";
+
+            var lumaSize = Renderer.LumaSize;
+            var chromaSize = Renderer.ChromaSize;
+            if (lumaSize.Width > chromaSize.Width || lumaSize.Height > chromaSize.Height)
+                status += " > " + Renderer.ChromaUpscaler.GetDescription();
+
+            if (lumaSize.Width < chromaSize.Width || lumaSize.Height < chromaSize.Height)
+                status += " < " + Renderer.ChromaDownscaler.GetDescription();
+
+            status += "; Luma:";
+
+            var inputSize = Renderer.VideoSize;
+            if (OutputSize.Width > inputSize.Width || OutputSize.Height > inputSize.Height)
+                status += " > " + Renderer.LumaUpscaler.GetDescription();
+
+            if (OutputSize.Width < inputSize.Width || OutputSize.Height < inputSize.Height)
+                status += " < " + Renderer.LumaDownscaler.GetDescription();
+
+            return status.Trim();
+        }
+
         #region IFilter Implementation
 
         private ITargetTexture OutputTarget { get; set; }
