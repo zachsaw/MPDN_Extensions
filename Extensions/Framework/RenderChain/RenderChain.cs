@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 
@@ -45,12 +46,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region Status
 
-        public virtual Func<string> Status { get; protected set; }
-
-        public virtual void MarkInactive()
-        {
-            Status = Inactive;
-        }
+        public virtual Func<string> Status { get; set; }
 
         public virtual string Active()
         {
@@ -200,6 +196,17 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #endregion
 
+    }
+
+    public  static class StatusHelper
+    {
+        public static Func<String> Append(this Func<String> first, Func<String> second)
+        {
+            return () => String.Join("; ", 
+                (new[] { first(), second() })
+                .Where(str => !String.IsNullOrEmpty(str))
+                .ToArray());
+        }
     }
 
     public class StaticChain : RenderChain
