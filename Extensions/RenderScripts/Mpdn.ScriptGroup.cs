@@ -45,7 +45,7 @@ namespace Mpdn.Extensions.RenderScripts
             [YAXDontSerialize]
             public Preset SelectedOption
             {
-                get { return Options.ElementAtOrDefault(SelectedIndex); }
+                get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) : null; }
             }
 
             [YAXDontSerialize]
@@ -105,13 +105,7 @@ namespace Mpdn.Extensions.RenderScripts
             public override Func<string> Status
             {
                 get { return SelectedOption != null ? SelectedOption.Status : Inactive; }
-                protected set { }
-            }
-
-            public override void MarkInactive()
-            {
-                if (SelectedOption != null)
-                    SelectedOption.MarkInactive();
+                set { if (SelectedOption != null) SelectedOption.Status = value; }
             }
 
             #region Hotkey Handling

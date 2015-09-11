@@ -73,7 +73,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                return this.CreateChromaFilter(input);
+                return this.MakeChromaFilter(input);
             }
 
             private string GetShaderFileName(NNedi3Neurons neurons, bool u)

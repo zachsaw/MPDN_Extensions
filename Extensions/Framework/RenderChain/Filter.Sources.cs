@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -107,48 +107,15 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (!this.Active())
                 return "";
 
-            var lumaSize = Renderer.LumaSize;
-            var chromaSize = Renderer.ChromaSize;
-            var inputSize = Renderer.VideoSize;
+            var chromastatus = FilterHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+            var lumastatus = FilterHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
 
-            var chromaXstatus = "";
-            var chromaYstatus = "";
+            if (chromastatus != "")
+                chromastatus = "Chroma:" + chromastatus + (lumastatus != "" ? "; " : "");
+            if (lumastatus != "")
+                lumastatus = "Luma:" + lumastatus;
 
-            if (lumaSize.Width > chromaSize.Width)
-                chromaXstatus += " > " + Renderer.ChromaUpscaler.GetDescription();
-
-            if (lumaSize.Height > chromaSize.Height)
-                chromaYstatus += " > " + Renderer.ChromaUpscaler.GetDescription();
-
-            if (lumaSize.Width < chromaSize.Width)
-                chromaXstatus += " < " + Renderer.ChromaDownscaler.GetDescription(true);
-
-            if (lumaSize.Height < chromaSize.Height)
-                chromaYstatus += " < " + Renderer.ChromaDownscaler.GetDescription(true);
-
-            var lumaXstatus = "";
-            var lumaYstatus = "";
-
-            if (OutputSize.Width > inputSize.Width)
-                lumaXstatus += " > " + Renderer.LumaUpscaler.GetDescription();
-
-            if (OutputSize.Height > inputSize.Height)
-                lumaYstatus += " > " + Renderer.LumaUpscaler.GetDescription();
-
-            if (OutputSize.Width < inputSize.Width)
-                lumaXstatus += " < " + Renderer.LumaDownscaler.GetDescription(true);
-
-            if (OutputSize.Height < inputSize.Height)
-                lumaYstatus += " < " + Renderer.LumaDownscaler.GetDescription(true);
-
-            if (chromaXstatus != "")
-                chromaXstatus = string.Format("Chroma X:{0} Y:{1}", chromaXstatus, chromaYstatus);
-            if (lumaXstatus != "")
-                lumaXstatus = string.Format("Luma X:{0} Y:{1}", lumaXstatus, lumaYstatus);
-
-            var status = chromaXstatus + "; " + lumaXstatus;
-
-            return status.Trim();
+            return chromastatus + lumastatus;
         }
 
         #region IFilter Implementation
