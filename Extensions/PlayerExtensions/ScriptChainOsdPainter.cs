@@ -127,26 +127,15 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static string GetInternalScalerDesc()
         {
-            var targetSize = Renderer.TargetSize;
-            var lumaSize = Renderer.LumaSize;
-            var chromaSize = Renderer.ChromaSize;
-            var lumaUpscaler = Renderer.LumaUpscaler;
-            var chromaUpscaler = Renderer.ChromaUpscaler;
-            var lumaDownscaler = Renderer.LumaDownscaler;
-            var chromaDownscaler = Renderer.ChromaDownscaler;
-            var lumaScalerX = (targetSize.Width == lumaSize.Width)
-                ? "None"
-                : (targetSize.Width > lumaSize.Width) ? "> " + lumaUpscaler.GetDescription() : "< " + lumaDownscaler.GetDescription(true);
-            var lumaScalerY = (targetSize.Height == lumaSize.Height)
-                ? "None"
-                : (targetSize.Height > lumaSize.Height) ? "> " + lumaUpscaler.GetDescription() : "< " + lumaDownscaler.GetDescription(true);
-            var chromaScalerX = (targetSize.Width == chromaSize.Width)
-                ? "None"
-                : (targetSize.Width > chromaSize.Width) ? "> " + chromaUpscaler.GetDescription() : "< " + chromaDownscaler.GetDescription(true);
-            var chromaScalerY = (targetSize.Height == chromaSize.Height)
-                ? "None"
-                : (targetSize.Height > chromaSize.Height) ? "> " + chromaUpscaler.GetDescription() : "< " + chromaDownscaler.GetDescription(true);
-            return string.Format("Chroma X: {0} Y: {1}\r\n    Luma X: {2} Y: {3}", chromaScalerX, chromaScalerY, lumaScalerX, lumaScalerY);
+            var chromastatus = FilterHelpers.ScaleDescription(Renderer.ChromaSize, Renderer.TargetSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+            var lumastatus = FilterHelpers.ScaleDescription(Renderer.VideoSize, Renderer.TargetSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+
+            if (chromastatus != "")
+                chromastatus = "Chroma:" + chromastatus + (lumastatus != "" ? "; " : "");
+            if (lumastatus != "")
+                lumastatus = "Luma:" + lumastatus;
+
+            return chromastatus + lumastatus;
         }
     }
 
