@@ -137,7 +137,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
                     chain.Status = chain.Inactive;
             }
             result = result.SetSize(TargetSize);
-            chain.Status = chain.Status.Append(result.ResizerDescription);
+
+            if (chain != null)
+                chain.Status = chain.Status.Append(result.ResizerDescription);
 
             return result.Compile();
         }
