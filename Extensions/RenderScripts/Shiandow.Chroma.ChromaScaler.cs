@@ -92,7 +92,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                return this.CreateChromaFilter(input);
+                return this.MakeChromaFilter(input);
             }
 
             public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
@@ -105,7 +105,11 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Vector2 offset = chromaOffset + new Vector2(0.5f, 0.5f);
                 var chromaShader = CompileShader("Chroma.hlsl").Configure(arguments: new[] { B, C, offset[0], offset[1] });
-                return new ShaderFilter(chromaShader, lumaInput.SetSize(targetSize), chromaInput).ConvertToRgb();
+
+                var resizedLuma = lumaInput.SetSize(targetSize);
+                Status = this.ChromaScalerStatus(resizedLuma);
+
+                return new ShaderFilter(chromaShader, resizedLuma, chromaInput).ConvertToRgb();
             }
         }
 

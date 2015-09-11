@@ -32,8 +32,9 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                return this.CreateChromaFilter(input);
+                return this.MakeChromaFilter(input);
             }
+
 
             public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
@@ -58,7 +59,10 @@ namespace Mpdn.Extensions.RenderScripts
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
                     return null;
 
-                return GetEwaFilter(shader, new[] { lumaInput.SetSize(targetSize), chromaInput }).ConvertToRgb();
+                var resizedLuma = lumaInput.SetSize(targetSize);
+                Status = this.ChromaScalerStatus(resizedLuma);
+
+                return GetEwaFilter(shader, new[] { resizedLuma, chromaInput }).ConvertToRgb();
             }
         }
 
