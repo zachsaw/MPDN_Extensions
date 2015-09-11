@@ -146,7 +146,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             var chromaScalerY = (targetSize.Height == chromaSize.Height)
                 ? "None"
                 : (targetSize.Height > chromaSize.Height) ? "> " + chromaUpscaler.GetDescription() : "< " + chromaDownscaler.GetDescription(true);
-            return string.Format("Luma X: {0} Y: {1}\r\n    Chroma X: {2} Y: {3}", lumaScalerX, lumaScalerY, chromaScalerX, chromaScalerY);
+            return string.Format("Chroma X: {0} Y: {1}\r\n    Luma X: {2} Y: {3}", chromaScalerX, chromaScalerY, lumaScalerX, lumaScalerY);
         }
     }
 

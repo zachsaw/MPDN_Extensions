@@ -73,6 +73,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             var status = m_SourceFilter.Status() + "; " + Chain.Status();
 
+            // BUG: m_Filter may not be a ResizeFilter - it could be an RgbFilter if the final step is a ConvertToRgb
             var postScaler = m_Filter as ResizeFilter;
             if (postScaler != null)
                 status += "; " + postScaler.Status();

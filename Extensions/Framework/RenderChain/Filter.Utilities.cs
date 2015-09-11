@@ -228,17 +228,28 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return "";
 
             var inputSize = InputFilters[0].OutputSize;
-            var status = "";
-            if (OutputSize.Width > inputSize.Width || OutputSize.Height > inputSize.Height)
-                status += " > " + m_Upscaler.GetDescription();
+            var statusX = "";
+            var statusY = "";
 
-            if (OutputSize.Width == inputSize.Width && OutputSize.Height == inputSize.Height)
-                status += " = " + m_Convolver.GetDescription(true);
+            if (OutputSize.Width > inputSize.Width)
+                statusX += " > " + m_Upscaler.GetDescription();
 
-            if (OutputSize.Width < inputSize.Width || OutputSize.Height < inputSize.Height)
-                status += " < " + m_Downscaler.GetDescription(true);
+            if (OutputSize.Width == inputSize.Width)
+                statusX += " = " + m_Convolver.GetDescription(true);
 
-            return status.Trim();
+            if (OutputSize.Width < inputSize.Width)
+                statusX += " < " + m_Downscaler.GetDescription(true);
+
+            if (OutputSize.Height > inputSize.Height)
+                statusY += " > " + m_Upscaler.GetDescription();
+
+            if (OutputSize.Height == inputSize.Height)
+                statusY += " = " + m_Convolver.GetDescription(true);
+
+            if (OutputSize.Height < inputSize.Height)
+                statusY += " < " + m_Downscaler.GetDescription(true);
+
+            return string.Format("Image X: {0} Y: {1}", statusX.Trim(), statusY.Trim());
         }
 
         public override TextureSize OutputSize

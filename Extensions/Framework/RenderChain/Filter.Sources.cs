@@ -107,29 +107,46 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (!this.Active())
                 return "";
 
-            var chromastatus = "";
             var lumaSize = Renderer.LumaSize;
             var chromaSize = Renderer.ChromaSize;
-            if (lumaSize.Width > chromaSize.Width || lumaSize.Height > chromaSize.Height)
-                chromastatus += " > " + Renderer.ChromaUpscaler.GetDescription();
-
-            if (lumaSize.Width < chromaSize.Width || lumaSize.Height < chromaSize.Height)
-                chromastatus += " < " + Renderer.ChromaDownscaler.GetDescription(true);
-
-            var lumastatus = "";
             var inputSize = Renderer.VideoSize;
-            if (OutputSize.Width > inputSize.Width || OutputSize.Height > inputSize.Height)
-                lumastatus += " > " + Renderer.LumaUpscaler.GetDescription();
 
-            if (OutputSize.Width < inputSize.Width || OutputSize.Height < inputSize.Height)
-                lumastatus += " < " + Renderer.LumaDownscaler.GetDescription(true);
+            var chromaXstatus = "";
+            var chromaYstatus = "";
 
-            if (chromastatus != "")
-                chromastatus = "Chroma:" + chromastatus;
-            if (lumastatus != "")
-                lumastatus = "Luma:" + lumastatus;
+            if (lumaSize.Width > chromaSize.Width)
+                chromaXstatus += " > " + Renderer.ChromaUpscaler.GetDescription();
 
-            var status = chromastatus + "; " + lumastatus;
+            if (lumaSize.Height > chromaSize.Height)
+                chromaYstatus += " > " + Renderer.ChromaUpscaler.GetDescription();
+
+            if (lumaSize.Width < chromaSize.Width)
+                chromaXstatus += " < " + Renderer.ChromaDownscaler.GetDescription(true);
+
+            if (lumaSize.Height < chromaSize.Height)
+                chromaYstatus += " < " + Renderer.ChromaDownscaler.GetDescription(true);
+
+            var lumaXstatus = "";
+            var lumaYstatus = "";
+
+            if (OutputSize.Width > inputSize.Width)
+                lumaXstatus += " > " + Renderer.LumaUpscaler.GetDescription();
+
+            if (OutputSize.Height > inputSize.Height)
+                lumaYstatus += " > " + Renderer.LumaUpscaler.GetDescription();
+
+            if (OutputSize.Width < inputSize.Width)
+                lumaXstatus += " < " + Renderer.LumaDownscaler.GetDescription(true);
+
+            if (OutputSize.Height < inputSize.Height)
+                lumaYstatus += " < " + Renderer.LumaDownscaler.GetDescription(true);
+
+            if (chromaXstatus != "")
+                chromaXstatus = string.Format("Chroma X:{0} Y:{1}", chromaXstatus, chromaYstatus);
+            if (lumaXstatus != "")
+                lumaXstatus = string.Format("Luma X:{0} Y:{1}", lumaXstatus, lumaYstatus);
+
+            var status = chromaXstatus + "; " + lumaXstatus;
 
             return status.Trim();
         }
