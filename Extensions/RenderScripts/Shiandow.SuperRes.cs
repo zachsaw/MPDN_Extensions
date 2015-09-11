@@ -93,11 +93,18 @@ namespace Mpdn.Extensions.RenderScripts
                 return x == Math.Truncate(x);
             }
 
+            #region Status
+
+            // Revert ScriptGroups changes to Status
+            public override Func<string> Status { get; set; }
+
             public override string Active()
             {
                 var prescalerStatus = SelectedOption.Status();
-                return prescalerStatus != "" ? String.Format("SuperRes ({0})", prescalerStatus) : "SuperRes";
+                return prescalerStatus != "" ? String.Format("SuperRes ({0})", prescalerStatus.Replace(';', ',')) : "SuperRes";
             }
+
+            #endregion
 
             public IFilter CreateFilter(IFilter original, IFilter initial)
             {
