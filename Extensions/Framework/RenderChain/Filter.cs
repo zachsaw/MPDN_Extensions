@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -177,6 +177,42 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public static bool Active(this IFilter filter)
         {
             return filter.LastDependentIndex > 0;
+        }
+
+        public static string ResizerDescription(this IFilter filter)
+        {
+            var resizer = filter as ResizeFilter;
+            if (resizer != null)
+                return resizer.Status();
+
+            return "";
+        }
+
+        public static string ScaleDescription(TextureSize inputSize, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+        {
+            var xDesc = ScaleDescription(inputSize.Width, outputSize.Width, upscaler, downscaler, convolver);
+            var yDesc = ScaleDescription(inputSize.Height, outputSize.Height, upscaler, downscaler, convolver);
+
+            if (xDesc == yDesc)
+                return xDesc;
+            else if (xDesc != "" && yDesc != "")
+                return String.Format("X:{0} Y:{1}", xDesc, yDesc);
+            else if (xDesc != "")
+                return String.Format("X:{0}", xDesc);
+            else
+                return String.Format("Y:{0}", yDesc);
+        }
+
+        public static string ScaleDescription(int inputDimension, int outputDimension, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+        {
+            if (outputDimension > inputDimension)
+                return "↑" + upscaler.GetDescription();
+            else if (outputDimension < inputDimension)
+                return "↓" + downscaler.GetDescription(true);
+            else if (convolver != null)
+                return "⇄ " + convolver.GetDescription(true);
+            else
+                return "";
         }
 
         public static string GetDescription(this IScaler scaler, bool useDownscalerName = false)

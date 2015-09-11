@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -228,28 +228,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return "";
 
             var inputSize = InputFilters[0].OutputSize;
-            var statusX = "";
-            var statusY = "";
-
-            if (OutputSize.Width > inputSize.Width)
-                statusX += " > " + m_Upscaler.GetDescription();
-
-            if (OutputSize.Width == inputSize.Width)
-                statusX += " = " + m_Convolver.GetDescription(true);
-
-            if (OutputSize.Width < inputSize.Width)
-                statusX += " < " + m_Downscaler.GetDescription(true);
-
-            if (OutputSize.Height > inputSize.Height)
-                statusY += " > " + m_Upscaler.GetDescription();
-
-            if (OutputSize.Height == inputSize.Height)
-                statusY += " = " + m_Convolver.GetDescription(true);
-
-            if (OutputSize.Height < inputSize.Height)
-                statusY += " < " + m_Downscaler.GetDescription(true);
-
-            return string.Format("Image X: {0} Y: {1}", statusX.Trim(), statusY.Trim());
+            return FilterHelpers.ScaleDescription(inputSize, OutputSize, m_Upscaler, m_Downscaler, m_Convolver);
         }
 
         public override TextureSize OutputSize
