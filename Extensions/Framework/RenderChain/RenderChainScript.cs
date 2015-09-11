@@ -29,10 +29,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public RenderChainScript(RenderChain chain)
         {
-            RenderChainDescription.Update(string.Empty);
-
             Chain = chain;
             Chain.Initialize();
+            Status = string.Empty;
         }
 
         ~RenderChainScript()
@@ -48,7 +47,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected virtual void Dispose(bool disposing)
         {
-            RenderChainDescription.Update(string.Empty);
             Chain.Reset();
         }
 
@@ -56,6 +54,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             get { return m_SourceFilter == null ? null : m_SourceFilter.Descriptor; }
         }
+
+        public string Status { get; private set; }
 
         public void Update()
         {
@@ -69,7 +69,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             UpdateStatus();
         }
 
-        public void UpdateStatus()
+        private void UpdateStatus()
         {
             var status = m_SourceFilter.Status() + "; " + Chain.Status();
 
@@ -77,20 +77,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (postScaler != null)
                 status += "; " + postScaler.Status();
 
-            RenderChainDescription.Update(status);
-        }
-
-        public IResizeableFilter MakeInitialFilter()
-        {
-            m_SourceFilter = new SourceFilter();
-
-            if (Renderer.InputFormat.IsRgb())
-                return m_SourceFilter;
-
-            if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
-                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), new InternalChromaScaler(m_SourceFilter), Renderer.LumaSize);
-
-            return m_SourceFilter;
+            Status = status;
         }
 
         public void Render()
@@ -106,6 +93,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
             m_Filter.Reset();
             TexturePool.FlushTextures();
+        }
+
+        private IResizeableFilter MakeInitialFilter()
+        {
+            m_SourceFilter = new SourceFilter();
+
+            if (Renderer.InputFormat.IsRgb())
+                return m_SourceFilter;
+
+            if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
+                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), new InternalChromaScaler(m_SourceFilter), Renderer.LumaSize);
+
+            return m_SourceFilter;
         }
 
         private static void Scale(ITargetTexture output, ITexture2D input)

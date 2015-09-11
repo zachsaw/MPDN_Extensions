@@ -40,6 +40,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CommonMark, Version=0.1.0.0, Culture=neutral, PublicKeyToken=001ef8810438905d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -147,6 +150,12 @@
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.cs" />
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.NativeMethods.cs" />
     <Compile Include="Extensions\PlayerExtensions\DynamicHotkeys.cs" />
+    <Compile Include="Extensions\PlayerExtensions\ScriptChainOsdPainter.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\ScriptChainOsdPainter.ConfigDialog.Designer.cs">
+      <DependentUpon>ScriptChainOsdPainter.ConfigDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\PlayerExtensions\ScriptChainOsdPainter.cs" />
     <Compile Include="Extensions\PlayerExtensions\FullScreenTextPainter.cs" />
     <Compile Include="Extensions\PlayerExtensions\GoTo.cs" />

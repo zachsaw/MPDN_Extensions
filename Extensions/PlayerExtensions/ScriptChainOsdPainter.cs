@@ -24,7 +24,7 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
-    public class ScriptChainOsdPainter : PlayerExtension<ScriptChainOsdPainterSettings>
+    public class ScriptChainOsdPainter : PlayerExtension<ScriptChainOsdPainterSettings, ScriptChainOsdPainterConfigDialog>
     {
         private const int TEXT_HEIGHT = 16;
         private Timer m_Timer;
@@ -39,20 +39,21 @@ namespace Mpdn.Extensions.PlayerExtensions
                 return new ExtensionUiDescriptor
                 {
                     Guid = new Guid("231E26CC-A588-4AF2-AE24-28DC610FA05B"),
-                    Name = "Script Chain OSD Painter",
-                    Description = "Paints script chain OSD"
+                    Name = "Scale Chain OSD Painter",
+                    Description = "Paints scale chain OSD"
                 };
             }
         }
 
         public override void Initialize()
         {
+            base.Initialize();
+
             m_Text = Player.CreateText("Verdana", TEXT_HEIGHT, TextFontStyle.Regular);
             m_VideoBoxSize = Gui.VideoBox.ClientSize;
             DynamicHotkeys.RegisterHotkey(Guid.NewGuid(), "Ctrl+K", () =>
             {
-                Settings.Enabled = !Settings.Enabled;
-                // TODO: Persist Settings.Enabled (create a config dialog)
+                Settings.ShowOsd = !Settings.ShowOsd;
 
                 if (Player.State == PlayerState.Playing)
                     return;
@@ -72,6 +73,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.PaintOverlay -= OnPaintOverlay;
 
             m_Text.Dispose();
+
+            base.Destroy();
         }
 
         private void TimerOnTick(object sender, EventArgs eventArgs)
@@ -95,24 +98,22 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (m_Resizing)
                 return;
 
-            if (!Settings.Enabled)
+            if (!Settings.ShowOsd)
             {
                 m_Text.Hide();
                 return;
             }
 
-            var desc = (RenderChainDescription.Text ?? string.Empty).Trim();
-            if (Extension.RenderScript == null)
-            {
-                desc = GetInternalScalerDesc();
-            }
+            var script = Extension.RenderScript as RenderChainScript;
+            var desc = script == null ? GetInternalScalerDesc() : script.Status;
+            desc = desc.Trim();
 
             string[] descriptions = desc.Split(';')
                 .Select(str => str.Trim())
                 .Where(str => !String.IsNullOrEmpty(str))
                 .ToArray();
 
-            var text = "Render Chain:\r\n" + String.Join("\r\n", descriptions);
+            var text = "Render Chain:\r\n    " + String.Join("\r\n    ", descriptions);
             text = text.Trim('\r', '\n');
             var width = m_Text.MeasureWidth(text);
             var height = text.Count(c => c == '\n')*(TEXT_HEIGHT);
@@ -135,16 +136,16 @@ namespace Mpdn.Extensions.PlayerExtensions
             var chromaDownscaler = Renderer.ChromaDownscaler;
             var lumaScalerX = (targetSize.Width == lumaSize.Width)
                 ? "None"
-                : (targetSize.Width > lumaSize.Width) ? lumaUpscaler.GetDescription() : lumaDownscaler.GetDescription(true);
+                : (targetSize.Width > lumaSize.Width) ? "> " + lumaUpscaler.GetDescription() : "< " + lumaDownscaler.GetDescription(true);
             var lumaScalerY = (targetSize.Height == lumaSize.Height)
                 ? "None"
-                : (targetSize.Height > lumaSize.Height) ? lumaUpscaler.GetDescription() : lumaDownscaler.GetDescription(true);
+                : (targetSize.Height > lumaSize.Height) ? "> " + lumaUpscaler.GetDescription() : "< " + lumaDownscaler.GetDescription(true);
             var chromaScalerX = (targetSize.Width == chromaSize.Width)
                 ? "None"
-                : (targetSize.Width > chromaSize.Width) ? chromaUpscaler.GetDescription() : chromaDownscaler.GetDescription(true);
+                : (targetSize.Width > chromaSize.Width) ? "> " + chromaUpscaler.GetDescription() : "< " + chromaDownscaler.GetDescription(true);
             var chromaScalerY = (targetSize.Height == chromaSize.Height)
                 ? "None"
-                : (targetSize.Height > chromaSize.Height) ? chromaUpscaler.GetDescription() : chromaDownscaler.GetDescription(true);
+                : (targetSize.Height > chromaSize.Height) ? "> " + chromaUpscaler.GetDescription() : "< " + chromaDownscaler.GetDescription(true);
             return string.Format("Luma X: {0} Y: {1}\r\n    Chroma X: {2} Y: {3}", lumaScalerX, lumaScalerY, chromaScalerX, chromaScalerY);
         }
     }
@@ -153,9 +154,9 @@ namespace Mpdn.Extensions.PlayerExtensions
     {
         public ScriptChainOsdPainterSettings()
         {
-            Enabled = false;
+            ShowOsd = false;
         }
 
-        public bool Enabled { get; set; }
+        public bool ShowOsd { get; set; }
     }
 }
