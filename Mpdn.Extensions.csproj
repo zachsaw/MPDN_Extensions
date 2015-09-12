@@ -279,6 +279,7 @@
     <Compile Include="Extensions\PlayerExtensions\ViewMediaInfoForm.Designer.cs">
       <DependentUpon>ViewMediaInfoForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\PlayerExtensions\Youtube.cs" />
     <Compile Include="Extensions\RenderScripts\Custom.MyRenderScript.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Conditional.ConfigDialog.cs">
       <SubType>Form</SubType>

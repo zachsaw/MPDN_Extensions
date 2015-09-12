@@ -31,7 +31,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            PlayerControl.DragDrop += DragDrop;
+            Player.DragDrop += DragDrop;
+            Media.Loading += MediaLoading;
         }
 
         public override void Destroy()
@@ -39,13 +40,35 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (m_TempPath.Exists)
                 foreach (FileInfo file in m_TempPath.GetFiles()) file.Delete();
 
+            Player.DragDrop -= DragDrop;
+            Media.Loading -= MediaLoading;
+
             base.Destroy();
+        }
+
+        private void MediaLoading(object sender, MediaLoadingEventArgs e)
+        {
+            /* Doesn't work too well yet */
+            if (IsValidUrl(e.Filename))
+            {
+                LoadUrl(e.Filename);
+                Media.Close();
+            }
+        }
+
+        private bool IsValidUrl(string uriName)
+        {
+            Uri uriResult;
+            return Uri.TryCreate(uriName, UriKind.Absolute, out uriResult)
+                && (   uriResult.Scheme == Uri.UriSchemeHttp
+                    || uriResult.Scheme == Uri.UriSchemeHttps)
+                && !Path.HasExtension(uriResult.AbsolutePath);
         }
 
         private void DragDrop(object sender, PlayerControlEventArgs<DragEventArgs> e)
         {
             var url = (string)e.InputArgs.Data.GetData(DataFormats.Text);
-            if (url != null)// && url.Contains("youtu"))
+            if (IsValidUrl(url))
             {
                 LoadUrl(url);
                 e.Handled = true;
@@ -85,12 +108,13 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void LoadUrl(string url)
         {
             m_DownloadHash = url.GetHashCode().ToString("X8");
+            var path = Path.Combine(m_TempPath.FullName, @"%(title)s_[" + m_DownloadHash + @"]_%(format_id)s.%(ext)s");
 
             m_Downloader = new Process();
             m_Downloader.StartInfo = new ProcessStartInfo
             {
                 FileName = "youtube-dl",
-                Arguments = @"-f bestvideo[height<=?1080]+bestaudio/best " + "\"" + url + "\" " + " -o \"" + Path.Combine(m_TempPath.FullName, @"%(title)s_[" + m_DownloadHash + @"]_%(format_id)s.%(ext)s") + "\"",
+                Arguments = String.Format("-f bestvideo[height<=?1080]+bestaudio/best \"{0}\" -o \"{1}\" --no-playlist", url, path),
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
