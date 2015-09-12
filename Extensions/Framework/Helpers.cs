@@ -352,6 +352,13 @@ namespace Mpdn.Extensions.Framework
                 .ToArray());
         }
 
+        public static String PrependToStatus(this String status, string prefix)
+        {
+            return (status != "")
+                ? prefix + status
+                : status;
+        }
+
         public static Func<String> Append(this Func<String> first, Func<String> status)
         {
             return () => first().AppendStatus(status());
@@ -364,11 +371,11 @@ namespace Mpdn.Extensions.Framework
 
             if (xDesc == yDesc)
                 return xDesc;
-            if (xDesc != "" && yDesc != "")
-                return String.Format("X:{0} Y:{1}", xDesc, yDesc);
-            if (xDesc != "")
-                return String.Format("X:{0}", xDesc);
-            return String.Format("Y:{0}", yDesc);
+
+            xDesc = xDesc.PrependToStatus("X:");
+            yDesc = yDesc.PrependToStatus("Y:");
+
+            return xDesc.AppendStatus(yDesc);
         }
 
         public static string ScaleDescription(int inputDimension, int outputDimension, IScaler upscaler, IScaler downscaler, IScaler convolver = null)

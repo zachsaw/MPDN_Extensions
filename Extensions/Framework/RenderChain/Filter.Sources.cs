@@ -111,13 +111,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             if (!Active) return "";
 
-            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, Renderer.ChromaUpscaler);
-            var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
-
-            if (chromastatus != "")
-                chromastatus = "Chroma: " + chromastatus;
-            if (lumastatus != "")
-                lumastatus = "Luma: " + lumastatus;
+            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, Renderer.ChromaUpscaler)
+                .PrependToStatus("Chroma: ");
+            var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler)
+                .PrependToStatus("Luma: ");
 
             return chromastatus.AppendStatus(lumastatus);
         }
