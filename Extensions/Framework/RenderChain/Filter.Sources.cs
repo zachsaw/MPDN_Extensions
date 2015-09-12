@@ -111,15 +111,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             if (!Active) return "";
 
-            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, Renderer.ChromaUpscaler);
-            var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, Renderer.ChromaUpscaler)
+                .PrependToStatus("Chroma: ");
+            var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler)
+                .PrependToStatus("Luma: ");
 
-            if (chromastatus != "")
-                chromastatus = "Chroma: " + chromastatus + (lumastatus != "" ? "; " : "");
-            if (lumastatus != "")
-                lumastatus = "Luma: " + lumastatus;
-
-            return chromastatus + lumastatus;
+            return chromastatus.AppendStatus(lumastatus);
         }
 
         #region IFilter Implementation

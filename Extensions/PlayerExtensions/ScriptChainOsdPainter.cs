@@ -128,6 +128,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private static string GetInternalScalerDesc()
         {
             var sourceFilter = new SourceFilter();
+            sourceFilter.SetSize(Renderer.TargetSize);
             sourceFilter.Initialize();
             return sourceFilter.Status(); // BUG: This doesn't show luma scaler description
         }
