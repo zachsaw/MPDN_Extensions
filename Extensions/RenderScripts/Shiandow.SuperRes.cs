@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
 using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
@@ -90,7 +91,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private bool IsIntegral(double x)
             {
-                return x == Math.Truncate(x);
+                return Math.Abs(x - Math.Truncate(x)) < 0.005;
             }
 
             #region Status
@@ -100,8 +101,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override string Active()
             {
-                var prescalerStatus = SelectedOption.Status();
-                return prescalerStatus != "" ? String.Format("SuperRes ({0})", prescalerStatus.Replace(';', ',')) : "SuperRes";
+                return base.Active().AppendSubStatus(SelectedOption.Status());
             }
 
             #endregion

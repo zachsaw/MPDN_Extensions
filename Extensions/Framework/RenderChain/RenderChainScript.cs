@@ -71,26 +71,21 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         private void UpdateStatus()
         {
-            var status = m_SourceFilter.Status() + "; " + Chain.Status();
-
-            var postScaler = m_Filter as ResizeFilter;
-            if (postScaler != null)
-                status += "; " + postScaler.Status();
-
-            Status = status;
+            Status = m_SourceFilter.Status()
+                .AppendStatus(Chain.Status())
+                .AppendStatus(m_Filter.ResizerDescription());
         }
 
         public void Render()
         {
             if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
-            {
                 TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
-            }
+
             m_Filter.Render();
+
             if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
-            {
                 Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
-            }
+
             m_Filter.Reset();
             TexturePool.FlushTextures();
         }
@@ -103,7 +98,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return m_SourceFilter;
 
             if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
-                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), new InternalChromaScaler(m_SourceFilter), Renderer.LumaSize);
+                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), null, new InternalChromaScaler(m_SourceFilter), Renderer.LumaSize);
 
             return m_SourceFilter;
         }

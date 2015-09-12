@@ -16,11 +16,8 @@
 
 using System;
 using System.ComponentModel;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.RenderScript;
 using SharpDX;
-using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
 namespace Mpdn.Extensions.RenderScripts
 {

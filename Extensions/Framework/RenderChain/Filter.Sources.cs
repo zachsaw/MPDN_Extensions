@@ -58,6 +58,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return this;
         }
 
+        public virtual bool Active
+        {
+            get { return LastDependentIndex > 0; }
+        }
+
         #endregion
     }
 
@@ -82,7 +87,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return new ScriptInterfaceDescriptor
                 {
                     WantYuv = m_YuvFilter != null,
-                    Prescale = this.Active(),
+                    Prescale = Active,
                     PrescaleSize = (Size)OutputSize
                 };
             }
@@ -104,11 +109,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public string Status()
         {
-            if (!this.Active())
-                return "";
+            if (!Active) return "";
 
-            var chromastatus = FilterHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
-            var lumastatus = FilterHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, Renderer.ChromaUpscaler);
+            var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
 
             if (chromastatus != "")
                 chromastatus = "Chroma:" + chromastatus + (lumastatus != "" ? "; " : "");

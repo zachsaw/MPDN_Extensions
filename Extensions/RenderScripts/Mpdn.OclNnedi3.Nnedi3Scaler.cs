@@ -144,14 +144,17 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override string Active()
             {
-                var result = string.Format("{0} {1}/{2}", base.Active(), s_NeuronCount[(int) Neurons1],
-                    s_NeuronCount[(int) Neurons2]);
+                var status = string.Format("{0} {1}/{2}", base.Active(), s_NeuronCount[(int)Neurons1],
+                    s_NeuronCount[(int)Neurons2]);
+
                 var chroma = ChromaScaler as RenderChain;
-                if (chroma == null) return result;
-                var status = chroma.Status();
-                status = status == string.Empty ? Renderer.ChromaUpscaler.GetDescription() + " Chroma" : status;
-                result = string.Format("{0} ({1})", result, status);
-                return result;
+                if (chroma == null) return status;
+                var chromaStatus = chroma.Status();
+                chromaStatus = string.IsNullOrEmpty(chromaStatus)
+                    ? Renderer.ChromaUpscaler.GetDescription() + " Chroma"
+                    : chromaStatus;
+
+                return status.AppendSubStatus(chromaStatus);
             }
 
             public override void Reset()

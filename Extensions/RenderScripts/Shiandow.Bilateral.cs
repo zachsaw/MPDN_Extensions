@@ -17,19 +17,15 @@
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 using SharpDX;
 
 namespace Mpdn.Extensions.RenderScripts
 {
-    namespace Mpdn.EwaScaler
+    namespace Shiandow.Bilateral
     {
-        public class EwaChromaScaler : EwaScaler, IChromaScaler
+        public class Bilateral : RenderChain, IChromaScaler
         {
-            protected override string ShaderPath
-            {
-                get { return "EwaScaler"; }
-            }
-
             protected override IFilter CreateFilter(IFilter input)
             {
                 return this.MakeChromaFilter(input);
@@ -37,39 +33,31 @@ namespace Mpdn.Extensions.RenderScripts
 
             public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
-                DiscardTextures();
+                float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
 
-                var chromaSize = chromaInput.OutputSize;
-                CreateWeights(chromaSize, targetSize);
-
-                var offset = chromaOffset + new Vector2(0.5f, 0.5f);
-                int lobes = TapCount.ToInt()/2;
-                var shader = CompileShader("EwaScaler.hlsl",
-                    macroDefinitions:
-                        string.Format("LOBES = {0}; AR = {1}; CHROMA = 1;",
-                            lobes, AntiRingingEnabled ? 1 : 0))
+                var crossBilateral = CompileShader("CrossBilateral.hlsl")
                     .Configure(
-                        transform: size => targetSize,
-                        arguments: new[] {AntiRingingStrength, offset.X, offset.Y},
-                        linearSampling: true
+                        arguments: new[] { chromaOffset.X, chromaOffset.Y, yuvConsts[0], yuvConsts[1] },
+                        perTextureLinearSampling: new[] { true, false }
                     );
 
                 // Fall back to default when downscaling is needed
+                var chromaSize = chromaInput.OutputSize;
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
                     return null;
 
                 var resizedLuma = lumaInput.SetSize(targetSize);
                 Status = this.ChromaScalerStatus(resizedLuma);
 
-                return GetEwaFilter(shader, new[] { resizedLuma, chromaInput }).ConvertToRgb();
+                return new ShaderFilter(crossBilateral, resizedLuma, chromaInput).ConvertToRgb();
             }
         }
-
-        public class EwaScalerChromaScalerUi : RenderChainUi<EwaChromaScaler, EwaScalerConfigDialog>
+        
+        public class BilateralUi : RenderChainUi<Bilateral>
         {
             protected override string ConfigFileName
             {
-                get { return "Mpdn.EwaChromaScaler"; }
+                get { return "Bilateral"; }
             }
 
             public override string Category
@@ -83,9 +71,10 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     return new ExtensionUiDescriptor
                     {
-                        Guid = new Guid("D93E8C6F-1A4C-40D2-913A-3773C00D1541"),
-                        Name = "EWA Chroma Scaler",
-                        Description = "Elliptical weighted average (EWA) chroma upscaler"
+                        Guid = new Guid("53534BBF-4749-4599-98C0-603302772B44"),
+                        Name = "Bilateral",
+                        Description = "Uses luma information to scale chroma",
+                        Copyright = "Made by Shiandow",
                     };
                 }
             }

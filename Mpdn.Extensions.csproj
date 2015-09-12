@@ -419,6 +419,7 @@
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Filters.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Chroma.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Scaler.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.Bilateral.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperChromaRes.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -488,7 +489,7 @@
     <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyLuma.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\Diff.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\MergeChroma.hlsl" />
-    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CrossBilateral.hlsl" />
+    <None Include="Extensions\RenderScripts\Bilateral\CrossBilateral.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperResEx.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperRes.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperResEx.hlsl" />

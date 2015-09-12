@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -24,12 +24,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using System.Windows.Markup;
 using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Config;
-using Mpdn.DirectShow;
 using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
+using Filter = Mpdn.DirectShow.Filter;
 
 namespace Mpdn.Extensions.Framework
 {
@@ -317,6 +319,93 @@ namespace Mpdn.Extensions.Framework
                 return;
 
             action(self);
+        }
+    }
+
+    public static class StatusHelpers
+    {
+        public static String ToSubStatus(this String status)
+        {
+            return String.IsNullOrEmpty(status)
+                ? ""
+                : String.Format("({0})", status.Replace(';', ','));
+        }
+
+        public static String AppendSubStatus(this String first, String status)
+        {
+            return String.IsNullOrEmpty(status)
+                ? first
+                : first + " " + status.ToSubStatus();
+        }
+
+        public static Func<String> AppendSubStatus(this Func<String> first, Func<String> status)
+        {
+            return () => first().AppendSubStatus(status());
+        }
+
+        public static String AppendStatus(this String first, String status)
+        {
+            return String.Join("; ",
+                (new[] { first, status })
+                .Where(str => !String.IsNullOrEmpty(str))
+                .ToArray());
+        }
+
+        public static Func<String> Append(this Func<String> first, Func<String> status)
+        {
+            return () => first().AppendStatus(status());
+        }
+
+        public static string ScaleDescription(TextureSize inputSize, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+        {
+            var xDesc = ScaleDescription(inputSize.Width, outputSize.Width, upscaler, downscaler, convolver);
+            var yDesc = ScaleDescription(inputSize.Height, outputSize.Height, upscaler, downscaler, convolver);
+
+            if (xDesc == yDesc)
+                return xDesc;
+            else if (xDesc != "" && yDesc != "")
+                return String.Format("X:{0} Y:{1}", xDesc, yDesc);
+            else if (xDesc != "")
+                return String.Format("X:{0}", xDesc);
+            else
+                return String.Format("Y:{0}", yDesc);
+        }
+
+        public static string ScaleDescription(int inputDimension, int outputDimension, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
+        {
+            if (outputDimension > inputDimension)
+                return "↑" + upscaler.GetDescription();
+            else if (outputDimension < inputDimension)
+                return "↓" + downscaler.GetDescription(true);
+            else if (convolver != null)
+                return "⇄ " + convolver.GetDescription(true);
+            else
+                return "";
+        }
+
+        public static string GetDescription(this IScaler scaler, bool useDownscalerName = false)
+        {
+            if (useDownscalerName)
+            {
+                switch (scaler.ScalerType)
+                {
+                    case ImageScaler.NearestNeighbour:
+                        return "Box";
+                    case ImageScaler.Bilinear:
+                        return "Triangle";
+                }
+            }
+
+            var result = scaler.GetType().Name;
+            switch (scaler.ScalerType)
+            {
+                case ImageScaler.NearestNeighbour:
+                case ImageScaler.Bilinear:
+                case ImageScaler.Bicubic:
+                case ImageScaler.Softcubic:
+                    return result;
+            }
+            return result + scaler.KernelTaps;
         }
     }
 

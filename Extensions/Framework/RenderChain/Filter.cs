@@ -33,6 +33,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         void Reset();
         void Initialize(int time = 1);
         IFilter<TTexture> Compile();
+        bool Active { get; }
     }
 
     public interface IFilter : IFilter<ITexture2D>
@@ -67,6 +68,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private bool Updated { get; set; }
         private bool Initialized { get; set; }
         private int FilterIndex { get; set; }
+
+        public bool Active { get; set; }
 
         protected IFilter<ITexture2D> CompilationResult { get; set; }
         protected ITargetTexture OutputTarget { get; private set; }
@@ -103,7 +106,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
 
             LastDependentIndex++;
-
+            Active = true;
             Initialized = true;
         }
 
@@ -118,7 +121,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
 
             CompilationResult = Optimize();
-
+            Active = true;
             return CompilationResult;
         }
 
@@ -174,70 +177,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public static class FilterHelpers
     {
-        public static bool Active(this IFilter filter)
-        {
-            return filter.LastDependentIndex > 0;
-        }
-
-        public static string ResizerDescription(this IFilter filter)
+        public static string ResizerDescription(this IFilter<IBaseTexture> filter)
         {
             var resizer = filter as ResizeFilter;
             if (resizer != null)
                 return resizer.Status();
 
             return "";
-        }
-
-        public static string ScaleDescription(TextureSize inputSize, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
-        {
-            var xDesc = ScaleDescription(inputSize.Width, outputSize.Width, upscaler, downscaler, convolver);
-            var yDesc = ScaleDescription(inputSize.Height, outputSize.Height, upscaler, downscaler, convolver);
-
-            if (xDesc == yDesc)
-                return xDesc;
-            else if (xDesc != "" && yDesc != "")
-                return String.Format("X:{0} Y:{1}", xDesc, yDesc);
-            else if (xDesc != "")
-                return String.Format("X:{0}", xDesc);
-            else
-                return String.Format("Y:{0}", yDesc);
-        }
-
-        public static string ScaleDescription(int inputDimension, int outputDimension, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
-        {
-            if (outputDimension > inputDimension)
-                return "↑" + upscaler.GetDescription();
-            else if (outputDimension < inputDimension)
-                return "↓" + downscaler.GetDescription(true);
-            else if (convolver != null)
-                return "⇄ " + convolver.GetDescription(true);
-            else
-                return "";
-        }
-
-        public static string GetDescription(this IScaler scaler, bool useDownscalerName = false)
-        {
-            if (useDownscalerName)
-            {
-                switch (scaler.ScalerType)
-                {
-                    case ImageScaler.NearestNeighbour:
-                        return "Box";
-                    case ImageScaler.Bilinear:
-                        return "Triangle";
-                }
-            }
-
-            var result = scaler.GetType().Name;
-            switch (scaler.ScalerType)
-            {
-                case ImageScaler.NearestNeighbour:
-                case ImageScaler.Bilinear:
-                case ImageScaler.Bicubic:
-                case ImageScaler.Softcubic:
-                    return result;
-            }
-            return result + scaler.KernelTaps;
         }
     }
 }
