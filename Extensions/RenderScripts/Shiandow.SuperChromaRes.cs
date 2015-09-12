@@ -17,6 +17,7 @@
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Shiandow.Bilateral;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
 using SharpDX;
@@ -36,7 +37,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private readonly IScaler upscaler, downscaler;
+            private readonly IScaler m_Upscaler, m_Downscaler;
 
             public SuperChromaRes()
             {
@@ -46,8 +47,8 @@ namespace Mpdn.Extensions.RenderScripts
                 Softness = 0.0f;
                 Prescaler = true;
 
-                upscaler = new Bilinear();
-                downscaler = new Bilinear();
+                m_Upscaler = new Bilinear();
+                m_Downscaler = new Bilinear();
             }
 
             protected override string ShaderPath
@@ -57,79 +58,106 @@ namespace Mpdn.Extensions.RenderScripts
 
             private bool IsIntegral(double x)
             {
-                return x == Math.Truncate(x);
+                return Math.Abs(x - Math.Truncate(x)) < 0.005;
             }
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                return this.MakeChromaFilter(input);
+                var chromaFilter = input as ChromaFilter;
+                if (chromaFilter == null)
+                    return input;
+
+                var bilateral = Prescaler ? new Bilateral.Bilateral() : Identity;
+                input += bilateral;
+
+                var chromaScaler = new SuperChromaResScaler((ChromaFilter)input, this);
+                Status = () => chromaScaler.Status();
+
+                return input + chromaScaler;
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public virtual IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
-                IFilter hiRes;
+                var input = new ChromaFilter(lumaInput, chromaInput, targetSize: targetSize, chromaOffset: chromaOffset);
+                return MakeFilter(input);
+            }
 
-                var chromaSize = chromaInput.OutputSize;
-                var lumaSize = lumaInput.OutputSize;
+            private class SuperChromaResScaler: SuperChromaRes, IChromaScaler
+            {
+                private readonly ChromaFilter m_InitialInput;
+                private readonly SuperChromaRes m_Parent;
 
-                float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
-                int bitdepth = Renderer.InputFormat.GetBitDepth();        
-                bool limited = Renderer.Colorimetric.IsLimitedRange();                
-
-                Vector2 offset = Renderer.ChromaOffset;
-                Vector2 adjointOffset = -offset * lumaSize / chromaSize;
-
-                string superResMacros = "";
-                if (IsIntegral(Strength))
-                    superResMacros += String.Format("strength = {0};", Strength);
-                if (IsIntegral(Softness))
-                    superResMacros += String.Format("softness = {0};", Softness);
-
-                string diffMacros = string.Format("LimitedRange = {0}; range = {1}", limited ? 1 : 0, (1 << bitdepth) - 1);
-
-                var CopyLuma = CompileShader("CopyLuma.hlsl");
-                var CopyChroma = CompileShader("CopyChroma.hlsl");
-                var MergeChroma = CompileShader("MergeChroma.hlsl").Configure(format: TextureFormat.Float16);
-
-                var Diff = CompileShader("Diff.hlsl", macroDefinitions: diffMacros)
-                    .Configure(arguments: yuvConsts, format: TextureFormat.Float16);
-
-                var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: superResMacros)
-                    .Configure( 
-                        arguments: new[] { Strength, Softness, yuvConsts[0], yuvConsts[1], offset.X, offset.Y }
-                    );
-
-                var CrossBilateral = CompileShader("CrossBilateral.hlsl")
-                    .Configure( 
-                        arguments: new[] { offset.X, offset.Y, yuvConsts[0], yuvConsts[1] },
-                        perTextureLinearSampling: new[] { true, false }
-                    );
-
-                var GammaToLab = CompileShader("../../Common/GammaToLab.hlsl");
-                var LabToGamma = CompileShader("../../Common/LabToGamma.hlsl");
-                var LinearToGamma = CompileShader("../../Common/LinearToGamma.hlsl");
-                var GammaToLinear = CompileShader("../../Common/GammaToLinear.hlsl");
-                var LabToLinear = CompileShader("../../Common/LabToLinear.hlsl");
-                var LinearToLab = CompileShader("../../Common/LinearToLab.hlsl");
-
-                hiRes = Prescaler 
-                    ? (IFilter) new ShaderFilter(CrossBilateral, lumaInput, chromaInput) 
-                    : (IFilter) new ChromaFilter(lumaInput, chromaInput);
-
-                for (int i = 1; i <= Passes; i++)
+                public SuperChromaResScaler(ChromaFilter initialInput, SuperChromaRes parent)
                 {
-                    IFilter diff, linear;
+                    m_InitialInput = initialInput;
+                    m_Parent = parent;
 
-                    // Compare to chroma
-                    linear = new ShaderFilter(GammaToLinear, hiRes.ConvertToRgb());
-                    linear = new ResizeFilter(linear, chromaSize, adjointOffset, upscaler, downscaler);
-                    diff = new ShaderFilter(Diff, linear, chromaInput);
-
-                    // Update result
-                    hiRes = new ShaderFilter(SuperRes, hiRes, diff);
+                    Passes = parent.Passes;
+                    Strength = parent.Strength;
+                    Softness = parent.Softness;
                 }
 
-                return hiRes.ConvertToRgb();
+                protected override IFilter CreateFilter(IFilter input)
+                {
+                    return this.MakeChromaFilter(input);
+                }
+
+                public override string Active()
+                {
+                    var chain = m_InitialInput.ChromaScaler as RenderChain;
+                    return chain != null
+                        ? "SuperChromaRes".AppendSubStatus(chain.Status())
+                        : "SuperChromaRes";
+                }
+
+                public override IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+                {
+                    var chromaSize = chromaInput.OutputSize;
+                    var lumaSize = lumaInput.OutputSize;
+
+                    float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
+                    int bitdepth = Renderer.InputFormat.GetBitDepth();
+                    bool limited = Renderer.Colorimetric.IsLimitedRange();
+
+                    Vector2 adjointOffset = -chromaOffset * lumaSize / chromaSize;
+
+                    string superResMacros = "";
+                    if (IsIntegral(Strength))
+                        superResMacros += String.Format("strength = {0};", Strength);
+                    if (IsIntegral(Softness))
+                        superResMacros += String.Format("softness = {0};", Softness);
+
+                    string diffMacros = string.Format("LimitedRange = {0}; range = {1}", limited ? 1 : 0, (1 << bitdepth) - 1);
+
+                    var Diff = CompileShader("Diff.hlsl", macroDefinitions: diffMacros)
+                        .Configure(arguments: yuvConsts, format: TextureFormat.Float16);
+
+                    var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: superResMacros)
+                        .Configure(
+                            arguments: new[] { Strength, Softness, yuvConsts[0], yuvConsts[1], chromaOffset.X, chromaOffset.Y }
+                        );
+
+                    var LinearToGamma = CompileShader("../../Common/LinearToGamma.hlsl");
+                    var GammaToLinear = CompileShader("../../Common/GammaToLinear.hlsl");
+
+                    m_InitialInput.SetSize(lumaSize);
+                    var hiRes = m_InitialInput.ConvertToYuv();
+
+                    for (int i = 1; i <= Passes; i++)
+                    {
+                        IFilter diff, linear;
+
+                        // Compare to chroma
+                        linear = new ShaderFilter(GammaToLinear, hiRes.ConvertToRgb());
+                        linear = new ResizeFilter(linear, chromaSize, adjointOffset, m_Upscaler, m_Downscaler);
+                        diff = new ShaderFilter(Diff, linear, chromaInput);
+
+                        // Update result
+                        hiRes = new ShaderFilter(SuperRes, hiRes, diff);
+                    }
+
+                    return hiRes.ConvertToRgb();
+                }
             }
         }
 
