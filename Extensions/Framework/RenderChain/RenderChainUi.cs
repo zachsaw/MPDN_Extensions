@@ -29,7 +29,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public static class RenderChainUi
     {
-        public static IRenderChainUi Identity = new IdentityRenderChainUi();
+        public static readonly IRenderChainUi Identity = new IdentityRenderChainUi();
 
         public static bool IsIdentity(this IRenderChainUi chainUi)
         {
@@ -40,10 +40,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             public IdentityRenderChain() : base(x => x) { }
 
-            public override string Active()
-            {
-                return "";
-            }
+            public override Func<string> Status { get { return () => ""; } set { } }
         }
 
         private class IdentityRenderChainUi : RenderChainUi<IdentityRenderChain>
@@ -98,6 +95,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #endregion Implementation
 
+        #region GarbageCollecting
+
         ~RenderChainUi()
         {
             Dispose(false);
@@ -113,6 +112,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             DisposeHelper.Dispose(Settings);
         }
+
+        #endregion
     }
 
     public static class RenderChainExtensions

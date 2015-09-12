@@ -127,15 +127,9 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static string GetInternalScalerDesc()
         {
-            var chromastatus = FilterHelpers.ScaleDescription(Renderer.ChromaSize, Renderer.TargetSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
-            var lumastatus = FilterHelpers.ScaleDescription(Renderer.VideoSize, Renderer.TargetSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
-
-            if (chromastatus != "")
-                chromastatus = "Chroma:" + chromastatus + (lumastatus != "" ? "; " : "");
-            if (lumastatus != "")
-                lumastatus = "Luma:" + lumastatus;
-
-            return chromastatus + lumastatus;
+            var sourceFilter = new SourceFilter();
+            sourceFilter.Initialize();
+            return sourceFilter.Status();
         }
     }
 
