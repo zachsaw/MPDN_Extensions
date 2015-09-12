@@ -106,7 +106,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Chroma = chromaInput;
             ChromaOffset = chromaOffset ?? Renderer.ChromaOffset;
             ChromaScaler = chromaScaler ?? new DefaultChromaScaler();
-            TargetSize = targetSize ?? Renderer.TargetSize;
+            TargetSize = targetSize ?? lumaInput.OutputSize;
 
             m_Fallback = fallback ?? MakeNew();
         }
