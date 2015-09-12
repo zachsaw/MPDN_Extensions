@@ -50,7 +50,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (lumaInput is YSourceFilter && chromaInput is ChromaSourceFilter && chromaOffset == Renderer.ChromaOffset)
                 return m_SourceFilter.SetSize(targetSize);
 
-            return new ChromaFilter(lumaInput, chromaInput, null, targetSize, chromaOffset);
+            return null;
         }
     }
 
@@ -75,39 +75,45 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public static Func<string> ChromaScalerStatus<TChromaScaler>(this TChromaScaler chromaScaler, IFilter resizedLuma)
             where TChromaScaler : RenderChain, IChromaScaler
         {
-            return delegate ()
+            return delegate
             {
                 var lumaStatus = resizedLuma.ResizerDescription();
                 var chromaStatus = chromaScaler.Active();
 
                 if (lumaStatus != "")
                     return String.Format("Chroma: {0}; Luma:{1}", chromaStatus, lumaStatus);
-                else
-                    return chromaStatus;
+
+                return chromaStatus;
             };
         }
     }
 
     public sealed class ChromaFilter : BaseSourceFilter, IResizeableFilter
     {
-        public IFilter Luma { get; private set; }
-        public IFilter Chroma { get; private set; }
-        public TextureSize TargetSize { get; private set; }
-        public Vector2 ChromaOffset { get; private set; }
-        public IChromaScaler ChromaScaler { get; private set; }
+        private readonly IFilter m_Fallback;
+        private IFilter<ITexture2D> m_CompilationResult;
 
-        public ChromaFilter(IFilter lumaInput, IFilter chromaInput, IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null)
+        public readonly IFilter Luma;
+        public readonly IFilter Chroma;
+        public readonly IChromaScaler ChromaScaler;
+        public readonly Vector2 ChromaOffset;
+
+        public TextureSize TargetSize;
+
+        public ChromaFilter(IFilter lumaInput, IFilter chromaInput, IFilter fallback = null, IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null)
         {
             Luma = lumaInput;
             Chroma = chromaInput;
             ChromaOffset = chromaOffset ?? Renderer.ChromaOffset;
             ChromaScaler = chromaScaler ?? new DefaultChromaScaler();
             TargetSize = targetSize ?? Renderer.TargetSize;
+
+            m_Fallback = fallback ?? MakeNew();
         }
 
         public ChromaFilter MakeNew(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null)
         {
-            return new ChromaFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset);
+            return new ChromaFilter(Luma, Chroma, this, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset);
         }
 
         public override ITexture2D OutputTexture
@@ -127,21 +133,28 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public override IFilter<ITexture2D> Compile()
         {
+            if (m_CompilationResult != null)
+                return m_CompilationResult;
+
             var chain = ChromaScaler as RenderChain;
             var result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset);
             if (result == null)
             {
-                result = new ChromaFilter(Luma, Chroma, null, TargetSize, ChromaOffset);
+                result = m_Fallback;
 
                 if (chain != null)
                     chain.Status = chain.Inactive;
             }
-            result = result.SetSize(TargetSize);
 
-            if (chain != null)
-                chain.Status = chain.Status.Append(result.ResizerDescription);
+            m_CompilationResult = result
+                .SetSize(TargetSize)
+                .Compile();
+            return m_CompilationResult;
+        }
 
-            return result.Compile();
+        public override bool Active
+        {
+           get { return base.Active || m_CompilationResult != null;  }
         }
 
         public void SetSize(TextureSize size)
