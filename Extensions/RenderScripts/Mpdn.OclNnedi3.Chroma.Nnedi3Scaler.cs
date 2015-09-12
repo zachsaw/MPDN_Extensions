@@ -53,6 +53,12 @@ namespace Mpdn.Extensions.RenderScripts
             };
             private static readonly int[] s_NeuronCount = { 16, 32, 64, 128, 256 };
 
+            public override string Active()
+            {
+                return string.Format("{0} {1}/{2}", base.Active(), s_NeuronCount[(int)Neurons1],
+                    s_NeuronCount[(int)Neurons2]);
+            }
+
             public override void Reset()
             {
                 DisposeHelper.Dispose(ref m_Buffer1);

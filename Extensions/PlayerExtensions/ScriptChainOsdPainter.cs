@@ -129,7 +129,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             var sourceFilter = new SourceFilter();
             sourceFilter.Initialize();
-            return sourceFilter.Status();
+            return sourceFilter.Status(); // BUG: This doesn't show luma scaler description
         }
     }
 

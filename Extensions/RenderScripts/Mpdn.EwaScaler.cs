@@ -64,6 +64,11 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
+            public override string Active()
+            {
+                return string.Format("EWA {0}", m_Scaler.Name + TapCount.ToInt() + (AntiRingingEnabled ? "AR" : ""));
+            }
+
             protected override string ShaderPath
             {
                 get { return "EwaScaler"; }

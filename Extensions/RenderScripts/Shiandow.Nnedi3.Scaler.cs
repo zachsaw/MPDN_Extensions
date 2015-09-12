@@ -72,7 +72,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var chroma = ChromaScaler as RenderChain;
                 if (chroma == null) return status;
-                var chromaStatus = chroma.Status();
+                var chromaStatus = chroma.Status(); // BUG: chroma.Status can be null when user selects a different chroma scaler in config dialog
                 chromaStatus = string.IsNullOrEmpty(chromaStatus) 
                     ? Renderer.ChromaUpscaler.GetDescription() + " Chroma" 
                     : chromaStatus;

@@ -31,6 +31,7 @@ using Mpdn.Config;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
+using Mpdn.RenderScript.Scaler;
 using Filter = Mpdn.DirectShow.Filter;
 
 namespace Mpdn.Extensions.Framework
@@ -363,24 +364,22 @@ namespace Mpdn.Extensions.Framework
 
             if (xDesc == yDesc)
                 return xDesc;
-            else if (xDesc != "" && yDesc != "")
+            if (xDesc != "" && yDesc != "")
                 return String.Format("X:{0} Y:{1}", xDesc, yDesc);
-            else if (xDesc != "")
+            if (xDesc != "")
                 return String.Format("X:{0}", xDesc);
-            else
-                return String.Format("Y:{0}", yDesc);
+            return String.Format("Y:{0}", yDesc);
         }
 
         public static string ScaleDescription(int inputDimension, int outputDimension, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
         {
             if (outputDimension > inputDimension)
                 return "↑" + upscaler.GetDescription();
-            else if (outputDimension < inputDimension)
+            if (outputDimension < inputDimension)
                 return "↓" + downscaler.GetDescription(true);
-            else if (convolver != null)
+            if (convolver != null)
                 return "⇄ " + convolver.GetDescription(true);
-            else
-                return "";
+            return "";
         }
 
         public static string GetDescription(this IScaler scaler, bool useDownscalerName = false)
@@ -403,9 +402,44 @@ namespace Mpdn.Extensions.Framework
                 case ImageScaler.Bilinear:
                 case ImageScaler.Bicubic:
                 case ImageScaler.Softcubic:
-                    return result;
+                    return result + GetScalerAntiRingingDescription(scaler);
+                case ImageScaler.Custom:
+                    return GetCustomLinearScalerDescription((Custom) scaler);
             }
-            return result + scaler.KernelTaps;
+            return result + scaler.KernelTaps + GetScalerAntiRingingDescription(scaler);
+        }
+
+        private static string GetCustomLinearScalerDescription(Custom scaler)
+        {
+            var fields = scaler.GetType()
+                .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            var customLinearScaler =
+                fields.Select(f => f.GetValue(scaler)).OfType<ICustomLinearScaler>().FirstOrDefault();
+            return (customLinearScaler != null ? customLinearScaler.Name : "Custom") + scaler.KernelTaps +
+                   GetScalerAntiRingingDescription(scaler);
+        }
+
+        private static string GetScalerAntiRingingDescription(IScaler scaler)
+        {
+            switch (scaler.ScalerType)
+            {
+                case ImageScaler.NearestNeighbour:
+                case ImageScaler.Bilinear:
+                case ImageScaler.Softcubic:
+                    return "";
+                case ImageScaler.Bicubic:
+                    return ((Bicubic) scaler).AntiRingingEnabled ? "AR" : "";
+                case ImageScaler.Lanczos:
+                    return ((Lanczos) scaler).AntiRingingEnabled ? "AR" : "";
+                case ImageScaler.Spline:
+                    return ((Spline) scaler).AntiRingingEnabled ? "AR" : "";
+                case ImageScaler.Jinc:
+                    return ((Jinc) scaler).AntiRingingEnabled ? "AR" : "";
+                case ImageScaler.Custom:
+                    return ((Custom) scaler).AntiRingingEnabled ? "AR" : "";
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 
