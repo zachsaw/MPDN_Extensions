@@ -28,7 +28,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected RenderChain()
         {
             ShaderCache.Load();
-            Status = Active;
         }
 
         protected abstract IFilter CreateFilter(IFilter input);
@@ -37,10 +36,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             Status = null;
             var result = CreateFilter(filter);
-            if (Status == null)
-            {
-                Status = filter == result ? (Func<String>) Inactive : Active;
-            }
+
+            var activeStatus = Status ?? Active;
+            Status = () => result.Active && (!filter.Active || filter.Compile() != result.Compile())
+                ? activeStatus().AppendStatus(result.Compile().ResizerDescription())
+                : Inactive();
+
             return result;
         }
 
@@ -62,7 +63,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region Operators
 
-        public static RenderChain Identity = new StaticChain(x => x);
+        public static readonly RenderChain Identity = RenderChainUi.Identity.Chain;
 
         public static implicit operator Func<IFilter, IFilter>(RenderChain map)
         {
@@ -196,17 +197,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #endregion
 
-    }
-
-    public  static class StatusHelper
-    {
-        public static Func<String> Append(this Func<String> first, Func<String> second)
-        {
-            return () => String.Join("; ", 
-                (new[] { first(), second() })
-                .Where(str => !String.IsNullOrEmpty(str))
-                .ToArray());
-        }
     }
 
     public class StaticChain : RenderChain
