@@ -115,11 +115,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
 
             if (chromastatus != "")
-                chromastatus = "Chroma: " + chromastatus + (lumastatus != "" ? "; " : "");
+                chromastatus = "Chroma: " + chromastatus;
             if (lumastatus != "")
                 lumastatus = "Luma: " + lumastatus;
 
-            return chromastatus + lumastatus;
+            return chromastatus.AppendStatus(lumastatus);
         }
 
         #region IFilter Implementation
