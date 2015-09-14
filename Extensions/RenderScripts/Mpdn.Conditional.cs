@@ -51,7 +51,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (!m_Engine.Evaluate(this, input, GetScript(), GetType().Name))
                     return input;
 
-                Status = Preset.Status;
+                Status = () => Preset.Status();
 
                 return input + Preset;
             }

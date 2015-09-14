@@ -32,7 +32,11 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override string Active()
             {
-                var statuses = Options.Select(chain => chain.Status()).Where(str => !string.IsNullOrEmpty(str)).ToArray();
+                var statuses = Options
+                    .Select(chain => chain.Status())
+                    .Where(str => !string.IsNullOrEmpty(str))
+                    .ToArray();
+
                 return string.Join("; ", statuses);
             }
         }
