@@ -71,7 +71,12 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                return m_Engine.Execute(this, input, BuildScript(ScriptFileName), ScriptFileName);
+                var clip = m_Engine.Execute(this, input, BuildScript(ScriptFileName), ScriptFileName);
+                if (clip == null)
+                    return null;
+
+                Status = clip.Status;
+                return clip.Filter;
             }
 
             private string BuildScript(string scriptRs)

@@ -15,7 +15,9 @@
 // License along with this library.
 
 using System;
+using System.IO;
 using System.Linq;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 
@@ -52,6 +54,17 @@ namespace Mpdn.Extensions.RenderScripts
             public string FullShaderPath
             {
                 get { return ShaderDataFilePath; }
+            }
+
+            public override string Active()
+            {
+                var count = ShaderFileNames.Count();
+                if (count == 0) return string.Empty;
+                var result = count == 1
+                    ? Path.GetFileNameWithoutExtension(ShaderFileNames.First())
+                    : string.Format("{0}..{1}", Path.GetFileNameWithoutExtension(ShaderFileNames.First()),
+                        Path.GetFileNameWithoutExtension(ShaderFileNames.Last()));
+                return string.Format("ImageProc('{0}')", result);
             }
 
             protected override IFilter CreateFilter(IFilter input)

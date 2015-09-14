@@ -26,7 +26,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class ScriptChainOsdPainter : PlayerExtension<ScriptChainOsdPainterSettings, ScriptChainOsdPainterConfigDialog>
     {
-        private const int TEXT_HEIGHT = 16;
+        private const int TEXT_HEIGHT = 15;
         private Timer m_Timer;
         private IText m_Text;
         private Size m_VideoBoxSize;
@@ -108,21 +108,23 @@ namespace Mpdn.Extensions.PlayerExtensions
             var desc = script == null ? GetInternalScalerDesc() : script.Status;
             desc = desc.Trim();
 
-            string[] descriptions = desc.Split(';')
+            var descriptions = desc.Split(';')
                 .Select(str => str.Trim())
-                .Where(str => !String.IsNullOrEmpty(str))
+                .Where(str => !string.IsNullOrEmpty(str))
                 .ToArray();
 
-            var text = "Render Chain:\r\n    " + String.Join("\r\n    ", descriptions);
-            text = text.Trim('\r', '\n');
+            var text = string.Format("Render Chain\r\n    {0}", string.Join("\r\n    ", descriptions));
             var width = m_Text.MeasureWidth(text);
-            var height = text.Count(c => c == '\n')*(TEXT_HEIGHT);
+            var lineCount = text.Count(c => c == '\n');
+
+            var height = lineCount*(TEXT_HEIGHT + 1);
             var size = m_VideoBoxSize;
-            const int rightOffset = 5;
-            const int bottomOffset = 5;
-            var location = new Point(size.Width - width - rightOffset - 40, 30);
-            m_Text.Show(text, location, Color.FromArgb(255, 0xBB, 0xBB, 0xBB),
-                Color.FromArgb(255*40/100, Color.Black), new Padding(5, 5, rightOffset, bottomOffset + height));
+            var location = new Point(size.Width - width - 30, 30);
+            const int verticalPadding = 5;
+            const int horizontalPadding = 15;
+            m_Text.Show(text, location, Color.FromArgb(0xff, 0xbb, 0xcc, 0xdd),
+                Color.FromArgb(255*40/100, Color.FromArgb(0xff, 0x00, 0x1f, 0x2f)),
+                new Padding(horizontalPadding, verticalPadding, horizontalPadding, height + verticalPadding*2));
         }
 
         private static string GetInternalScalerDesc()
@@ -130,7 +132,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             var sourceFilter = new SourceFilter();
             sourceFilter.SetSize(Renderer.TargetSize);
             sourceFilter.Initialize();
-            return sourceFilter.Status(); // BUG: This doesn't show luma scaler description
+            return sourceFilter.Status();
         }
     }
 

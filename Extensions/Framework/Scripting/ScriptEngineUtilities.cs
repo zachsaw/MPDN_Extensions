@@ -240,6 +240,7 @@ namespace Mpdn.Extensions.Framework.Scripting
         {
             private readonly RenderChain.RenderChain m_Chain;
             public IFilter Filter { get; private set; }
+            public Func<string> Status { get; private set; }
 
             public string FileName
             {
@@ -325,6 +326,7 @@ namespace Mpdn.Extensions.Framework.Scripting
             {
                 m_Chain = chain;
                 Filter = input;
+                Status = () => string.Empty;
             }
 
             public Clip Add(RenderChain.RenderChain filter)
@@ -334,6 +336,9 @@ namespace Mpdn.Extensions.Framework.Scripting
                     throw new ArgumentNullException("filter");
                 }
                 Filter += filter;
+                var currentStatus = Status;
+                Status = () => string.Format("{0};{1}", currentStatus(), filter.Status());
+                
                 return this;
             }
 

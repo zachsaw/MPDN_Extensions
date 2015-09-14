@@ -17,7 +17,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 
@@ -25,9 +24,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
 {
     public abstract class RenderChain
     {
+        private Func<string> m_Status;
+
         protected RenderChain()
         {
             ShaderCache.Load();
+            m_Status = Inactive;
         }
 
         protected abstract IFilter CreateFilter(IFilter input);
@@ -35,7 +37,16 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public IFilter MakeFilter(IFilter filter)
         {
             Status = null;
-            var result = CreateFilter(filter);
+            IFilter result;
+            try
+            {
+                result = CreateFilter(filter);
+            }
+            catch (Exception)
+            {
+                Status = Inactive;
+                throw;
+            }
 
             var activeStatus = Status ?? Active;
             Status = () => result.Active && (!filter.Active || filter.Compile() != result.Compile())
@@ -47,7 +58,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region Status
 
-        public virtual Func<string> Status { get; set; }
+        public virtual Func<string> Status
+        {
+            get { return m_Status; }
+            set { m_Status = value; }
+        }
 
         public virtual string Active()
         {

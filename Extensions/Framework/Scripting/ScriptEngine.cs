@@ -45,9 +45,12 @@ namespace Mpdn.Extensions.Framework.Scripting
             m_Engine.AddHostType("Debug", typeof (Debug));
 
             AddEnumTypes(Assembly.GetAssembly(typeof (IRenderScript)));
-            var asm = Assembly.GetExecutingAssembly();
-            AddRenderScriptTypes(asm);
-            AddEnumTypes(asm);
+            foreach (var asm in (Extension.RenderScripts.Select(s => s.GetType().Assembly)
+                .Concat(new[] {typeof (RenderChain.RenderChain).Assembly})).Distinct())
+            {
+                AddRenderScriptTypes(asm);
+                AddEnumTypes(asm);
+            }
         }
 
         ~ScriptEngine()
@@ -69,13 +72,13 @@ namespace Mpdn.Extensions.Framework.Scripting
             DisposeHelper.Dispose(ref m_Engine);
         }
 
-        public IFilter Execute(RenderChain.RenderChain chain, IFilter input, string code, string filename = "")
+        public Clip Execute(RenderChain.RenderChain chain, IFilter input, string code, string filename = "")
         {
             try
             {
                 var clip = ResetEngine(chain, input);
                 m_Engine.Execute("RenderScript", true, code);
-                return clip == null ? null : ((Clip) clip).Filter;
+                return (Clip) clip;
             }
             catch (ScriptEngineException e)
             {
