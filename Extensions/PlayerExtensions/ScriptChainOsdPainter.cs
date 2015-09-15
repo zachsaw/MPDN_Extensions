@@ -51,6 +51,27 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             m_Text = Player.CreateText("Verdana", TEXT_HEIGHT, TextFontStyle.Regular);
             m_VideoBoxSize = Gui.VideoBox.ClientSize;
+
+            m_Timer = new Timer { Interval = 30 };
+            m_Timer.Tick += TimerOnTick;
+            Player.Loaded += OnPlayerLoaded;
+            Player.PaintOverlay += OnPaintOverlay;
+            Gui.VideoBox.SizeChanged += VideoBoxResize;
+        }
+
+        public override void Destroy()
+        {
+            Player.Loaded -= OnPlayerLoaded;
+            Gui.VideoBox.SizeChanged -= VideoBoxResize;
+            Player.PaintOverlay -= OnPaintOverlay;
+
+            m_Text.Dispose();
+
+            base.Destroy();
+        }
+
+        private void OnPlayerLoaded(object sender, EventArgs eventArgs)
+        {
             DynamicHotkeys.RegisterHotkey(Guid.NewGuid(), "Ctrl+K", () =>
             {
                 Settings.ShowOsd = !Settings.ShowOsd;
@@ -60,21 +81,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 
                 Gui.VideoBox.Invalidate();
             });
-
-            m_Timer = new Timer { Interval = 30 };
-            m_Timer.Tick += TimerOnTick;
-            Player.PaintOverlay += OnPaintOverlay;
-            Gui.VideoBox.SizeChanged += VideoBoxResize;
-        }
-
-        public override void Destroy()
-        {
-            Gui.VideoBox.SizeChanged -= VideoBoxResize;
-            Player.PaintOverlay -= OnPaintOverlay;
-
-            m_Text.Dispose();
-
-            base.Destroy();
         }
 
         private void TimerOnTick(object sender, EventArgs eventArgs)
