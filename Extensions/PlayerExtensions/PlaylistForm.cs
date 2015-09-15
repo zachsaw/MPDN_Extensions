@@ -499,7 +499,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void SavePlaylist()
         {
-            if (String.IsNullOrEmpty(m_LoadedPlaylist)) return;
+            if (string.IsNullOrEmpty(m_LoadedPlaylist)) return;
             SavePlaylist(m_LoadedPlaylist);
         }
 
@@ -521,7 +521,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                             item =>
                                 string.Format("{0}{1} | SkipChapter: {2} | EndChapter: {3}",
                                     item.Active ? ACTIVE_INDICATOR : INACTIVE_INDICATOR,
-                                    item.FilePath, item.HasChapter ? String.Join(",", item.SkipChapters) : "0",
+                                    item.FilePath, item.HasChapter ? string.Join(",", item.SkipChapters) : "0",
                                     item.EndChapter > -1 ? item.EndChapter : 0));
             }
             else
@@ -589,13 +589,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                             if (Media.Chapters.Count == 0) sortedNumbers.Clear();
                         }
 
-                        formattedValue = String.Join(",", sortedNumbers);
+                        formattedValue = string.Join(",", sortedNumbers);
                         skipChapterCell.Value = formattedValue;
                     }
 
                     if (endChapterCell.Value != null && endChapterCell.Value.ToString() != string.Empty)
                     {
-                        var value = new String(endChapterCell.Value.ToString().Where(Char.IsDigit).ToArray());
+                        var value = new string(endChapterCell.Value.ToString().Where(Char.IsDigit).ToArray());
 
                         if (CurrentItem != null && i == m_CurrentPlayIndex)
                         {
@@ -1760,7 +1760,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
-            if (String.IsNullOrEmpty(Media.FilePath)) return;
+            if (string.IsNullOrEmpty(Media.FilePath)) return;
             if (!File.Exists(Media.FilePath))
             {
                 m_CurrentPlayIndex = -1;
@@ -2386,7 +2386,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 for (var i = 0; i < Playlist.Count; i++)
                 {
                     var item = Playlist[i];
-                    if (!String.IsNullOrEmpty(item.Duration)) continue;
+                    if (!string.IsNullOrEmpty(item.Duration)) continue;
                     var media = new MediaFile(item.FilePath);
                     var time = TimeSpan.FromMilliseconds(media.duration);
                     item.Duration = time.ToString(@"hh\:mm\:ss");
@@ -2497,7 +2497,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (HasChapter)
             {
-                return Path.GetFileName(FilePath) + " | SkipChapter: " + String.Join(",", SkipChapters) +
+                return Path.GetFileName(FilePath) + " | SkipChapter: " + string.Join(",", SkipChapters) +
                        " | EndChapter: " + EndChapter;
             }
 

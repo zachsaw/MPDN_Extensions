@@ -77,8 +77,8 @@ namespace Mpdn.Extensions.Framework.Controls
                                  ShellFileOperation.ShellFileOperationFlags.FOFX_REQUIREELEVATION
             };
 
-            var source = new String[1];
-            var dest = new String[1];
+            var source = new string[1];
+            var dest = new string[1];
 
             source[0] = tempFileName;
             dest[0] = m_File;

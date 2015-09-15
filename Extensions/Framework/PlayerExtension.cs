@@ -91,7 +91,7 @@ namespace Mpdn.Extensions.Framework
             keyString = keyString.ToLower().Trim();
             var keyWords = Regex.Split(keyString, @"\W+");
             var specialKeys = AddSpecialKeys(keyString);
-            keyString = String.Join(", ",
+            keyString = string.Join(", ",
                 keyWords.Concat(specialKeys).Where(k => !string.IsNullOrWhiteSpace(k)).Select(DecodeKeyWord).ToArray());
 
             return (Enum.TryParse(keyString, true, out keys));
@@ -114,13 +114,13 @@ namespace Mpdn.Extensions.Framework
             return specialKeys;
         }
 
-        private static Keys DecodeKeyString(String keyString)
+        private static Keys DecodeKeyString(string keyString)
         {
             Keys keys;
             return TryDecodeKeyString(keyString, out keys) ? keys : Keys.None;
         }
 
-        private static String DecodeKeyWord(String keyWord)
+        private static string DecodeKeyWord(string keyWord)
         {
             switch (keyWord)
             {

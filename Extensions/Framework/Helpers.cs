@@ -24,7 +24,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using System.Windows.Markup;
 using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Config;
@@ -325,43 +324,56 @@ namespace Mpdn.Extensions.Framework
 
     public static class StatusHelpers
     {
-        public static String ToSubStatus(this String status)
+        public static string ToSubStatus(this string status)
         {
-            return String.IsNullOrEmpty(status)
+            return string.IsNullOrEmpty(status)
                 ? ""
-                : String.Format("({0})", status.Replace(';', ','));
+                : string.Format("({0})", status.Replace(';', ','));
         }
 
-        public static String AppendSubStatus(this String first, String status)
+        public static string AppendSubStatus(this string first, string status)
         {
-            return String.IsNullOrEmpty(status)
+            return string.IsNullOrEmpty(status)
                 ? first
                 : first + " " + status.ToSubStatus();
         }
 
-        public static Func<String> AppendSubStatus(this Func<String> first, Func<String> status)
+        public static Func<string> AppendSubStatus(this Func<string> first, Func<string> status)
         {
             return () => first().AppendSubStatus(status());
         }
 
-        public static String AppendStatus(this String first, String status)
+        public static string AppendStatus(this string first, string status)
         {
-            return String.Join("; ",
+            return string.Join("; ",
                 (new[] { first, status })
-                .Where(str => !String.IsNullOrEmpty(str))
+                .Where(str => !string.IsNullOrEmpty(str))
                 .ToArray());
         }
 
-        public static String PrependToStatus(this String status, string prefix)
+        public static string PrependToStatus(this string status, string prefix)
         {
             return (status != "")
                 ? prefix + status
                 : status;
         }
 
-        public static Func<String> Append(this Func<String> first, Func<String> status)
+        public static Func<string> Append(this Func<string> first, Func<string> status)
         {
             return () => first().AppendStatus(status());
+        }
+
+        public static string AppendChromaStatus(this string status, IChromaScaler chromaScaler, IScaler fallbackScaler)
+        {
+            var chroma = chromaScaler as RenderChain.RenderChain;
+            if (chroma == null) return status;
+            var statusFunc = chroma.Status ?? chroma.Active;
+            var chromaStatus = statusFunc();
+            chromaStatus = string.IsNullOrEmpty(chromaStatus)
+                ? fallbackScaler.GetDescription() + " Chroma"
+                : chromaStatus;
+
+            return status.AppendSubStatus(chromaStatus);
         }
 
         public static string ScaleDescription(TextureSize inputSize, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)

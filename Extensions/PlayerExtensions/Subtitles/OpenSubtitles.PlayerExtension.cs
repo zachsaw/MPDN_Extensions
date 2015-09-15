@@ -77,7 +77,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
                     Media.Play();
                     return;
                 }
-                subList.Sort((a, b) => String.Compare(a.Lang, b.Lang, CultureInfo.CurrentUICulture, CompareOptions.StringSort));
+                subList.Sort((a, b) => string.Compare(a.Lang, b.Lang, CultureInfo.CurrentUICulture, CompareOptions.StringSort));
 
                 m_Form.SetSubtitles(subList, Settings.PreferedLanguage);
                 m_Form.ShowDialog(Player.ActiveForm);

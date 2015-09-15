@@ -113,7 +113,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             var lines = new List<string> {"<h1>Changelog</h1>", "<div id='changelog'><ol>"};
 
             lines.AddRange(
-                changelog.Select(line => String.IsNullOrWhiteSpace(line) ? null : String.Format("<li>{0}</li>", line)));
+                changelog.Select(line => string.IsNullOrWhiteSpace(line) ? null : string.Format("<li>{0}</li>", line)));
             lines.Add("</ol></div>");
             return lines;
         }
@@ -125,21 +125,21 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             {
                 var webClient = new WebClient();
                 WebClientHelper.SetHeaders(webClient);
-                var changelog = webClient.DownloadString(String.Format("{0}ChangeLog.txt", UpdateChecker.LatestFolderUrl));
+                var changelog = webClient.DownloadString(string.Format("{0}ChangeLog.txt", UpdateChecker.LatestFolderUrl));
                 html.Add("<h1>Changelogs</h1>");
                 foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
                 {
                     if (line.Contains("Changelog") && Version.ContainsVersionString(line))
                     {
-                        html.Add(String.Format("<h2>{0}</h2><ol>", line));
+                        html.Add(string.Format("<h2>{0}</h2><ol>", line));
                     }
-                    else if (String.IsNullOrWhiteSpace(line))
+                    else if (string.IsNullOrWhiteSpace(line))
                     {
                         html.Add("</ol>");
                     }
                     else
                     {
-                        html.Add(String.Format("<li>{0}</li>", line));
+                        html.Add(string.Format("<li>{0}</li>", line));
                     }
                 }
             }
@@ -152,7 +152,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             {
                 "<h1>Changelog</h1>",
                 "<div id='changelog'>",
-                CommonMarkConverter.Convert(String.Join("\n", changelog)),
+                CommonMarkConverter.Convert(string.Join("\n", changelog)),
                 "</div>"
             };
             return lines;
@@ -170,7 +170,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                         webClient.DownloadString("https://api.github.com/repos/zachsaw/MPDN_Extensions/releases"));
                 foreach (var gitHubVersion in releases)
                 {
-                    html.Add(String.Format("<h2>{0}</h2>", gitHubVersion.tag_name));
+                    html.Add(string.Format("<h2>{0}</h2>", gitHubVersion.tag_name));
                     html.Add(CommonMarkConverter.Convert(gitHubVersion.body));
                 }
             }

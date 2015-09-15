@@ -46,7 +46,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 var file = File.Open(fullPath, FileMode.Open, FileAccess.Read);
                 StreamReader reader = new StreamReader(file);
-                String line;
+                string line;
                 bool readAgain = false;
                 do
                 {

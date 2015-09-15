@@ -274,7 +274,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void SetActiveFile()
         {
-            if (String.IsNullOrEmpty(Media.FilePath)) return;
+            if (string.IsNullOrEmpty(Media.FilePath)) return;
             if (!File.Exists(Media.FilePath)) return;
             if (Player.State != PlayerState.Playing) return;
 
@@ -475,7 +475,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void CloseMpdn()
         {
-            if (String.IsNullOrEmpty(Media.FilePath)) return;
+            if (string.IsNullOrEmpty(Media.FilePath)) return;
             if (Media.Position < Media.Duration) return;
 
             var row = m_Form.GetDgvPlaylist().CurrentRow;

@@ -55,7 +55,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             {
                 return new[]
                 {
-                    new Verb(Category.Help, String.Empty, "Check for Updates...", ManualUpdateCheck)
+                    new Verb(Category.Help, string.Empty, "Check for Updates...", ManualUpdateCheck)
                 };
             }
         }

@@ -109,7 +109,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
             if (SizeIndex < 0 || SizeIndex >= inputFilters.Length || inputFilters[SizeIndex] == null)
             {
-                throw new IndexOutOfRangeException(String.Format("No valid input filter at index {0}", SizeIndex));
+                throw new IndexOutOfRangeException(string.Format("No valid input filter at index {0}", SizeIndex));
             }
 
             var arguments = settings.Args ?? new float[0];
@@ -167,14 +167,14 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 {
                     var tex = (ITexture2D) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
-                    Shader.SetConstant(String.Format("size{0}", i),
+                    Shader.SetConstant(string.Format("size{0}", i),
                         new Vector4(tex.Width, tex.Height, 1.0f/tex.Width, 1.0f/tex.Height), false);
                 }
                 else
                 {
                     var tex = (ITexture3D) input;
                     Shader.SetTextureConstant(i, tex, LinearSampling[i], false);
-                    Shader.SetConstant(String.Format("size3d{0}", i),
+                    Shader.SetConstant(string.Format("size3d{0}", i),
                         new Vector4(tex.Width, tex.Height, tex.Depth, 0), false);
                 }
                 i++;
@@ -182,7 +182,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
             for (i = 0; 4*i < Args.Length; i++)
             {
-                Shader.SetConstant(String.Format("args{0}", i),
+                Shader.SetConstant(string.Format("args{0}", i),
                     new Vector4(Args[4*i], Args[4*i + 1], Args[4*i + 2], Args[4*i + 3]), false);
             }
 

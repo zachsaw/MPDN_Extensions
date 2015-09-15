@@ -123,8 +123,6 @@ namespace Mpdn.Extensions.RenderScripts
                 m_VFilter2 = NNedi3Helpers.CreateFilter(shaderVPass2, resultV, Neurons2, Structured);
                 var v = new ShaderFilter(interleaveV, resultV, m_VFilter2);
 
-                Status = this.ChromaScalerStatus(lumaInput);
-
                 return new MergeFilter(lumaInput, u, v).ConvertToRgb();
             }
         }

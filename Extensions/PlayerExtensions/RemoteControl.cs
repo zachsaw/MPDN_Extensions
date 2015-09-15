@@ -246,7 +246,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "AudioTracks|" + audioStringBuilder;
             }
-            return String.Empty;
+            return string.Empty;
         }
 
         private string GetAllSubtitleTracks()
@@ -272,7 +272,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "Subtitles|" + subSb;
             }
-            return String.Empty;
+            return string.Empty;
         }
 
         private string GetAllChapters()
@@ -291,7 +291,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 return "Chapters|" + chapterSb;
             }
-            return String.Empty;
+            return string.Empty;
         }
 
         private void PlayerControlPlaybackCompleted(object sender, EventArgs e)
@@ -616,7 +616,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             bool dispOsd = false;
             Boolean.TryParse(showOsd.ToString(), out dispOsd);
-            if (!String.IsNullOrEmpty(Media.FilePath))
+            if (!string.IsNullOrEmpty(Media.FilePath))
             {
                 Media.Play(dispOsd);
             }

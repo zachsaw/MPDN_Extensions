@@ -79,11 +79,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             {
                 var lumaStatus = resizedLuma.ResizerDescription();
                 var chromaStatus = chromaScaler.Active();
-
-                if (lumaStatus != "")
-                    return String.Format("Chroma: {0}; Luma:{1}", chromaStatus, lumaStatus);
-
-                return chromaStatus;
+                return lumaStatus != "" ? string.Format("Chroma: {0}; Luma:{1}", chromaStatus, lumaStatus) : chromaStatus;
             };
         }
     }

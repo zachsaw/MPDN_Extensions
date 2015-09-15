@@ -116,9 +116,9 @@ namespace Mpdn.Extensions.RenderScripts
 
                 string macroDefinitions = "";
                 if (IsIntegral(Strength))
-                    macroDefinitions += String.Format("strength = {0};", Strength);
+                    macroDefinitions += string.Format("strength = {0};", Strength);
                 if (IsIntegral(Softness))
-                    macroDefinitions += String.Format("softness = {0};", Softness);
+                    macroDefinitions += string.Format("softness = {0};", Softness);
 
                 // Compile Shaders
                 var Diff = CompileShader("Diff.hlsl")

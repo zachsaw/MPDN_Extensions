@@ -31,7 +31,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
             listCulture.AddRange(CultureInfo.GetCultures(CultureTypes.NeutralCultures));
             InvariantCulture = listCulture[0];
             listCulture.Remove(InvariantCulture);
-            listCulture.Sort((a, b) => String.Compare(a.EnglishName, b.EnglishName, StringComparison.Ordinal));
+            listCulture.Sort((a, b) => string.Compare(a.EnglishName, b.EnglishName, StringComparison.Ordinal));
             listCulture.Insert(0, InvariantCulture);
             return listCulture;
         }

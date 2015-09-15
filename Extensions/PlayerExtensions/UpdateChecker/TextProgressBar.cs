@@ -45,13 +45,13 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             switch (DisplayStyle)
             {
                 case ProgressBarDisplayText.Both:
-                    text = String.Format("{0}: {1}%", CustomText, Value);
+                    text = string.Format("{0}: {1}%", CustomText, Value);
                     break;
                 case ProgressBarDisplayText.CustomText:
                     text = CustomText;
                     break;
                 case ProgressBarDisplayText.Percentage:
-                    text = String.Format("{0}%", Value);
+                    text = string.Format("{0}%", Value);
                     break;
             }
 

@@ -123,9 +123,9 @@ namespace Mpdn.Extensions.RenderScripts
 
                     string superResMacros = "";
                     if (IsIntegral(Strength))
-                        superResMacros += String.Format("strength = {0};", Strength);
+                        superResMacros += string.Format("strength = {0};", Strength);
                     if (IsIntegral(Softness))
-                        superResMacros += String.Format("softness = {0};", Softness);
+                        superResMacros += string.Format("softness = {0};", Softness);
 
                     string diffMacros = string.Format("LimitedRange = {0}; range = {1}", limited ? 1 : 0, (1 << bitdepth) - 1);
 

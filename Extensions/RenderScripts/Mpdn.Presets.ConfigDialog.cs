@@ -576,7 +576,7 @@ namespace Mpdn.Extensions.RenderScripts
                     });
                 }
                 var presetArray = presets.ToArray();
-                while (presetArray.Any(p => String.Equals(p.Name, result, StringComparison.InvariantCultureIgnoreCase)))
+                while (presetArray.Any(p => string.Equals(p.Name, result, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     result = string.Format("{0} {1}", name, i++);
                 }

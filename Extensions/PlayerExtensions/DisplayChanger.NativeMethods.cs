@@ -130,8 +130,8 @@ namespace Mpdn.Extensions.PlayerExtensions.DisplayChangerNativeMethods
         {
             var dm = new DEVMODE
             {
-                dmDeviceName = new String(deviceName.ToCharArray()),
-                dmFormName = new String(new char[32]),
+                dmDeviceName = new string(deviceName.ToCharArray()),
+                dmFormName = new string(new char[32]),
                 dmSize = (short) Marshal.SizeOf(typeof (DEVMODE))
             };
             return dm;
