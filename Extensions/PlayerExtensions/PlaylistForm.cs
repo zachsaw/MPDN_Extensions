@@ -1781,6 +1781,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void PlaybackCompleted(object sender, EventArgs e)
         {
             if (Player.State == PlayerState.Closed) return;
+            if (CurrentItem == null) return;
             if (Media.Position == Media.Duration)
             {
                 CurrentItem.PlayCount++;
