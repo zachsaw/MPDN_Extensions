@@ -89,7 +89,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public override void Initialize()
         {
             base.Initialize();
-            m_Checker = new UpdateChecker(Settings, new Uri(string.Format("{0}LatestVersion.txt", UpdateChecker.MpdnRepoUrl)));
+            m_Checker = new UpdateChecker(Settings, new Uri(string.Format("{0}LatestVersion.json", UpdateChecker.MpdnRepoUrl)));
             m_ExtChecker = new ExtensionUpdateChecker(Settings, new Uri("https://api.github.com/repos/zachsaw/MPDN_Extensions/releases/latest"));
             Player.Loaded += PlayerControlPlayerLoaded;
         }
@@ -239,33 +239,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected virtual void ParseChangelog(string changelog)
         {
-            Version serverVersion = null;
-            foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
+            var jsonVersion = JsonConvert.DeserializeObject<JsonVersion>(changelog);
+            var serverVersion = new Version(jsonVersion.Version)
             {
-                if (Version.ContainsVersionString(line))
-                {
-                    if (serverVersion == null)
-                    {
-                        serverVersion = new Version(line);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                else if (serverVersion != null && !string.IsNullOrWhiteSpace(line))
-                {
-                    var extensionApiVersion = Version.GetExtensionApiVersion(line);
-                    if (extensionApiVersion != -1)
-                    {
-                        serverVersion.ExtensionApiVersion = extensionApiVersion;
-                    }
-                    else
-                    {
-                        serverVersion.ChangelogLines.Add(line);
-                    }
-                }
-            }
+                ExtensionApiVersion = jsonVersion.API,
+                ChangelogLines = jsonVersion.Changelog
+            };
 
             GuiThread.DoAsync(() =>
             {
