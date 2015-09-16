@@ -112,27 +112,30 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             var playerNeedUpdate = Settings.MpdnVersionOnServer > m_CurrentVersion;
             var extensionNeedUpdate = Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion();
+
+            var displayForm = new Func<bool>(() => Settings.UseSimpleUpdate
+                ? DisplaySimpleForm(force, playerNeedUpdate, extensionNeedUpdate)
+                : DisplayAdvancedForm(force, playerNeedUpdate, extensionNeedUpdate));
+
             //Check API Version match when both updates available
             if (playerNeedUpdate && extensionNeedUpdate &&
-                Settings.MpdnVersionOnServer.ExtensionApiVersion !=
+                Settings.MpdnVersionOnServer.ExtensionApiVersion ==
                 Settings.ExtensionVersionOnServer.ExtensionApiVersion)
             {
-                return false;
+                return displayForm.Invoke();
             }
-            //Don't update player if the update is going to break the extensions.
-            if (playerNeedUpdate && Settings.MpdnVersionOnServer.ExtensionApiVersion != Extension.InterfaceVersion)
+            //Update player if the update is going to break the extensions.
+            if (playerNeedUpdate && Settings.MpdnVersionOnServer.ExtensionApiVersion == Extension.InterfaceVersion)
             {
-                return false;
+                return displayForm.Invoke();
             }
-            //Don't update the extension if the new extensions aren't going to work with the current player.
+            //Update the extension if the new extensions aren't going to work with the current player.
             if (extensionNeedUpdate &&
-                Settings.ExtensionVersionOnServer.ExtensionApiVersion != Extension.InterfaceVersion)
+                Settings.ExtensionVersionOnServer.ExtensionApiVersion == Extension.InterfaceVersion)
             {
-                return false;
+                return displayForm.Invoke();
             }
-            return Settings.UseSimpleUpdate
-                ? DisplaySimpleForm(force, playerNeedUpdate, extensionNeedUpdate)
-                : DisplayAdvancedForm(force, playerNeedUpdate, extensionNeedUpdate);
+            return false;
         }
 
         private bool DisplayAdvancedForm(bool force, bool playerNeedUpdate, bool extensionNeedUpdate)
