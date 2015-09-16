@@ -89,7 +89,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public override void Initialize()
         {
             base.Initialize();
-            m_Checker = new UpdateChecker(Settings, new Uri(string.Format("{0}LatestVersion.txt", UpdateChecker.MpdnRepoUrl)));
+            m_Checker = new UpdateChecker(Settings, new Uri(string.Format("{0}LatestVersion.json", UpdateChecker.MpdnRepoUrl)));
             m_ExtChecker = new ExtensionUpdateChecker(Settings, new Uri("https://api.github.com/repos/zachsaw/MPDN_Extensions/releases/latest"));
             Player.Loaded += PlayerControlPlayerLoaded;
         }
@@ -112,27 +112,30 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         {
             var playerNeedUpdate = Settings.MpdnVersionOnServer > m_CurrentVersion;
             var extensionNeedUpdate = Settings.ExtensionVersionOnServer > ExtensionUpdateChecker.GetExtensionsVersion();
+
+            var displayForm = new Func<bool>(() => Settings.UseSimpleUpdate
+                ? DisplaySimpleForm(force, playerNeedUpdate, extensionNeedUpdate)
+                : DisplayAdvancedForm(force, playerNeedUpdate, extensionNeedUpdate));
+
             //Check API Version match when both updates available
             if (playerNeedUpdate && extensionNeedUpdate &&
-                Settings.MpdnVersionOnServer.ExtensionApiVersion !=
+                Settings.MpdnVersionOnServer.ExtensionApiVersion ==
                 Settings.ExtensionVersionOnServer.ExtensionApiVersion)
             {
-                return false;
+                return displayForm.Invoke();
             }
-            //Don't update player if the update is going to break the extensions.
-            if (playerNeedUpdate && Settings.MpdnVersionOnServer.ExtensionApiVersion != Extension.InterfaceVersion)
+            //Update player if the update is going to break the extensions.
+            if (playerNeedUpdate && Settings.MpdnVersionOnServer.ExtensionApiVersion == Extension.InterfaceVersion)
             {
-                return false;
+                return displayForm.Invoke();
             }
-            //Don't update the extension if the new extensions aren't going to work with the current player.
+            //Update the extension if the new extensions aren't going to work with the current player.
             if (extensionNeedUpdate &&
-                Settings.ExtensionVersionOnServer.ExtensionApiVersion != Extension.InterfaceVersion)
+                Settings.ExtensionVersionOnServer.ExtensionApiVersion == Extension.InterfaceVersion)
             {
-                return false;
+                return displayForm.Invoke();
             }
-            return Settings.UseSimpleUpdate
-                ? DisplaySimpleForm(force, playerNeedUpdate, extensionNeedUpdate)
-                : DisplayAdvancedForm(force, playerNeedUpdate, extensionNeedUpdate);
+            return false;
         }
 
         private bool DisplayAdvancedForm(bool force, bool playerNeedUpdate, bool extensionNeedUpdate)
@@ -236,33 +239,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         protected virtual void ParseChangelog(string changelog)
         {
-            Version serverVersion = null;
-            foreach (var line in Regex.Split(changelog, "\r\n|\r|\n"))
+            var jsonVersion = JsonConvert.DeserializeObject<JsonVersion>(changelog);
+            var serverVersion = new Version(jsonVersion.Version)
             {
-                if (Version.ContainsVersionString(line))
-                {
-                    if (serverVersion == null)
-                    {
-                        serverVersion = new Version(line);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                else if (serverVersion != null && !string.IsNullOrWhiteSpace(line))
-                {
-                    var extensionApiVersion = Version.GetExtensionApiVersion(line);
-                    if (extensionApiVersion != -1)
-                    {
-                        serverVersion.ExtensionApiVersion = extensionApiVersion;
-                    }
-                    else
-                    {
-                        serverVersion.ChangelogLines.Add(line);
-                    }
-                }
-            }
+                ExtensionApiVersion = jsonVersion.API,
+                ChangelogLines = jsonVersion.Changelog
+            };
 
             GuiThread.DoAsync(() =>
             {
