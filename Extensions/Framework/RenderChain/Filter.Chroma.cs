@@ -56,9 +56,40 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public static class ChromaHelper
     {
+        public static IFilter MakeChromaFilter(this IChromaScaler chromaScaler, IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+        {
+            var chain = chromaScaler as RenderChain;
+            if (chain != null)
+            {
+                chain.Status = null;
+            }
+
+            IFilter result;
+            try
+            {
+                result = chromaScaler.CreateChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
+            }
+            catch (Exception)
+            {
+                if (chain != null)
+                {
+                    chain.Status = chain.Inactive;
+                }
+                throw;
+            }
+
+            if (chain == null)
+                return result;
+
+            var activeStatus = chain.Status ?? chain.Active;
+            chain.Status = () => result != null ? activeStatus() : chain.Inactive();
+
+            return result;
+        }
+
         public static IFilter CreateChromaFilter(this IChromaScaler chromaScaler, IFilter lumaInput, IFilter chromaInput, Vector2 chromaOffset)
         {
-            return chromaScaler.CreateChromaFilter(lumaInput, chromaInput, lumaInput.OutputSize, chromaOffset);
+            return chromaScaler.MakeChromaFilter(lumaInput, chromaInput, lumaInput.OutputSize, chromaOffset);
         }
 
         public static IFilter MakeChromaFilter<TChromaScaler>(this TChromaScaler scaler, IFilter input)
@@ -132,19 +163,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (m_CompilationResult != null)
                 return m_CompilationResult;
 
-            var chain = ChromaScaler as RenderChain;
-            var result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset);
-            if (result == null)
-            {
-                result = m_Fallback;
-
-                if (chain != null)
-                    chain.Status = chain.Inactive;
-            }
-
-            m_CompilationResult = result
-                .SetSize(TargetSize)
-                .Compile();
+            m_CompilationResult =
+                (ChromaScaler.MakeChromaFilter(Luma, Chroma, TargetSize, ChromaOffset) ?? m_Fallback)
+                    .SetSize(TargetSize)
+                    .Compile();
             return m_CompilationResult;
         }
 

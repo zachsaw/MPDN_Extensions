@@ -367,8 +367,7 @@ namespace Mpdn.Extensions.Framework
         {
             var chroma = chromaScaler as RenderChain.RenderChain;
             if (chroma == null) return status;
-            var statusFunc = chroma.Status ?? chroma.Active;
-            var chromaStatus = statusFunc();
+            var chromaStatus = chroma.Status();
             chromaStatus = string.IsNullOrEmpty(chromaStatus)
                 ? fallbackScaler.GetDescription() + " Chroma"
                 : chromaStatus;

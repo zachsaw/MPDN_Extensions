@@ -217,7 +217,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             IChromaScaler chromaScaler = Chain as IChromaScaler ?? new DefaultChromaScaler();
 
-            return chromaScaler.CreateChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
+            return chromaScaler.MakeChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
         }
     }
 
