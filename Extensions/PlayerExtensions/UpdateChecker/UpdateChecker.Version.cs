@@ -207,4 +207,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             return list;
         }
     }
+
+    public class JsonVersion
+    {
+        public string Version { get; set; }
+        public List<string> Changelog { get; set; }
+        public int API { get; set; }
+    }
 }
