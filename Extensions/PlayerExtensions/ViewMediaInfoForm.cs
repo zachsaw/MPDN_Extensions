@@ -46,49 +46,49 @@ namespace Mpdn.Extensions.PlayerExtensions
                 lines.Add("<body>");
                 lines.Add("<table border='0' cellspacing='0' cellpadding='0'>");
                 lines.Add("<tr><td class='thead no-padding' colspan='2'><b>General</b></td></tr>");
-                lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("UniqueID/string")) ? string.Empty : string.Format("<tr><td>Unique ID:</td><td>{0}</td></tr>", mediaFile.miGetString("UniqueID/string")));
+                lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("UniqueID/String")) ? string.Empty : string.Format("<tr><td>Unique ID:</td><td>{0}</td></tr>", mediaFile.miGetString("UniqueID/String")));
                 lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("Movie")) ? string.Empty : string.Format("<tr><td>Movie name:</td><td>{0}</td></tr>", mediaFile.miGetString("Movie")));
                 lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("CompleteName")) ? string.Empty : string.Format("<tr><td>Complete name:</td><td>{0}</td></tr>", mediaFile.miGetString("CompleteName")));
                 lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("Format")) ? string.Empty : string.Format("<tr><td>Format:</td><td>{0}</td></tr>", mediaFile.miGetString("Format")));
                 lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("Format_Version")) ? string.Empty : string.Format("<tr><td>Format version:</td><td>{0}</td></tr>", mediaFile.miGetString("Format_Version")));
-                lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("FileSize/string")) ? string.Empty : string.Format("<tr><td>File size:</td><td>{0}</td></tr>", mediaFile.miGetString("FileSize/string")));
-                lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("Duration/string")) ? string.Empty : string.Format("<tr><td>Duration:</td><td>{0}</td></tr>", mediaFile.miGetString("Duration/string")));
-                lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("OverallBitRate/string")) ? string.Empty : string.Format("<tr><td>Overall bitrate:</td><td>{0}</td></tr>", mediaFile.miGetString("OverallBitRate/string")));
+                lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("FileSize/String")) ? string.Empty : string.Format("<tr><td>File size:</td><td>{0}</td></tr>", mediaFile.miGetString("FileSize/String")));
+                lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("Duration/String")) ? string.Empty : string.Format("<tr><td>Duration:</td><td>{0}</td></tr>", mediaFile.miGetString("Duration/String")));
+                lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("OverallBitRate/String")) ? string.Empty : string.Format("<tr><td>Overall bitrate:</td><td>{0}</td></tr>", mediaFile.miGetString("OverallBitRate/String")));
                 lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("Encoded_Date")) ? string.Empty : string.Format("<tr><td>Encoded date:</td><td>{0}</td></tr>", mediaFile.miGetString("Encoded_Date")));
                 lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("Encoded_Application")) ? string.Empty : string.Format("<tr><td>Writing application:</td><td>{0}</td></tr>", mediaFile.miGetString("Encoded_Application")));
-                lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("Encoded_Library/string")) ? string.Empty : string.Format("<tr><td>Writing library:</td><td>{0}</td></tr>", mediaFile.miGetString("Encoded_Library/string")));
+                lines.Add(string.IsNullOrEmpty(mediaFile.miGetString("Encoded_Library/String")) ? string.Empty : string.Format("<tr><td>Writing library:</td><td>{0}</td></tr>", mediaFile.miGetString("Encoded_Library/String")));
             }
 
             lines.Add("<tr><td class='thead' colspan='2'><b>Video</b></td></tr>");
             foreach (var info in mediaFile.Video)
             {
-                lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", info.Value.miGetString("ID/string")));
+                lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", info.Value.miGetString("ID/String")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Title")) ? string.Empty : string.Format("<tr><td>Title:</td><td>{0}</td></tr>", info.Value.miGetString("Title")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Format")) ? string.Empty : string.Format("<tr><td>Format:</td><td>{0}</td></tr>", info.Value.miGetString("Format")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Format/Info")) ? string.Empty : string.Format("<tr><td>Format info:</td><td>{0}</td></tr>", info.Value.miGetString("Format/Info")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Format_Profile")) ? string.Empty : string.Format("<tr><td>Format profile:</td><td>{0}</td></tr>", info.Value.miGetString("Format_Profile")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Format_Settings")) ? string.Empty : string.Format("<tr><td>Format settings:</td><td>{0}</td></tr>", info.Value.miGetString("Format_Settings")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("MuxingMode")) ? string.Empty : string.Format("<tr><td>Muxing mode:</td><td>{0}</td></tr>", info.Value.miGetString("MuxingMode")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("CodecID/string")) ? string.Empty : string.Format("<tr><td>Codec ID:</td><td>{0}</td></tr>", info.Value.miGetString("CodecID/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Duration/string")) ? string.Empty : string.Format("<tr><td>Duration:</td><td>{0}</td></tr>", info.Value.miGetString("Duration/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitRate/string")) ? string.Empty : string.Format("<tr><td>Bitrate:</td><td>{0}</td></tr>", info.Value.miGetString("BitRate/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitRate_Nominal/string")) ? string.Empty : string.Format("<tr><td>Nominal bitrate:</td><td>{0}</td></tr>", info.Value.miGetString("BitRate_Nominal/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Width/string")) ? string.Empty : string.Format("<tr><td>Width:</td><td>{0}</td></tr>", info.Value.miGetString("Width/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Height/string")) ? string.Empty : string.Format("<tr><td>Height:</td><td>{0}</td></tr>", info.Value.miGetString("Height/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("DisplayAspectRatio/string")) ? string.Empty : string.Format("<tr><td>Display aspect ratio:</td><td>{0}</td></tr>", info.Value.miGetString("DisplayAspectRatio/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("FrameRate_Mode/string")) ? string.Empty : string.Format("<tr><td>Frame rate mode:</td><td>{0}</td></tr>", info.Value.miGetString("FrameRate_Mode/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("FrameRate/string")) ? string.Empty : string.Format("<tr><td>Frame rate:</td><td>{0}</td></tr>", info.Value.miGetString("FrameRate/string")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("CodecID/String")) ? string.Empty : string.Format("<tr><td>Codec ID:</td><td>{0}</td></tr>", info.Value.miGetString("CodecID/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Duration/String")) ? string.Empty : string.Format("<tr><td>Duration:</td><td>{0}</td></tr>", info.Value.miGetString("Duration/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitRate/String")) ? string.Empty : string.Format("<tr><td>Bitrate:</td><td>{0}</td></tr>", info.Value.miGetString("BitRate/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitRate_Nominal/String")) ? string.Empty : string.Format("<tr><td>Nominal bitrate:</td><td>{0}</td></tr>", info.Value.miGetString("BitRate_Nominal/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Width/String")) ? string.Empty : string.Format("<tr><td>Width:</td><td>{0}</td></tr>", info.Value.miGetString("Width/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Height/String")) ? string.Empty : string.Format("<tr><td>Height:</td><td>{0}</td></tr>", info.Value.miGetString("Height/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("DisplayAspectRatio/String")) ? string.Empty : string.Format("<tr><td>Display aspect ratio:</td><td>{0}</td></tr>", info.Value.miGetString("DisplayAspectRatio/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("FrameRate_Mode/String")) ? string.Empty : string.Format("<tr><td>Frame rate mode:</td><td>{0}</td></tr>", info.Value.miGetString("FrameRate_Mode/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("FrameRate/String")) ? string.Empty : string.Format("<tr><td>Frame rate:</td><td>{0}</td></tr>", info.Value.miGetString("FrameRate/String")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("ColorSpace")) ? string.Empty : string.Format("<tr><td>Color space:</td><td>{0}</td></tr>", info.Value.miGetString("ColorSpace")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("ChromaSubsampling")) ? string.Empty : string.Format("<tr><td>Chroma subsampling:</td><td>{0}</td></tr>", info.Value.miGetString("ChromaSubsampling")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitDepth/string")) ? string.Empty : string.Format("<tr><td>Bit depth:</td><td>{0}</td></tr>", info.Value.miGetString("BitDepth/string")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitDepth/String")) ? string.Empty : string.Format("<tr><td>Bit depth:</td><td>{0}</td></tr>", info.Value.miGetString("BitDepth/String")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("ScanType")) ? string.Empty : string.Format("<tr><td>Scan type:</td><td>{0}</td></tr>", info.Value.miGetString("ScanType")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Bits-(Pixel*Frame)")) ? string.Empty : string.Format("<tr><td>Bits/(Pixel*Frame):</td><td>{0}</td></tr>", info.Value.miGetString("Bits-(Pixel*Frame)")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("StreamSize/string")) ? string.Empty : string.Format("<tr><td>Stream size:</td><td>{0}</td></tr>", info.Value.miGetString("StreamSize/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Encoded_Library/string")) ? string.Empty : string.Format("<tr><td>Writing library:</td><td>{0}</td></tr>", info.Value.miGetString("Encoded_Library/string")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("StreamSize/String")) ? string.Empty : string.Format("<tr><td>Stream size:</td><td>{0}</td></tr>", info.Value.miGetString("StreamSize/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Encoded_Library/String")) ? string.Empty : string.Format("<tr><td>Writing library:</td><td>{0}</td></tr>", info.Value.miGetString("Encoded_Library/String")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Encoded_Library_Settings")) ? string.Empty : string.Format("<tr><td>Encoding settings:</td><td>{0}</td></tr>", info.Value.miGetString("Encoded_Library_Settings")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Language/string")) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.miGetString("Language/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Default/string")) ? string.Empty : string.Format("<tr><td>Default:</td><td>{0}</td></tr>", info.Value.miGetString("Default/string")));
-                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Forced/string")) ? string.Empty : string.Format("<tr><td>Forced:</td><td>{0}</td></tr>", info.Value.miGetString("Forced/string")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Language/String")) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.miGetString("Language/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Default/String")) ? string.Empty : string.Format("<tr><td>Default:</td><td>{0}</td></tr>", info.Value.miGetString("Default/String")));
+                lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Forced/String")) ? string.Empty : string.Format("<tr><td>Forced:</td><td>{0}</td></tr>", info.Value.miGetString("Forced/String")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("colour_range")) ? string.Empty : string.Format("<tr><td>Color range:</td><td>{0}</td></tr>", info.Value.miGetString("colour_range")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("colour_primaries")) ? string.Empty : string.Format("<tr><td>Color primaries:</td><td>{0}</td></tr>", info.Value.miGetString("colour_primaries")));
                 lines.Add(string.IsNullOrEmpty(info.Value.miGetString("transfer_characteristics")) ? string.Empty : string.Format("<tr><td>Transfer characteristics:</td><td>{0}</td></tr>", info.Value.miGetString("transfer_characteristics")));
@@ -102,22 +102,22 @@ namespace Mpdn.Extensions.PlayerExtensions
                 foreach (var info in mediaFile.Audio)
                 {
                     lines.Add(mediaFile.Audio.Count == 1 ? "<tr><td class='thead' colspan='2'><b>Audio</b></td></tr>" : string.Format("<tr><td class='thead' colspan='2'><b>Audio #{0}</b></td></tr>", audioTracks));
-                    lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", info.Value.miGetString("ID/string")));
+                    lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", info.Value.miGetString("ID/String")));
                     lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Title")) ? string.Empty : string.Format("<tr><td>Title:</td><td>{0}</td></tr>", info.Value.miGetString("Title")));
                     lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Format")) ? string.Empty : string.Format("<tr><td>Format:</td><td>{0}</td></tr>", info.Value.miGetString("Format")));
                     lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Format/Info")) ? string.Empty : string.Format("<tr><td>Format info:</td><td>{0}</td></tr>", info.Value.miGetString("Format/Info")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("CodecID/string")) ? string.Empty : string.Format("<tr><td>Codec ID:</td><td>{0}</td></tr>", info.Value.miGetString("CodecID/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Duration/string")) ? string.Empty : string.Format("<tr><td>Duration:</td><td>{0}</td></tr>", info.Value.miGetString("Duration/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitRate_Mode/string")) ? string.Empty : string.Format("<tr><td>Bitrate mode:</td><td>{0}</td></tr>", info.Value.miGetString("BitRate_Mode/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitRate/string")) ? string.Empty : string.Format("<tr><td>Bitrate:</td><td>{0}</td></tr>", info.Value.miGetString("BitRate/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Channel(s)/string")) ? string.Empty : string.Format("<tr><td>Channels:</td><td>{0}</td></tr>", info.Value.miGetString("Channel(s)/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("SamplingRate/string")) ? string.Empty : string.Format("<tr><td>Sampling rate:</td><td>{0}</td></tr>", info.Value.miGetString("SamplingRate/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitDepth/string")) ? string.Empty : string.Format("<tr><td>Bit depth:</td><td>{0}</td></tr>", info.Value.miGetString("BitDepth/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Compression_Mode/string")) ? string.Empty : string.Format("<tr><td>Compression mode:</td><td>{0}</td></tr>", info.Value.miGetString("Compression_Mode/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("StreamSize/string")) ? string.Empty : string.Format("<tr><td>Stream size:</td><td>{0}</td></tr>", info.Value.miGetString("StreamSize/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Language/string")) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.miGetString("Language/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Default/string")) ? string.Empty : string.Format("<tr><td>Default:</td><td>{0}</td></tr>", info.Value.miGetString("Default/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Forced/string")) ? string.Empty : string.Format("<tr><td>Forced:</td><td>{0}</td></tr>", info.Value.miGetString("Forced/string")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("CodecID/String")) ? string.Empty : string.Format("<tr><td>Codec ID:</td><td>{0}</td></tr>", info.Value.miGetString("CodecID/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Duration/String")) ? string.Empty : string.Format("<tr><td>Duration:</td><td>{0}</td></tr>", info.Value.miGetString("Duration/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitRate_Mode/String")) ? string.Empty : string.Format("<tr><td>Bitrate mode:</td><td>{0}</td></tr>", info.Value.miGetString("BitRate_Mode/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitRate/String")) ? string.Empty : string.Format("<tr><td>Bitrate:</td><td>{0}</td></tr>", info.Value.miGetString("BitRate/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Channel(s)/String")) ? string.Empty : string.Format("<tr><td>Channels:</td><td>{0}</td></tr>", info.Value.miGetString("Channel(s)/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("SamplingRate/String")) ? string.Empty : string.Format("<tr><td>Sampling rate:</td><td>{0}</td></tr>", info.Value.miGetString("SamplingRate/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("BitDepth/String")) ? string.Empty : string.Format("<tr><td>Bit depth:</td><td>{0}</td></tr>", info.Value.miGetString("BitDepth/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Compression_Mode/String")) ? string.Empty : string.Format("<tr><td>Compression mode:</td><td>{0}</td></tr>", info.Value.miGetString("Compression_Mode/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("StreamSize/String")) ? string.Empty : string.Format("<tr><td>Stream size:</td><td>{0}</td></tr>", info.Value.miGetString("StreamSize/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Language/String")) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.miGetString("Language/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Default/String")) ? string.Empty : string.Format("<tr><td>Default:</td><td>{0}</td></tr>", info.Value.miGetString("Default/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Forced/String")) ? string.Empty : string.Format("<tr><td>Forced:</td><td>{0}</td></tr>", info.Value.miGetString("Forced/String")));
 
                     audioTracks++;
                 }
@@ -130,14 +130,14 @@ namespace Mpdn.Extensions.PlayerExtensions
                 foreach (var info in mediaFile.Text)
                 {
                     lines.Add(mediaFile.Text.Count == 1 ? "<tr><td class='thead' colspan='2'><b>Text</b></td></tr>" : string.Format("<tr><td class='thead' colspan='2'><b>Text #{0}</b></td></tr>", textTracks));
-                    lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", info.Value.miGetString("ID/string")));
+                    lines.Add(string.Format("<tr><td>ID:</td><td>{0}</td></tr>", info.Value.miGetString("ID/String")));
                     lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Format")) ? string.Empty : string.Format("<tr><td>Format:</td><td>{0}</td></tr>", info.Value.miGetString("Format")));
                     lines.Add(string.IsNullOrEmpty(info.Value.miGetString("CodecID")) ? string.Empty : string.Format("<tr><td>Codec ID:</td><td>{0}</td></tr>", info.Value.miGetString("CodecID")));
                     lines.Add(string.IsNullOrEmpty(info.Value.miGetString("CodecID/Info")) ? string.Empty : string.Format("<tr><td>Codec ID info:</td><td>{0}</td></tr>", info.Value.miGetString("CodecID/Info")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Compression_Mode/string")) ? string.Empty : string.Format("<tr><td>Compression mode:</td><td>{0}</td></tr>", info.Value.miGetString("Compression_Mode/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Language/string")) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.miGetString("Language/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Default/string")) ? string.Empty : string.Format("<tr><td>Default:</td><td>{0}</td></tr>", info.Value.miGetString("Default/string")));
-                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Forced/string")) ? string.Empty : string.Format("<tr><td>Forced:</td><td>{0}</td></tr>", info.Value.miGetString("Forced/string")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Compression_Mode/String")) ? string.Empty : string.Format("<tr><td>Compression mode:</td><td>{0}</td></tr>", info.Value.miGetString("Compression_Mode/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Language/String")) ? string.Empty : string.Format("<tr><td>Language:</td><td>{0}</td></tr>", info.Value.miGetString("Language/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Default/String")) ? string.Empty : string.Format("<tr><td>Default:</td><td>{0}</td></tr>", info.Value.miGetString("Default/String")));
+                    lines.Add(string.IsNullOrEmpty(info.Value.miGetString("Forced/String")) ? string.Empty : string.Format("<tr><td>Forced:</td><td>{0}</td></tr>", info.Value.miGetString("Forced/String")));
 
                     textTracks++;
                 }
