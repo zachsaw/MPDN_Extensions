@@ -25,14 +25,14 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public partial class GoToForm : Form
     {
-        private float fps;
+        private float m_Fps;
 
         public GoToForm()
         {
             InitializeComponent();
 
-            Load += GoToForm_Load;
-            KeyDown += GoToForm_KeyDown;
+            Load += GoToFormLoad;
+            KeyDown += GoToFormKeyDown;
 
             GetFps();
             SetCurrentMediaPosition();
@@ -43,7 +43,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             get
             {
                 TimeSpan timespan;
-                if (TimeSpan.TryParseExact(tb_time.Text, @"hh\:mm\:ss\.fff", CultureInfo.CurrentCulture, out timespan))
+                if (TimeSpan.TryParseExact(tb_time.Text, @"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture, out timespan))
                     return (long) timespan.TotalMilliseconds;
 
                 return -1;
@@ -56,7 +56,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 long position = Media.Position;
                 var timespan = TimeSpan.FromMilliseconds(position / 1000.0);
-                return Math.Round(timespan.TotalSeconds * fps);
+                return Math.Round(timespan.TotalSeconds * m_Fps);
             }
         }
 
@@ -66,7 +66,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 long duration = Media.Duration;
                 var timespan = TimeSpan.FromMilliseconds(duration / 1000.0);
-                return Math.Round(timespan.TotalSeconds * fps);
+                return Math.Round(timespan.TotalSeconds * m_Fps);
             }
         }
 
@@ -74,8 +74,12 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             get
             {
+                if (Math.Abs(m_Fps) < 1e-15)
+                    return 0;
+
                 long position;
-                if (long.TryParse(nud_frame.Text, out position)) return Math.Round((position / fps) * 1000 * 1000);
+                if (long.TryParse(nud_frame.Text, out position))
+                    return Math.Round((position / m_Fps) * 1000 * 1000);
                 
                 return -1;
             }
@@ -84,13 +88,16 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void GetFps()
         {
             var media = new MediaFile(Media.FilePath);
-            fps = media.Video[0].frameRate;
+            if (media.Video.Count == 0)
+                return;
+
+            m_Fps = media.Video[0].frameRate;
         }
 
         private void SetCurrentMediaPosition()
         {
             var timespan = TimeSpan.FromMilliseconds(Media.Position / 1000.0);
-            tb_time.Text = timespan.ToString(@"hh\:mm\:ss\.fff");
+            tb_time.Text = timespan.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture);
             nud_frame.Maximum = (decimal)FrameCount;
             nud_frame.Value = (decimal)CurrentFrame;
         }
@@ -99,6 +106,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             long pos = Position * 1000;
             if (pos > Media.Duration) pos = Media.Duration;
+            if (pos < 0)
+                return;
             Media.Seek(pos);
         }
 
@@ -106,31 +115,33 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             long frame = Convert.ToInt64(Frame);
             if (frame > Media.Duration) frame = Media.Duration;
+            if (frame < 0)
+                return;
             Media.Seek(frame);
         }
 
-        private void tb_time_KeyDown(object sender, KeyEventArgs e)
+        private void TbTimeKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyData == Keys.Enter) btn_timeOk.PerformClick();
         }
 
-        private void nud_frame_KeyDown(object sender, KeyEventArgs e)
+        private void NudFrameKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyData == Keys.Enter) btn_frameOk.PerformClick();
         }
 
-        private void nud_frame_Enter(object sender, EventArgs e)
+        private void NudFrameEnter(object sender, EventArgs e)
         {
             nud_frame.Select(0, nud_frame.Text.Length);
         }
 
-        private void GoToForm_Load(object sender, EventArgs e)
+        private void GoToFormLoad(object sender, EventArgs e)
         {
             var pos = new Point(Cursor.Position.X - Width / 2, Cursor.Position.Y - Height / 2);
             Location = pos;
         }
 
-        private void GoToForm_KeyDown(object sender, KeyEventArgs e)
+        private void GoToFormKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyData == Keys.Escape) Close();
         }

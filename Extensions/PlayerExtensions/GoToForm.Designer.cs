@@ -81,7 +81,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.tb_time.TabIndex = 0;
             this.tb_time.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.tb_time.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
-            this.tb_time.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tb_time_KeyDown);
+            this.tb_time.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TbTimeKeyDown);
             // 
             // label1
             // 
@@ -134,8 +134,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.nud_frame.Size = new System.Drawing.Size(97, 20);
             this.nud_frame.TabIndex = 2;
             this.nud_frame.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.nud_frame.Enter += new System.EventHandler(this.nud_frame_Enter);
-            this.nud_frame.KeyDown += new System.Windows.Forms.KeyEventHandler(this.nud_frame_KeyDown);
+            this.nud_frame.Enter += new System.EventHandler(this.NudFrameEnter);
+            this.nud_frame.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NudFrameKeyDown);
             // 
             // GoToForm
             // 
