@@ -16,6 +16,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
@@ -24,6 +25,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
     {
         private SourceFilter m_SourceFilter;
         private IFilter<ITexture2D> m_Filter;
+        private FilterTag m_Tag;
 
         protected readonly RenderChain Chain;
 
@@ -60,20 +62,20 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public void Update()
         {
             var initialFilter = MakeInitialFilter();
+            initialFilter.MakeTagged();
 
             m_Filter = CreateSafeFilter(Chain, initialFilter)
                 .SetSize(Renderer.TargetSize)
-                .Compile();
-            m_Filter.Initialize();
+                .GetTag(out m_Tag)
+                .Compile()
+                .InitializeFilter();
 
             UpdateStatus();
         }
 
         private void UpdateStatus()
         {
-            Status = m_SourceFilter.Status()
-                .AppendStatus(Chain.Status())
-                .AppendStatus(m_Filter.ResizerDescription());
+            Status = m_Tag.CreateString();
         }
 
         public void Render()
@@ -98,7 +100,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return m_SourceFilter;
 
             if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
-                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), null, new InternalChromaScaler(m_SourceFilter), Renderer.LumaSize);
+                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), chromaScaler: new InternalChromaScaler(m_SourceFilter));
 
             return m_SourceFilter;
         }

@@ -324,11 +324,16 @@ namespace Mpdn.Extensions.Framework
 
     public static class StatusHelpers
     {
+        public static string FlattenStatus(this string status)
+        {
+            return status.Replace(';', ',');
+        }
+
         public static string ToSubStatus(this string status)
         {
             return string.IsNullOrEmpty(status)
                 ? ""
-                : string.Format("({0})", status.Replace(';', ','));
+                : string.Format("({0})", FlattenStatus(status));
         }
 
         public static string AppendSubStatus(this string first, string status)
@@ -353,26 +358,14 @@ namespace Mpdn.Extensions.Framework
 
         public static string PrependToStatus(this string status, string prefix)
         {
-            return (status != "")
-                ? prefix + status
-                : status;
+            return (string.IsNullOrEmpty(status))
+                ? status
+                : prefix + status;
         }
 
         public static Func<string> Append(this Func<string> first, Func<string> status)
         {
             return () => first().AppendStatus(status());
-        }
-
-        public static string AppendChromaStatus(this string status, IChromaScaler chromaScaler, IScaler fallbackScaler)
-        {
-            var chroma = chromaScaler as RenderChain.RenderChain;
-            if (chroma == null) return status;
-            var chromaStatus = chroma.Status();
-            chromaStatus = string.IsNullOrEmpty(chromaStatus)
-                ? fallbackScaler.GetDescription() + " Chroma"
-                : chromaStatus;
-
-            return status.AppendSubStatus(chromaStatus);
         }
 
         public static string ScaleDescription(TextureSize inputSize, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)

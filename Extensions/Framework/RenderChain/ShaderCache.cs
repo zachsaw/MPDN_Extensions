@@ -224,7 +224,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public static IShader CompileShader(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
         {
             var result = Cache<IShader>.AddCompiled(shaderFileName,
-                string.Format("\"{0}\" /E {1} /T {2} /D {3}", GetRelative(shaderFileName), entryPoint, profile, macroDefinitions),
+                String.Format("\"{0}\" /E {1} /T {2} /D {3}", GetRelative(shaderFileName), entryPoint, profile, macroDefinitions),
                 () => Renderer.CompileShader(shaderFileName, entryPoint, profile, macroDefinitions),
                 Renderer.LoadShader);
 
@@ -235,7 +235,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public static IShader11 CompileShader11(string shaderFileName, string profile, string entryPoint = "main", string macroDefinitions = null)
         {
             var result = Cache<IShader11>.AddCompiled(shaderFileName,
-                string.Format("\"{0}\" /E {1} /T {2} /D {3}", GetRelative(shaderFileName), entryPoint, profile, macroDefinitions),
+                String.Format("\"{0}\" /E {1} /T {2} /D {3}", GetRelative(shaderFileName), entryPoint, profile, macroDefinitions),
                 () => Renderer.CompileShader11(shaderFileName, entryPoint, profile, macroDefinitions),
                 Renderer.LoadShader11);
 
@@ -246,7 +246,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public static IKernel CompileClKernel(string sourceFileName, string entryPoint, string options = null)
         {
             return Cache<IKernel>.AddCompiled(sourceFileName,
-                string.Format("\"{0}\" /E {1} /Opts {2}", GetRelative(sourceFileName), entryPoint, options),
+                String.Format("\"{0}\" /E {1} /Opts {2}", GetRelative(sourceFileName), entryPoint, options),
                 () => Renderer.CompileClKernel(sourceFileName, entryPoint, options),
                 null);
         }

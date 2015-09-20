@@ -103,8 +103,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Vector2 offset = chromaOffset + new Vector2(0.5f, 0.5f);
                 var chromaShader = CompileShader("Chroma.hlsl").Configure(arguments: new[] { B, C, offset[0], offset[1] });
 
-                var resizedLuma = lumaInput.SetSize(targetSize);
-                Status = this.ChromaScalerStatus(resizedLuma);
+                var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
 
                 return new ShaderFilter(chromaShader, resizedLuma, chromaInput).ConvertToRgb();
             }

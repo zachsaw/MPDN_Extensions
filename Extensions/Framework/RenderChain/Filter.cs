@@ -33,7 +33,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
         void Reset();
         void Initialize(int time = 1);
         IFilter<TTexture> Compile();
-        bool Active { get; }
+
+        void AddTag(FilterTag newTag);
+        FilterTag Tag { get; }
     }
 
     public interface IFilter : IFilter<ITexture2D>
@@ -43,6 +45,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public interface IResizeableFilter : IFilter
     {
         void SetSize(TextureSize outputSize);
+        void MakeTagged();
     }
 
     public abstract class Filter : IFilter
@@ -54,27 +57,30 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 throw new ArgumentNullException("inputFilters");
             }
 
-            Initialized = false;
-            CompilationResult = null;
+            m_Initialized = false;
+            m_CompilationResult = null;
             InputFilters = inputFilters;
+
+            Tag = new EmptyTag();
+
+            foreach (var filter in inputFilters)
+                Tag.AddInput(filter);
         }
 
         protected abstract void Render(IList<IBaseTexture> inputs);
 
         public abstract TextureSize OutputSize { get; }
-        
+
         #region IFilter Implementation
 
-        private bool Updated { get; set; }
-        private bool Initialized { get; set; }
-        private int FilterIndex { get; set; }
+        private bool m_Updated;
+        private bool m_Initialized;
+        private int m_FilterIndex;
+        private IFilter<ITexture2D> m_CompilationResult;
 
-        public bool Active { get; set; }
-
-        protected IFilter<ITexture2D> CompilationResult { get; set; }
         protected ITargetTexture OutputTarget { get; private set; }
 
-        public IBaseFilter[] InputFilters { get; private set; }
+        public IBaseFilter[] InputFilters { get; }
 
         public ITexture2D OutputTexture { get { return OutputTarget; } }
 
@@ -89,7 +95,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             LastDependentIndex = time;
 
-            if (Initialized)
+            if (m_Initialized)
                 return;
 
             foreach (var f in InputFilters)
@@ -98,31 +104,36 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 LastDependentIndex = f.LastDependentIndex;
             }
 
-            FilterIndex = LastDependentIndex;
+            m_FilterIndex = LastDependentIndex;
 
             foreach (var filter in InputFilters)
             {
-                filter.Initialize(FilterIndex);
+                filter.Initialize(m_FilterIndex);
             }
 
             LastDependentIndex++;
-            Active = true;
-            Initialized = true;
+            m_Initialized = true;
         }
 
         public IFilter<ITexture2D> Compile()
         {
-            if (CompilationResult != null) 
-                return CompilationResult;
+            if (m_CompilationResult != null)
+                return m_CompilationResult;
 
             for (int i = 0; i < InputFilters.Length; i++)
             {
                 InputFilters[i] = InputFilters[i].Compile();
             }
 
-            CompilationResult = Optimize();
-            Active = true;
-            return CompilationResult;
+            m_CompilationResult = Optimize();
+            return m_CompilationResult;
+        }
+
+        public FilterTag Tag { get; protected set; }
+
+        public void AddTag(FilterTag newTag)
+        {
+            Tag = Tag.Append(newTag);
         }
 
         protected virtual IFilter<ITexture2D> Optimize()
@@ -132,10 +143,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public void Render()
         {
-            if (Updated)
+            if (m_Updated)
                 return;
 
-            Updated = true;
+            m_Updated = true;
 
             foreach (var filter in InputFilters)
             {
@@ -153,7 +164,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
             foreach (var filter in InputFilters)
             {
-                if (filter.LastDependentIndex <= FilterIndex)
+                if (filter.LastDependentIndex <= m_FilterIndex)
                 {
                     filter.Reset();
                 }
@@ -162,7 +173,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public void Reset()
         {
-            Updated = false;
+            m_Updated = false;
 
             if (OutputTarget != null)
             {
@@ -175,15 +186,28 @@ namespace Mpdn.Extensions.Framework.RenderChain
         #endregion
     }
 
-    public static class FilterHelpers
+    public static class FilterHelper
     {
-        public static string ResizerDescription(this IFilter<IBaseTexture> filter)
+        public static TFilter InitializeFilter<TFilter>(this TFilter filter)
+            where TFilter: IBaseFilter
         {
-            var resizer = filter as ResizeFilter;
-            if (resizer != null)
-                return resizer.Status();
+            filter.Initialize();
+            return filter;
+        }
 
-            return "";
+        public static TFilter GetTag<TFilter>(this TFilter filter, out FilterTag tag)
+            where TFilter : IBaseFilter
+        {
+            tag = new EmptyTag();
+            tag.AddInput(filter);
+            return filter;
+        }
+
+        public static TFilter Tagged<TFilter>(this TFilter filter, FilterTag tag)
+            where TFilter : IBaseFilter
+        {
+            filter.AddTag(tag);
+            return filter;
         }
     }
 }

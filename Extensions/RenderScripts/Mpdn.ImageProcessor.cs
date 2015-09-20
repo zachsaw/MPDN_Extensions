@@ -56,15 +56,18 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return ShaderDataFilePath; }
             }
 
-            public override string Active()
+            public override string Status
             {
-                var count = ShaderFileNames.Count();
-                if (count == 0) return string.Empty;
-                var result = count == 1
-                    ? Path.GetFileNameWithoutExtension(ShaderFileNames.First())
-                    : string.Format("{0}..{1}", Path.GetFileNameWithoutExtension(ShaderFileNames.First()),
-                        Path.GetFileNameWithoutExtension(ShaderFileNames.Last()));
-                return string.Format("ImageProc('{0}')", result);
+                get
+                {
+                    var count = ShaderFileNames.Count();
+                    if (count == 0) return string.Empty;
+                    var result = count == 1
+                        ? Path.GetFileNameWithoutExtension(ShaderFileNames.First())
+                        : string.Format("{0}..{1}", Path.GetFileNameWithoutExtension(ShaderFileNames.First()),
+                            Path.GetFileNameWithoutExtension(ShaderFileNames.Last()));
+                    return string.Format("ImageProc('{0}')", result);
+                }
             }
 
             protected override IFilter CreateFilter(IFilter input)

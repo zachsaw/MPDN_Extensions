@@ -53,10 +53,13 @@ namespace Mpdn.Extensions.RenderScripts
             };
             private static readonly int[] s_NeuronCount = { 16, 32, 64, 128, 256 };
 
-            public override string Active()
+            public override string Status
             {
-                return string.Format("{0} {1}/{2}", base.Active(), s_NeuronCount[(int)Neurons1],
-                    s_NeuronCount[(int)Neurons2]);
+                get
+                {
+                    return string.Format("{0} {1}/{2}", base.Status, s_NeuronCount[(int) Neurons1],
+                        s_NeuronCount[(int) Neurons2]);
+                }
             }
 
             public override void Reset()

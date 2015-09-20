@@ -75,7 +75,6 @@ namespace Mpdn.Extensions.RenderScripts
                 if (clip == null)
                     return null;
 
-                Status = clip.Status;
                 return clip.Filter;
             }
 

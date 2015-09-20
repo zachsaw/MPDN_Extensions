@@ -97,11 +97,9 @@ namespace Mpdn.Extensions.RenderScripts
             #region Status
 
             // Revert ScriptGroups changes to Status
-            public override Func<string> Status { get; set; }
-
-            public override string Active()
+            public override string Status
             {
-                return base.Active().AppendSubStatus(SelectedOption.Status());
+                get { return "SuperRes"; }
             }
 
             #endregion
