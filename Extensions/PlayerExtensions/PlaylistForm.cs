@@ -595,7 +595,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                     if (endChapterCell.Value != null && endChapterCell.Value.ToString() != string.Empty)
                     {
-                        var value = new string(endChapterCell.Value.ToString().Where(Char.IsDigit).ToArray());
+                        var value = new string(endChapterCell.Value.ToString().Where(char.IsDigit).ToArray());
 
                         if (CurrentItem != null && i == m_CurrentPlayIndex)
                         {
@@ -1128,7 +1128,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     else skipChapters.Add(int.Parse(s[1]));
                 }
                 int endChapter = int.Parse(s[2]);
-                bool active = Boolean.Parse(s[3]);
+                bool active = bool.Parse(s[3]);
                 string duration = s[4];
                 int playCount = int.Parse(s[5]);
 
@@ -1781,7 +1781,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void PlaybackCompleted(object sender, EventArgs e)
         {
             if (Player.State == PlayerState.Closed) return;
-            if (CurrentItem == null) return;
             if (Media.Position == Media.Duration)
             {
                 CurrentItem.PlayCount++;

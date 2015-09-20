@@ -215,7 +215,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                         }
 
                         int endChapter = int.Parse(s[2]);
-                        bool active = Boolean.Parse(s[3]);
+                        bool active = bool.Parse(s[3]);
                         string duration = s[4];
 
                         playList.Add(new PlaylistItem(filePath, skipChapters, endChapter, active, duration));

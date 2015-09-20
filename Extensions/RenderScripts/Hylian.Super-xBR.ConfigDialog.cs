@@ -30,8 +30,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
-                EdgeStrengthSetter.Value = (Decimal)Settings.EdgeStrength;
-                SharpnessSetter.Value = (Decimal)Settings.Sharpness;
+                EdgeStrengthSetter.Value = (decimal)Settings.EdgeStrength;
+                SharpnessSetter.Value = (decimal)Settings.Sharpness;
                 FastBox.Checked = Settings.FastMethod;
                 ExtraPassBox.Checked = Settings.ThirdPass;
             }

@@ -137,7 +137,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return Label ?? "";
         }
 
-        public static implicit operator FilterTag(String label)
+        public static implicit operator FilterTag(string label)
         {
             return new StringTag(label);
         }
