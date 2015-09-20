@@ -134,6 +134,7 @@
     <Compile Include="Extensions\Framework\RenderChain\Filter.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filter.Shaders.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filter.Sources.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\Filter.Tag.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filter.Text.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filter.Utilities.cs" />
     <Compile Include="Extensions\Framework\RenderChain\RenderChain.cs" />

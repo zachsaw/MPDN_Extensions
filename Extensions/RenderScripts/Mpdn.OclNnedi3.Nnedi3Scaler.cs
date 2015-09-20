@@ -142,12 +142,13 @@ namespace Mpdn.Extensions.RenderScripts
             };
             private static readonly int[] s_NeuronCount = { 16, 32, 64, 128, 256 };
 
-            public override string Active()
+            public override string Status
             {
-                var status = string.Format("{0} {1}/{2}", base.Active(), s_NeuronCount[(int) Neurons1],
-                    s_NeuronCount[(int) Neurons2]);
-
-                return status.AppendChromaStatus(ChromaScaler, Renderer.ChromaUpscaler);
+                get
+                {
+                    return string.Format("{0} {1}/{2}", base.Status, s_NeuronCount[(int) Neurons1],
+                        s_NeuronCount[(int) Neurons2]);
+                }
             }
 
             public override void Reset()

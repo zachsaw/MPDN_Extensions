@@ -39,8 +39,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private class IdentityRenderChain : StaticChain
         {
             public IdentityRenderChain() : base(x => x) { }
-
-            public override Func<string> Status { get { return () => ""; } set { } }
         }
 
         private class IdentityRenderChainUi : RenderChainUi<IdentityRenderChain>

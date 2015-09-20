@@ -24,54 +24,36 @@ namespace Mpdn.Extensions.Framework.RenderChain
 {
     public abstract class RenderChain
     {
-        private Func<string> m_Status;
-
         protected RenderChain()
         {
             ShaderCache.Load();
-            m_Status = Inactive;
         }
 
         protected abstract IFilter CreateFilter(IFilter input);
 
-        public IFilter MakeFilter(IFilter filter)
+        public IFilter MakeFilter(IFilter input)
         {
-            Status = null;
-            IFilter result;
-            try
+            IFilter output = CreateFilter(input);
+
+            if (output == input)
+                return input;
+
+            if (output.Tag.IsEmpty())
             {
-                result = CreateFilter(filter);
-            }
-            catch (Exception)
-            {
-                Status = Inactive;
-                throw;
+                output.AddTag(Status);
+                output.Tag.AddInput(input);
             }
 
-            var activeStatus = Status ?? Active;
-            Status = () => result.Active && (!filter.Active || filter.Compile() != result.Compile())
-                ? activeStatus().AppendStatus(result.Compile().ResizerDescription())
-                : Inactive();
-
-            return result;
+            return output
+                .AddTaggedResizer()
+                .Tagged(new TemporaryTag("Resizer"));
         }
 
         #region Status
 
-        public virtual Func<string> Status
+        public virtual string Status
         {
-            get { return m_Status; }
-            set { m_Status = value; }
-        }
-
-        public virtual string Active()
-        {
-            return GetType().Name;
-        }
-
-        public string Inactive()
-        {
-            return string.Empty;
+            get { return GetType().Name; }
         }
 
         #endregion
@@ -85,7 +67,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return map.MakeFilter;
         }
 
-        public static implicit operator RenderChain(Func<IFilter, IFilter> map)
+        public static explicit operator RenderChain(Func<IFilter, IFilter> map)
         {
             return new StaticChain(map);
         }

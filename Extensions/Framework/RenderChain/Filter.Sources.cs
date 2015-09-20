@@ -28,6 +28,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region IFilter Implementation
 
+        protected BaseSourceFilter()
+        {
+            Tag = FilterTag.Bottom;
+        } 
+
         public virtual TextureFormat OutputFormat
         {
             get
@@ -58,9 +63,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return this;
         }
 
-        public virtual bool Active
+        public FilterTag Tag { get; protected set; }
+
+        public void AddTag(FilterTag newTag)
         {
-            get { return LastDependentIndex > 0; }
+            Tag = Tag.Append(newTag);
         }
 
         #endregion
@@ -80,6 +87,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_OutputSize = targetSize;
         }
 
+        public void MakeTagged()
+        {
+            m_Tagged = true;
+        }
+
         public ScriptInterfaceDescriptor Descriptor
         {
             get
@@ -87,7 +99,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return new ScriptInterfaceDescriptor
                 {
                     WantYuv = m_YuvFilter != null,
-                    Prescale = Active,
+                    Prescale = LastDependentIndex > 0 || m_YuvFilter != null,
                     PrescaleSize = (Size)OutputSize
                 };
             }
@@ -109,8 +121,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public string Status()
         {
-            if (!Active) return "";
-
             var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, Renderer.ChromaUpscaler)
                 .PrependToStatus("Chroma: ");
             var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler)
@@ -124,6 +134,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private ITargetTexture OutputTarget { get; set; }
 
         private bool m_Updated;
+        private bool m_Tagged;
 
         public override ITexture2D OutputTexture
         {
@@ -168,6 +179,16 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Updated = true;
         }
 
+        public override void Initialize(int time = 1)
+        {
+            if (m_Tagged)
+            {
+                AddTag(Status());
+                m_Tagged = false;
+            }
+            base.Initialize(time);
+        }
+
         #endregion
 
         private class YuvSourceFilter : BaseSourceFilter
@@ -177,6 +198,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
             public YuvSourceFilter(SourceFilter rgbSourceFilter)
             {
                 m_RgbSourceFilter = rgbSourceFilter;
+                
+                Tag = new EmptyTag();
+                Tag.AddInput(rgbSourceFilter);
             }
 
             public override ITexture2D OutputTexture
@@ -207,7 +231,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 get { return m_RgbSourceFilter.LastDependentIndex; }
             }
         }
-
     }
 
     public sealed class YSourceFilter : BaseSourceFilter
@@ -272,6 +295,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             m_Texture = texture;
             m_Size = m_Texture.GetSize();
+
+            /* Don't connect to bottom label */
+            Tag = new EmptyTag();
         }
 
         public override TTexture OutputTexture

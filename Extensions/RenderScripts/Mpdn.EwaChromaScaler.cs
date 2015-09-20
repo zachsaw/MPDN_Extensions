@@ -25,9 +25,9 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class EwaChromaScaler : EwaScaler, IChromaScaler
         {
-            public override string Active()
+            public override string Status
             {
-                return "EWA Chroma" + base.Active().Substring(3);
+                get { return "EWA Chroma" + base.Status.Substring(3); }
             }
 
             protected override string ShaderPath
@@ -63,8 +63,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
                     return null;
 
-                var resizedLuma = lumaInput.SetSize(targetSize);
-                Status = this.ChromaScalerStatus(resizedLuma);
+                var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
 
                 return GetEwaFilter(shader, new[] { resizedLuma, chromaInput }).ConvertToRgb();
             }

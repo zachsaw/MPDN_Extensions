@@ -26,18 +26,7 @@ namespace Mpdn.Extensions.RenderScripts
         {
             protected override IFilter CreateFilter(IFilter input)
             {
-                Status = Active;
                 return Options.Aggregate(input, (result, chain) => result + chain);
-            }
-
-            public override string Active()
-            {
-                var statuses = Options
-                    .Select(chain => chain.Status())
-                    .Where(str => !string.IsNullOrEmpty(str))
-                    .ToArray();
-
-                return string.Join("; ", statuses);
             }
         }
 

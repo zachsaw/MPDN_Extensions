@@ -123,13 +123,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 Chain.Reset();
         }
 
-        public override Func<string> Status
-        {
-            get { return Script != null ? Chain.Status : Inactive; }
-            set { if (Script != null) Chain.Status = value; }
-        }
-
         #endregion
+
+        public override string Status { get { return null; } }
 
         public override string ToString()
         {
@@ -215,9 +211,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
     {
         public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
         {
-            IChromaScaler chromaScaler = Chain as IChromaScaler ?? new DefaultChromaScaler();
+            var chroma = new ChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
 
-            return chromaScaler.MakeChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
+            return chroma + Chain;
         }
     }
 

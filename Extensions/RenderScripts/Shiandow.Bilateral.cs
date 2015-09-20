@@ -46,8 +46,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
                     return null;
 
-                var resizedLuma = lumaInput.SetSize(targetSize);
-                Status = this.ChromaScalerStatus(resizedLuma);
+                var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
 
                 return new ShaderFilter(crossBilateral, resizedLuma, chromaInput).ConvertToRgb();
             }
