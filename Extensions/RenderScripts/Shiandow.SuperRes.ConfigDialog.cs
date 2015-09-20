@@ -47,8 +47,8 @@ namespace Mpdn.Extensions.RenderScripts
                 PrescalerBox.SelectedIndex = Settings.SelectedIndex;
 
                 PassesSetter.Value = Settings.Passes;
-                StrengthSetter.Value = (Decimal)Settings.Strength;
-                SoftnessSetter.Value = (Decimal)Settings.Softness;
+                StrengthSetter.Value = (decimal)Settings.Strength;
+                SoftnessSetter.Value = (decimal)Settings.Softness;
 
                 HQBox.Checked = Settings.HQdownscaling;
                 
