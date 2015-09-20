@@ -70,18 +70,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                var result = input.SetSize(GetOutputSize());
-                Status = () => ResizerStatus(result);
-                return result;
-            }
-
-            public string ResizerStatus(IFilter result)
-            {
-                var resizer = result as ResizeFilter;
-                if (resizer != null)
-                    return resizer.Status();
-
-                return "";
+                return input.SetSize(GetOutputSize(), tagged: true)
+                    .Tagged(new TemporaryTag("Resizer"));
             }
 
             #region Size Calculation

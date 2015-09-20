@@ -115,7 +115,7 @@ namespace Mpdn.Extensions.PlayerExtensions.DisplayChangerNativeMethods
         public const int DISP_CHANGE_RESTART = 1;
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr PostMessage(IntPtr hWnd, UInt32 msg, IntPtr wParam, IntPtr lParam);
+        public static extern IntPtr PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll", CharSet = CharSet.Ansi)]
         public static extern int EnumDisplaySettings(string lpszDeviceName, int iModeNum, ref DEVMODE lpDevMode);

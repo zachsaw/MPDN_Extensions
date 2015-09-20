@@ -30,8 +30,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
-                MaxBitdepthSetter.Value = (Decimal)Settings.maxbitdepth;
-                PowerSetter.Value = (Decimal)Settings.power;
+                MaxBitdepthSetter.Value = (decimal)Settings.maxbitdepth;
+                PowerSetter.Value = (decimal)Settings.power;
                 GrainBox.Checked = Settings.grain;
 
                 UpdateGui();

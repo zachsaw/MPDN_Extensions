@@ -42,8 +42,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
-                BSetter.Value = (Decimal) Settings.B;
-                CSetter.Value = (Decimal) Settings.C;
+                BSetter.Value = (decimal) Settings.B;
+                CSetter.Value = (decimal) Settings.C;
                 PresetBox.SelectedIndex = (int) Settings.Preset;
             }
 
@@ -69,8 +69,8 @@ namespace Mpdn.Extensions.RenderScripts
                     return;
 
                 m_SettingPreset = true;
-                BSetter.Value = (Decimal) BicubicChroma.B_CONST[index];
-                CSetter.Value = (Decimal) BicubicChroma.C_CONST[index];
+                BSetter.Value = (decimal) BicubicChroma.B_CONST[index];
+                CSetter.Value = (decimal) BicubicChroma.C_CONST[index];
                 m_SettingPreset = false;
             }
         }

@@ -102,12 +102,6 @@ namespace Mpdn.Extensions.RenderScripts
                 base.Reset();
             }
 
-            public override Func<string> Status
-            {
-                get { return SelectedOption != null ? SelectedOption.Status : Inactive; }
-                set { if (SelectedOption != null) SelectedOption.Status = value; }
-            }
-
             #region Hotkey Handling
 
             private readonly Guid m_HotkeyGuid;

@@ -17,7 +17,6 @@
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.RenderScripts.Shiandow.Bilateral;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
 using SharpDX;
@@ -71,8 +70,7 @@ namespace Mpdn.Extensions.RenderScripts
                 input += bilateral;
 
                 var chromaScaler = new SuperChromaResScaler((ChromaFilter)input, this);
-                Status = () => chromaScaler.Status();
-
+                
                 return input + chromaScaler;
             }
 
@@ -82,15 +80,15 @@ namespace Mpdn.Extensions.RenderScripts
                 return MakeFilter(input);
             }
 
-            private class SuperChromaResScaler: SuperChromaRes, IChromaScaler
+            private class SuperChromaResScaler: SuperChromaRes
             {
                 private readonly ChromaFilter m_InitialInput;
-                private readonly SuperChromaRes m_Parent;
+
+                public override string Status { get { return "SuperChromaRes"; } }
 
                 public SuperChromaResScaler(ChromaFilter initialInput, SuperChromaRes parent)
                 {
                     m_InitialInput = initialInput;
-                    m_Parent = parent;
 
                     Passes = parent.Passes;
                     Strength = parent.Strength;
@@ -100,14 +98,6 @@ namespace Mpdn.Extensions.RenderScripts
                 protected override IFilter CreateFilter(IFilter input)
                 {
                     return this.MakeChromaFilter(input);
-                }
-
-                public override string Active()
-                {
-                    var chain = m_InitialInput.ChromaScaler as RenderChain;
-                    return chain != null
-                        ? "SuperChromaRes".AppendSubStatus(chain.Status())
-                        : "SuperChromaRes";
                 }
 
                 public override IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
@@ -139,6 +129,8 @@ namespace Mpdn.Extensions.RenderScripts
 
                     var LinearToGamma = CompileShader("../../Common/LinearToGamma.hlsl");
                     var GammaToLinear = CompileShader("../../Common/GammaToLinear.hlsl");
+
+                    if (Passes == 0) return m_InitialInput;
 
                     m_InitialInput.SetSize(lumaSize);
                     var hiRes = m_InitialInput.ConvertToYuv();

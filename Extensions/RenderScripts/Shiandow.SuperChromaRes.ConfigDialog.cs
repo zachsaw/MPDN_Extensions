@@ -30,9 +30,9 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
-                PassesSetter.Value = (Decimal)Settings.Passes;
-                StrengthSetter.Value = (Decimal)Settings.Strength;
-                SoftnessSetter.Value = (Decimal)Settings.Softness;
+                PassesSetter.Value = (decimal)Settings.Passes;
+                StrengthSetter.Value = (decimal)Settings.Strength;
+                SoftnessSetter.Value = (decimal)Settings.Softness;
                 PrescalerBox.Checked = Settings.Prescaler;
             }
 
