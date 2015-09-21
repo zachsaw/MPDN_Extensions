@@ -121,7 +121,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public string Status()
         {
-            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, Renderer.ChromaUpscaler)
+            var chromaConvolver = Renderer.ChromaOffset.IsZero ? null : Renderer.ChromaUpscaler;
+            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, chromaConvolver)
                 .PrependToStatus("Chroma: ");
             var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler)
                 .PrependToStatus("Luma: ");
