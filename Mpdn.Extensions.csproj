@@ -140,7 +140,6 @@
     <Compile Include="Extensions\CustomLinearScalers\SincCosine.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHamming.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHann.cs" />
-    <Compile Include="Extensions\PlayerExtensions\StdInPipeSourceProvider.cs" />
     <Compile Include="Extensions\PlayerExtensions\YouTubeSourceProvider.cs" />
     <Compile Include="Extensions\PlayerExtensions\BitmapHelper.cs" />
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.ConfigDialog.cs">
