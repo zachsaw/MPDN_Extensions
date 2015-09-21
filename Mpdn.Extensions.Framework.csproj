@@ -143,7 +143,7 @@
     <Compile Include="Extensions\Framework\RenderChain\ShaderCache.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Textures.cs" />
     <Compile Include="Extensions\Framework\RenderScript.cs" />
-    <Compile Include="Extensions\Framework\Scripting\IClip.cs" />
+    <Compile Include="Extensions\Framework\Scripting\Clip.cs" />
     <Compile Include="Extensions\Framework\Scripting\ScriptEngine.cs" />
     <Compile Include="Extensions\Framework\Scripting\ScriptEngineUtilities.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Presets.cs" />
