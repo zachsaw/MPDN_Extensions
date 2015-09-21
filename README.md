@@ -16,8 +16,8 @@ MPDN Extensions Wiki - https://github.com/zachsaw/MPDN_Extensions/wiki/MPDN-Exte
 
 Prerequisites
 -------------
-* **MPDN v2.43.0** and above
-* MPDN Extensions API Level 6
+* **MPDN v2.44.0** and above
+* MPDN Extensions API Level 7
 * .NET Framework version 4.0
 
 

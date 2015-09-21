@@ -84,13 +84,13 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             if (e.OldState == PlayerState.Closed)
             {
-                var audioDecoder = Player.Filters.Audio.FirstOrDefault(f => f.ClsId == s_ClsIdLavAudioDecoder);
+                var audioDecoder = Player.Filters.FirstOrDefault(f => f.ClsId == s_ClsIdLavAudioDecoder);
                 if (audioDecoder == null)
                     return;
 
                 ComThread.Do(() =>
                 {
-                    var settings = (ILAVAudioSettings)audioDecoder.Base;
+                    var settings = (ILAVAudioSettings) audioDecoder.Base;
                     m_LavAudioSettings = settings;
                 });
 

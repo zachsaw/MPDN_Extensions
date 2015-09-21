@@ -489,7 +489,7 @@ namespace Mpdn.Extensions.Framework
     {
         public static int InterfaceVersion
         {
-            get { return 6; }
+            get { return 7; }
         }
 
         public static IList<Assembly> Assemblies
@@ -820,17 +820,9 @@ namespace Mpdn.Extensions.Framework
             PlayerControl.ShowOptionsDialog();
         }
 
-        public static class Filters
+        public static IList<Filter> Filters
         {
-            public static IList<Filter> Audio
-            {
-                get { return PlayerControl.AudioFilters; }
-            }
-
-            public static IList<Filter> Video
-            {
-                get { return PlayerControl.VideoFilters; }
-            }
+            get { return PlayerControl.Filters; }
         }
     }
 

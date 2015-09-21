@@ -106,7 +106,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             get
             {
-                return Player.Filters.Video.FirstOrDefault(f => f.ClsId == s_LavSourceFilterGuid);
+                return Player.Filters.FirstOrDefault(f => f.ClsId == s_LavSourceFilterGuid);
             }
         }
 

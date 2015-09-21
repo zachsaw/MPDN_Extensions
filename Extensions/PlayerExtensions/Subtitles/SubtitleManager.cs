@@ -68,7 +68,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
         {
             get
             {
-                return Player.Filters.Video.FirstOrDefault(f => f.ClsId == s_XySubFilterGuid || f.ClsId == s_VSFilterGuid);
+                return Player.Filters.FirstOrDefault(f => f.ClsId == s_XySubFilterGuid || f.ClsId == s_VSFilterGuid);
             }
         }
 

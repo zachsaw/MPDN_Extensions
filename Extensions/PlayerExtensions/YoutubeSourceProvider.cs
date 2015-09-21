@@ -15,6 +15,7 @@
 // License along with this library.
 // 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -48,11 +49,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             "tedxtalks.ted.com"
         };
 
-        [ComImport, Guid("55C39876-FF76-4AB0-AAB0-0A46D535A26B")]
-        private class YouTubeSourceFilter
-        {
-        }
-
         public override ExtensionUiDescriptor Descriptor
         {
             get
@@ -76,16 +72,156 @@ namespace Mpdn.Extensions.PlayerExtensions
             Media.Loading -= OnMediaLoading;
         }
 
+        private class YouTubeSource : ICustomSourceFilter
+        {
+            [ComImport, Guid("55C39876-FF76-4AB0-AAB0-0A46D535A26B")]
+            private class YouTubeSourceFilter
+            {
+            }
+
+            [ComImport, Guid("171252A0-8820-4AFE-9DF8-5C92B2D66B04")]
+            private class LavSplitter
+            {
+            }
+
+            public YouTubeSource(IGraphBuilder graph, string filename)
+            {
+                m_Filter = (IBaseFilter) new YouTubeSourceFilter();
+                m_Splitter = (IBaseFilter) new LavSplitter();
+
+                var fileSourceFilter = (IFileSourceFilter) m_Filter;
+                DsError.ThrowExceptionForHR(fileSourceFilter.Load(filename, null));
+
+                DsError.ThrowExceptionForHR(graph.AddFilter(m_Filter, "3DYD YouTube Source"));
+                DsError.ThrowExceptionForHR(graph.AddFilter(m_Splitter, "LAV Splitter"));
+
+                // Note: We do not support DASH streams yet!
+                ConnectPins(graph, m_Filter, "Output", m_Splitter, "Input");
+                VideoOutputPin = DsFindPin.ByName(m_Splitter, "Video");
+                AudioOutputPin = DsFindPin.ByName(m_Splitter, "Audio");
+                SubtitleOutputPins = GetPins(m_Filter, "OutputSS");
+                ExtendedSeeking = (IAMExtendedSeeking) m_Splitter;
+                VideoStreamSelect = (IAMStreamSelect) m_Splitter;
+                AudioStreamSelect = (IAMStreamSelect) m_Splitter;
+                SubtitleStreamSelect = null;
+            }
+
+            public void Dispose()
+            {
+                if (m_Disposed)
+                    return;
+
+                m_Disposed = true;
+
+                if (VideoOutputPin != null)
+                {
+                    Marshal.ReleaseComObject(VideoOutputPin);
+                }
+                if (AudioOutputPin != null)
+                {
+                    Marshal.ReleaseComObject(AudioOutputPin);
+                }
+                foreach (var pin in SubtitleOutputPins)
+                {
+                    Marshal.ReleaseComObject(pin);
+                }
+                if (m_Filter != null)
+                {
+                    Marshal.ReleaseComObject(m_Filter);
+                }
+                if (m_Splitter != null)
+                {
+                    Marshal.ReleaseComObject(m_Splitter);
+                }
+            }
+
+            private static IPin[] GetPins(IBaseFilter filter, string vPinName)
+            {
+                var result = new List<IPin>();
+                var ppPins = new IPin[1];
+                IEnumPins ppEnum;
+                DsError.ThrowExceptionForHR(filter.EnumPins(out ppEnum));
+                try
+                {
+                    while (ppEnum.Next(1, ppPins, IntPtr.Zero) == 0)
+                    {
+                        PinInfo pInfo;
+                        DsError.ThrowExceptionForHR(ppPins[0].QueryPinInfo(out pInfo));
+                        if (pInfo.name == vPinName)
+                        {
+                            result.Add(ppPins[0]);
+                        }
+                        else
+                        {
+                            Marshal.ReleaseComObject(ppPins[0]);
+                        }
+                        DsUtils.FreePinInfo(pInfo);
+                    }
+                }
+                finally
+                {
+                    Marshal.ReleaseComObject(ppEnum);
+                }
+                return result.ToArray();
+            }
+
+            private static void ConnectPins(IGraphBuilder graphBuilder, IBaseFilter fromFilter, string fromPinName,
+                IBaseFilter toFilter, string toPinName)
+            {
+                IPin pinIn = null;
+                IPin pinOut = null;
+                try
+                {
+                    pinOut = GetPin(fromFilter, fromPinName);
+                    pinIn = GetPin(toFilter, toPinName);
+                    DsError.ThrowExceptionForHR(graphBuilder.ConnectDirect(pinOut, pinIn, null));
+                }
+                finally
+                {
+                    if (pinIn != null)
+                    {
+                        Marshal.ReleaseComObject(pinIn);
+                    }
+                    if (pinOut != null)
+                    {
+                        Marshal.ReleaseComObject(pinOut);
+                    }
+                }
+            }
+
+            private static IPin GetPin(IBaseFilter filter, string pinName)
+            {
+                var pin = DsFindPin.ByName(filter, pinName);
+                if (pin == null)
+                {
+                    throw new Exception("Failed to get DirectShow filter pin " + pinName);
+                }
+                return pin;
+            }
+
+            public IPin VideoOutputPin { get; private set; }
+            public IPin AudioOutputPin { get; private set; }
+            public IPin[] SubtitleOutputPins { get; private set; }
+            public IAMExtendedSeeking ExtendedSeeking { get; private set; }
+            public IAMStreamSelect VideoStreamSelect { get; private set; }
+            public IAMStreamSelect AudioStreamSelect { get; private set; }
+            public IAMStreamSelect SubtitleStreamSelect { get; private set; }
+
+            private readonly IBaseFilter m_Filter;
+            private readonly IBaseFilter m_Splitter;
+            private bool m_Disposed;
+        }
+
         private static void OnMediaLoading(object sender, MediaLoadingEventArgs e)
         {
             if (!IsYouTubeSource(e.Filename))
                 return;
 
-            e.CustomSourceFilter = delegate
+            e.CustomSourceFilter = graph =>
             {
                 try
                 {
-                    return (IBaseFilter) new YouTubeSourceFilter();
+                    return new YouTubeSource(graph, e.Filename);
                 }
                 catch (Exception ex)
                 {
