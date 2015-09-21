@@ -137,13 +137,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
                     result.AddTag(new ChromaScalerTag(Chroma, chain.Status));
             }
 
+            result = result.SetSize(TargetSize, tagged: true);
             Tag.AddInput(result);
 
-            m_CompilationResult = result
-                .SetSize(TargetSize, tagged: true)
-                .Compile();
-
-            return m_CompilationResult;
+            return m_CompilationResult = result.Compile();
         }
 
         public void SetSize(TextureSize size)
