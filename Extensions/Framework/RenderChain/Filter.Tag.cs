@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
@@ -125,7 +124,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             return (m_Index < tag.m_Index)
                 ? tag.HasAncestor(this)
-                : this.HasAncestor(tag);
+                : HasAncestor(tag);
         }
 
         #endregion
@@ -168,11 +167,16 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public class StringTag : FilterTag
     {
-        public override string Label { get; }
+        private readonly string m_Label;
+
+        public override string Label
+        {
+            get { return m_Label; }
+        }
 
         public StringTag(string label)
         {
-            Label = label;
+            m_Label = label;
         }
     }
 

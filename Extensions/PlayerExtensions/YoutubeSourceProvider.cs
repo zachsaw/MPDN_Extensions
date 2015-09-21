@@ -75,14 +75,10 @@ namespace Mpdn.Extensions.PlayerExtensions
         private class YouTubeSource : ICustomSourceFilter
         {
             [ComImport, Guid("55C39876-FF76-4AB0-AAB0-0A46D535A26B")]
-            private class YouTubeSourceFilter
-            {
-            }
+            private class YouTubeSourceFilter { }
 
             [ComImport, Guid("171252A0-8820-4AFE-9DF8-5C92B2D66B04")]
-            private class LavSplitter
-            {
-            }
+            private class LavSplitter { }
 
             public YouTubeSource(IGraphBuilder graph, string filename)
             {
@@ -95,15 +91,44 @@ namespace Mpdn.Extensions.PlayerExtensions
                 DsError.ThrowExceptionForHR(graph.AddFilter(m_Filter, "3DYD YouTube Source"));
                 DsError.ThrowExceptionForHR(graph.AddFilter(m_Splitter, "LAV Splitter"));
 
-                // Note: We do not support DASH streams yet!
-                ConnectPins(graph, m_Filter, "Output", m_Splitter, "Input");
-                VideoOutputPin = DsFindPin.ByName(m_Splitter, "Video");
-                AudioOutputPin = DsFindPin.ByName(m_Splitter, "Audio");
-                SubtitleOutputPins = GetPins(m_Filter, "OutputSS");
-                ExtendedSeeking = (IAMExtendedSeeking) m_Splitter;
-                VideoStreamSelect = (IAMStreamSelect) m_Splitter;
-                AudioStreamSelect = (IAMStreamSelect) m_Splitter;
-                SubtitleStreamSelect = null;
+                var outpins = GetPins(m_Filter, "Output");
+                try
+                {
+                    switch (outpins.Length)
+                    {
+                        case 0:
+                            throw new Exception("3DYD YouTube Source outpins.Length = 0 - Not expected!");
+                        case 1:
+                            ConnectPins(graph, outpins[0], m_Splitter, "Input");
+                            VideoOutputPin = DsFindPin.ByName(m_Splitter, "Video");
+                            AudioOutputPin = DsFindPin.ByName(m_Splitter, "Audio");
+                            break;
+                        case 2:
+                            m_Splitter2 = (IBaseFilter) new LavSplitter();
+                            DsError.ThrowExceptionForHR(graph.AddFilter(m_Splitter2, "LAV Splitter 2"));
+                            ConnectPins(graph, outpins[0], m_Splitter, "Input");
+                            ConnectPins(graph, outpins[1], m_Splitter2, "Input");
+                            // Assume the first "Output" pin is video and the second is audio
+                            VideoOutputPin = DsFindPin.ByName(m_Splitter, "Video");
+                            AudioOutputPin = DsFindPin.ByName(m_Splitter2, "Audio");
+                            break;
+                        default:
+                            throw new NotSupportedException(
+                                "Not supported: More than 2 output pins from 3DYD YouTube Source!");
+                    }
+                    SubtitleOutputPins = GetPins(m_Filter, "OutputSS");
+                    ExtendedSeeking = (IAMExtendedSeeking) m_Splitter;
+                    VideoStreamSelect = (IAMStreamSelect) m_Splitter;
+                    AudioStreamSelect = (IAMStreamSelect) m_Splitter;
+                    SubtitleStreamSelect = null;
+                }
+                finally
+                {
+                    foreach (var pin in outpins)
+                    {
+                        Marshal.ReleaseComObject(pin);
+                    }
+                }
             }
 
             public void Dispose()
@@ -132,6 +157,10 @@ namespace Mpdn.Extensions.PlayerExtensions
                 if (m_Splitter != null)
                 {
                     Marshal.ReleaseComObject(m_Splitter);
+                }
+                if (m_Splitter2 != null)
+                {
+                    Marshal.ReleaseComObject(m_Splitter2);
                 }
             }
 
@@ -165,14 +194,12 @@ namespace Mpdn.Extensions.PlayerExtensions
                 return result.ToArray();
             }
 
-            private static void ConnectPins(IGraphBuilder graphBuilder, IBaseFilter fromFilter, string fromPinName,
-                IBaseFilter toFilter, string toPinName)
+            private static void ConnectPins(IGraphBuilder graphBuilder, IPin pinOut, IBaseFilter toFilter,
+                string toPinName)
             {
                 IPin pinIn = null;
-                IPin pinOut = null;
                 try
                 {
-                    pinOut = GetPin(fromFilter, fromPinName);
                     pinIn = GetPin(toFilter, toPinName);
                     DsError.ThrowExceptionForHR(graphBuilder.ConnectDirect(pinOut, pinIn, null));
                 }
@@ -181,10 +208,6 @@ namespace Mpdn.Extensions.PlayerExtensions
                     if (pinIn != null)
                     {
                         Marshal.ReleaseComObject(pinIn);
-                    }
-                    if (pinOut != null)
-                    {
-                        Marshal.ReleaseComObject(pinOut);
                     }
                 }
             }
@@ -209,6 +232,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             private readonly IBaseFilter m_Filter;
             private readonly IBaseFilter m_Splitter;
+            private readonly IBaseFilter m_Splitter2;
             private bool m_Disposed;
         }
 

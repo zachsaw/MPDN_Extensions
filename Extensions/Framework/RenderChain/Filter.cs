@@ -80,7 +80,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected ITargetTexture OutputTarget { get; private set; }
 
-        public IBaseFilter[] InputFilters { get; }
+        public IBaseFilter[] InputFilters { get; private set; }
 
         public ITexture2D OutputTexture { get { return OutputTarget; } }
 
