@@ -15,10 +15,6 @@
 // License along with this library.
 // 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using DirectShowLib;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -52,7 +48,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             if (e.Filename.Trim() == "-")
             {
-                // Note: This assumes MPDN uses LAV Splitter Source
+                // Note: This assumes MPDN uses LAV Splitter Source (A better way is to provide our own ICustomSourceFilter)
                 e.Filename = "pipe:0";
             }
         }
