@@ -59,7 +59,13 @@ namespace Mpdn.Extensions.RenderScripts
                 if (Settings.Preset != null && Settings.Preset.Script != null)
                 {
                     var guid = Settings.Preset.Script.Descriptor.Guid;
-                    comboBoxPreset.SelectedIndex = renderScripts.FindIndex(ui => ui.Descriptor.Guid == guid);
+                    comboBoxPreset.SelectedIndex = comboBoxPreset
+                        .Items
+                        .Cast<ComboBoxItem<Preset>>()
+                        .Select(item => item.Value.Script)
+                        .ToList()
+                        .FindIndex(ui => ui.Descriptor.Guid == guid);
+
                     var index = comboBoxPreset.SelectedIndex;
                     if (index >= 0)
                     {
@@ -105,7 +111,7 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     try
                     {
-                        engine.Execute(null, null, CreateJsCode(Parser.BuildCondition(condition)), "Conditional");
+                        engine.Execute(null, CreateJsCode(Parser.BuildCondition(condition)), "Conditional");
                     }
                     catch (MpdnScriptEngineException ex)
                     {

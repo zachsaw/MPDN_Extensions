@@ -22,7 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.RenderScript;
 using SharpDX;
 using Point = System.Drawing.Point;
 
@@ -153,195 +152,101 @@ namespace Mpdn.Extensions.Framework.Scripting
             }
         }
 
-        public class MockClip : IClip
+        public class MockFilterClip : Clip
         {
-            public string FileName
+            public override Size InputSize
+            {
+                get { return SourceSize; }
+            }
+
+            #region Fake Renderer Properties
+
+            public override string FileName
             {
                 get { return "C:\\MyVideoFolder\\AnotherSubFolder\\MyVideoFile.mkv"; }
             }
 
-            public bool Interlaced
+            public override bool Interlaced
             {
                 get { return true; }
             }
 
-            public bool NeedsUpscaling
-            {
-                get { return true; }
-            }
-
-            public bool NeedsDownscaling
-            {
-                get { return true; }
-            }
-
-            public Size TargetSize
+            public override Size TargetSize
             {
                 get { return new Size(1920, 1080); }
             }
 
-            public Size SourceSize
+            public override Size SourceSize
             {
                 get { return new Size(320, 180); }
             }
 
-            public Size LumaSize
+            public override Size LumaSize
             {
                 get { return new Size(320, 180); }
             }
 
-            public Size ChromaSize
+            public override Size ChromaSize
             {
                 get { return new Size(160, 90); }
             }
 
-            public Vector2 ChromaOffset
+            public override Vector2 ChromaOffset
             {
                 get { return Vector2.Zero; }
             }
 
-            public Point AspectRatio
+            public override Point AspectRatio
             {
                 get { return new Point(16, 9); }
             }
 
-            public YuvColorimetric Colorimetric
-            {
-                get { return YuvColorimetric.ItuBt601; }
-            }
-
-            public FrameBufferInputFormat InputFormat
+            public override FrameBufferInputFormat InputFormat
             {
                 get { return FrameBufferInputFormat.Nv12; }
             }
 
-            public int SourceBitDepth
+            public override YuvColorimetric Colorimetric
             {
-                get { return 8; }
+                get { return YuvColorimetric.ItuBt601; }
             }
 
-            public bool SourceRgb
-            {
-                get { return false; }
-            }
-
-            public bool SourceYuv
-            {
-                get { return true; }
-            }
-
-            public double FrameRateHz
+            public override double FrameRateHz
             {
                 get { return 24/1.001; }
             }
+
+            #endregion
         }
 
-        public class Clip : IClip
+        public class FilterClip : Clip
         {
-            private readonly RenderChain.RenderChain m_Chain;
             public IFilter Filter { get; private set; }
-            public Func<string> Status { get; private set; }
 
-            public string FileName
+            public override Size InputSize
             {
-                get { return Renderer.VideoFileName; }
+                get { return (Size)Filter.OutputSize; }
             }
 
-            public bool Interlaced
+            public FilterClip(IFilter input)
             {
-                get { return Renderer.InterlaceFlags.HasFlag(InterlaceFlags.IsInterlaced); }
-            }
-
-            public bool NeedsUpscaling
-            {
-                get { return m_Chain.IsUpscalingFrom(Filter); }
-            }
-
-            public bool NeedsDownscaling
-            {
-                get { return m_Chain.IsDownscalingFrom(Filter); }
-            }
-
-            public Size TargetSize
-            {
-                get { return Renderer.TargetSize; }
-            }
-
-            public Size SourceSize
-            {
-                get { return Renderer.VideoSize; }
-            }
-
-            public Size LumaSize
-            {
-                get { return Renderer.LumaSize; }
-            }
-
-            public Size ChromaSize
-            {
-                get { return Renderer.ChromaSize; }
-            }
-
-            public Vector2 ChromaOffset
-            {
-                get { return Renderer.ChromaOffset; }
-            }
-
-            public Point AspectRatio
-            {
-                get { return Renderer.AspectRatio; }
-            }
-
-            public YuvColorimetric Colorimetric
-            {
-                get { return Renderer.Colorimetric; }
-            }
-
-            public FrameBufferInputFormat InputFormat
-            {
-                get { return Renderer.InputFormat; }
-            }
-
-            public int SourceBitDepth
-            {
-                get { return Renderer.InputFormat.GetBitDepth(); }
-            }
-
-            public bool SourceRgb
-            {
-                get { return Renderer.InputFormat.IsRgb(); }
-            }
-
-            public bool SourceYuv
-            {
-                get { return Renderer.InputFormat.IsYuv(); }
-            }
-
-            public double FrameRateHz
-            {
-                get { return Renderer.FrameRateHz; }
-            }
-
-            public Clip(RenderChain.RenderChain chain, IFilter input)
-            {
-                m_Chain = chain;
                 Filter = input;
             }
 
-            public Clip Add(RenderChain.RenderChain filter)
+            public FilterClip Add(RenderChain.RenderChain chain)
             {
-                if (filter == null)
+                if (chain == null)
                 {
-                    throw new ArgumentNullException("filter");
+                    throw new ArgumentNullException("chain");
                 }
-                Filter += filter;
+                Filter += chain;
                 
                 return this;
             }
 
-            public Clip Apply(RenderChain.RenderChain filter)
+            public FilterClip Apply(RenderChain.RenderChain chain)
             {
-                return Add(filter);
+                return Add(chain);
             }
         }
     }

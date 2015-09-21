@@ -72,13 +72,13 @@ namespace Mpdn.Extensions.Framework.Scripting
             DisposeHelper.Dispose(ref m_Engine);
         }
 
-        public Clip Execute(RenderChain.RenderChain chain, IFilter input, string code, string filename = "")
+        public FilterClip Execute(IFilter input, string code, string filename = "")
         {
             try
             {
-                var clip = ResetEngine(chain, input);
+                var clip = ResetEngine(input);
                 m_Engine.Execute("RenderScript", true, code);
-                return (Clip) clip;
+                return (FilterClip) clip;
             }
             catch (ScriptEngineException e)
             {
@@ -87,11 +87,11 @@ namespace Mpdn.Extensions.Framework.Scripting
             return null;
         }
 
-        public bool Evaluate(RenderChain.RenderChain chain, IFilter input, string code, string filename = "")
+        public bool Evaluate(IFilter input, string code, string filename = "")
         {
             try
             {
-                ResetEngine(chain, input);
+                ResetEngine(input);
                 dynamic result = m_Engine.Evaluate("RenderScript", true, code);
                 return result is bool ? result : false;
             }
@@ -110,11 +110,11 @@ namespace Mpdn.Extensions.Framework.Scripting
                     filename, string.IsNullOrEmpty(message) ? e.ErrorDetails : message));
         }
 
-        private IClip ResetEngine(RenderChain.RenderChain chain, IFilter input)
+        private Clip ResetEngine(IFilter input)
         {
             m_Engine.CollectGarbage(true);
-            var mock = (chain == null || input == null);
-            var clip = mock ? (IClip) new MockClip() : new Clip(chain, input);
+            var mock = input == null;
+            var clip = mock ? (Clip) new MockFilterClip() : new FilterClip(input);
             AssignScriptObjects(clip);
             return mock ? null : clip;
         }
@@ -153,7 +153,7 @@ namespace Mpdn.Extensions.Framework.Scripting
             }
         }
 
-        private void AssignScriptObjects(IClip clip)
+        private void AssignScriptObjects(Clip clip)
         {
             m_Engine.Script["input"] = clip;
             m_Engine.Script["Script"] = new Script();

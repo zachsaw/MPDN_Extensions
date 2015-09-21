@@ -90,7 +90,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private static bool IsKeyword(string word)
             {
-                var propInfos = typeof (IClip).GetProperties();
+                var propInfos = typeof (Clip).GetProperties();
                 return propInfos.Any(pi => pi.Name == word);
             }
         }

@@ -48,7 +48,7 @@ namespace Mpdn.Extensions.RenderScripts
                     return input;
 
                 CreateEngine();
-                if (!m_Engine.Evaluate(this, input, GetScript(), GetType().Name))
+                if (!m_Engine.Evaluate(input, GetScript(), GetType().Name))
                     return input;
 
                 return input + Preset;
