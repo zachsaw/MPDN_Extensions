@@ -838,11 +838,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void CloseMedia()
         {
+            Media.Close();
             CurrentItem = null;
             m_CurrentPlayIndex = -1;
             Text = "Playlist";
-            Media.Close();
             dgv_PlayList.Invalidate();
+            Player.ClearScreen();
         }
 
         #endregion
@@ -1783,6 +1784,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (Player.State == PlayerState.Closed) return;
             if (Media.Position == Media.Duration)
             {
+                if (CurrentItem == null) return;
                 CurrentItem.PlayCount++;
 
                 if (AfterPlaybackAction == AfterPlaybackSettingsAction.RemoveFile)
