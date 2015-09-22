@@ -1,9 +1,24 @@
-﻿using System;
+﻿// This file is a part of MPDN Extensions.
+// https://github.com/zachsaw/MPDN_Extensions
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3.0 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -31,7 +46,6 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            Player.DragDrop += DragDrop;
             Media.Loading += MediaLoading;
         }
 
@@ -40,7 +54,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (m_TempPath.Exists)
                 foreach (FileInfo file in m_TempPath.GetFiles()) file.Delete();
 
-            Player.DragDrop -= DragDrop;
             Media.Loading -= MediaLoading;
 
             base.Destroy();
@@ -48,11 +61,9 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void MediaLoading(object sender, MediaLoadingEventArgs e)
         {
-            /* Doesn't work too well yet */
             if (IsValidUrl(e.Filename))
             {
-                LoadUrl(e.Filename);
-                Media.Close();
+                e.Filename = LoadUrl(e.Filename);
             }
         }
 
@@ -65,16 +76,6 @@ namespace Mpdn.Extensions.PlayerExtensions
                 && !Path.HasExtension(uriResult.AbsolutePath);
         }
 
-        private void DragDrop(object sender, PlayerControlEventArgs<DragEventArgs> e)
-        {
-            var url = (string)e.InputArgs.Data.GetData(DataFormats.Text);
-            if (IsValidUrl(url))
-            {
-                LoadUrl(url);
-                e.Handled = true;
-            }
-        }
-
         public override IList<Verb> Verbs
         {
             get { return new Verb[0]; }
@@ -85,17 +86,21 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.ActiveForm.Invoke((Action)(() => PlayerControl.OpenMedia(file)));
         }
 
-        private void OnDownloaded(object sender, EventArgs e)
+        private string GetFilePath()
         {
-            //if (m_Downloader.ExitCode != 0)
-            //  throw new Exception(m_Downloader.StandardError.ReadToEnd());
-
             if (m_TempPath.Exists)
             {
                 var file = m_TempPath.EnumerateFiles().FirstOrDefault(f => f.Name.Contains(m_DownloadHash));
                 if (file != null)
-                    PlayFile(file.FullName);
+                    return file.FullName;
             }
+
+            return null;
+        }
+
+        private void OnDownloaded(object sender, EventArgs e)
+        {
+            PlayFile(GetFilePath());            
 
             DisposeHelper.Dispose(ref m_Downloader);
         }
@@ -105,7 +110,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.ActiveForm.Invoke((Action)(() => Player.OsdText.Show(e.Data)));
         }
 
-        private void LoadUrl(string url)
+        private string LoadUrl(string url)
         {
             m_DownloadHash = url.GetHashCode().ToString("X8");
             var path = Path.Combine(m_TempPath.FullName, @"%(title)s_[" + m_DownloadHash + @"]_%(format_id)s.%(ext)s");
@@ -114,18 +119,25 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_Downloader.StartInfo = new ProcessStartInfo
             {
                 FileName = "youtube-dl",
-                Arguments = String.Format("-f bestvideo[height<=?1080]+bestaudio/best \"{0}\" -o \"{1}\" --no-playlist", url, path),
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
+                Arguments = string.Format("-f bestvideo[height<=?1080]+bestaudio/best \"{0}\" -o \"{1}\" --no-playlist", url, path),
+                //CreateNoWindow = true,
+                //RedirectStandardOutput = true,
+                //RedirectStandardError = true,
+                CreateNoWindow = false,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false,
                 UseShellExecute = false
             };
-            m_Downloader.EnableRaisingEvents = true;
-            m_Downloader.Exited += OnDownloaded;
-            m_Downloader.OutputDataReceived += OnWrite;
+            //m_Downloader.EnableRaisingEvents = true;
+            //m_Downloader.Exited += OnDownloaded;
+            //m_Downloader.OutputDataReceived += OnWrite;
 
             m_Downloader.Start();
-            m_Downloader.BeginOutputReadLine();
+            //m_Downloader.BeginOutputReadLine();
+
+            m_Downloader.WaitForExit();
+
+            return GetFilePath();
         }
     }
 }
