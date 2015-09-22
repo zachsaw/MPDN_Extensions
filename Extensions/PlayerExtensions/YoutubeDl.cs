@@ -23,7 +23,7 @@ using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
-    public class YoutubeExtension : PlayerExtension
+    public class YoutubeDlExtension : PlayerExtension
     {
         private string m_DownloadHash;
         private Process m_Downloader;
@@ -63,7 +63,17 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             if (IsValidUrl(e.Filename))
             {
-                e.Filename = LoadUrl(e.Filename);
+                try
+                {
+                    var file = LoadUrl(e.Filename);
+                    if (file != null)
+                        e.Filename = file;
+                }
+                catch (Exception ex)
+                {
+                    // User may not have youtube-dl installed
+                    Trace.WriteLine(ex);
+                }
             }
         }
 
@@ -134,8 +144,10 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             m_Downloader.Start();
             //m_Downloader.BeginOutputReadLine();
-
             m_Downloader.WaitForExit();
+
+            if (m_Downloader.ExitCode != 0)
+                return null;
 
             return GetFilePath();
         }
