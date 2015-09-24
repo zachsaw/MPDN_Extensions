@@ -66,7 +66,7 @@ namespace Mpdn.Extensions.RenderScripts
                 xbr = new ShaderFilter(Pass1, xbr);
 
                 if (ThirdPass)
-                    return xbr + (RenderChain)Pass2;
+                    return new ShaderFilter(Pass2, xbr);
                 else
                     return new ResizeFilter(xbr, xbr.OutputSize, new Vector2(0.5f, 0.5f));
             }
