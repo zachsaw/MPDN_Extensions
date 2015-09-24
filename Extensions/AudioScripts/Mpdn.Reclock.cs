@@ -129,7 +129,7 @@ namespace Mpdn.Extensions.AudioScripts
                     }
                     else
                     {
-                        Player.OsdText.Show("Warning: Reclock could not find a compatible audio renderer!");
+                        Player.OsdText.Show("Warning: Audio renderer is incompatible with Reclock. Reclock disabled!");
                     }
                 });
             }
