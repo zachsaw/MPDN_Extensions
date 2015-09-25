@@ -29,7 +29,8 @@ namespace Mpdn.Extensions.AudioScripts
             private const double MAX_PERCENT_ADJUST = 3; // automatically reclock if the difference is less than 3%
             private const double SANEAR_OVERSHOOT = 15;
             private const double DIRECTSOUND_OVERSHOOT = 10;
-            private const double MAX_SWING = 0.0005;
+            private const double MAX_SWING = 0.00025;
+            private const int RATIO_ADJUST_INTERVAL = 128*1024;
 
             private static readonly Guid s_SanearSoundClsId = new Guid("DF557071-C9FD-433A-9627-81E0D3640ED9");
             private static readonly Guid s_DirectSoundClsId = new Guid("79376820-07D0-11CF-A24D-0020AFD79767");
@@ -37,6 +38,9 @@ namespace Mpdn.Extensions.AudioScripts
 
             private bool m_Sanear;
             private bool m_DirectSoundWaveOut;
+
+            private int m_SampleIndex = -1;
+            private double m_Ratio;
 
             public override ExtensionUiDescriptor Descriptor
             {
@@ -46,7 +50,7 @@ namespace Mpdn.Extensions.AudioScripts
                     {
                         Guid = new Guid("51DA709D-7DDC-448B-BF0B-8691C9F39FF1"),
                         Name = "Reclock",
-                        Description = "Reclock for MPDN (compatible with certain audio renderers only)"
+                        Description = "Reclock for MPDN"
                     };
                 }
             }
@@ -70,32 +74,54 @@ namespace Mpdn.Extensions.AudioScripts
                 if (ratio > (100 + MAX_PERCENT_ADJUST)/100 || ratio < (100 - MAX_PERCENT_ADJUST)/100)
                     return false;
 
-                // passthrough from input to output
-                AudioHelpers.CopySample(input.Sample, output.Sample, true);
-
-                var refclk = stats.RefClockDeviation;
-                if (refclk > -10 && refclk < 10)
+                if (m_SampleIndex < 0)
                 {
-                    // Fine tune further when we have refclk stats
-                    var actualVideoHz = videoHz*(1 + refclk);
-                    var finalDifference = displayHz/actualVideoHz;
-                    // finalDifference will get smaller over time as refclk inches closer and closer to the target value
-                    var overshoot = m_Sanear ? SANEAR_OVERSHOOT : DIRECTSOUND_OVERSHOOT;
-                    var swing = Math.Pow(finalDifference, overshoot);
-                    ratio *= Math.Max(1-MAX_SWING, Math.Min(1+MAX_SWING, swing));
-                    // Let it overshoot the final difference so we can converge faster
-                    // Sanear has a built-in low-pass filter that allows it to creep its sample rate towards the target
-                    // so we need a much higher overshoot to make it converge faster
-                    // DSound on the other hand doesn't
+                    m_Ratio = ratio;
                 }
 
+                var format = input.Format;
+                var bytesPerSample = format.wBitsPerSample / 8;
+                var length = input.Sample.GetActualDataLength() / bytesPerSample;
+                m_SampleIndex += length;
+
+                if (m_SampleIndex > RATIO_ADJUST_INTERVAL)
+                {
+                    m_SampleIndex = 0;
+
+                    var refclk = stats.RefClockDeviation;
+                    if (refclk > -10 && refclk < 10)
+                    {
+                        // Fine tune further when we have refclk stats
+                        var actualVideoHz = videoHz*(1 + refclk);
+                        var finalDifference = displayHz/actualVideoHz;
+                        // finalDifference will get smaller over time as refclk inches closer and closer to the target value
+                        var overshoot = m_Sanear ? SANEAR_OVERSHOOT : DIRECTSOUND_OVERSHOOT;
+                        var swing = Math.Pow(finalDifference, overshoot);
+                        ratio *= Math.Max(1 - MAX_SWING, Math.Min(1 + MAX_SWING, swing));
+                        // Let it overshoot the final difference so we can converge faster
+                        // Sanear has a built-in low-pass filter that allows it to creep its sample rate towards the target
+                        // so we need a much higher overshoot to make it converge faster
+                        // DSound on the other hand doesn't
+                    }
+
+                    m_Ratio = ratio;
+                }
+
+                // Passthrough from input to output
+                AudioHelpers.CopySample(input.Sample, output.Sample, true);
+
+                PerformReclock(output);
+
+                return true;
+            }
+
+            private void PerformReclock(AudioParam output)
+            {
                 long start, end;
                 output.Sample.GetTime(out start, out end);
                 long endDelta = end - start;
-                start = (long) (start*ratio);
+                start = (long) (start*m_Ratio);
                 output.Sample.SetTime(start, endDelta);
-
-                return true;
             }
 
             public bool CompatibleAudioRenderer
@@ -107,6 +133,8 @@ namespace Mpdn.Extensions.AudioScripts
             {
                 m_Sanear = false;
                 m_DirectSoundWaveOut = false;
+                m_SampleIndex = -1;
+                m_Ratio = 0;
             }
 
             public override void OnGetMediaType(WaveFormatExtensible format)
@@ -117,13 +145,11 @@ namespace Mpdn.Extensions.AudioScripts
                     // Player.Filters has not been populated
                     // Using GuiThread.DoAsync essentially queues this delegate until the media file
                     // is actually opened and all Player fields have been populated
-                    if (Player.Filters.FirstOrDefault(f => f.ClsId == s_SanearSoundClsId) != null)
+                    if (Player.Filters.Any(f => f.ClsId == s_SanearSoundClsId))
                     {
                         m_Sanear = true;
                     }
-                    else if (
-                        Player.Filters.FirstOrDefault(
-                            f => f.ClsId == s_DirectSoundClsId || f.ClsId == s_WaveOutClsId) != null)
+                    else if (Player.Filters.Any(f => f.ClsId == s_DirectSoundClsId || f.ClsId == s_WaveOutClsId))
                     {
                         m_DirectSoundWaveOut = true;
                     }
@@ -136,6 +162,7 @@ namespace Mpdn.Extensions.AudioScripts
 
             public override void OnNewSegment(long startTime, long endTime, double rate)
             {
+                m_SampleIndex = -1;
             }
 
             protected override void Process(float[,] samples, short channels, int sampleCount)
