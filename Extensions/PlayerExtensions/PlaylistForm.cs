@@ -263,10 +263,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             int borderWidth = SystemInformation.SizingBorderWidth;
             var form = Player.ActiveForm;
+            int left = form.Left;
             int right = form.Right;
             int top = form.Top;
             int width = form.Width;
             int height = form.Height;
+
+            int playlistWidth = WindowSize.Width != 0 ? WindowSize.Width : Width;
+            int playlistHeight = WindowSize.Height != 0 ? WindowSize.Height : Height;
 
             if (RememberWindowPosition && RememberWindowSize)
             {
@@ -293,52 +297,52 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     {
                         if (SnapLocation == SnapLocation.Left)
                         {
-                            Left = form.Left + borderWidth - Width;
-                            Top = form.Top + borderWidth;
+                            Left = left - playlistWidth;
+                            Top = top + borderWidth;
                         }
 
                         if (SnapLocation == SnapLocation.Right)
                         {
-                            Left = form.Right + borderWidth;
-                            Top = form.Top + borderWidth;
+                            Left = right + borderWidth;
+                            Top = top + borderWidth;
                         }
 
                         if (SnapLocation == SnapLocation.Top)
                         {
-                            Left = form.Left + borderWidth;
-                            Top = form.Top + borderWidth - Height;
+                            Left = left + borderWidth;
+                            Top = top + borderWidth - playlistHeight;
                         }
 
                         if (SnapLocation == SnapLocation.Bottom)
                         {
-                            Left = form.Left + borderWidth;
-                            Top = form.Top + form.Height;
+                            Left = left + borderWidth;
+                            Top = top + height;
                         }
                     }
                     else
                     {
                         if (SnapLocation == SnapLocation.Left)
                         {
-                            Left = form.Left - Width;
-                            Top = form.Top;
+                            Left = left - playlistWidth;
+                            Top = top;
                         }
 
                         if (SnapLocation == SnapLocation.Right)
                         {
-                            Left = form.Right;
-                            Top = form.Top;
+                            Left = right;
+                            Top = top;
                         }
 
                         if (SnapLocation == SnapLocation.Top)
                         {
-                            Left = form.Left;
-                            Top = form.Top - Height;
+                            Left = left;
+                            Top = top - playlistHeight;
                         }
 
                         if (SnapLocation == SnapLocation.Bottom)
                         {
-                            Left = form.Left;
-                            Top = form.Top + form.Height;
+                            Left = left;
+                            Top = top + height;
                         }
                     }
                 }
@@ -986,8 +990,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             var input = new InputDialog()
             {
-                WindowTitle = "Add url to Playlist",
-                MainInstruction = "Enter the url you'd like to add to the playlist"
+                WindowTitle = "Add URL to Playlist",
+                MainInstruction = "Enter the URL you'd like to add to the playlist"
             };
 
             var result = input.ShowDialog();
@@ -1041,8 +1045,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             var input = new InputDialog()
             {
-                WindowTitle = "Open and add url to Playlist",
-                MainInstruction = "Enter the url you'd like to open and add to the playlist"
+                WindowTitle = "Open and add URL to Playlist",
+                MainInstruction = "Enter the URL you'd like to open and add to the playlist"
             };
 
             var result = input.ShowDialog();
@@ -2063,6 +2067,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (dgv_PlayList.Rows == null && dgv_PlayList.Rows.Count == 0) return;
             int row = e.RowIndex;
             if (row == -1) return;
+            if (Playlist.Count <= 0) return;
             var item = Playlist[row];
             if (item == null) return;
 

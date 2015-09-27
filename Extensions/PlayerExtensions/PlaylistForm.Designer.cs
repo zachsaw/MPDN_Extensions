@@ -579,7 +579,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // 
             this.addUrlToolStripMenuItem.Name = "addUrlToolStripMenuItem";
             this.addUrlToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
-            this.addUrlToolStripMenuItem.Text = "Url";
+            this.addUrlToolStripMenuItem.Text = "URL";
             this.addUrlToolStripMenuItem.Click += new System.EventHandler(this.ButtonAddUrlClick);
             // 
             // openToolStripMenuItem
@@ -626,7 +626,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // 
             this.openUrlToolStripMenuItem.Name = "openUrlToolStripMenuItem";
             this.openUrlToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
-            this.openUrlToolStripMenuItem.Text = "Url";
+            this.openUrlToolStripMenuItem.Text = "URL";
             this.openUrlToolStripMenuItem.Click += new System.EventHandler(this.ButtonOpenUrlClick);
             // 
             // removeToolStripMenuItem
