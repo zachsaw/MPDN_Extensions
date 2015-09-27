@@ -262,10 +262,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void SetLocation(Control owner)
         {
             int borderWidth = SystemInformation.SizingBorderWidth;
-            int right = Player.ActiveForm.Right;
-            int top = Player.ActiveForm.Top;
-            int width = Player.ActiveForm.Width;
-            int height = Player.ActiveForm.Height;
+            var form = Player.ActiveForm;
+            int right = form.Right;
+            int top = form.Top;
+            int width = form.Width;
+            int height = form.Height;
 
             if (RememberWindowPosition && RememberWindowSize)
             {
@@ -290,13 +291,55 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     if (LockWindowSize)
                     {
-                        Left = right + borderWidth;
-                        Top = top + borderWidth;
+                        if (SnapLocation == SnapLocation.Left)
+                        {
+                            Left = form.Left + borderWidth - Width;
+                            Top = form.Top + borderWidth;
+                        }
+
+                        if (SnapLocation == SnapLocation.Right)
+                        {
+                            Left = form.Right + borderWidth;
+                            Top = form.Top + borderWidth;
+                        }
+
+                        if (SnapLocation == SnapLocation.Top)
+                        {
+                            Left = form.Left + borderWidth;
+                            Top = form.Top + borderWidth - Height;
+                        }
+
+                        if (SnapLocation == SnapLocation.Bottom)
+                        {
+                            Left = form.Left + borderWidth;
+                            Top = form.Top + form.Height;
+                        }
                     }
                     else
                     {
-                        Left = right;
-                        Top = top;
+                        if (SnapLocation == SnapLocation.Left)
+                        {
+                            Left = form.Left - Width;
+                            Top = form.Top;
+                        }
+
+                        if (SnapLocation == SnapLocation.Right)
+                        {
+                            Left = form.Right;
+                            Top = form.Top;
+                        }
+
+                        if (SnapLocation == SnapLocation.Top)
+                        {
+                            Left = form.Left;
+                            Top = form.Top - Height;
+                        }
+
+                        if (SnapLocation == SnapLocation.Bottom)
+                        {
+                            Left = form.Left;
+                            Top = form.Top + form.Height;
+                        }
                     }
                 }
                 if (RememberWindowSize)
@@ -314,21 +357,24 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                     if (mpdnRememberBounds)
                     {
-                        Width = mpdnBounds.Width;
-                    }
-                    else
-                    {
-                        if (SnapLocation == SnapLocation.Top || SnapLocation == SnapLocation.Bottom) Width = Player.ActiveForm.Width;
-                    }
-
-                    if (LockWindowSize)
-                    {
-                        Width = Width - borderWidth;
-                        Height = height - (borderWidth * 2);
+                        if (SnapLocation == SnapLocation.Left || SnapLocation == SnapLocation.Right) Height = mpdnBounds.Height;
+                        else if (SnapLocation == SnapLocation.Top || SnapLocation == SnapLocation.Bottom) Width = mpdnBounds.Width;
                     }
                     else
                     {
                         if (SnapLocation == SnapLocation.Left || SnapLocation == SnapLocation.Right) Height = Player.ActiveForm.Height;
+                        else if (SnapLocation == SnapLocation.Top || SnapLocation == SnapLocation.Bottom) Width = Player.ActiveForm.Width;
+                    }
+
+                    if (LockWindowSize)
+                    {
+                        if (SnapLocation == SnapLocation.Left || SnapLocation == SnapLocation.Right) Height = Player.ActiveForm.Height - (borderWidth * 2);
+                        else if (SnapLocation == SnapLocation.Top || SnapLocation == SnapLocation.Bottom) Width = Player.ActiveForm.Width - borderWidth;
+                    }
+                    else
+                    {
+                        if (SnapLocation == SnapLocation.Left || SnapLocation == SnapLocation.Right) Height = Player.ActiveForm.Height;
+                        else if (SnapLocation == SnapLocation.Top || SnapLocation == SnapLocation.Bottom) Width = Player.ActiveForm.Width;
                     }
                 }
             }
