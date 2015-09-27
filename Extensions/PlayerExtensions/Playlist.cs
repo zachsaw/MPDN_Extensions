@@ -119,6 +119,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_Form.Theme = Settings.Theme;
             m_Form.LoadCustomSettings();
 
+            m_Form.SnapLocation = Settings.SnapLocation;
+
             if (Settings.LockWindowSize) SetFormToFixed();
             else SetFormToSizable();
             if (Settings.SnapWithPlayer) SnapPlayer();
@@ -173,6 +175,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 m_Form.LockWindowSize = Settings.LockWindowSize;
                 SetFormToFixed();
             }
+
+            m_Form.SnapLocation = Settings.SnapLocation;
 
             if (Settings.SnapWithPlayer)
             {
@@ -275,7 +279,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void SetActiveFile()
         {
             if (string.IsNullOrEmpty(Media.FilePath)) return;
-            if (!File.Exists(Media.FilePath)) return;
             if (Player.State != PlayerState.Playing) return;
 
             if (m_Form.CurrentItem != null && m_Form.CurrentItem.FilePath != Media.FilePath) m_Form.ActiveFile(Media.FilePath);
@@ -366,17 +369,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 if (Settings.ScaleWithPlayer)
                 {
-                    if (Settings.LockWindowSize)
-                    {
-                        if (OS_VERSION.Contains("Windows 10"))
-                        {
-                            m_Form.Height = m_MpdnForm.Height + borderWidth;
-                        }
-                        else
-                        {
-                            m_Form.Height = m_MpdnForm.Height - borderWidth * 2;
-                        }
-                    }
+                    if (Settings.LockWindowSize) m_Form.Height = m_MpdnForm.Height - borderWidth * 2;
                     else m_Form.Height = m_MpdnForm.Height;
                 }
             }
@@ -386,16 +379,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     if (Settings.LockWindowSize)
                     {
-                        if (OS_VERSION.Contains("Windows 10"))
-                        {
-                            m_Form.Width = m_MpdnForm.Width;
-                            m_Form.Height = m_MpdnForm.Height - borderWidth;
-                        }
-                        else
-                        {
-                            m_Form.Width = m_MpdnForm.Width;
-                            m_Form.Height = m_MpdnForm.Height - borderWidth * 2;
-                        }
+                        m_Form.Width = m_MpdnForm.Width;
+                        m_Form.Height = m_MpdnForm.Height - borderWidth * 2;
                     }
                     else m_Form.Size = m_MpdnForm.Size;
                 }
@@ -403,28 +388,54 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (Settings.LockWindowSize)
             {
-                if (OS_VERSION.Contains("Windows 10"))
+                if (Settings.SnapLocation == SnapLocation.Left)
                 {
-                    m_Form.Left = m_MpdnForm.Right - (borderWidth * 2);
-                    m_Form.Top = m_MpdnForm.Top;
+                    m_Form.Left = m_MpdnForm.Left + borderWidth - m_Form.Width;
+                    m_Form.Top = m_MpdnForm.Top + borderWidth;
                 }
-                else
+
+                if (Settings.SnapLocation == SnapLocation.Right)
                 {
                     m_Form.Left = m_MpdnForm.Right + borderWidth;
                     m_Form.Top = m_MpdnForm.Top + borderWidth;
                 }
+
+                if (Settings.SnapLocation == SnapLocation.Top)
+                {
+                    m_Form.Left = m_MpdnForm.Left + borderWidth;
+                    m_Form.Top = m_MpdnForm.Top + borderWidth - m_Form.Height;
+                }
+
+                if (Settings.SnapLocation == SnapLocation.Bottom)
+                {
+                    m_Form.Left = m_MpdnForm.Left + borderWidth;
+                    m_Form.Top = m_MpdnForm.Top + m_MpdnForm.Height;
+                }
             }
             else
             {
-                if (OS_VERSION.Contains("Windows 10"))
+                if (Settings.SnapLocation == SnapLocation.Left)
                 {
-                    m_Form.Left = m_MpdnForm.Right - (borderWidth * 2) - 5;
+                    m_Form.Left = m_MpdnForm.Left - m_Form.Width;
                     m_Form.Top = m_MpdnForm.Top;
                 }
-                else
+
+                if (Settings.SnapLocation == SnapLocation.Right)
                 {
                     m_Form.Left = m_MpdnForm.Right;
                     m_Form.Top = m_MpdnForm.Top;
+                }
+
+                if (Settings.SnapLocation == SnapLocation.Top)
+                {
+                    m_Form.Left = m_MpdnForm.Left;
+                    m_Form.Top = m_MpdnForm.Top - m_Form.Height;
+                }
+
+                if (Settings.SnapLocation == SnapLocation.Bottom)
+                {
+                    m_Form.Left = m_MpdnForm.Left;
+                    m_Form.Top = m_MpdnForm.Top + m_MpdnForm.Height;
                 }
             }
         }
@@ -796,13 +807,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
     #region Enums
 
+    public enum SnapLocation
+    {
+        Left,
+        Right,
+        Top,
+        Bottom
+    }
+
     public enum IconScale
     {
         Scale100X = 0,
         Scale125X,
         Scale150X,
         Scale175X,
-        Scale200X,
+        Scale200X
     }
 
     public enum AfterPlaybackSettingsOpt
@@ -835,6 +854,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public bool RememberWindowPosition { get; set; }
         public bool ShowToolTips { get; set; }
         public bool SnapWithPlayer { get; set; }
+        public SnapLocation SnapLocation { get; set; }
         public bool ScaleWithPlayer { get; set; }
         public bool StaySnapped { get; set; }
         public bool RememberPlaylist { get; set; }
@@ -879,6 +899,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             BeginPlaybackOnStartup = false;
             ShowToolTips = true;
             SnapWithPlayer = true;
+            SnapLocation = SnapLocation.Right;
             StaySnapped = false;
             RememberColumns = false;
             RememberWindowPosition = false;

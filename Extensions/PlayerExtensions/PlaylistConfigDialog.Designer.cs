@@ -75,6 +75,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_rememberColumns = new System.Windows.Forms.CheckBox();
             this.cb_rememberWindowSize = new System.Windows.Forms.CheckBox();
             this.btn_configRegex = new System.Windows.Forms.Button();
+            this.cb_snapLocation = new System.Windows.Forms.ComboBox();
             this.groupBox2.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -89,7 +90,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.cb_showPlaylistOnStartup.AutoSize = true;
             this.cb_showPlaylistOnStartup.Location = new System.Drawing.Point(9, 70);
-            this.cb_showPlaylistOnStartup.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_showPlaylistOnStartup.Margin = new System.Windows.Forms.Padding(4);
             this.cb_showPlaylistOnStartup.Name = "cb_showPlaylistOnStartup";
             this.cb_showPlaylistOnStartup.Size = new System.Drawing.Size(179, 21);
             this.cb_showPlaylistOnStartup.TabIndex = 1;
@@ -100,7 +101,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.cb_rememberPlaylist.AutoSize = true;
             this.cb_rememberPlaylist.Location = new System.Drawing.Point(9, 43);
-            this.cb_rememberPlaylist.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_rememberPlaylist.Margin = new System.Windows.Forms.Padding(4);
             this.cb_rememberPlaylist.Name = "cb_rememberPlaylist";
             this.cb_rememberPlaylist.Size = new System.Drawing.Size(146, 21);
             this.cb_rememberPlaylist.TabIndex = 5;
@@ -111,7 +112,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.cb_rememberWindowPosition.AutoSize = true;
             this.cb_rememberWindowPosition.Location = new System.Drawing.Point(9, 66);
-            this.cb_rememberWindowPosition.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_rememberWindowPosition.Margin = new System.Windows.Forms.Padding(4);
             this.cb_rememberWindowPosition.Name = "cb_rememberWindowPosition";
             this.cb_rememberWindowPosition.Size = new System.Drawing.Size(201, 21);
             this.cb_rememberWindowPosition.TabIndex = 6;
@@ -122,8 +123,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.btn_save.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_save.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btn_save.Location = new System.Drawing.Point(397, 377);
-            this.btn_save.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_save.Location = new System.Drawing.Point(397, 397);
+            this.btn_save.Margin = new System.Windows.Forms.Padding(4);
             this.btn_save.Name = "btn_save";
             this.btn_save.Size = new System.Drawing.Size(100, 28);
             this.btn_save.TabIndex = 15;
@@ -134,8 +135,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.btn_cancel.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btn_cancel.Location = new System.Drawing.Point(500, 377);
-            this.btn_cancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_cancel.Location = new System.Drawing.Point(500, 397);
+            this.btn_cancel.Margin = new System.Windows.Forms.Padding(4);
             this.btn_cancel.Name = "btn_cancel";
             this.btn_cancel.Size = new System.Drawing.Size(100, 28);
             this.btn_cancel.TabIndex = 16;
@@ -159,9 +160,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox2.Controls.Add(this.groupBox4);
             this.groupBox2.Controls.Add(this.groupBox3);
             this.groupBox2.Location = new System.Drawing.Point(301, 63);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox2.Size = new System.Drawing.Size(299, 193);
             this.groupBox2.TabIndex = 8;
             this.groupBox2.TabStop = false;
@@ -172,9 +173,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox4.Controls.Add(this.cb_afterPlaybackAction);
             this.groupBox4.Controls.Add(this.cb_afterPlaybackOpt);
             this.groupBox4.Location = new System.Drawing.Point(8, 92);
-            this.groupBox4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox4.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox4.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox4.Size = new System.Drawing.Size(283, 91);
             this.groupBox4.TabIndex = 13;
             this.groupBox4.TabStop = false;
@@ -191,7 +192,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             "Grey out file",
             "Remove file"});
             this.cb_afterPlaybackAction.Location = new System.Drawing.Point(8, 57);
-            this.cb_afterPlaybackAction.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_afterPlaybackAction.Margin = new System.Windows.Forms.Padding(4);
             this.cb_afterPlaybackAction.Name = "cb_afterPlaybackAction";
             this.cb_afterPlaybackAction.Size = new System.Drawing.Size(265, 23);
             this.cb_afterPlaybackAction.TabIndex = 15;
@@ -209,7 +210,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             "Play next file in folder",
             "Repeat playlist"});
             this.cb_afterPlaybackOpt.Location = new System.Drawing.Point(8, 21);
-            this.cb_afterPlaybackOpt.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_afterPlaybackOpt.Margin = new System.Windows.Forms.Padding(4);
             this.cb_afterPlaybackOpt.Name = "cb_afterPlaybackOpt";
             this.cb_afterPlaybackOpt.Size = new System.Drawing.Size(265, 23);
             this.cb_afterPlaybackOpt.TabIndex = 14;
@@ -220,9 +221,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.groupBox3.Controls.Add(this.cb_onStartup);
             this.groupBox3.Location = new System.Drawing.Point(8, 22);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox3.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox3.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox3.Size = new System.Drawing.Size(283, 53);
             this.groupBox3.TabIndex = 9;
             this.groupBox3.TabStop = false;
@@ -232,7 +233,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.cb_onStartup.AutoSize = true;
             this.cb_onStartup.Location = new System.Drawing.Point(8, 23);
-            this.cb_onStartup.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_onStartup.Margin = new System.Windows.Forms.Padding(4);
             this.cb_onStartup.Name = "cb_onStartup";
             this.cb_onStartup.Size = new System.Drawing.Size(97, 21);
             this.cb_onStartup.TabIndex = 10;
@@ -247,7 +248,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Location = new System.Drawing.Point(-12, -2);
-            this.panel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(632, 57);
             this.panel1.TabIndex = 7;
@@ -277,6 +278,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             // groupBox5
             // 
+            this.groupBox5.Controls.Add(this.cb_snapLocation);
             this.groupBox5.Controls.Add(this.groupBox7);
             this.groupBox5.Controls.Add(this.groupBox1);
             this.groupBox5.Controls.Add(this.cb_showToolTips);
@@ -286,10 +288,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox5.Controls.Add(this.cb_snapWithPlayer);
             this.groupBox5.Controls.Add(this.cb_showPlaylistOnStartup);
             this.groupBox5.Location = new System.Drawing.Point(9, 188);
-            this.groupBox5.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox5.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.groupBox5.Size = new System.Drawing.Size(273, 215);
+            this.groupBox5.Padding = new System.Windows.Forms.Padding(4);
+            this.groupBox5.Size = new System.Drawing.Size(273, 237);
             this.groupBox5.TabIndex = 0;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Interface";
@@ -297,10 +299,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             // groupBox7
             // 
             this.groupBox7.Controls.Add(this.cb_iconScale);
-            this.groupBox7.Location = new System.Drawing.Point(9, 145);
-            this.groupBox7.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox7.Location = new System.Drawing.Point(9, 168);
+            this.groupBox7.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox7.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox7.Size = new System.Drawing.Size(100, 60);
             this.groupBox7.TabIndex = 19;
             this.groupBox7.TabStop = false;
@@ -317,7 +319,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             "175%",
             "200%"});
             this.cb_iconScale.Location = new System.Drawing.Point(8, 22);
-            this.cb_iconScale.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_iconScale.Margin = new System.Windows.Forms.Padding(4);
             this.cb_iconScale.Name = "cb_iconScale";
             this.cb_iconScale.Size = new System.Drawing.Size(83, 24);
             this.cb_iconScale.TabIndex = 18;
@@ -325,10 +327,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.cb_theme);
-            this.groupBox1.Location = new System.Drawing.Point(116, 145);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox1.Location = new System.Drawing.Point(116, 168);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox1.Size = new System.Drawing.Size(149, 60);
             this.groupBox1.TabIndex = 18;
             this.groupBox1.TabStop = false;
@@ -339,7 +341,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_theme.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cb_theme.FormattingEnabled = true;
             this.cb_theme.Location = new System.Drawing.Point(8, 22);
-            this.cb_theme.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_theme.Margin = new System.Windows.Forms.Padding(4);
             this.cb_theme.Name = "cb_theme";
             this.cb_theme.Size = new System.Drawing.Size(133, 24);
             this.cb_theme.TabIndex = 18;
@@ -350,7 +352,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_showToolTips.Checked = true;
             this.cb_showToolTips.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cb_showToolTips.Location = new System.Drawing.Point(9, 94);
-            this.cb_showToolTips.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_showToolTips.Margin = new System.Windows.Forms.Padding(4);
             this.cb_showToolTips.Name = "cb_showToolTips";
             this.cb_showToolTips.Size = new System.Drawing.Size(113, 21);
             this.cb_showToolTips.TabIndex = 6;
@@ -360,8 +362,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             // cb_staySnapped
             // 
             this.cb_staySnapped.AutoSize = true;
-            this.cb_staySnapped.Location = new System.Drawing.Point(151, 117);
-            this.cb_staySnapped.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_staySnapped.Location = new System.Drawing.Point(9, 139);
+            this.cb_staySnapped.Margin = new System.Windows.Forms.Padding(4);
             this.cb_staySnapped.Name = "cb_staySnapped";
             this.cb_staySnapped.Size = new System.Drawing.Size(117, 21);
             this.cb_staySnapped.TabIndex = 5;
@@ -372,7 +374,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.cb_scaleWithPlayer.AutoSize = true;
             this.cb_scaleWithPlayer.Location = new System.Drawing.Point(9, 47);
-            this.cb_scaleWithPlayer.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_scaleWithPlayer.Margin = new System.Windows.Forms.Padding(4);
             this.cb_scaleWithPlayer.Name = "cb_scaleWithPlayer";
             this.cb_scaleWithPlayer.Size = new System.Drawing.Size(136, 21);
             this.cb_scaleWithPlayer.TabIndex = 4;
@@ -383,7 +385,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.cb_lockWindowSize.AutoSize = true;
             this.cb_lockWindowSize.Location = new System.Drawing.Point(9, 23);
-            this.cb_lockWindowSize.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_lockWindowSize.Margin = new System.Windows.Forms.Padding(4);
             this.cb_lockWindowSize.Name = "cb_lockWindowSize";
             this.cb_lockWindowSize.Size = new System.Drawing.Size(138, 21);
             this.cb_lockWindowSize.TabIndex = 3;
@@ -396,7 +398,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.cb_snapWithPlayer.Checked = true;
             this.cb_snapWithPlayer.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cb_snapWithPlayer.Location = new System.Drawing.Point(9, 117);
-            this.cb_snapWithPlayer.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_snapWithPlayer.Margin = new System.Windows.Forms.Padding(4);
             this.cb_snapWithPlayer.Name = "cb_snapWithPlayer";
             this.cb_snapWithPlayer.Size = new System.Drawing.Size(134, 21);
             this.cb_snapWithPlayer.TabIndex = 2;
@@ -411,9 +413,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.groupBox6.Controls.Add(this.cb_rememberPlaylist);
             this.groupBox6.Controls.Add(this.cb_rememberWindowPosition);
             this.groupBox6.Location = new System.Drawing.Point(9, 63);
-            this.groupBox6.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox6.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox6.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox6.Size = new System.Drawing.Size(273, 116);
             this.groupBox6.TabIndex = 4;
             this.groupBox6.TabStop = false;
@@ -423,7 +425,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.cb_rememberColumns.AutoSize = true;
             this.cb_rememberColumns.Location = new System.Drawing.Point(9, 20);
-            this.cb_rememberColumns.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_rememberColumns.Margin = new System.Windows.Forms.Padding(4);
             this.cb_rememberColumns.Name = "cb_rememberColumns";
             this.cb_rememberColumns.Size = new System.Drawing.Size(155, 21);
             this.cb_rememberColumns.TabIndex = 8;
@@ -434,7 +436,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             // 
             this.cb_rememberWindowSize.AutoSize = true;
             this.cb_rememberWindowSize.Location = new System.Drawing.Point(9, 89);
-            this.cb_rememberWindowSize.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cb_rememberWindowSize.Margin = new System.Windows.Forms.Padding(4);
             this.cb_rememberWindowSize.Name = "cb_rememberWindowSize";
             this.cb_rememberWindowSize.Size = new System.Drawing.Size(177, 21);
             this.cb_rememberWindowSize.TabIndex = 7;
@@ -444,8 +446,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             // btn_configRegex
             // 
             this.btn_configRegex.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.btn_configRegex.Location = new System.Drawing.Point(295, 377);
-            this.btn_configRegex.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_configRegex.Location = new System.Drawing.Point(295, 397);
+            this.btn_configRegex.Margin = new System.Windows.Forms.Padding(4);
             this.btn_configRegex.Name = "btn_configRegex";
             this.btn_configRegex.Size = new System.Drawing.Size(100, 28);
             this.btn_configRegex.TabIndex = 17;
@@ -453,13 +455,29 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.btn_configRegex.UseVisualStyleBackColor = false;
             this.btn_configRegex.Click += new System.EventHandler(this.btn_configRegex_Clicked);
             // 
+            // cb_snapLocation
+            // 
+            this.cb_snapLocation.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_snapLocation.FormattingEnabled = true;
+            this.cb_snapLocation.Items.AddRange(new object[] {
+            "Left",
+            "Right",
+            "Top",
+            "Bottom"});
+            this.cb_snapLocation.Location = new System.Drawing.Point(151, 115);
+            this.cb_snapLocation.Margin = new System.Windows.Forms.Padding(4);
+            this.cb_snapLocation.MaxDropDownItems = 4;
+            this.cb_snapLocation.Name = "cb_snapLocation";
+            this.cb_snapLocation.Size = new System.Drawing.Size(80, 24);
+            this.cb_snapLocation.TabIndex = 19;
+            // 
             // PlaylistConfigDialog
             // 
             this.AcceptButton = this.btn_save;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.ClientSize = new System.Drawing.Size(608, 415);
+            this.ClientSize = new System.Drawing.Size(608, 434);
             this.Controls.Add(this.btn_configRegex);
             this.Controls.Add(this.groupBox6);
             this.Controls.Add(this.groupBox5);
@@ -468,7 +486,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.Controls.Add(this.btn_cancel);
             this.Controls.Add(this.btn_save);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "PlaylistConfigDialog";
@@ -523,5 +541,6 @@ namespace Mpdn.Extensions.PlayerExtensions
         private ComboBox cb_theme;
         private GroupBox groupBox7;
         private ComboBox cb_iconScale;
+        private ComboBox cb_snapLocation;
     }
 }

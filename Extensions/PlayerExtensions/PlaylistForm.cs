@@ -141,6 +141,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public bool RememberWindowSize { get; set; }
         public bool ShowToolTips { get; set; }
         public bool SnapWithPlayer { get; set; }
+        public SnapLocation SnapLocation { get; set; }
         public bool KeepSnapped { get; set; }
         public bool LockWindowSize { get; set; }
         public bool BeginPlaybackOnStartup { get; set; }
@@ -315,14 +316,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     {
                         Width = mpdnBounds.Width;
                     }
-                    else Width = Player.ActiveForm.Width;
+                    else
+                    {
+                        if (SnapLocation == SnapLocation.Top || SnapLocation == SnapLocation.Bottom) Width = Player.ActiveForm.Width;
+                    }
 
                     if (LockWindowSize)
                     {
                         Width = Width - borderWidth;
                         Height = height - (borderWidth * 2);
                     }
-                    else Height = height;
+                    else
+                    {
+                        if (SnapLocation == SnapLocation.Left || SnapLocation == SnapLocation.Right) Height = Player.ActiveForm.Height;
+                    }
                 }
             }
 
@@ -799,7 +806,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 var item = Playlist[m_CurrentPlayIndex];
                 dgv_PlayList.CurrentCell = dgv_PlayList.Rows[m_CurrentPlayIndex].Cells[m_TitleCellIndex];
 
-                if (File.Exists(item.FilePath))
+                if (File.Exists(item.FilePath) || isValidUrl(item.FilePath))
                 {
                     Media.Open(item.FilePath, !queue);
                     SetPlayStyling();
@@ -926,10 +933,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void AddClipboardToPlaylist()
         {
             var files = Clipboard.GetText().Replace("\r", string.Empty).Split('\n').ToList();
-            files.RemoveAll(f => !File.Exists(f));
+            AddFiles(files.Where(s => (isValidUrl(s)) || (File.Exists(s))).ToArray());
+        }
 
-            if (files.Count < 1) return;
-            AddFiles(files.ToArray());
+        private void AddUrlToPlaylist()
+        {
+            var input = new InputDialog()
+            {
+                WindowTitle = "Add url to Playlist",
+                MainInstruction = "Enter the url you'd like to add to the playlist"
+            };
+
+            var result = input.ShowDialog();
+            if (result == DialogResult.Cancel) return;
+
+            if (isValidUrl(input.Input)) AddFiles(new string[] { input.Input });
         }
 
         public void OpenFiles(string[] fileNames)
@@ -968,10 +986,23 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             ClearPlaylist();
 
             var files = Clipboard.GetText().Replace("\r", string.Empty).Split('\n').ToList();
-            files.RemoveAll(f => !File.Exists(f));
+            OpenFiles(files.Where(s => (isValidUrl(s)) || (File.Exists(s))).ToArray());
+        }
 
-            if (files.Count < 1) return;
-            OpenFiles(files.ToArray());
+        private void OpenUrl()
+        {
+            ClearPlaylist();
+
+            var input = new InputDialog()
+            {
+                WindowTitle = "Open and add url to Playlist",
+                MainInstruction = "Enter the url you'd like to open and add to the playlist"
+            };
+
+            var result = input.ShowDialog();
+            if (result == DialogResult.Cancel) return;
+
+            if (isValidUrl(input.Input)) OpenFiles(new string[] { input.Input });
         }
 
         public void RemoveFile(int index)
@@ -1041,7 +1072,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (Playlist.Count <= 0) return;
                 if (dgv_PlayList.CurrentRow != null) m_SelectedRowIndex = dgv_PlayList.CurrentRow.Index;
 
-                Playlist.RemoveAll(p => !File.Exists(p.FilePath));
+                Playlist.RemoveAll(p => !File.Exists(p.FilePath) && !isValidUrl(p.FilePath));
 
                 PopulatePlaylist();
             }
@@ -1604,6 +1635,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #region Helper Methods
 
+        private bool isValidUrl(string url)
+        {
+            Uri uriResult;
+            return Uri.TryCreate(url, UriKind.Absolute, out uriResult)
+                          && (uriResult.Scheme == Uri.UriSchemeHttp
+                              || uriResult.Scheme == Uri.UriSchemeHttps);
+        }
+
         private float GetDpi()
         {
             var g = Graphics.FromHwnd(IntPtr.Zero);
@@ -1622,7 +1661,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             foreach (DataGridViewRow r in dgv_PlayList.Rows)
             {
-                if (File.Exists(Playlist[r.Index].FilePath))
+                if (File.Exists(Playlist[r.Index].FilePath) || isValidUrl(Playlist[r.Index].FilePath))
                 {
                     if (AfterPlaybackAction == AfterPlaybackSettingsAction.GreyOutFile &&
                         Playlist[r.Index].PlayCount > 0 && r.Index != m_CurrentPlayIndex)
@@ -1742,6 +1781,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (dgv_PlayList.SelectedRows.Count > 0)
             {
+                if (!File.Exists(Playlist[dgv_PlayList.SelectedRows[0].Index].FilePath)) return;
                 openFileDialog.InitialDirectory =
                     Path.GetDirectoryName(Playlist[dgv_PlayList.SelectedRows[0].Index].FilePath);
             }
@@ -1762,7 +1802,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
             if (string.IsNullOrEmpty(Media.FilePath)) return;
-            if (!File.Exists(Media.FilePath))
+            if (!File.Exists(Media.FilePath) && !isValidUrl(Media.FilePath))
             {
                 m_CurrentPlayIndex = -1;
                 Text = "Playlist";
@@ -2192,6 +2232,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             dgv_PlayList.Focus();
         }
 
+        private void ButtonAddUrlClick(object sender, EventArgs e)
+        {
+            AddUrlToPlaylist();
+            dgv_PlayList.Focus();
+        }
+
         private void ButtonOpenFilesClick(object sender, EventArgs e)
         {
             if (openFileDialog.ShowDialog(this) != DialogResult.OK) return;
@@ -2213,6 +2259,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void ButtonOpenFromClipboardClick(object sender, EventArgs e)
         {
             OpenClipboard();
+            dgv_PlayList.Focus();
+        }
+
+        private void ButtonOpenUrlClick(object sender, EventArgs e)
+        {
+            OpenUrl();
             dgv_PlayList.Focus();
         }
 
@@ -2388,6 +2440,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 for (var i = 0; i < Playlist.Count; i++)
                 {
                     var item = Playlist[i];
+                    if (!File.Exists(item.FilePath)) continue;
                     if (!string.IsNullOrEmpty(item.Duration)) continue;
                     var media = new MediaFile(item.FilePath);
                     var time = TimeSpan.FromMilliseconds(media.duration);
