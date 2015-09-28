@@ -151,13 +151,13 @@ namespace Mpdn.Extensions.PlayerExtensions
         }
 
 
-        private void UpdateTimerTick(object sender, EventArgs eventArgs)
+        private static void UpdateTimerTick(object sender, EventArgs eventArgs)
         {
             if (Player.State == PlayerState.Closed || Player.State == PlayerState.Stopped)
                 return;
 
             var duration = Math.Max(1, Media.Duration);
-            Taskbar.SetProgressValue((int) (Media.Position*1000/duration), 1000);
+            Taskbar.SetProgressValue((int) Math.Min(1000, Media.Position*1000/duration), 1000);
         }
 
         private static TaskbarManager Taskbar
