@@ -29,8 +29,9 @@ namespace Mpdn.Extensions.AudioScripts
             private const double MAX_PERCENT_ADJUST = 3; // automatically reclock if the difference is less than 3%
             private const double SANEAR_OVERSHOOT = 15;
             private const double DIRECTSOUND_OVERSHOOT = 10;
-            private const double MAX_SWING = 0.0005;
-            private const int RATIO_ADJUST_INTERVAL = 64*1024;
+            private const double MAX_SWING = 0.00025;
+            private const int RATIO_ADJUST_INTERVAL = 16*1024;
+            private const int ACTIVATION_LATENCY = 1024*1024;
 
             private static readonly Guid s_SanearSoundClsId = new Guid("DF557071-C9FD-433A-9627-81E0D3640ED9");
             private static readonly Guid s_DirectSoundClsId = new Guid("79376820-07D0-11CF-A24D-0020AFD79767");
@@ -39,7 +40,7 @@ namespace Mpdn.Extensions.AudioScripts
             private bool m_Sanear;
             private bool m_DirectSoundWaveOut;
 
-            private int m_SampleIndex = -1;
+            private int m_SampleIndex = -ACTIVATION_LATENCY;
             private double m_Ratio;
 
             public override ExtensionUiDescriptor Descriptor
@@ -57,6 +58,19 @@ namespace Mpdn.Extensions.AudioScripts
 
             public override bool Process(AudioParam input, AudioParam output)
             {
+                if (!CalculateRatio(input)) 
+                    return false;
+
+                // Passthrough from input to output
+                AudioHelpers.CopySample(input.Sample, output.Sample, true);
+
+                PerformReclock(output);
+
+                return true;
+            }
+
+            private bool CalculateRatio(AudioParam input)
+            {
                 if (!CompatibleAudioRenderer)
                     return false;
 
@@ -64,32 +78,39 @@ namespace Mpdn.Extensions.AudioScripts
                 if (stats == null)
                     return false;
 
-                if (stats.ActualSourceVideoIntervalUsec < 1e-8)
+                var videoInterval = Media.VideoInfo.AvgTimePerFrame;
+                if (videoInterval < 1e-8)
                     return false; // audio only - no need to reclock
 
                 const int oneSecond = 1000000;
-                var videoHz = oneSecond/stats.ActualSourceVideoIntervalUsec;
+                var videoHz = oneSecond/videoInterval;
                 var displayHz = oneSecond/stats.DisplayRefreshIntervalUsec;
                 var ratio = displayHz/videoHz;
                 if (ratio > (100 + MAX_PERCENT_ADJUST)/100 || ratio < (100 - MAX_PERCENT_ADJUST)/100)
                     return false;
 
-                if (m_SampleIndex < 0)
+                if (m_SampleIndex == -ACTIVATION_LATENCY)
                 {
                     m_Ratio = ratio;
                 }
 
                 var format = input.Format;
-                var bytesPerSample = format.wBitsPerSample / 8;
-                var length = input.Sample.GetActualDataLength() / bytesPerSample;
+                var bytesPerSample = format.wBitsPerSample/8;
+                var length = input.Sample.GetActualDataLength()/bytesPerSample;
                 m_SampleIndex += length;
+
+                var refclk = stats.RefClockDeviation;
+                var hasRefClk = refclk > -10 && refclk < 10;
+                if (hasRefClk && m_SampleIndex < 0)
+                {
+                    m_SampleIndex = 0;
+                }
 
                 if (m_SampleIndex > RATIO_ADJUST_INTERVAL)
                 {
                     m_SampleIndex = 0;
 
-                    var refclk = stats.RefClockDeviation;
-                    if (refclk > -10 && refclk < 10)
+                    if (hasRefClk)
                     {
                         // Fine tune further when we have refclk stats
                         var actualVideoHz = videoHz*(1 + refclk);
@@ -107,12 +128,7 @@ namespace Mpdn.Extensions.AudioScripts
                     m_Ratio = ratio;
                 }
 
-                // Passthrough from input to output
-                AudioHelpers.CopySample(input.Sample, output.Sample, true);
-
-                PerformReclock(output);
-
-                return true;
+                return m_SampleIndex >= 0;
             }
 
             private void PerformReclock(AudioParam output)
@@ -133,7 +149,7 @@ namespace Mpdn.Extensions.AudioScripts
             {
                 m_Sanear = false;
                 m_DirectSoundWaveOut = false;
-                m_SampleIndex = -1;
+                m_SampleIndex = -ACTIVATION_LATENCY;
                 m_Ratio = 0;
             }
 
@@ -162,7 +178,7 @@ namespace Mpdn.Extensions.AudioScripts
 
             public override void OnNewSegment(long startTime, long endTime, double rate)
             {
-                m_SampleIndex = -1;
+                m_SampleIndex = -ACTIVATION_LATENCY;
             }
 
             protected override void Process(float[,] samples, short channels, int sampleCount)

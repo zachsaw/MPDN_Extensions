@@ -135,6 +135,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                     {
                         device.cb = Marshal.SizeOf(device);
                         EnumDisplayDevices(device.DeviceName, 0, ref device, 0);
+                        if (string.IsNullOrWhiteSpace(device.DeviceName))
+                            continue; // no monitor attached (VGA display)
                         result.Add(new Display(device));
                     }
                     device.cb = Marshal.SizeOf(device);
