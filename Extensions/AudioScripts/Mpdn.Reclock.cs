@@ -31,7 +31,7 @@ namespace Mpdn.Extensions.AudioScripts
             private const double DIRECTSOUND_OVERSHOOT = 10;
             private const double MAX_SWING = 0.00025;
             private const int RATIO_ADJUST_INTERVAL = 16*1024;
-            private const int ACTIVATION_LATENCY = 1024*1024;
+            private const int ACTIVATION_LATENCY = 16*1024*1024;
 
             private static readonly Guid s_SanearSoundClsId = new Guid("DF557071-C9FD-433A-9627-81E0D3640ED9");
             private static readonly Guid s_DirectSoundClsId = new Guid("79376820-07D0-11CF-A24D-0020AFD79767");
