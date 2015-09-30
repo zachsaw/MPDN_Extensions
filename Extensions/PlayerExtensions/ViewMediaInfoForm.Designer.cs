@@ -70,6 +70,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Media Info";
+            this.Shown += new System.EventHandler(this.ViewMediaInfoFormShown);
             this.ResumeLayout(false);
 
         }

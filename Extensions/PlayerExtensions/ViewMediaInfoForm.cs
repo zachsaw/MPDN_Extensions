@@ -169,5 +169,17 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             if (e.KeyData == Keys.Escape) Close();
         }
+
+        private void ViewMediaInfoFormShown(object sender, System.EventArgs e)
+        {
+            // Workaround media info form going behind player when it's set to TopMost
+            // For some reason, using the web browser can cause this buggy behavior
+
+            var form = Gui.VideoBox.FindForm();
+            if (form == null)
+                return;
+
+            TopMost = form.TopMost;
+        }
     }
 }

@@ -1074,7 +1074,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 string media = Playlist[r.Index].FilePath;
                 if (!File.Exists(media)) continue;
                 var mediaInfo = new ViewMediaInfoForm(media);
-                mediaInfo.Show();
+                mediaInfo.ShowDialog(Gui.VideoBox);
             }
         }
 
