@@ -16,7 +16,6 @@
 // 
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using DirectShowLib;
 using Mpdn.Extensions.Framework;
@@ -82,13 +81,6 @@ namespace Mpdn.Extensions.AudioScripts
                 if (videoInterval < 1e-8)
                     return false; // audio only - no need to reclock
 
-                const int oneSecond = 1000000;
-                var videoHz = oneSecond/videoInterval;
-                var displayHz = oneSecond/stats.DisplayRefreshIntervalUsec;
-                var ratio = displayHz/videoHz;
-                if (ratio > (100 + MAX_PERCENT_ADJUST)/100 || ratio < (100 - MAX_PERCENT_ADJUST)/100)
-                    return false;
-
                 var refclk = stats.RefClockDeviation;
                 var hasRefClk = refclk > -10 && refclk < 10;
                 if (!hasRefClk)
@@ -97,6 +89,19 @@ namespace Mpdn.Extensions.AudioScripts
                     return false;
                 }
 
+                const int oneSecond = 1000000;
+                var videoHz = oneSecond/videoInterval;
+                var displayHz = oneSecond/stats.DisplayRefreshIntervalUsec;
+                var ratio = displayHz/videoHz;
+                if (ratio > (100 + MAX_PERCENT_ADJUST)/100 || ratio < (100 - MAX_PERCENT_ADJUST)/100)
+                    return false;
+
+                CalculateRatio(input, ratio, refclk, videoHz, displayHz);
+                return true;
+            }
+
+            private void CalculateRatio(AudioParam input, double ratio, double refclk, double videoHz, double displayHz)
+            {
                 if (m_SampleIndex == -1)
                 {
                     m_Ratio = ratio;
@@ -108,7 +113,7 @@ namespace Mpdn.Extensions.AudioScripts
                 m_SampleIndex += length;
 
                 if (m_SampleIndex < RATIO_ADJUST_INTERVAL)
-                    return true;
+                    return;
 
                 m_SampleIndex = 0;
 
@@ -125,8 +130,6 @@ namespace Mpdn.Extensions.AudioScripts
                 // DSound on the other hand doesn't
 
                 m_Ratio = ratio;
-
-                return true;
             }
 
             private void PerformReclock(AudioParam output)
