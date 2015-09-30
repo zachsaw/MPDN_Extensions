@@ -89,15 +89,18 @@ namespace Mpdn.Extensions.AudioScripts
                 if (ratio > (100 + MAX_PERCENT_ADJUST)/100 || ratio < (100 - MAX_PERCENT_ADJUST)/100)
                     return false;
 
+                var refclk = stats.RefClockDeviation;
+                var hasRefClk = refclk > -10 && refclk < 10;
+                if (!hasRefClk)
+                {
+                    m_SampleIndex = -1;
+                    return false;
+                }
+
                 if (m_SampleIndex == -1)
                 {
                     m_Ratio = ratio;
                 }
-
-                var refclk = stats.RefClockDeviation;
-                var hasRefClk = refclk > -10 && refclk < 10;
-                if (!hasRefClk)
-                    return false;
 
                 var format = input.Format;
                 var bytesPerSample = format.wBitsPerSample/8;
