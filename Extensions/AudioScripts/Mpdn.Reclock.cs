@@ -177,11 +177,6 @@ namespace Mpdn.Extensions.AudioScripts
                 });
             }
 
-            public override void OnNewSegment(long startTime, long endTime, double rate)
-            {
-//                m_SampleIndex = -ACTIVATION_LATENCY;
-            }
-
             protected override void Process(float[,] samples, short channels, int sampleCount)
             {
                 throw new InvalidOperationException();
