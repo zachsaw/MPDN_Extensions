@@ -34,6 +34,8 @@ using System.Windows.Forms.Design;
 using MediaInfoDotNet;
 using Mpdn.Extensions.Framework;
 using Ookii.Dialogs;
+using System.Net;
+using System.Web;
 
 namespace Mpdn.Extensions.PlayerExtensions.Playlist
 {
@@ -856,7 +858,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 var item = Playlist[m_CurrentPlayIndex];
                 dgv_PlayList.CurrentCell = dgv_PlayList.Rows[m_CurrentPlayIndex].Cells[m_TitleCellIndex];
 
-                if (File.Exists(item.FilePath) || isValidUrl(item.FilePath))
+                if (File.Exists(item.FilePath) || IsValidUrl(item.FilePath))
                 {
                     Media.Open(item.FilePath, !queue);
                     SetPlayStyling();
@@ -875,8 +877,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 item.Active = true;
                 CurrentItem = item;
                 m_PreviousChapterPosition = 0;
-
-                if (!queue) Text = Player.State + " ─ " + CurrentItem.FilePath;
 
                 ParseChapterInput();
             }
@@ -932,8 +932,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             CurrentItem = item;
             PopulatePlaylist();
 
-            Text = Player.State + " ─ " + CurrentItem.FilePath;
-
             if (!Duration.Visible) return;
             Task.Factory.StartNew(GetCurrentMediaDuration);
         }
@@ -982,8 +980,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void AddClipboardToPlaylist()
         {
-            var files = Clipboard.GetText().Replace("\r", string.Empty).Split('\n').ToList();
-            AddFiles(files.Where(s => (isValidUrl(s)) || (File.Exists(s))).ToArray());
+            var files = Clipboard.GetText().Replace("\r", string.Empty).Split('\n').Where(s => (IsValidUrl(s)) || (File.Exists(s))).ToArray();
+            if (files.Length == 0) return;
+            AddFiles(files);
         }
 
         private void AddUrlToPlaylist()
@@ -997,7 +996,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             var result = input.ShowDialog();
             if (result == DialogResult.Cancel) return;
 
-            if (isValidUrl(input.Input)) AddFiles(new string[] { input.Input });
+            if (IsValidUrl(input.Input)) AddFiles(new string[] { input.Input });
         }
 
         public void OpenFiles(string[] fileNames)
@@ -1033,16 +1032,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OpenClipboard()
         {
-            ClearPlaylist();
+            var files = Clipboard.GetText().Replace("\r", string.Empty).Split('\n').Where(s => (IsValidUrl(s)) || (File.Exists(s))).ToArray();
+            if (files.Length == 0) return;
 
-            var files = Clipboard.GetText().Replace("\r", string.Empty).Split('\n').ToList();
-            OpenFiles(files.Where(s => (isValidUrl(s)) || (File.Exists(s))).ToArray());
+            ClearPlaylist();
+            OpenFiles(files);
         }
 
         private void OpenUrl()
         {
-            ClearPlaylist();
-
             var input = new InputDialog()
             {
                 WindowTitle = "Open and add URL to Playlist",
@@ -1052,7 +1050,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             var result = input.ShowDialog();
             if (result == DialogResult.Cancel) return;
 
-            if (isValidUrl(input.Input)) OpenFiles(new string[] { input.Input });
+            ClearPlaylist();
+            if (IsValidUrl(input.Input)) OpenFiles(new string[] { input.Input });
         }
 
         public void RemoveFile(int index)
@@ -1122,7 +1121,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (Playlist.Count <= 0) return;
                 if (dgv_PlayList.CurrentRow != null) m_SelectedRowIndex = dgv_PlayList.CurrentRow.Index;
 
-                Playlist.RemoveAll(p => !File.Exists(p.FilePath) && !isValidUrl(p.FilePath));
+                Playlist.RemoveAll(p => !File.Exists(p.FilePath) && !IsValidUrl(p.FilePath));
 
                 PopulatePlaylist();
             }
@@ -1685,7 +1684,24 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #region Helper Methods
 
-        private bool isValidUrl(string url)
+        private string FetchTitleFromUrl(string url)
+        {
+            try
+            {
+                if (!IsValidUrl(url)) return string.Empty;
+
+                string regex = @"(?<=<title.*>)([\s\S]*)(?=</title>)";
+
+                var client = new WebClient();
+                string page = client.DownloadString(url);
+
+                return HttpUtility.HtmlDecode(Regex.Match(page, regex).Value).Trim();
+            }
+            catch (WebException) { return null; }
+            catch (Exception) { return null; }
+        }
+
+        private bool IsValidUrl(string url)
         {
             Uri uriResult;
             return Uri.TryCreate(url, UriKind.Absolute, out uriResult)
@@ -1711,7 +1727,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             foreach (DataGridViewRow r in dgv_PlayList.Rows)
             {
-                if (File.Exists(Playlist[r.Index].FilePath) || isValidUrl(Playlist[r.Index].FilePath))
+                if (File.Exists(Playlist[r.Index].FilePath) || IsValidUrl(Playlist[r.Index].FilePath))
                 {
                     if (AfterPlaybackAction == AfterPlaybackSettingsAction.GreyOutFile &&
                         Playlist[r.Index].PlayCount > 0 && r.Index != m_CurrentPlayIndex)
@@ -1852,7 +1868,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
             if (string.IsNullOrEmpty(Media.FilePath)) return;
-            if (!File.Exists(Media.FilePath) && !isValidUrl(Media.FilePath))
+            if (!File.Exists(Media.FilePath) && !IsValidUrl(Media.FilePath))
             {
                 m_CurrentPlayIndex = -1;
                 Text = "Playlist";
@@ -1861,7 +1877,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
 
             if (CurrentItem == null) return;
-            Text = Player.State + " - " + CurrentItem.FilePath;
+
+            if (IsValidUrl(CurrentItem.FilePath))
+            {
+                string title = FetchTitleFromUrl(CurrentItem.FilePath);
+                Text = Player.State + " - " + title;
+                dgv_PlayList.CurrentRow.Cells[m_TitleCellIndex].Value = title;
+            }
+            else Text = Player.State + " - " + CurrentItem.FilePath;
 
             HandleContextMenu();
 
