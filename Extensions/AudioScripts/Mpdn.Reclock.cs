@@ -27,10 +27,10 @@ namespace Mpdn.Extensions.AudioScripts
         public class Reclock : Framework.AudioScript
         {
             private const double MAX_PERCENT_ADJUST = 3; // automatically reclock if the difference is less than 3%
-            private const double SANEAR_OVERSHOOT = 15;
-            private const double DIRECTSOUND_OVERSHOOT = 10;
-            private const double MAX_SWING = 0.00025;
-            private const int RATIO_ADJUST_INTERVAL = 16*1024;
+            private const double SANEAR_OVERSHOOT = 13;
+            private const double DIRECTSOUND_OVERSHOOT = 8;
+            private const double MAX_SWING = 0.0001;
+            private const int RATIO_ADJUST_INTERVAL = 64*1024;
             
             private static readonly Guid s_SanearSoundClsId = new Guid("DF557071-C9FD-433A-9627-81E0D3640ED9");
             private static readonly Guid s_DirectSoundClsId = new Guid("79376820-07D0-11CF-A24D-0020AFD79767");
@@ -39,8 +39,8 @@ namespace Mpdn.Extensions.AudioScripts
             private bool m_Sanear;
             private bool m_DirectSoundWaveOut;
 
-            private int m_SampleIndex = -1;
-            private double m_Ratio;
+            private int m_SampleIndex = -4*RATIO_ADJUST_INTERVAL;
+            private double m_Ratio = 1;
 
             public override ExtensionUiDescriptor Descriptor
             {
@@ -57,8 +57,12 @@ namespace Mpdn.Extensions.AudioScripts
 
             public override bool Process(AudioParam input, AudioParam output)
             {
-                if (!CalculateRatio(input)) 
+                if (!CalculateRatio(input))
+                {
+                    m_SampleIndex = -4*RATIO_ADJUST_INTERVAL;
+                    m_Ratio = 1;
                     return false;
+                }
 
                 // Passthrough from input to output
                 AudioHelpers.CopySample(input.Sample, output.Sample, true);
@@ -84,10 +88,7 @@ namespace Mpdn.Extensions.AudioScripts
                 var refclk = stats.RefClockDeviation;
                 var hasRefClk = refclk > -10 && refclk < 10;
                 if (!hasRefClk)
-                {
-                    m_SampleIndex = -1;
                     return false;
-                }
 
                 const int oneSecond = 1000000;
                 var videoHz = oneSecond/videoInterval;
@@ -102,11 +103,6 @@ namespace Mpdn.Extensions.AudioScripts
 
             private void CalculateRatio(AudioParam input, double ratio, double refclk, double videoHz, double displayHz)
             {
-                if (m_SampleIndex == -1)
-                {
-                    m_Ratio = ratio;
-                }
-
                 var format = input.Format;
                 var bytesPerSample = format.wBitsPerSample/8;
                 var length = input.Sample.GetActualDataLength()/bytesPerSample;
@@ -150,8 +146,8 @@ namespace Mpdn.Extensions.AudioScripts
             {
                 m_Sanear = false;
                 m_DirectSoundWaveOut = false;
-                m_SampleIndex = -1;
-                m_Ratio = 0;
+                m_SampleIndex = -4*RATIO_ADJUST_INTERVAL;
+                m_Ratio = 1;
             }
 
             public override void OnGetMediaType(WaveFormatExtensible format)
