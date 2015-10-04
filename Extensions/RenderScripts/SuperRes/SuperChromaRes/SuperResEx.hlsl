@@ -85,7 +85,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     diff /= weightSum;
 
     // Apply force
-    c0.yz -= strength*diff;
+    c0.yz -= strength*diff.yz;
     
     return c0;
 }
