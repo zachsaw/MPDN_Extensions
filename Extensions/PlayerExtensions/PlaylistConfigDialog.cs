@@ -51,6 +51,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             cb_showToolTips.Checked = Settings.ShowToolTips;
             cb_scaleWithPlayer.Checked = Settings.ScaleWithPlayer;
             cb_snapWithPlayer.Checked = Settings.SnapWithPlayer;
+            cb_snapLocation.SelectedIndex = (int)Settings.SnapLocation;
             cb_staySnapped.Checked = Settings.StaySnapped;
             cb_rememberColumns.Checked = Settings.RememberColumns;
             cb_rememberWindowPosition.Checked = Settings.RememberWindowPosition;
@@ -70,6 +71,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.ShowToolTips = cb_showToolTips.Checked;
             Settings.ScaleWithPlayer = cb_scaleWithPlayer.Checked;
             Settings.SnapWithPlayer = cb_snapWithPlayer.Checked;
+            Settings.SnapLocation = (SnapLocation)cb_snapLocation.SelectedIndex;
             Settings.StaySnapped = cb_staySnapped.Checked;
             Settings.RememberColumns = cb_rememberColumns.Checked;
             Settings.RememberWindowPosition = cb_rememberWindowPosition.Checked;

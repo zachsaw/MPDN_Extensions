@@ -7,6 +7,9 @@ greyOutColor: 255, 100, 100, 100
 playFontColor: 255, 255, 255, 255
 playColor: 255, 42, 127, 183
 statusHighlightColor: 255, 216, 216, 216
+dataGridColor: 255, 255, 255, 255
 
 #Controls
 columnHeaderTransparency: false
+
+backgroundImageLayout: zoom
