@@ -78,7 +78,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Status = m_Tag.CreateString();
         }
 
-        public void Render()
+        public bool Execute()
         {
             if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
                 TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
@@ -90,6 +90,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
             m_Filter.Reset();
             TexturePool.FlushTextures();
+
+            return true;
         }
 
         private IResizeableFilter MakeInitialFilter()

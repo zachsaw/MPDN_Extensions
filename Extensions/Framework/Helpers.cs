@@ -489,7 +489,7 @@ namespace Mpdn.Extensions.Framework
     {
         public static int InterfaceVersion
         {
-            get { return 7; }
+            get { return 8; }
         }
 
         public static IList<Assembly> Assemblies
@@ -502,7 +502,7 @@ namespace Mpdn.Extensions.Framework
             get { return PlayerControl.RenderScripts; }
         }
 
-        public static IList<IAudioScript> AudioScripts
+        public static IList<IAudioScriptUi> AudioScripts
         {
             get { return PlayerControl.AudioScripts; }
         }
@@ -934,6 +934,16 @@ namespace Mpdn.Extensions.Framework
         {
             add { PlayerControl.MediaLoading += value; }
             remove { PlayerControl.MediaLoading -= value; }
+        }
+
+        public static IMedia Load(string filename)
+        {
+            return PlayerControl.LoadMedia(filename);
+        }
+
+        public static void Open(IMedia media, bool play = true, bool showOsd = true)
+        {
+            PlayerControl.OpenMedia(media, play, showOsd);
         }
 
         public static void Open(string filename, bool play = true, bool showOsd = true)

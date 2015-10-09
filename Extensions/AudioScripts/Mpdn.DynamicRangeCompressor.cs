@@ -23,12 +23,13 @@ using System;
 using System.Diagnostics;
 using Cudafy;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.AudioChain;
 
 namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn
     {
-        public class DynamicRangeCompressorSettings
+        public class DynamicRangeCompressor : AudioChain
         {
             public float ThresholddB { get; set; }
             public float Ratio { get; set; }
@@ -36,7 +37,7 @@ namespace Mpdn.Extensions.AudioScripts
             public int AttackMs { get; set; }
             public int ReleaseMs { get; set; }
 
-            public DynamicRangeCompressorSettings()
+            public DynamicRangeCompressor()
             {
                 ThresholddB = -15;
                 Ratio = 3;
@@ -44,11 +45,7 @@ namespace Mpdn.Extensions.AudioScripts
                 AttackMs = 200; // 0.2s
                 ReleaseMs = 1000; // 1s
             }
-        }
 
-        public class DynamicRangeCompressor :
-            AudioScript<DynamicRangeCompressorSettings, DynamicRangeCompressorConfigDialog>
-        {
             // DC offset to prevent denormal
             protected const float DC_OFFSET = 1.0e-25f;
 
@@ -62,52 +59,31 @@ namespace Mpdn.Extensions.AudioScripts
 
             private float[] m_DevOverdBs;
 
-            public override ExtensionUiDescriptor Descriptor
-            {
-                get
-                {
-                    return new ExtensionUiDescriptor
-                    {
-                        Guid = new Guid("C29B883B-AF2B-45F7-9FDA-1F8A67004E2E"),
-                        Name = "DynamicRangeCompressor",
-                        Description = "Performs simple DRC with OpenCL",
-                        Copyright = "Adapted from NAudio SimpleCompressor by Zachs"
-                    };
-                }
-            }
-
             protected override void OnLoadAudioKernel()
             {
-                Gpu.LoadAudioKernel(typeof (Decibels), typeof (DynamicRangeCompressorKernel));
+                Gpu.LoadAudioKernel(typeof(Decibels), typeof(DynamicRangeCompressorKernel));
             }
 
-            public override void OnNewSegment(long startTime, long endTime, double rate)
-            {
-                base.OnNewSegment(startTime, endTime, rate);
-
-                m_EnvdB = DC_OFFSET;
-            }
-
-            public override void OnMediaClosed()
+            public override void Reset()
             {
                 DisposeGpuResources();
-                base.OnMediaClosed();
+                base.Reset();
             }
 
             protected override void Process(float[,] samples, short channels, int sampleCount)
             {
                 var sampleRate = Audio.InputFormat.nSamplesPerSec;
-                if (m_SampleRate != sampleRate || m_AttackMs != Settings.AttackMs || m_ReleaseMs != Settings.ReleaseMs)
+                if (m_SampleRate != sampleRate || m_AttackMs != AttackMs || m_ReleaseMs != ReleaseMs)
                 {
-                    m_Attack = new EnvelopeDetector(Settings.AttackMs, sampleRate);
-                    m_Release = new EnvelopeDetector(Settings.ReleaseMs, sampleRate);
+                    m_Attack = new EnvelopeDetector(AttackMs, sampleRate);
+                    m_Release = new EnvelopeDetector(ReleaseMs, sampleRate);
                     m_SampleRate = sampleRate;
-                    m_AttackMs = Settings.AttackMs;
-                    m_ReleaseMs = Settings.ReleaseMs;
+                    m_AttackMs = AttackMs;
+                    m_ReleaseMs = ReleaseMs;
                     m_EnvdB = DC_OFFSET;
                 }
 
-                Compress(samples, sampleCount, Settings.ThresholddB, Settings.Ratio, Settings.MakeupGaindB);
+                Compress(samples, sampleCount, ThresholddB, Ratio, MakeupGaindB);
             }
 
             private void Compress(float[,] samples, int sampleCount, float thresholddB, float ratio, float makeupGaindB)
@@ -163,6 +139,24 @@ namespace Mpdn.Extensions.AudioScripts
                 DisposeGpuResources();
                 m_DevOverdBs = Gpu.Allocate<float>(sampleCount);
                 m_SampleCount = sampleCount;
+            }
+        }
+
+        public class DynamicRangeCompressorUi :
+            AudioChainUi<DynamicRangeCompressor, DynamicRangeCompressorConfigDialog>
+        {
+            public override ExtensionUiDescriptor Descriptor
+            {
+                get
+                {
+                    return new ExtensionUiDescriptor
+                    {
+                        Guid = new Guid("C29B883B-AF2B-45F7-9FDA-1F8A67004E2E"),
+                        Name = "DynamicRangeCompressor",
+                        Description = "Performs simple DRC with OpenCL",
+                        Copyright = "Adapted from NAudio SimpleCompressor by Zachs"
+                    };
+                }
             }
         }
 

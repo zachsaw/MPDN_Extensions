@@ -16,30 +16,18 @@
 // 
 
 using System;
+using Mpdn.Extensions.Framework.AudioChain;
 
 namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Gargle : Extensions.Framework.AudioScript
+        public class Gargle : AudioChain
         {
             private const int GARGLE_RATE = 5;
             private const int SHAPE = 0; // 0=Triangle, 1=Sqaure
 
             private int m_Phase;
-
-            public override ExtensionUiDescriptor Descriptor
-            {
-                get
-                {
-                    return new ExtensionUiDescriptor
-                    {
-                        Guid = new Guid("A27971B2-F625-4AC8-9AC5-5B448AB77BB6"),
-                        Name = "Gargle",
-                        Description = "Simple audio gargle example (translated from Windows SDK)"
-                    };
-                }
-            }
 
             protected override bool CpuOnly
             {
@@ -89,6 +77,22 @@ namespace Mpdn.Examples.AudioScripts
                         // Note: No clipping required - the framework clips it to [-1.0f..1.0f] for us
                         samples[c, i] = (v*m*2)/period;
                     }
+                }
+            }
+        }
+
+        public class GargleUi : AudioChainUi<Gargle>
+        {
+            public override ExtensionUiDescriptor Descriptor
+            {
+                get
+                {
+                    return new ExtensionUiDescriptor
+                    {
+                        Guid = new Guid("A27971B2-F625-4AC8-9AC5-5B448AB77BB6"),
+                        Name = "Gargle",
+                        Description = "Simple audio gargle example (translated from Windows SDK)"
+                    };
                 }
             }
         }

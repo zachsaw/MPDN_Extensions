@@ -78,7 +78,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Settings = new TChain();
         }
 
-        public IRenderScript CreateRenderScript()
+        public IRenderScript CreateScript()
         {
             return new RenderChainScript(Settings);
         }

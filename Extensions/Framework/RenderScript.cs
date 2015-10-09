@@ -49,7 +49,7 @@ namespace Mpdn.Extensions.Framework
                 }
             }
 
-            public IRenderScript CreateRenderScript()
+            public IRenderScript CreateScript()
             {
                 return null;
             }

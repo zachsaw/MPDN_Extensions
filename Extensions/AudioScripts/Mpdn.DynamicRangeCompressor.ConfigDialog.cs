@@ -47,7 +47,7 @@ namespace Mpdn.Extensions.AudioScripts
             }
         }
 
-        public class DynamicRangeCompressorConfigDialogBase : ScriptConfigDialog<DynamicRangeCompressorSettings>
+        public class DynamicRangeCompressorConfigDialogBase : ScriptConfigDialog<DynamicRangeCompressor>
         {
         }
     }

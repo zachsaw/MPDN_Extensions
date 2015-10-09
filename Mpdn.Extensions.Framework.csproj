@@ -92,9 +92,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\Framework\AudioChain\AudioChain.cs" />
+    <Compile Include="Extensions\Framework\AudioChain\AudioChainScript.cs" />
     <Compile Include="Extensions\Framework\AudioHelpers.cs" />
     <Compile Include="Extensions\Framework\AudioKernels.cs" />
-    <Compile Include="Extensions\Framework\AudioScript.cs" />
+    <Compile Include="Extensions\Framework\AudioChain\AudioChainUi.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviderBase.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviders.cs" />
     <Compile Include="Extensions\Framework\Config\ExtensionsUi.cs" />

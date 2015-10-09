@@ -35,6 +35,7 @@ using MediaInfoDotNet;
 using Mpdn.Extensions.Framework;
 using Ookii.Dialogs;
 using System.Net;
+using System.Reflection;
 using System.Web;
 
 namespace Mpdn.Extensions.PlayerExtensions.Playlist
@@ -127,6 +128,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private ToolTip m_PlayCountToolTip;
 
         private AfterPlaybackSettingsOpt prevAfterPlaybackOpt;
+
+        private string m_LoadNextFilePath;
+        private Task<IMedia> m_LoadNextTask;
+        private Exception m_LoadNextException;
 
         #endregion
 
@@ -860,7 +865,26 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (File.Exists(item.FilePath) || IsValidUrl(item.FilePath))
                 {
-                    Media.Open(item.FilePath, !queue);
+                    if (m_LoadNextTask != null && m_LoadNextFilePath == item.FilePath)
+                    {
+                        m_LoadNextTask.Wait();
+                        var media = m_LoadNextTask.Result;
+                        m_LoadNextTask = null;
+                        if (media == null)
+                        {
+                            if (m_LoadNextException != null)
+                            {
+                                var exception = m_LoadNextException;
+                                m_LoadNextException = null;
+                                throw new TargetInvocationException(exception);
+                            }
+                        }
+                        Media.Open(media, !queue);
+                    }
+                    else
+                    {
+                        Media.Open(item.FilePath, !queue);
+                    }
                     SetPlayStyling();
                 }
                 else
@@ -888,9 +912,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             dgv_PlayList.Invalidate();
 
+            DisposeLoadNextTask();
+
             if (string.IsNullOrEmpty(Media.FilePath)) return;
             if (!Duration.Visible) return;
             Task.Factory.StartNew(GetCurrentMediaDuration);
+            LoadNextInBackground();
         }
 
         public void CloseMedia()
@@ -1051,7 +1078,39 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (result == DialogResult.Cancel) return;
 
             ClearPlaylist();
-            if (IsValidUrl(input.Input)) OpenFiles(new string[] { input.Input });
+            if (IsValidUrl(input.Input)) OpenFiles(new[] { input.Input });
+        }
+
+        private void DisposeLoadNextTask()
+        {
+            if (m_LoadNextTask == null) return;
+
+            m_LoadNextTask.Wait();
+            DisposeHelper.Dispose(m_LoadNextTask.Result);
+            m_LoadNextTask = null;
+        }
+
+        private void LoadNextInBackground()
+        {
+            var next = m_CurrentPlayIndex + 1;
+            if (next >= Playlist.Count)
+                return;
+
+            var item = Playlist[next];
+            if (!File.Exists(item.FilePath) && !IsValidUrl(item.FilePath)) return;
+            m_LoadNextFilePath = item.FilePath;
+            m_LoadNextTask = Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    return Media.Load(item.FilePath);
+                }
+                catch (Exception ex)
+                {
+                    m_LoadNextException = ex;
+                    return null;
+                }
+            });
         }
 
         public void RemoveFile(int index)
@@ -2497,6 +2556,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 GuiThread.DoAsync(() =>
                 {
                     if (dgv_PlayList.Rows.Count < 1) return;
+                    if (m_CurrentPlayIndex < 0) return;
                     dgv_PlayList.Rows[m_CurrentPlayIndex].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
                     dgv_PlayList.InvalidateRow(m_CurrentPlayIndex);
                 });
