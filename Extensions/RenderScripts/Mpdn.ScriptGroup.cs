@@ -18,15 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.PlayerExtensions;
+using Mpdn.RenderScript;
 using YAXLib;
 
 namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptGroup
     {
-        public class ScriptGroup : PresetCollection
+        public class ScriptGroup : PresetCollection<IFilter, IRenderScript>
         {
             #region Settings
 
@@ -43,7 +45,7 @@ namespace Mpdn.Extensions.RenderScripts
             }
 
             [YAXDontSerialize]
-            public Preset SelectedOption
+            public Preset<IFilter, IRenderScript> SelectedOption
             {
                 get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) : null; }
             }
@@ -75,17 +77,12 @@ namespace Mpdn.Extensions.RenderScripts
                 m_HotkeyGuid = Guid.NewGuid();
             }
 
-            public Preset GetPreset(Guid guid)
-            {
-                return Options.FirstOrDefault(o => o.Guid == guid);
-            }
-
             public int GetPresetIndex(Guid guid)
             {
                 return Options.FindIndex(o => o.Guid == guid);
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            public override IFilter Process(IFilter input)
             {
                 return SelectedOption != null ? input + SelectedOption : input;
             }

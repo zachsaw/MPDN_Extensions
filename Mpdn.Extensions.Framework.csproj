@@ -97,6 +97,7 @@
     <Compile Include="Extensions\Framework\AudioHelpers.cs" />
     <Compile Include="Extensions\Framework\AudioKernels.cs" />
     <Compile Include="Extensions\Framework\AudioChain\AudioChainUi.cs" />
+    <Compile Include="Extensions\Framework\Chain\ChainUi.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviderBase.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviders.cs" />
     <Compile Include="Extensions\Framework\Config\ExtensionsUi.cs" />
@@ -116,11 +117,11 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Extensions\Framework\Controls\HourGlass.cs" />
-    <Compile Include="Extensions\Framework\Controls\RenderChainList.cs">
+    <Compile Include="Extensions\Framework\Controls\ChainList.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Extensions\Framework\Controls\RenderChainList.Designer.cs">
-      <DependentUpon>RenderChainList.cs</DependentUpon>
+    <Compile Include="Extensions\Framework\Controls\ChainList.Designer.cs">
+      <DependentUpon>ChainList.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.cs">
       <SubType>Form</SubType>
@@ -142,14 +143,15 @@
     <Compile Include="Extensions\Framework\RenderChain\RenderChain.cs" />
     <Compile Include="Extensions\Framework\RenderChain\RenderChainScript.cs" />
     <Compile Include="Extensions\Framework\RenderChain\RenderChainUi.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\RenderPreset.cs" />
     <Compile Include="Extensions\Framework\RenderChain\ShaderCache.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Textures.cs" />
     <Compile Include="Extensions\Framework\RenderScript.cs" />
     <Compile Include="Extensions\Framework\Scripting\Clip.cs" />
+    <Compile Include="Extensions\Framework\Chain\Chain.cs" />
     <Compile Include="Extensions\Framework\Scripting\ScriptEngine.cs" />
     <Compile Include="Extensions\Framework\Scripting\ScriptEngineUtilities.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Presets.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Extensions\Framework\Chain\Presets.cs" />
     <None Include="Properties\DataSources\System.Globalization.CultureAndRegionInfoBuilder.datasource" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -141,7 +141,6 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_MatrixMenu.Enabled = enabled;
             m_ToggleLevelsMenu.Enabled = enabled;
             m_ToggleMatrixMenu.Enabled = enabled;
-            m_ToggleImproveChromaMenu.Enabled = enabled;
 
             if (args.OldState == PlayerState.Closed)
             {

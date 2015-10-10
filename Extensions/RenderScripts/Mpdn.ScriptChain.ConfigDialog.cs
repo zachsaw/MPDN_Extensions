@@ -29,12 +29,12 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
-                RenderChainList.PresetList = Settings.Options;
+                m_ChainList.PresetList = Settings.Options;
             }
 
             protected override void SaveSettings()
             {
-                Settings.Options = RenderChainList.PresetList;
+                Settings.Options = m_ChainList.PresetList;
             }
         }
 

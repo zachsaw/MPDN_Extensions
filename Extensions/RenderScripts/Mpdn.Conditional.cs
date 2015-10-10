@@ -16,8 +16,10 @@
 // 
 using System;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.Framework.Scripting;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -30,7 +32,7 @@ namespace Mpdn.Extensions.RenderScripts
             #region Settings
 
             public string Condition { get; set; }
-            public Preset Preset { get; set; }
+            public Preset<IFilter,IRenderScript> Preset { get; set; }
 
             #endregion
 

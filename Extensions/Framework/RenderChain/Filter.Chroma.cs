@@ -119,7 +119,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             get { return Renderer.RenderQuality.GetTextureFormat(); } // Not guaranteed
         }
 
-        public void MakeTagged() { /* ChromaScaler is *always* tagged */ }
+        public void EnableTag() { /* ChromaScaler is *always* tagged */ }
 
         public override IFilter<ITexture2D> Compile()
         {

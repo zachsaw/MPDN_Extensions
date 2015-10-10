@@ -27,6 +27,7 @@ using System.Windows.Forms;
 using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Config;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
@@ -121,6 +122,21 @@ namespace Mpdn.Extensions.Framework
         {
             var config = new MemConfig<TSettings>();
             return config.LoadFromString(input) ? config.Config : null;
+        }
+    }
+
+    public static class PresetHelper
+    {
+        public static Preset<T, TScript> MakeNewPreset<T, TScript>(this IChainUi<T, TScript> renderScript, string name = null)
+            where TScript : class, IScript
+        {
+            return renderScript.CreateNew().ToPreset();
+        }
+
+        public static Preset<T, TScript> ToPreset<T, TScript>(this IChainUi<T, TScript> renderScript, string name = null)
+            where TScript : class, IScript
+        {
+            return new Preset<T, TScript> { Name = name ?? renderScript.Descriptor.Name, Script = renderScript };
         }
     }
 

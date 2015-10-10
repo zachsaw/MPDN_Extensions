@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
@@ -28,9 +29,11 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
-        public class SuperRes : ScriptGroup
+        public class SuperRes : RenderChain
         {
             #region Settings
+
+            public ScriptGroup PrescalerGroup;
 
             public int Passes { get; set; }
             public float Strength { get; set; }
@@ -44,65 +47,44 @@ namespace Mpdn.Extensions.RenderScripts
             private readonly IScaler m_Downscaler;
             private readonly IScaler m_Upscaler;
 
-            public override bool AllowRegrouping { get { return false; } }
-
             public SuperRes()
             {
                 TargetSize = () => Renderer.TargetSize;
 
-                Passes = 3;
+                Passes = 2;
                 Strength = 1.0f;
                 Softness = 0.0f;
 
                 HQdownscaling = true;
 
-                Options = new List<Preset> {
-                    new Preset
+                PrescalerGroup = new ScriptGroup
+                {
+                    Options = new List<IRenderChainUi>
                     {
-                        Name = "Super-xBR",
-                        Script = new SuperXbrUi()
-                    },
-                    new Preset
-                    {
-                        Name = "NEDI",
-                        Script = new Nedi.NediScaler()
-                    },
-                    new Preset
-                    {
-                        Name = "NNEDI3",
-                        Script = new NNedi3.NNedi3Scaler()
-                    },
-                    new Preset
-                    {
-                        Name = "OpenCL NNEDI3",
-                        Script = new OclNNedi3Scaler()
+                        new SuperXbrUi(),
+                        new Nedi.NediScaler(),
+                        new NNedi3.NNedi3Scaler(),
+                        new OclNNedi3Scaler()
                     }
+                        .Select(x => x.ToPreset())
+                        .ToList()
                 };
-                SelectedIndex = 0;
+
+                PrescalerGroup.SelectedIndex = 0;
 
                 m_Upscaler = new Jinc(ScalerTaps.Four, false); // Deprecated
-                m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.66f, false) : new Bilinear();
+                m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.75f, false) : new Bilinear();
             }
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                return CreateFilter(input, input + SelectedOption);
+                return CreateFilter(input, input + PrescalerGroup.SelectedOption);
             }
 
             private bool IsIntegral(double x)
             {
                 return Math.Abs(x - Math.Truncate(x)) < 0.005;
             }
-
-            #region Status
-
-            // Revert ScriptGroups changes to Status
-            public override string Status
-            {
-                get { return "SuperRes"; }
-            }
-
-            #endregion
 
             public IFilter CreateFilter(IFilter original, IFilter initial)
             {
@@ -158,14 +140,11 @@ namespace Mpdn.Extensions.RenderScripts
                     result = new ResizeFilter(new ShaderFilter(GammaToLinear, original), targetSize);
                 }
 
-                IFilter diff = null;
                 for (int i = 1; i <= Passes; i++)
                 {
-                    IFilter loRes;
-
                     // Downscale and Subtract
-                    loRes = new ResizeFilter(result, inputSize, m_Upscaler, m_Downscaler); // Downscale result
-                    diff = new ShaderFilter(Diff, loRes, original); // Compare with original  
+                    var loRes = new ResizeFilter(result, inputSize, m_Upscaler, m_Downscaler);
+                    var diff = new ShaderFilter(Diff, loRes, original);
 
                     // Update result
                     result = new ShaderFilter(i != Passes ? SuperRes : FinalSuperRes, result, diff);

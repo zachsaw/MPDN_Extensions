@@ -17,7 +17,7 @@
 
 namespace Mpdn.Extensions.Framework.Controls
 {
-    partial class RenderChainList
+    partial class ChainList<T, TScript>
     {
         /// <summary> 
         /// Required designer variable.
@@ -455,7 +455,7 @@ namespace Mpdn.Extensions.Framework.Controls
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.splitContainer);
-            this.Name = "RenderChainList";
+            this.Name = "ChainList";
             this.Size = new System.Drawing.Size(877, 551);
             this.Load += new System.EventHandler(this.OnLoad);
             this.SizeChanged += new System.EventHandler(this.RenderChainListSizeChanged);
