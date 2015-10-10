@@ -15,17 +15,13 @@
 // License along with this library.
 
 using System;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.RenderScript;
-using YAXLib;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public interface IRenderChainUi : IRenderScriptUi, IDisposable
-    {
-        RenderChain Chain { get; }
-        string Category { get; }
-    }
+    public interface IRenderChainUi : IRenderScriptUi, IChainUi<IFilter, IRenderScript> { }
 
     public static class RenderChainUi
     {
@@ -36,7 +32,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return chainUi is IdentityRenderChainUi;
         }
 
-        private class IdentityRenderChain : StaticChain
+        private class IdentityRenderChain : StaticChain<IFilter>
         {
             public IdentityRenderChain() : base(x => x) { }
         }
@@ -64,67 +60,18 @@ namespace Mpdn.Extensions.Framework.RenderChain
     }
 
     public abstract class RenderChainUi<TChain> : RenderChainUi<TChain, ScriptConfigDialog<TChain>>
-        where TChain : RenderChain, new()
+        where TChain : Chain<IFilter>, new()
     { }
 
-    public abstract class RenderChainUi<TChain, TDialog> : ExtensionUi<Config.Internal.RenderScripts, TChain, TDialog>, IRenderChainUi
-        where TChain : RenderChain, new()
+    public abstract class RenderChainUi<TChain, TDialog> : 
+            ChainUi<IFilter, IRenderScript, TChain, TDialog>,
+            IRenderChainUi
+        where TChain : Chain<IFilter>, new()
         where TDialog : IScriptConfigDialog<TChain>, new()
     {
-        public abstract string Category { get; }
-
-        protected RenderChainUi()
-        {
-            Settings = new TChain();
-        }
-
-        public IRenderScript CreateScript()
+        public override IRenderScript CreateScript()
         {
             return new RenderChainScript(Settings);
-        }
-
-        #region Implementation
-
-        [YAXDontSerialize]
-        public RenderChain Chain
-        {
-            get { return Settings; }
-        }
-
-        #endregion Implementation
-
-        #region GarbageCollecting
-
-        ~RenderChainUi()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public virtual void Dispose(bool disposing)
-        {
-            DisposeHelper.Dispose(Settings);
-        }
-
-        #endregion
-    }
-
-    public static class RenderChainExtensions
-    {
-        public static IRenderChainUi CreateNew(this IRenderChainUi scriptUi)
-        {
-            var constructor = scriptUi.GetType().GetConstructor(Type.EmptyTypes);
-            if (constructor == null)
-            {
-                throw new EntryPointNotFoundException("RenderChainUi must implement parameter-less constructor");
-            }
-
-            return (IRenderChainUi)constructor.Invoke(new object[0]);
         }
     }
 }

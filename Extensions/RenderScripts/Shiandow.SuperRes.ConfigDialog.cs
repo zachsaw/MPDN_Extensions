@@ -16,8 +16,10 @@
 
 using System;
 using System.Linq;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -27,11 +29,11 @@ namespace Mpdn.Extensions.RenderScripts
         {
             protected int? selectedIndex;
 
-            protected Preset selectedPreset
+            protected Preset<IFilter,IRenderScript> selectedPreset
             {
                 get
                 {
-                    return Settings.Options.ElementAtOrDefault(selectedIndex ?? -1);
+                    return Settings.PrescalerGroup.Options.ElementAtOrDefault(selectedIndex ?? -1);
                 }
             }
 
@@ -42,9 +44,9 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
-                PrescalerBox.DataSource = Settings.Options;
+                PrescalerBox.DataSource = Settings.PrescalerGroup.Options;
                 PrescalerBox.DisplayMember = "Name";
-                PrescalerBox.SelectedIndex = Settings.SelectedIndex;
+                PrescalerBox.SelectedIndex = Settings.PrescalerGroup.SelectedIndex;
 
                 PassesSetter.Value = Settings.Passes;
                 StrengthSetter.Value = (decimal)Settings.Strength;
@@ -57,7 +59,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void SaveSettings()
             {
-                Settings.SelectedIndex = PrescalerBox.SelectedIndex;
+                Settings.PrescalerGroup.SelectedIndex = PrescalerBox.SelectedIndex;
 
                 Settings.Passes = (int)PassesSetter.Value;
                 Settings.Strength = (float)StrengthSetter.Value;
@@ -73,22 +75,23 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void UpdateGui()
             {
-                var preset = PrescalerBox.SelectedValue as Preset;
+                var preset = PrescalerBox.SelectedValue as Preset<IFilter, IRenderScript>;
                 ConfigButton.Enabled = (preset != null) && preset.HasConfigDialog();
             }
 
             private void ConfigButtonClick(object sender, EventArgs e)
             {
-                ((Preset) PrescalerBox.SelectedValue).ShowConfigDialog(Owner);
+                ((Preset<IFilter, IRenderScript>) PrescalerBox.SelectedValue).ShowConfigDialog(Owner);
             }
 
             private void ModifyButtonClick(object sender, EventArgs e)
             {
-                var groupUi = new Mpdn.ScriptGroup.ScriptGroupScript() { Settings = Settings };
+                SaveSettings();
+
+                var groupUi = new Mpdn.ScriptGroup.ScriptGroupScript { Settings = Settings.PrescalerGroup };
                 groupUi.ShowConfigDialog(Owner);
 
-                PrescalerBox.DataSource = Settings.Options;
-                PrescalerBox.SelectedIndex = Settings.SelectedIndex;
+                LoadSettings();
             }
         }
 

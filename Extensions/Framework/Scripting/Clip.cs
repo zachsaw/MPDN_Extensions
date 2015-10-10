@@ -17,6 +17,7 @@
 
 using System;
 using System.Drawing;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
 using Point = System.Drawing.Point;
@@ -88,16 +89,14 @@ namespace Mpdn.Extensions.Framework.Scripting
 
         #region Automatic Properties
 
-        private readonly RenderChain.RenderChain m_Chain = RenderChain.RenderChain.Identity;
-
         public bool NeedsUpscaling
         {
-            get { return m_Chain.IsUpscalingFrom(InputSize); }
+            get { return IsUpscalingFrom(InputSize); }
         }
 
         public bool NeedsDownscaling
         {
-            get { return m_Chain.IsDownscalingFrom(InputSize); }
+            get { return IsDownscalingFrom(InputSize); }
         }
 
         public double ScalingFactor
@@ -128,6 +127,22 @@ namespace Mpdn.Extensions.Framework.Scripting
         public bool SourceYuv
         {
             get { return InputFormat.IsYuv(); }
+        }
+
+        public bool IsDownscalingFrom(TextureSize size)
+        {
+            return !IsNotScalingFrom(size) && !IsUpscalingFrom(size);
+        }
+
+        public bool IsNotScalingFrom(TextureSize size)
+        {
+            return size == Renderer.TargetSize;
+        }
+
+        public bool IsUpscalingFrom(TextureSize size)
+        {
+            var targetSize = Renderer.TargetSize;
+            return targetSize.Width > size.Width || targetSize.Height > size.Height;
         }
 
         #endregion
