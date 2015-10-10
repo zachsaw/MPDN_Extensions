@@ -51,21 +51,24 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 TargetSize = () => Renderer.TargetSize;
 
-                Passes = 3;
+                Passes = 2;
                 Strength = 1.0f;
                 Softness = 0.0f;
 
                 HQdownscaling = true;
 
-                PrescalerGroup.Options = new List<IRenderChainUi>
+                PrescalerGroup = new ScriptGroup
                 {
-                    new SuperXbrUi(),
-                    new Nedi.NediScaler(),
-                    new NNedi3.NNedi3Scaler(),
-                    new OclNNedi3Scaler()
-                }
-                .Select(x => x.ToPreset())
-                .ToList();
+                    Options = new List<IRenderChainUi>
+                    {
+                        new SuperXbrUi(),
+                        new Nedi.NediScaler(),
+                        new NNedi3.NNedi3Scaler(),
+                        new OclNNedi3Scaler()
+                    }
+                        .Select(x => x.ToPreset())
+                        .ToList()
+                };
 
                 PrescalerGroup.SelectedIndex = 0;
 

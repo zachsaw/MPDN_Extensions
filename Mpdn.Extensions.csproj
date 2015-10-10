@@ -335,12 +335,6 @@
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Chroma.Nnedi3Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Weights.cs" />
-    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.Presets.ConfigDialog.designer.cs">
-      <DependentUpon>Mpdn.Presets.ConfigDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
