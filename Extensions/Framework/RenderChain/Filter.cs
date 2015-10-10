@@ -45,7 +45,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public interface IResizeableFilter : IFilter
     {
         void SetSize(TextureSize outputSize);
-        void MakeTagged();
+        void EnableTag();
     }
 
     public abstract class Filter : IFilter
@@ -207,6 +207,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
             where TFilter : IBaseFilter
         {
             filter.AddTag(tag);
+            return filter;
+        }
+
+        public static TFilter MakeTagged<TFilter>(this TFilter filter)
+            where TFilter : IResizeableFilter
+        {
+            filter.EnableTag();
             return filter;
         }
     }

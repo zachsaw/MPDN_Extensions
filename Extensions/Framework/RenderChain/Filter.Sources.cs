@@ -87,7 +87,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_OutputSize = targetSize;
         }
 
-        public void MakeTagged()
+        public void EnableTag()
         {
             m_Tagged = true;
         }
