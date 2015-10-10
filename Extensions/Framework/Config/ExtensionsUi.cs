@@ -157,7 +157,8 @@ namespace Mpdn.Extensions.Framework.Config
 
     public static class ExtensionUi
     {
-        public static IExtensionUi CreateNew(this IExtensionUi scriptUi)
+        public static T CreateNew<T>(this T scriptUi)
+            where T: IExtensionUi
         {
             var constructor = scriptUi.GetType().GetConstructor(Type.EmptyTypes);
             if (constructor == null)
@@ -165,7 +166,7 @@ namespace Mpdn.Extensions.Framework.Config
                 throw new EntryPointNotFoundException("ExtensionUi must implement parameter-less constructor");
             }
 
-            return (IExtensionUi) constructor.Invoke(new object[0]);
+            return (T) constructor.Invoke(new object[0]);
         }
 
         public static IExtensionUi Identity = new IdentityExtensionUi();
