@@ -113,7 +113,7 @@ namespace Mpdn.Extensions.Framework.Controls
                 foreach (var script in renderScripts)
                 {
                     var group = script.Chain as PresetCollection<T, TScript>;
-                    if (group != null && group.AllowRegrouping)
+                    if (group != null)
                     {
                         var item = menuitem.DropDownItems.Add(script.Descriptor.Name);
                         item.Tag = script;
@@ -431,7 +431,7 @@ namespace Mpdn.Extensions.Framework.Controls
                 var chain = preset.Chain as PresetCollection<T, TScript>;
 
                 buttonConfigure.Enabled = preset.HasConfigDialog();
-                menuUngroup.Enabled = chain != null && chain.AllowRegrouping;
+                menuUngroup.Enabled = chain != null;
             }
 
             menuConfigure.Enabled = buttonConfigure.Enabled;
@@ -660,7 +660,7 @@ namespace Mpdn.Extensions.Framework.Controls
                 var group = preset.Chain as PresetCollection<T, TScript>;
                 var index = item.Index;
 
-                if (group == null || !group.AllowRegrouping)
+                if (group == null)
                     return;
 
                 RemoveItem(item);
