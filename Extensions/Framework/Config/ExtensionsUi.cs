@@ -20,24 +20,6 @@ using System.Windows.Forms;
 
 namespace Mpdn.Extensions.Framework.Config
 {
-    namespace Internal
-    {
-        public class RenderScripts
-        {
-            // No implementation - we are only using this class as our folder name to pass into ScriptSettingsBase
-        }
-
-        public class PlayerExtensions
-        {
-            // No implementation - we are only using this class as our folder name to pass into ScriptSettingsBase
-        }
-
-        public class AudioScripts
-        {
-            // No implementation - we are only using this class as our folder name to pass into ScriptSettingsBase
-        }
-    }
-
     public class NoSettings
     {
     }

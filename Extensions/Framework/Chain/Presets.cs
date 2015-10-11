@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using YAXLib;
-
+    
 namespace Mpdn.Extensions.Framework.Chain
 {
     public interface INameable
@@ -27,7 +27,7 @@ namespace Mpdn.Extensions.Framework.Chain
         string Name { set; }
     }
 
-    public class Preset<T, TScript> : Chain<T>, IChainUi<T, TScript>
+    public class Preset<T, TScript> : Chain<T>, IChainUi<T, TScript>, INameable
         where TScript : class, IScript
     {
         #region Settings
@@ -175,12 +175,6 @@ namespace Mpdn.Extensions.Framework.Chain
         #region Settings
 
         public List<Preset<T, TScript>> Options { get; set; }
-
-        [YAXDontSerialize]
-        public virtual bool AllowRegrouping
-        {
-            get { return true; }
-        }
 
         [YAXDontSerialize]
         public string Name { protected get; set; }

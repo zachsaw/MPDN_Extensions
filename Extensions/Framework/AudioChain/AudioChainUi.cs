@@ -30,7 +30,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
         where TChain : AudioChain, new()
     { }
 
-    public abstract class AudioChainUi<TChain, TDialog> : ExtensionUi<Config.Internal.AudioScripts, TChain, TDialog>, IAudioChainUi
+    public abstract class AudioChainUi<TChain, TDialog> : ExtensionUi<IAudioScript, TChain, TDialog>, IAudioChainUi
         where TChain : AudioChain, new()
         where TDialog : ScriptConfigDialog<TChain>, new()
     {
@@ -40,17 +40,17 @@ namespace Mpdn.Extensions.Framework.AudioChain
             CudafyInitializer.Init();
         }
 
-        public IAudioScript CreateScript()
-        {
-            return new AudioChainScript(Settings);
-        }
-
         #region Implementation
 
         [YAXDontSerialize]
         public AudioChain Chain
         {
             get { return Settings; }
+        }
+
+        public IAudioScript CreateScript()
+        {
+            return new AudioChainScript(Settings);
         }
 
         #endregion Implementation

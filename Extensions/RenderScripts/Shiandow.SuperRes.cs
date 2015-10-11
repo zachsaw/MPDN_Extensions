@@ -33,7 +33,7 @@ namespace Mpdn.Extensions.RenderScripts
         {
             #region Settings
 
-            public ScriptGroup PrescalerGroup;
+            public ScriptGroup PrescalerGroup { get; set; }
 
             public int Passes { get; set; }
             public float Strength { get; set; }
