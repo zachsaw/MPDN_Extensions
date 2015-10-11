@@ -42,7 +42,14 @@ namespace Mpdn.Extensions.Framework.Config
 
         public string ConfigFilePath
         {
-            get { return AppPath.GetUserDataFilePath(ScriptConfigFileName, typeof (TExtensionClass).Name); }
+            get
+            {
+                string classFolder = typeof (TExtensionClass).Name;
+                if (classFolder.StartsWith("I")) classFolder = classFolder.Substring(1);
+                if (!classFolder.EndsWith("s")) classFolder += "s";
+
+                return AppPath.GetUserDataFilePath(ScriptConfigFileName, classFolder);
+            }
         }
 
         private string ScriptConfigFileName
