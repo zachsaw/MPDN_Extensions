@@ -97,6 +97,11 @@ namespace Mpdn.Extensions.Framework
             get { return PlayerControl.ActiveAudioScript; }
         }
 
+        public static Guid AudioScriptGuid
+        {
+            get { return PlayerControl.ActiveAudioScriptGuid; }
+        }
+
         public static IRenderScript RenderScript
         {
             get { return PlayerControl.ActiveRenderScript; }
@@ -105,12 +110,13 @@ namespace Mpdn.Extensions.Framework
         public static Guid RenderScriptGuid
         {
             get { return PlayerControl.ActiveRenderScriptGuid; }
-            set { PlayerControl.SetRenderScript(value); }
         }
 
-        public static void SetRenderScript(Guid renderScriptGuid)
+        public static void SetRenderScript(Guid scriptGuid)
         {
-            PlayerControl.SetRenderScript(renderScriptGuid);
+            PlayerControl.PlayerSettings.VideoRendererSettings.RenderScript =
+                new Mpdn.Config.RenderScript {Guid = scriptGuid};
+            PlayerControl.RefreshSettings();
         }
     }
 
