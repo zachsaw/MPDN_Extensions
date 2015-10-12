@@ -51,7 +51,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
-            this.m_ChainList = new Framework.Controls.ChainList<IFilter, IRenderScript>();
+            this.m_ChainList = new RenderScriptChainList();
             this.SuspendLayout();
             // 
             // buttonCancel
@@ -114,7 +114,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private System.Windows.Forms.Button buttonCancel;
             private System.Windows.Forms.Button buttonOk;
-            private Framework.Controls.ChainList<IFilter, IRenderScript> m_ChainList;
+            private RenderScriptChainList m_ChainList;
         }
     }
 }  

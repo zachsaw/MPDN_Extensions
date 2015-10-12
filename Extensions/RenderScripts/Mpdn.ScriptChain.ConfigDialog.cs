@@ -15,6 +15,9 @@
 // License along with this library.
 
 using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.Controls;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -36,6 +39,10 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 Settings.Options = m_ChainList.PresetList;
             }
+        }
+
+        public class RenderScriptChainList : ChainList<IFilter, IRenderScript>
+        {
         }
 
         public class ScriptChainDialogBase : ScriptConfigDialog<ScriptChain>
