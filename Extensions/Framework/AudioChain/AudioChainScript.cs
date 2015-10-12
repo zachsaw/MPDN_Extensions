@@ -15,6 +15,7 @@
 // License along with this library.
 
 using System;
+using System.Diagnostics;
 using DirectShowLib;
 using Mpdn.AudioScript;
 
@@ -23,6 +24,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
     public class AudioChainScript : IAudioScript, IDisposable
     {
         protected readonly AudioChain Chain;
+        private IAudio m_Audio;
 
         public AudioChainScript(AudioChain chain)
         {
@@ -43,11 +45,22 @@ namespace Mpdn.Extensions.Framework.AudioChain
         protected virtual void Dispose(bool disposing)
         {
             Chain.Reset();
+            m_Audio = null;
         }
 
         public bool Execute()
         {
-            return Chain.Process();
+            try
+            {
+                var output = Chain.Process(new Audio(m_Audio.InputFormat, m_Audio.Input));
+                AudioHelpers.CopySample(output.Sample, m_Audio.Output, true);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex);
+                return false;
+            }
         }
 
         public void OnGetMediaType(WaveFormatExtensible format)
@@ -57,16 +70,22 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         public void Update(IAudio audio)
         {
-            Chain.Initialize(audio);
+            if (m_Audio != null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            m_Audio = audio;
+            Chain.Initialize();
         }
     }
 
-    public struct AudioParam
+    public struct Audio
     {
         public WaveFormatExtensible Format;
         public IMediaSample Sample;
 
-        public AudioParam(WaveFormatExtensible format, IMediaSample sample)
+        public Audio(WaveFormatExtensible format, IMediaSample sample)
         {
             Format = format;
             Sample = sample;

@@ -43,7 +43,7 @@ namespace Mpdn.Extensions.AudioScripts
             private int m_SampleIndex = -4*RATIO_ADJUST_INTERVAL;
             private double m_Ratio = 1;
 
-            public override bool Process(AudioParam input, AudioParam output)
+            public override bool Process(Audio input, Audio output)
             {
                 if (!CalculateRatio(input))
                 {
@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.AudioScripts
                 return true;
             }
 
-            private bool CalculateRatio(AudioParam input)
+            private bool CalculateRatio(Audio input)
             {
                 if (!CompatibleAudioRenderer)
                     return false;
@@ -89,7 +89,7 @@ namespace Mpdn.Extensions.AudioScripts
                 return true;
             }
 
-            private void CalculateRatio(AudioParam input, double ratio, double refclk, double videoHz, double displayHz)
+            private void CalculateRatio(Audio input, double ratio, double refclk, double videoHz, double displayHz)
             {
                 var format = input.Format;
                 var bytesPerSample = format.wBitsPerSample/8;
@@ -116,7 +116,7 @@ namespace Mpdn.Extensions.AudioScripts
                 m_Ratio = ratio;
             }
 
-            private void PerformReclock(AudioParam output)
+            private void PerformReclock(Audio output)
             {
                 long start, end;
                 output.Sample.GetTime(out start, out end);
@@ -130,9 +130,9 @@ namespace Mpdn.Extensions.AudioScripts
                 get { return m_Sanear || m_DirectSoundWaveOut; }
             }
 
-            public override void Initialize(IAudio audio)
+            public override void Initialize()
             {
-                base.Initialize(audio);
+                base.Initialize();
 
                 Player.StateChanged += PlayerStateChanged;
             }

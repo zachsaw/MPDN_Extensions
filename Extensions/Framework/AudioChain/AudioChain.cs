@@ -21,13 +21,13 @@ using System.Runtime.InteropServices;
 using Cudafy;
 using Cudafy.Host;
 using DirectShowLib;
-using Mpdn.AudioScript;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
+using Mpdn.Extensions.Framework.Chain;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public abstract class AudioChain
+    public abstract class AudioChain : Chain<Audio>
     {
         private const int THREAD_COUNT = 512;
 
@@ -41,14 +41,12 @@ namespace Mpdn.Extensions.Framework.AudioChain
         private float[,] m_DevNormSamples;
         private int m_Length;
 
+        private MediaSample m_OutputSample;
+
         protected abstract void Process(float[,] samples, short channels, int sampleCount);
 
-        protected IAudio Audio { get; set; }
-
-        public virtual void Initialize(IAudio audio)
+        public override void Initialize()
         {
-            Audio = audio;
-
             try
             {
                 var devices = CudafyHost.GetDeviceProperties(eGPUType.OpenCL).ToArray();
@@ -78,7 +76,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
             }
         }
 
-        public virtual void Reset()
+        public override void Reset()
         {
             Cleanup();
         }
@@ -90,15 +88,23 @@ namespace Mpdn.Extensions.Framework.AudioChain
             return name1.Contains(name2) || name2.Contains(name1);
         }
 
+        protected Audio Input { get; private set; }
+        protected Audio Output { get; private set; }
+
         protected GPGPU Gpu { get { return m_Gpu; } }
 
         protected virtual bool CpuOnly { get { return false; } }
 
         protected virtual void OnLoadAudioKernel() { }
 
-        public virtual bool Process()
+        public sealed override Audio Process(Audio input)
         {
-            return Process(new AudioParam(Audio.InputFormat, Audio.Input), new AudioParam(Audio.OutputFormat, Audio.Output));
+            DisposeHelper.Dispose(ref m_OutputSample);
+            m_OutputSample = new MediaSample(input.Sample);
+            var output = new Audio(input.Format, m_OutputSample);
+            Input = input;
+            Output = output;
+            return Process(input, output) ? output : input;
         }
 
         private bool Process(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
@@ -310,6 +316,8 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             try
             {
+                DisposeHelper.Dispose(ref m_OutputSample);
+                
                 m_SampleFormat = AudioSampleFormat.Unknown;
 
                 if (m_Gpu == null)
@@ -329,7 +337,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
             }
         }
 
-        public virtual bool Process(AudioParam input, AudioParam output)
+        public virtual bool Process(Audio input, Audio output)
         {
             if (input.Format.IsBitStreaming())
                 return false;

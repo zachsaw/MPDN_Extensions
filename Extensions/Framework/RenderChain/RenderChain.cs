@@ -15,7 +15,6 @@
 // License along with this library.
 // 
 
-using System;
 using System.IO;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.OpenCl;

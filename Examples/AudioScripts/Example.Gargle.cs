@@ -42,7 +42,7 @@ namespace Mpdn.Examples.AudioScripts
 
             private void GargleSamples(float[,] samples, bool triangle)
             {
-                int period = Audio.OutputFormat.nSamplesPerSec/GARGLE_RATE;
+                int period = Input.Format.nSamplesPerSec/GARGLE_RATE;
 
                 var channels = samples.GetLength(0);
                 var length = samples.GetLength(1);

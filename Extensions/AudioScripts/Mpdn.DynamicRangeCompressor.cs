@@ -72,7 +72,7 @@ namespace Mpdn.Extensions.AudioScripts
 
             protected override void Process(float[,] samples, short channels, int sampleCount)
             {
-                var sampleRate = Audio.InputFormat.nSamplesPerSec;
+                var sampleRate = Input.Format.nSamplesPerSec;
                 if (m_SampleRate != sampleRate || m_AttackMs != AttackMs || m_ReleaseMs != ReleaseMs)
                 {
                     m_Attack = new EnvelopeDetector(AttackMs, sampleRate);
