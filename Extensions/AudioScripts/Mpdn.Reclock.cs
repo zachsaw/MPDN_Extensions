@@ -17,7 +17,6 @@
 
 using System;
 using System.Linq;
-using Mpdn.AudioScript;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.AudioChain;
 
@@ -181,6 +180,11 @@ namespace Mpdn.Extensions.AudioScripts
 
         public class ReclockUi : AudioChainUi<Reclock>
         {
+            public override string Category
+            {
+                get { return "Timing"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get
