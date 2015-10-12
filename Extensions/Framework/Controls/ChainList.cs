@@ -74,7 +74,7 @@ namespace Mpdn.Extensions.Framework.Controls
         {
             if (!DesignMode)
             {
-                var renderScripts = Extension.RenderScripts
+                var renderScripts = Extension.Scripts
                     .Where(script => script is IChainUi<T, TScript>)
                     .Select(x => (x as IChainUi<T, TScript>).CreateNew())
                     .Concat(new[] { ChainUi<T, TScript>.Identity })

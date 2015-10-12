@@ -23,10 +23,10 @@ namespace Mpdn.Extensions.Framework.AudioChain
 {
     public class AudioChainScript : IAudioScript, IDisposable
     {
-        protected readonly AudioChain Chain;
+        protected readonly Chain.Chain<Audio> Chain;
         private IAudio m_Audio;
 
-        public AudioChainScript(AudioChain chain)
+        public AudioChainScript(Chain.Chain<Audio> chain)
         {
             Chain = chain;
         }

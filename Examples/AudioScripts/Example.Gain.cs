@@ -75,6 +75,11 @@ namespace Mpdn.Examples.AudioScripts
                     };
                 }
             }
+
+            public override string Category
+            {
+                get { return "Volume"; }
+            }
         }
     }
 }

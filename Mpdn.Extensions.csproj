@@ -126,6 +126,13 @@
     </Compile>
     <Compile Include="Extensions\AudioScripts\Mpdn.DynamicRangeCompressor.cs" />
     <Compile Include="Extensions\AudioScripts\Mpdn.Reclock.cs" />
+    <Compile Include="Extensions\AudioScripts\Mpdn.ScriptChain.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\AudioScripts\Mpdn.ScriptChain.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.ScriptChain.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\AudioScripts\Mpdn.ScriptChain.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />

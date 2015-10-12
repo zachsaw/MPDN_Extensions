@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-using System;
 using Mpdn.AudioScript;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Config;
@@ -24,12 +23,14 @@ namespace Mpdn.Extensions.Framework.AudioChain
     public interface IAudioChainUi : IAudioScriptUi, IChainUi<Audio, IAudioScript> { }
 
     public abstract class AudioChainUi<TChain> : AudioChainUi<TChain, ScriptConfigDialog<TChain>>
-        where TChain : AudioChain, new()
+        where TChain : Chain<Audio>, new()
     { }
 
-    public abstract class AudioChainUi<TChain, TDialog> : ChainUi<Audio, IAudioScript, TChain, TDialog>, IAudioChainUi
-        where TChain : AudioChain, new()
-        where TDialog : ScriptConfigDialog<TChain>, new()
+    public abstract class AudioChainUi<TChain, TDialog> : 
+            ChainUi<Audio, IAudioScript, TChain, TDialog>, 
+            IAudioChainUi
+        where TChain : Chain<Audio>, new()
+        where TDialog : IScriptConfigDialog<TChain>, new()
     {
         protected AudioChainUi()
         {
