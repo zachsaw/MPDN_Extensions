@@ -131,6 +131,7 @@
     </Compile>
     <Compile Include="Extensions\Framework\Exceptions\MpdnScriptEngineException.cs" />
     <Compile Include="Extensions\Framework\Exceptions\RenderScriptException.cs" />
+    <Compile Include="Extensions\Framework\ExtensionsApi.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
     <Compile Include="Extensions\Framework\PlayerExtension.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filter.Chroma.cs" />
