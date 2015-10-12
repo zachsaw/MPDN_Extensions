@@ -1068,7 +1068,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OpenUrl()
         {
-            var input = new InputDialog()
+            var input = new InputDialog
             {
                 WindowTitle = "Open and add URL to Playlist",
                 MainInstruction = "Enter the URL you'd like to open and add to the playlist"
@@ -2261,7 +2261,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void dgv_PlayList_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            var formats = e.Data.GetFormats();
+            const string url = "UniformResourceLocator";
+            if (formats.Contains(url))
+            {
+                var data = e.Data.GetData(url);
+                using (var ms = (MemoryStream) data)
+                {
+                    var bytes = ms.ToArray();
+                    var encod = Encoding.ASCII;
+                    var uri = encod.GetString(bytes);
+                    uri = uri.Substring(0, uri.IndexOf('\0'));
+                    if (IsValidUrl(uri)) OpenFiles(new[] {uri});
+                }
+            }
+            else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 if (files.Length == 1)
