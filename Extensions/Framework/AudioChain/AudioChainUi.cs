@@ -16,68 +16,29 @@
 
 using System;
 using Mpdn.AudioScript;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Config;
-using YAXLib;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public interface IAudioChainUi : IAudioScriptUi, IDisposable
-    {
-        AudioChain Chain { get; }
-    }
+    public interface IAudioChainUi : IAudioScriptUi, IChainUi<Audio, IAudioScript> { }
 
     public abstract class AudioChainUi<TChain> : AudioChainUi<TChain, ScriptConfigDialog<TChain>>
         where TChain : AudioChain, new()
     { }
 
-    public abstract class AudioChainUi<TChain, TDialog> : ExtensionUi<IAudioScript, TChain, TDialog>, IAudioChainUi
+    public abstract class AudioChainUi<TChain, TDialog> : ChainUi<Audio, IAudioScript, TChain, TDialog>, IAudioChainUi
         where TChain : AudioChain, new()
         where TDialog : ScriptConfigDialog<TChain>, new()
     {
         protected AudioChainUi()
         {
-            Settings = new TChain();
             CudafyInitializer.Init();
         }
 
-        #region Implementation
-
-        [YAXDontSerialize]
-        public AudioChain Chain
-        {
-            get { return Settings; }
-        }
-
-        public IAudioScript CreateScript()
+        public override IAudioScript CreateScript()
         {
             return new AudioChainScript(Settings);
         }
-
-        #endregion Implementation
-
-        #region GarbageCollecting
-
-        ~AudioChainUi()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public virtual void Dispose(bool disposing)
-        {
-            DisposeHelper.Dispose(Settings);
-        }
-
-        #endregion
-
-        #region Implementation
-
-
-        #endregion
     }
 }

@@ -145,6 +145,11 @@ namespace Mpdn.Extensions.AudioScripts
         public class DynamicRangeCompressorUi :
             AudioChainUi<DynamicRangeCompressor, DynamicRangeCompressorConfigDialog>
         {
+            public override string Category
+            {
+                get { return "Volume"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get
