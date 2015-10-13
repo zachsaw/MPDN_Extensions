@@ -37,6 +37,9 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         public static void Initialize()
         {
+            if (s_Gpu != null)
+                return;
+
             try
             {
                 var devices = CudafyHost.GetDeviceProperties(eGPUType.OpenCL).ToArray();

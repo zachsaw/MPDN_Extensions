@@ -47,11 +47,6 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             Chain.Reset();
             m_Audio = null;
-
-            if (disposing)
-            {
-                AudioProc.Destroy();
-            }
         }
 
         public bool Execute()
