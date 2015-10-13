@@ -179,9 +179,10 @@ namespace Mpdn.Extensions.Framework.Chain
         [YAXDontSerialize]
         public string Name { protected get; set; }
 
-        #endregion
+        [YAXDontSerialize]
+        protected List<Preset<T, TScript>> ActiveOptions { get; private set; }
 
-        public List<Preset<T, TScript>> ActiveOptions { get; private set; }
+        #endregion
 
         public PresetCollection()
         {

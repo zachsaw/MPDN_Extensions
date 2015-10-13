@@ -61,6 +61,8 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 }
                 s_Gpu = CudafyHost.GetDevice(eGPUType.OpenCL, device.DeviceId);
                 s_Gpu.LoadAudioKernel(typeof(AudioKernels));
+
+                Player.Closed += PlayerOnClosed;
             }
             catch (Exception ex)
             {
@@ -68,7 +70,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
             }
         }
 
-        public static void Destroy()
+        private static void Destroy()
         {
             try
             {
@@ -85,6 +87,8 @@ namespace Mpdn.Extensions.Framework.AudioChain
             {
                 Trace.WriteLine(ex);
             }
+
+            Player.Closed -= PlayerOnClosed;
         }
 
         private static bool IsInUseForVideoRendering(GPGPUProperties device)
@@ -92,6 +96,11 @@ namespace Mpdn.Extensions.Framework.AudioChain
             var name1 = device.Name.Trim();
             var name2 = Renderer.Dx9GpuInfo.Details.Description.Trim();
             return name1.Contains(name2) || name2.Contains(name1);
+        }
+
+        private static void PlayerOnClosed(object sender, EventArgs eventArgs)
+        {
+            Destroy();
         }
     }
 }
