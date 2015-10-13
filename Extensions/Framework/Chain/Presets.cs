@@ -181,6 +181,8 @@ namespace Mpdn.Extensions.Framework.Chain
 
         #endregion
 
+        public List<Preset<T, TScript>> ActiveOptions { get; private set; }
+
         public PresetCollection()
         {
             Options = new List<Preset<T, TScript>>();
@@ -195,23 +197,29 @@ namespace Mpdn.Extensions.Framework.Chain
         {
             base.Initialize();
 
-            if (Options == null)
+            var options = Options;
+            if (options == null)
+            {
+                ActiveOptions = null;
                 return;
+            }
 
-            foreach (var option in Options)
+            foreach (var option in options)
             {
                 option.Initialize();
             }
+
+            ActiveOptions = options;
         }
 
         public override void Reset()
         {
             base.Reset();
 
-            if (Options == null)
+            if (ActiveOptions == null)
                 return;
 
-            foreach (var option in Options)
+            foreach (var option in ActiveOptions)
             {
                 option.Reset();
             }
