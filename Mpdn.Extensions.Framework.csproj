@@ -94,6 +94,7 @@
   <ItemGroup>
     <Compile Include="Extensions\Framework\AudioChain\AudioChain.cs" />
     <Compile Include="Extensions\Framework\AudioChain\AudioChainScript.cs" />
+    <Compile Include="Extensions\Framework\AudioChain\AudioProc.cs" />
     <Compile Include="Extensions\Framework\AudioHelpers.cs" />
     <Compile Include="Extensions\Framework\AudioKernels.cs" />
     <Compile Include="Extensions\Framework\AudioChain\AudioChainUi.cs" />

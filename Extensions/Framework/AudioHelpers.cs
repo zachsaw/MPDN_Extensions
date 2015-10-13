@@ -194,24 +194,29 @@ namespace Mpdn.Extensions.Framework
 
         public static void LoadAudioKernel(this GPGPU gpu, Type type, params Type[] types)
         {
-            gpu.LoadModule(GetCudafyModule(type, types), false);
+            var allTypes = types.Concat(new[] {type}).ToArray();
+            if (gpu.Modules.Select(module => (Type[]) module.Tag).Any(t => !t.Except(allTypes).Any()))
+                return;
+
+            gpu.LoadModule(GetCudafyModule(allTypes), false);
         }
 
-        private static CudafyModule GetCudafyModule(Type type, params Type[] types)
+        private static CudafyModule GetCudafyModule(Type[] types)
         {
-            var joined = string.Join(",", type.ToString(), string.Join(",", types.Select(t => t.ToString()))).TrimEnd(',');
+            var joined = string.Join(",", types.Select(t => t.ToString()));
             var filename = string.Format("{0}.cdfy", Path.Combine(AudioKernelCacheRoot, joined));
             var km = CudafyModule.TryDeserialize(filename);
             if (km != null && km.TryVerifyChecksums())
+            {
+                km.Tag = types;
                 return km;
+            }
 
-            var ts = new Type[types.Length + 1];
-            ts[0] = type;
-            Array.Copy(types, 0, ts, 1, types.Length);
-            km = CudafyTranslator.Cudafy(eArchitecture.OpenCL, ts);
+            km = CudafyTranslator.Cudafy(eArchitecture.OpenCL, types);
             Directory.CreateDirectory(AudioKernelCacheRoot);
             km.Serialize(filename);
 
+            km.Tag = types;
             return km;
         }
 

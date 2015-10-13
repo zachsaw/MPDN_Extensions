@@ -29,6 +29,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
         public AudioChainScript(Chain.Chain<Audio> chain)
         {
             Chain = chain;
+            AudioProc.Initialize();
         }
 
         ~AudioChainScript()
@@ -46,6 +47,11 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             Chain.Reset();
             m_Audio = null;
+
+            if (disposing)
+            {
+                AudioProc.Destroy();
+            }
         }
 
         public bool Execute()

@@ -16,23 +16,15 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using Cudafy;
 using Cudafy.Host;
 using DirectShowLib;
-using Mpdn.OpenCl;
-using Mpdn.RenderScript;
 using Mpdn.Extensions.Framework.Chain;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
     public abstract class AudioChain : Chain<Audio>
     {
-        private const int THREAD_COUNT = 512;
-
-        private GPGPU m_Gpu;
-
         private AudioSampleFormat m_SampleFormat = AudioSampleFormat.Unknown;
         private Func<IntPtr, short, int, IMediaSample, bool> m_ProcessFunc;
 
@@ -49,25 +41,6 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             try
             {
-                var devices = CudafyHost.GetDeviceProperties(eGPUType.OpenCL).ToArray();
-                var device = devices.FirstOrDefault(d => d.Integrated && d.PlatformName.Contains("Intel(R)")); // use Intel iGPU if possible
-                if (device == null || IsInUseForVideoRendering(device))
-                {
-                    // Fallback to CPU (prefer AMD Accelerated Parallel Processing first as it is faster)
-                    const string cpuId = " CPU ";
-                    device = devices.FirstOrDefault(d => d.Name.Contains(cpuId) && d.PlatformName.Contains("AMD"));
-                    if (device == null)
-                    {
-                        // Settle for any CPU OpenCL device (most likely Intel OpenCL) as the last resort
-                        device = devices.FirstOrDefault(d => d.Name.Contains(cpuId));
-                        if (device == null)
-                        {
-                            throw new OpenClException("Error: CPU OpenCL drivers not installed");
-                        }
-                    }
-                }
-                m_Gpu = CudafyHost.GetDevice(eGPUType.OpenCL, device.DeviceId);
-                m_Gpu.LoadAudioKernel(typeof(AudioKernels));
                 OnLoadAudioKernel();
             }
             catch (Exception ex)
@@ -78,20 +51,22 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         public override void Reset()
         {
-            Cleanup();
-        }
-
-        private static bool IsInUseForVideoRendering(GPGPUProperties device)
-        {
-            var name1 = device.Name.Trim();
-            var name2 = Renderer.Dx9GpuInfo.Details.Description.Trim();
-            return name1.Contains(name2) || name2.Contains(name1);
+            try
+            {
+                DisposeHelper.Dispose(ref m_OutputSample);
+                m_SampleFormat = AudioSampleFormat.Unknown;
+                DisposeGpuResources();
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex);
+            }
         }
 
         protected Audio Input { get; private set; }
         protected Audio Output { get; private set; }
 
-        protected GPGPU Gpu { get { return m_Gpu; } }
+        protected GPGPU Gpu { get { return AudioProc.Gpu; } }
 
         protected virtual bool CpuOnly { get { return false; } }
 
@@ -208,21 +183,20 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             UpdateGpuResources(length);
 
-            var gpu = m_Gpu;
             var sampleCount = length / channels;
             try
             {
                 var devInputSamples = GetDevInputSamples<T>(length);
                 var devInputResult = GetDevNormSamples(channels, sampleCount);
                 var devOutputResult = GetDevOutputSamples<T>(length);
-                gpu.CopyToDevice(samples, 0, devInputSamples, 0, length);
-                gpu.Launch(THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
+                Gpu.CopyToDevice(samples, 0, devInputSamples, 0, length);
+                Gpu.Launch(AudioProc.THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
                     devInputSamples, devInputResult);
                 Process(devInputResult, channels, sampleCount);
                 output.GetPointer(out samples);
-                gpu.Launch(THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
+                Gpu.Launch(AudioProc.THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
                     devInputResult, devOutputResult);
-                gpu.CopyFromDevice(devOutputResult, 0, samples, 0, length);
+                Gpu.CopyFromDevice(devOutputResult, 0, samples, 0, length);
             }
             catch (Exception ex)
             {
@@ -273,15 +247,14 @@ namespace Mpdn.Extensions.Framework.AudioChain
             var sampleCount = samples.GetLength(1);
             var channels = samples.GetLength(0);
             var length = sampleCount * channels;
-            var gpu = m_Gpu;
             try
             {
                 var devSamples = GetDevNormSamples(channels, sampleCount);
                 var devOutput = GetDevOutputSamples<T>(length);
-                gpu.CopyToDevice(samples, devSamples);
-                gpu.Launch(THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
+                Gpu.CopyToDevice(samples, devSamples);
+                Gpu.Launch(AudioProc.THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
                     devSamples, devOutput);
-                gpu.CopyFromDevice(devOutput, 0, output, 0, length);
+                Gpu.CopyFromDevice(devOutput, 0, output, 0, length);
             }
             catch (Exception ex)
             {
@@ -293,16 +266,15 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         private float[,] GetInputSamplesCpu<T>(IntPtr samples, int channels, int length) where T : struct
         {
-            var gpu = m_Gpu;
             var result = new float[channels, length / channels];
             try
             {
                 var devSamples = GetDevInputSamples<T>(length);
                 var devOutput = GetDevNormSamples(channels, length / channels);
-                gpu.CopyToDevice(samples, 0, devSamples, 0, length);
-                gpu.Launch(THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
+                Gpu.CopyToDevice(samples, 0, devSamples, 0, length);
+                Gpu.Launch(AudioProc.THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
                     devSamples, devOutput);
-                gpu.CopyFromDevice(devOutput, result);
+                Gpu.CopyFromDevice(devOutput, result);
             }
             catch (Exception ex)
             {
@@ -310,31 +282,6 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 return null;
             }
             return result;
-        }
-
-        private void Cleanup()
-        {
-            try
-            {
-                DisposeHelper.Dispose(ref m_OutputSample);
-                
-                m_SampleFormat = AudioSampleFormat.Unknown;
-
-                if (m_Gpu == null)
-                    return;
-
-                DisposeGpuResources();
-
-                m_Gpu.FreeAll();
-                m_Gpu.HostFreeAll();
-                m_Gpu.DestroyStreams();
-                m_Gpu.UnloadModules();
-                DisposeHelper.Dispose(ref m_Gpu);
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
         }
 
         public virtual bool Process(Audio input, Audio output)
