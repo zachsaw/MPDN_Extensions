@@ -28,7 +28,7 @@ namespace Mpdn.Extensions.RenderScripts
         {
             public override IFilter Process(IFilter input)
             {
-                return Options.Aggregate(input, (result, chain) => result + chain);
+                return ActiveOptions.Aggregate(input, (result, chain) => result + chain);
             }
         }
 
