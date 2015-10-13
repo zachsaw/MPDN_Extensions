@@ -15,12 +15,11 @@
 // License along with this library.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Mpdn.Extensions.Framework.Chain;
-using Mpdn.Extensions.Framework.AudioChain;
 using Mpdn.AudioScript;
+using Mpdn.Extensions.Framework.AudioChain;
+using Mpdn.Extensions.Framework.Chain;
 
 namespace Mpdn.Extensions.AudioScripts
 {

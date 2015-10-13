@@ -18,15 +18,16 @@ using System;
 using System.Diagnostics;
 using DirectShowLib;
 using Mpdn.AudioScript;
+using Mpdn.Extensions.Framework.Chain;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
     public class AudioChainScript : IAudioScript, IDisposable
     {
-        protected readonly Chain.Chain<Audio> Chain;
+        protected readonly Chain<Audio> Chain;
         private IAudio m_Audio;
 
-        public AudioChainScript(Chain.Chain<Audio> chain)
+        public AudioChainScript(Chain<Audio> chain)
         {
             Chain = chain;
             AudioProc.Initialize();

@@ -14,15 +14,16 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.PlayerExtensions.DisplayChangerNativeMethods;
 using Mpdn.Extensions.PlayerExtensions.GitHub;
-using Rectangle = System.Drawing.Rectangle;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {

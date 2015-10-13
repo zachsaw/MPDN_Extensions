@@ -25,16 +25,19 @@ using System.ComponentModel.Design.Serialization;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Forms.Integration;
+using System.Windows.Media;
 using System.Xml;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 
 namespace Mpdn.Extensions.Framework.Controls
 {
     [Designer("System.Windows.Forms.Design.ControlDesigner, System.Design")]
     [DesignerSerializer("System.ComponentModel.Design.Serialization.TypeCodeDomSerializer , System.Design",
         "System.ComponentModel.Design.Serialization.CodeDomSerializer, System.Design")]
-    public class AvalonEditHost : System.Windows.Forms.Integration.ElementHost
+    public class AvalonEditHost : ElementHost
     {
         private readonly TextEditor m_AvalonEdit = new TextEditor();
 
@@ -50,7 +53,7 @@ namespace Mpdn.Extensions.Framework.Controls
             m_AvalonEdit.VerticalAlignment = VerticalAlignment.Stretch;
 
             m_AvalonEdit.ShowLineNumbers = true;
-            m_AvalonEdit.FontFamily = new System.Windows.Media.FontFamily("Consolas");
+            m_AvalonEdit.FontFamily = new FontFamily("Consolas");
             m_AvalonEdit.FontSize = 12.75f;
 
             LoadSyntaxHighlighter();
@@ -69,9 +72,7 @@ namespace Mpdn.Extensions.Framework.Controls
             {
                 using (var xr = new XmlTextReader(stream))
                 {
-                    m_AvalonEdit.SyntaxHighlighting =
-                        ICSharpCode.AvalonEdit.Highlighting.Xshd.HighlightingLoader.Load(xr,
-                            HighlightingManager.Instance);
+                    m_AvalonEdit.SyntaxHighlighting = HighlightingLoader.Load(xr, HighlightingManager.Instance);
                 }
             }
         }

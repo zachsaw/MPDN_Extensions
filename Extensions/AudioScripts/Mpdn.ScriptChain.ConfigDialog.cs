@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
+using Mpdn.AudioScript;
+using Mpdn.Extensions.Framework.AudioChain;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.Controls;
-using Mpdn.Extensions.Framework.AudioChain;
-using Mpdn.AudioScript;
 
 namespace Mpdn.Extensions.AudioScripts
 {

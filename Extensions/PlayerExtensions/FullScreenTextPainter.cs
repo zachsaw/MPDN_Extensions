@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;

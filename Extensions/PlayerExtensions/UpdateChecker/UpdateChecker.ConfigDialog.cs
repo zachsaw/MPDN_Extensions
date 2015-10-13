@@ -15,7 +15,6 @@
 // License along with this library.
 // 
 
-using System.Windows.Controls;
 using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker

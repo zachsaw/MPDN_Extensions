@@ -19,9 +19,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
 using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
-using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
+using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
+using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
 
@@ -62,8 +64,8 @@ namespace Mpdn.Extensions.RenderScripts
                     Options = new List<IRenderChainUi>
                     {
                         new SuperXbrUi(),
-                        new Nedi.NediScaler(),
-                        new NNedi3.NNedi3Scaler(),
+                        new NediScaler(),
+                        new NNedi3Scaler(),
                         new OclNNedi3Scaler()
                     }
                         .Select(x => x.ToPreset())

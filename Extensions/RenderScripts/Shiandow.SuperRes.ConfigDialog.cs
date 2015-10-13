@@ -19,6 +19,7 @@ using System.Linq;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -88,7 +89,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 SaveSettings();
 
-                var groupUi = new Mpdn.ScriptGroup.ScriptGroupScript { Settings = Settings.PrescalerGroup };
+                var groupUi = new ScriptGroupScript { Settings = Settings.PrescalerGroup };
                 groupUi.ShowConfigDialog(Owner);
 
                 LoadSettings();

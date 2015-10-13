@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using YAXLib;
-    
+
 namespace Mpdn.Extensions.Framework.Chain
 {
     public interface INameable

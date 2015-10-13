@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
+using System;
 using System.IO;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
@@ -43,7 +45,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Settings.ScriptFileName = textBoxScript.Text;
             }
 
-            private void EditClick(object sender, System.EventArgs e)
+            private void EditClick(object sender, EventArgs e)
             {
                 var file = textBoxScript.Text;
                 if (!EnsureFileExists(file)) 
@@ -70,7 +72,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return true;
             }
 
-            private void SelectFileClick(object sender, System.EventArgs e)
+            private void SelectFileClick(object sender, EventArgs e)
             {
                 openFileDialog.FileName = textBoxScript.Text;
                 openFileDialog.InitialDirectory = PathHelper.GetDirectoryName(openFileDialog.FileName);

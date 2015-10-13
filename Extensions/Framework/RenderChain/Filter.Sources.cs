@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
+using System.Drawing;
 using Mpdn.RenderScript;
-using Size = System.Drawing.Size;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {

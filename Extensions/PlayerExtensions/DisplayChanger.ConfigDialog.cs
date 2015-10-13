@@ -15,6 +15,7 @@
 // License along with this library.
 // 
 
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
@@ -51,7 +52,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             Settings.VideoTypes = textBoxVideoTypes.Text;
         }
 
-        private void TextBoxVideoTypesValidating(object sender, System.ComponentModel.CancelEventArgs e)
+        private void TextBoxVideoTypesValidating(object sender, CancelEventArgs e)
         {
             var s = textBoxVideoTypes.Text.Split(' ');
             var valid = s.All(VideoSpecifier.IsValid);

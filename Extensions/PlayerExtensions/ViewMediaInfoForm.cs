@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using MediaInfoDotNet;
@@ -170,7 +172,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (e.KeyData == Keys.Escape) Close();
         }
 
-        private void ViewMediaInfoFormShown(object sender, System.EventArgs e)
+        private void ViewMediaInfoFormShown(object sender, EventArgs e)
         {
             // Workaround media info form going behind player when it's set to TopMost
             // For some reason, using the web browser can cause this buggy behavior
