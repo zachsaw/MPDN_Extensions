@@ -1093,6 +1093,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void LoadNextInBackground()
         {
+            if (!m_PlayListUi.Settings.PreloadNextFile)
+                return;
+
             var next = m_CurrentPlayIndex + 1;
             if (next < Playlist.Count)
             {

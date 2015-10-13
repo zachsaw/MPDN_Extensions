@@ -851,6 +851,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public AfterPlaybackSettingsOpt AfterPlaybackOpt { get; set; }
         public AfterPlaybackSettingsAction AfterPlaybackAction { get; set; }
         public IconScale IconScale { get; set; }
+        public bool PreloadNextFile { get; set; }
         public bool BeginPlaybackOnStartup { get; set; }
         public bool RememberWindowSize { get; set; }
         public bool RememberWindowPosition { get; set; }
@@ -898,6 +899,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             ShowPlaylistOnStartup = false;
             AfterPlaybackOpt = AfterPlaybackSettingsOpt.DoNothing;
             AfterPlaybackAction = AfterPlaybackSettingsAction.DoNothing;
+            PreloadNextFile = true;
             BeginPlaybackOnStartup = false;
             ShowToolTips = true;
             SnapWithPlayer = true;
