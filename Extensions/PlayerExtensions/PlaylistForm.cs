@@ -846,9 +846,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (nextFile == null) return;
 
-            Media.Open(nextFile);
-
-            if (Playlist.Count == 1) ActiveFile(nextFile);
+            if (Playlist.Count == 1) ActiveFile(nextFile, true);
             else OpenFiles(new[] {nextFile});
         }
 
@@ -951,7 +949,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             OpenMedia(true);
         }
 
-        public void ActiveFile(string fileName)
+        public void ActiveFile(string fileName, bool play = false)
         {
             ResetActive();
             var item = new PlaylistItem(fileName, true);
@@ -959,6 +957,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Playlist.Add(item);
             CurrentItem = item;
             PopulatePlaylist();
+
+            if (play) OpenMedia();
 
             if (!Duration.Visible) return;
             Task.Factory.StartNew(GetCurrentMediaDuration);
