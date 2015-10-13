@@ -128,7 +128,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private ToolTip m_PlayCountToolTip;
 
-        private AfterPlaybackSettingsOpt prevAfterPlaybackOpt;
+        private AfterPlaybackSettingsOpt m_PrevAfterPlaybackOpt;
 
         private string m_LoadNextFilePath;
         private Task<IMedia> m_LoadNextTask;
@@ -179,29 +179,29 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             Task.Factory.StartNew(LoadCustomSettings);
 
-            Load += PlaylistForm_Load;
-            Shown += PlaylistForm_Shown;
+            Load += PlaylistFormLoad;
+            Shown += PlaylistFormShown;
 
             OnRegexChange += PlaylistForm_OnRegexChange;
 
-            dgv_PlayList.RowPrePaint += dgv_PlayList_RowPrePaint;
-            dgv_PlayList.CellFormatting += dgv_PlayList_CellFormatting;
-            dgv_PlayList.CellPainting += dgv_PlayList_CellPainting;
-            dgv_PlayList.CellDoubleClick += dgv_PlayList_CellDoubleClick;
-            dgv_PlayList.CellEndEdit += dgv_PlayList_CellEndEdit;
-            dgv_PlayList.EditingControlShowing += dgv_PlayList_EditingControlShowing;
-            dgv_PlayList.CellMouseEnter += dgv_PlayList_CellMouseEnter;
-            dgv_PlayList.CellMouseLeave += dgv_PlayList_CellMouseLeave;
-            dgv_PlayList.MouseMove += dgv_PlayList_MouseMove;
-            dgv_PlayList.MouseDown += dgv_PlayList_MouseDown;
-            dgv_PlayList.MouseUp += dgv_PlayList_MouseUp;
-            dgv_PlayList.KeyDown += dgv_Playlist_KeyDown;
-            dgv_PlayList.DragOver += dgv_PlayList_DragOver;
-            dgv_PlayList.DragDrop += dgv_PlayList_DragDrop;
-            dgv_PlayList.RowsAdded += dgv_PlayList_RowsAdded;
-            dgv_PlayList.RowsRemoved += dgv_PlayList_RowsRemoved;
-            dgv_PlayList.SelectionChanged += dgv_PlayList_SelectionChanged;
-            dgv_PlayList.ColumnStateChanged += dgv_PlayList_ColumnStateChanged;
+            dgv_PlayList.RowPrePaint += DgvPlayListRowPrePaint;
+            dgv_PlayList.CellFormatting += DgvPlayListCellFormatting;
+            dgv_PlayList.CellPainting += DgvPlayListCellPainting;
+            dgv_PlayList.CellDoubleClick += DgvPlayListCellDoubleClick;
+            dgv_PlayList.CellEndEdit += DgvPlayListCellEndEdit;
+            dgv_PlayList.EditingControlShowing += DgvPlayListEditingControlShowing;
+            dgv_PlayList.CellMouseEnter += DgvPlayListCellMouseEnter;
+            dgv_PlayList.CellMouseLeave += DgvPlayListCellMouseLeave;
+            dgv_PlayList.MouseMove += DgvPlayListMouseMove;
+            dgv_PlayList.MouseDown += DgvPlayListMouseDown;
+            dgv_PlayList.MouseUp += DgvPlayListMouseUp;
+            dgv_PlayList.KeyDown += DgvPlaylistKeyDown;
+            dgv_PlayList.DragOver += DgvPlayListDragOver;
+            dgv_PlayList.DragDrop += DgvPlayListDragDrop;
+            dgv_PlayList.RowsAdded += DgvPlayListRowsAdded;
+            dgv_PlayList.RowsRemoved += DgvPlayListRowsRemoved;
+            dgv_PlayList.SelectionChanged += DgvPlayListSelectionChanged;
+            dgv_PlayList.ColumnStateChanged += DgvPlayListColumnStateChanged;
 
             Player.StateChanged += PlayerStateChanged;
             Player.Playback.Completed += PlaybackCompleted;
@@ -571,14 +571,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public void SavePlaylist(string filename)
         {
             IEnumerable<string> playlist;
-            var containsChapter = false;
-
-            foreach (var item in Playlist.Where(item => item.HasChapter))
-            {
-                containsChapter = true;
-            }
-
-            if (containsChapter)
+            if (Playlist.Any(item => item.HasChapter))
             {
                 playlist =
                     Playlist
@@ -837,17 +830,22 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (Player.State == PlayerState.Closed) return;
 
+            var nextFile = GetNextFileInDirectory(next);
+            if (nextFile == null) return;
+
+            if (Playlist.Count == 1) ActiveFile(nextFile, true);
+            else OpenFiles(new[] {nextFile});
+        }
+
+        private string GetNextFileInDirectory(bool next = true)
+        {
             string mediaPath = Media.FilePath;
             string mediaDir = Path.GetDirectoryName(mediaPath);
             var mediaFiles = m_PlayListUi.GetMediaFiles(mediaDir);
             string nextFile = next
                 ? mediaFiles.SkipWhile(file => file != mediaPath).Skip(1).FirstOrDefault()
                 : mediaFiles.TakeWhile(file => file != mediaPath).LastOrDefault();
-
-            if (nextFile == null) return;
-
-            if (Playlist.Count == 1) ActiveFile(nextFile, true);
-            else OpenFiles(new[] {nextFile});
+            return nextFile;
         }
 
         private void OpenMedia(bool queue = false)
@@ -905,13 +903,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             catch (Exception ex)
             {
+                DisposeLoadNextTask();
                 Player.HandleException(ex);
                 PlayNext();
             }
 
-            dgv_PlayList.Invalidate();
-
             DisposeLoadNextTask();
+
+            dgv_PlayList.Invalidate();
 
             if (string.IsNullOrEmpty(Media.FilePath)) return;
             if (!Duration.Visible) return;
@@ -962,6 +961,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (!Duration.Visible) return;
             Task.Factory.StartNew(GetCurrentMediaDuration);
+            LoadNextInBackground();
         }
 
         private void AddFilesToPlaylist(IEnumerable<string> fileNames)
@@ -1024,7 +1024,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             var result = input.ShowDialog();
             if (result == DialogResult.Cancel) return;
 
-            if (IsValidUrl(input.Input)) AddFiles(new string[] { input.Input });
+            if (IsValidUrl(input.Input)) AddFiles(new[] { input.Input });
         }
 
         public void OpenFiles(string[] fileNames)
@@ -1082,7 +1082,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (IsValidUrl(input.Input)) OpenFiles(new[] { input.Input });
         }
 
-        private void DisposeLoadNextTask()
+        public void DisposeLoadNextTask()
         {
             if (m_LoadNextTask == null) return;
 
@@ -1091,20 +1091,43 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_LoadNextTask = null;
         }
 
-        private void LoadNextInBackground()
+        public void LoadNextInBackground()
         {
             var next = m_CurrentPlayIndex + 1;
-            if (next >= Playlist.Count)
+            if (next < Playlist.Count)
+            {
+                var item = Playlist[next];
+                if (!File.Exists(item.FilePath) && !IsValidUrl(item.FilePath)) return;
+                LoadInBackground(item.FilePath);
+            }
+            else
+            {
+                switch (m_PlayListUi.Settings.AfterPlaybackOpt)
+                {
+                    case AfterPlaybackSettingsOpt.PlayNextFileInFolder:
+                        LoadInBackground(GetNextFileInDirectory());
+                        break;
+                    case AfterPlaybackSettingsOpt.RepeatPlaylist:
+                        var item = Playlist[0];
+                        if (!File.Exists(item.FilePath) && !IsValidUrl(item.FilePath)) return;
+                        LoadInBackground(item.FilePath);
+                        break;
+                }
+            }
+        }
+
+        private void LoadInBackground(string filePath)
+        {
+            if (m_LoadNextTask != null)
                 return;
 
-            var item = Playlist[next];
-            if (!File.Exists(item.FilePath) && !IsValidUrl(item.FilePath)) return;
-            m_LoadNextFilePath = item.FilePath;
+            m_LoadNextFilePath = filePath;
             m_LoadNextTask = Task.Factory.StartNew(() =>
             {
+                Thread.Sleep(1000); // start loading 1s later
                 try
                 {
-                    return Media.Load(item.FilePath);
+                    return Media.Load(filePath);
                 }
                 catch (Exception ex)
                 {
@@ -1338,12 +1361,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 int dotIdx = i.IndexOf('.');
                 var c = statusStrip1.Items.Find(i.Substring(0, dotIdx), true).FirstOrDefault();
+                if (c == null) continue;
                 if (!File.Exists(PLAYLIST_ICONS_DIR + @"\" + Theme + @"\" + i))
                 {
                     c.Visible = false;
                     continue;
                 }
-                if (c == null) continue;
                 c.Visible = true;
                 c.Width = IconSize + 8;
                 c.Height = IconSize + 9;
@@ -2015,7 +2038,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #region Playlist Datagridview Events
 
-        private void dgv_PlayList_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
+        private void DgvPlayListRowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
         {
             if ((e.State & DataGridViewElementStates.Selected) == DataGridViewElementStates.Selected &&
                 m_SelectionColor != Color.Empty)
@@ -2056,7 +2079,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             e.Handled = true;
         }
 
-        private void dgv_PlayList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void DgvPlayListCellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             var skipChapterCell = dgv_PlayList.Rows[e.RowIndex].Cells[m_SkipCellIndex];
             var endChapterCell = dgv_PlayList.Rows[e.RowIndex].Cells[m_EndCellIndex];
@@ -2064,7 +2087,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (skipChapterCell.IsInEditMode || endChapterCell.IsInEditMode) e.CellStyle.ForeColor = m_FontColor;
         }
 
-        private void dgv_PlayList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        private void DgvPlayListCellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
             if (e.RowIndex == -1)
             {
@@ -2100,27 +2123,27 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
-        private void dgv_PlayList_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+        private void DgvPlayListRowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
             SetControlStates();
         }
 
-        private void dgv_PlayList_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
+        private void DgvPlayListRowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
         {
             SetControlStates();
         }
 
-        private void dgv_PlayList_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private void DgvPlayListCellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             PlaySelectedFile();
         }
 
-        private void dgv_PlayList_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        private void DgvPlayListCellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             ParseChapterInput();
         }
 
-        private void dgv_PlayList_ColumnStateChanged(object sender, DataGridViewColumnStateChangedEventArgs e)
+        private void DgvPlayListColumnStateChanged(object sender, DataGridViewColumnStateChangedEventArgs e)
         {
             if (e.Column.Name == "Duration" && e.Column.Visible)
             {
@@ -2129,25 +2152,24 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
-        private void dgv_PlayList_SelectionChanged(object sender, EventArgs e)
+        private void DgvPlayListSelectionChanged(object sender, EventArgs e)
         {
             if (Playlist.Count == 0) return;
             SetInitialDirectory();
         }
 
-        private void dgv_PlayList_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        private void DgvPlayListEditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
         {
-            e.Control.KeyPress -= dgv_PlayList_HandleInput;
+            e.Control.KeyPress -= DgvPlayListHandleInput;
             if (dgv_PlayList.CurrentCell.ColumnIndex <= 1) return;
 
             var tb = e.Control as TextBox;
-            if (tb != null) tb.KeyPress += dgv_PlayList_HandleInput;
+            if (tb != null) tb.KeyPress += DgvPlayListHandleInput;
         }
 
-        private void dgv_PlayList_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        private void DgvPlayListCellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
             if (!ShowToolTips) return;
-            if (dgv_PlayList.Rows == null && dgv_PlayList.Rows.Count == 0) return;
             int row = e.RowIndex;
             if (row == -1) return;
             if (Playlist.Count <= 0) return;
@@ -2172,13 +2194,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
-        private void dgv_PlayList_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        private void DgvPlayListCellMouseLeave(object sender, DataGridViewCellEventArgs e)
         {
             if (!ShowToolTips) return;
             if (m_PlayCountToolTip != null) m_PlayCountToolTip.Dispose();
         }
 
-        private void dgv_PlayList_HandleInput(object sender, KeyPressEventArgs e)
+        private void DgvPlayListHandleInput(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != ',' && e.KeyChar != ' ' &&
                 dgv_PlayList.CurrentCell.ColumnIndex == m_SkipCellIndex)
@@ -2195,7 +2217,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
-        private void dgv_Playlist_KeyDown(object sender, KeyEventArgs e)
+        private void DgvPlaylistKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Tab)
             {
@@ -2213,14 +2235,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
-        private void dgv_PlayList_MouseMove(object sender, MouseEventArgs e)
+        private void DgvPlayListMouseMove(object sender, MouseEventArgs e)
         {
             if (Playlist.Count < 2) return;
             if (e.Button != MouseButtons.Left) return;
             if (m_DragRowRect != Rectangle.Empty && !m_DragRowRect.Contains(e.X, e.Y) && m_IsDragging) dgv_PlayList.DoDragDrop(dgv_PlayList.Rows[m_DragRowIndex], DragDropEffects.Move);
         }
 
-        private void dgv_PlayList_MouseDown(object sender, MouseEventArgs e)
+        private void DgvPlayListMouseDown(object sender, MouseEventArgs e)
         {
             var hit = dgv_PlayList.HitTest(e.X, e.Y);
             m_DragRowIndex = dgv_PlayList.HitTest(e.X, e.Y).RowIndex;
@@ -2248,19 +2270,19 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
         }
 
-        private void dgv_PlayList_MouseUp(object sender, MouseEventArgs e)
+        private void DgvPlayListMouseUp(object sender, MouseEventArgs e)
         {
             m_DragRowIndex = dgv_PlayList.HitTest(e.X, e.Y).RowIndex;
 
             if (m_DragRowIndex != -1) m_IsDragging = false;
         }
 
-        private void dgv_PlayList_DragOver(object sender, DragEventArgs e)
+        private void DgvPlayListDragOver(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.Move;
         }
 
-        private void dgv_PlayList_DragDrop(object sender, DragEventArgs e)
+        private void DgvPlayListDragDrop(object sender, DragEventArgs e)
         {
             var formats = e.Data.GetFormats();
             const string url = "UniformResourceLocator";
@@ -2497,9 +2519,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void ButtonRepeatPlaylistClick(object sender, EventArgs e)
         {
             if (m_PlayListUi.Settings.AfterPlaybackOpt != AfterPlaybackSettingsOpt.RepeatPlaylist)
-                prevAfterPlaybackOpt = m_PlayListUi.Settings.AfterPlaybackOpt;
+                m_PrevAfterPlaybackOpt = m_PlayListUi.Settings.AfterPlaybackOpt;
 
-            m_PlayListUi.Settings.AfterPlaybackOpt = m_PlayListUi.Settings.AfterPlaybackOpt != AfterPlaybackSettingsOpt.RepeatPlaylist ? AfterPlaybackSettingsOpt.RepeatPlaylist : prevAfterPlaybackOpt;
+            m_PlayListUi.Settings.AfterPlaybackOpt = m_PlayListUi.Settings.AfterPlaybackOpt != AfterPlaybackSettingsOpt.RepeatPlaylist ? AfterPlaybackSettingsOpt.RepeatPlaylist : m_PrevAfterPlaybackOpt;
             SetControlStates();
         }
 
@@ -2517,18 +2539,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         #region Form Events
 
-        private void PlaylistForm_Load(object sender, EventArgs e)
+        private void PlaylistFormLoad(object sender, EventArgs e)
         {
             SetColumnSize();
         }
 
-        private void PlaylistForm_Shown(object sender, EventArgs e)
+        private void PlaylistFormShown(object sender, EventArgs e)
         {
             FitColumnsToHeader();
             SetColumnSize();
         }
 
-        private void PlaylistForm_KeyDown(object sender, KeyEventArgs e)
+        private void PlaylistFormKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyData == Keys.Escape) Hide();
 
@@ -2778,8 +2800,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void DrawImageKeepAspectRatio(Graphics g, Rectangle bounds)
         {
-            double ratioX = (double)bounds.Width / (double)BackgroundImage.Width;
-            double ratioY = (double)bounds.Height / (double)BackgroundImage.Height;
+            double ratioX = bounds.Width / (double)BackgroundImage.Width;
+            double ratioY = bounds.Height / (double)BackgroundImage.Height;
             double ratio = ratioX < ratioY ? ratioX : ratioY;
 
             var scaleWidth = (int)(BackgroundImage.Width * ratio);
@@ -2793,8 +2815,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void DrawImageZoomed(Graphics g, Rectangle bounds)
         {
-            double ratioX = (double)bounds.Width / (double)BackgroundImage.Width;
-            double ratioY = (double)bounds.Height / (double)BackgroundImage.Height;
+            double ratioX = bounds.Width / (double)BackgroundImage.Width;
+            double ratioY = bounds.Height / (double)BackgroundImage.Height;
             double ratio = ratioX < ratioY ? ratioY : ratioX;
 
             var scaleWidth = (int)(BackgroundImage.Width * ratio);
@@ -2861,7 +2883,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
     [ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.StatusStrip)]
     public class ButtonStripItem : ToolStripControlHostProxy
     {
-        private bool isHovering;
+        private bool m_IsHovering;
 
         public ButtonStripItem()
             : base(CreateButtonInstance())
@@ -2880,13 +2902,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         protected override void OnMouseEnter(EventArgs e)
         {
             base.OnMouseEnter(e);
-            isHovering = true;
+            m_IsHovering = true;
         }
 
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
-            isHovering = false;
+            m_IsHovering = false;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -2897,11 +2919,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 var greyScaleMatrix = new ColorMatrix(new[]
                 {
-                    new float[] {0.30f, 0.30f, 0.30f, 0, 0},
-                    new float[] {0.59f, 0.59f, 0.59f, 0, 0},
-                    new float[] {0.11f, 0.11f, 0.11f, 0, 0},
-                    new float[] {0, 0, 0, 1, 0},
-                    new float[] {0, 0, 0, 0, 1}
+                    new[] {0.30f, 0.30f, 0.30f, 0, 0},
+                    new[] {0.59f, 0.59f, 0.59f, 0, 0},
+                    new[] {0.11f, 0.11f, 0.11f, 0, 0},
+                    new[] {0f, 0, 0, 1, 0},
+                    new[] {0f, 0, 0, 0, 1}
                 });
 
                 var attr = new ImageAttributes();
@@ -2920,7 +2942,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             else
             {
-                if (!isHovering)
+                if (!m_IsHovering)
                 {
                     var attr = new ImageAttributes();
                     attr.SetWrapMode(WrapMode.TileFlipXY);
@@ -3029,14 +3051,14 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
     public static class ThreadSafeRandom
     {
-        [ThreadStatic] private static Random Local;
+        [ThreadStatic] private static Random s_Local;
 
         public static Random ThisThreadsRandom
         {
             get
             {
-                return Local ??
-                       (Local = new Random(unchecked(Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId)));
+                return s_Local ??
+                       (s_Local = new Random(unchecked(Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId)));
             }
         }
     }
@@ -3049,8 +3071,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
     {
         public static IList<string> NaturalSort(this IList<string> list)
         {
-            return list.OrderBy(f => Path.GetDirectoryName(f), new NaturalSortComparer())
-                .ThenBy(f => Path.GetFileName(f), new NaturalSortComparer()).ToList();
+            return list.OrderBy(Path.GetDirectoryName, new NaturalSortComparer())
+                .ThenBy(Path.GetFileName, new NaturalSortComparer()).ToList();
         }
 
         public static void Shuffle<T>(this IList<T> list)

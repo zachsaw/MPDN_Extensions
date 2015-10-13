@@ -30,7 +30,6 @@ namespace Mpdn.Extensions.Framework.AudioChain
         public AudioChainScript(Chain<Audio> chain)
         {
             Chain = chain;
-            AudioProc.Initialize();
         }
 
         ~AudioChainScript()
@@ -83,6 +82,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
             }
 
             m_Audio = audio;
+            AudioProc.Initialize();
             Chain.Initialize();
         }
     }

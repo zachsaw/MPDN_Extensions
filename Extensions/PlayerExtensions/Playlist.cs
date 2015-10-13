@@ -652,6 +652,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnMpdnFormClosed(object sender, EventArgs e)
         {
+            m_Form.DisposeLoadNextTask();
             RememberSettings();
         }
 
