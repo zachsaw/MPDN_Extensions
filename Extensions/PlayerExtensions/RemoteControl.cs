@@ -610,6 +610,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ClearPlaylist()
         {
             _playlistInstance.GetPlaylistForm.ClearPlaylist();
+            _playlistInstance.GetPlaylistForm.PopulatePlaylist();
+            GetPlaylist(Guid.Empty, true);
         }
 
         private void AddFilesToPlaylist(string files)
