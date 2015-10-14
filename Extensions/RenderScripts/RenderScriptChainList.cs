@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -14,32 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.Controls;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
-    namespace Mpdn.ScriptChain
+    public class RenderScriptChainList : ChainList<IFilter, IRenderScript>
     {
-        public partial class ScriptChainDialog : ScriptChainDialogBase
-        {
-            public ScriptChainDialog()
-            {
-                InitializeComponent();
-            }
-
-            protected override void LoadSettings()
-            {
-                m_ChainList.PresetList = Settings.Options;
-            }
-
-            protected override void SaveSettings()
-            {
-                Settings.Options = m_ChainList.PresetList;
-            }
-        }
-
-        public class ScriptChainDialogBase : ScriptConfigDialog<ScriptChain>
-        {
-        }
     }
 }

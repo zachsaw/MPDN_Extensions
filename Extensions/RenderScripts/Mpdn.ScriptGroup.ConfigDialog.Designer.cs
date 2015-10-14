@@ -53,7 +53,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonOk = new System.Windows.Forms.Button();
             this.HotkeyLabel = new System.Windows.Forms.Label();
             this.HotkeyBox = new Framework.Controls.HotkeyBox();
-            this.m_ChainList = new Framework.Controls.ChainList<IFilter, IRenderScript>();
+            this.m_ChainList = new RenderScriptChainList();
             this.SuspendLayout();
             // 
             // buttonCancel
@@ -143,7 +143,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button buttonOk;
             private System.Windows.Forms.Label HotkeyLabel;
             private Framework.Controls.HotkeyBox HotkeyBox;
-            private Framework.Controls.ChainList<IFilter, IRenderScript> m_ChainList;
+            private RenderScriptChainList m_ChainList;
         }
     }
 }  
