@@ -539,7 +539,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             SetupPlaylist();
         }
 
-        private void OnPlayerStateChanged(object sender, EventArgs e)
+        private void OnPlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
             SetActiveFile();
         }
@@ -652,8 +652,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnMpdnFormClosed(object sender, EventArgs e)
         {
-            m_Form.DisposeLoadNextTask();
             RememberSettings();
+            // Do the following in the background to prevent it holding up the UI thread
+            Task.Factory.StartNew(() => m_Form.DisposeLoadNextTask());
         }
 
         private void OnMpdnFormMove(object sender, EventArgs e)
