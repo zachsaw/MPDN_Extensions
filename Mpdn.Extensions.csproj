@@ -118,6 +118,9 @@
     <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\AudioScripts\Mpdn.AudioScriptChainList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Extensions\AudioScripts\Mpdn.DynamicRangeCompressor.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -133,6 +136,13 @@
       <DependentUpon>Mpdn.ScriptChain.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\AudioScripts\Mpdn.ScriptChain.cs" />
+    <Compile Include="Extensions\AudioScripts\Mpdn.ScriptGroup.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\AudioScripts\Mpdn.ScriptGroup.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.ScriptGroup.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\AudioScripts\Mpdn.ScriptGroup.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />
@@ -373,6 +383,9 @@
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptGroup.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.EwaScaler.cs" />
+    <Compile Include="Extensions\RenderScripts\RenderScriptChainList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ChromaScaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.EwaScaler.ConfigDialog.cs">
       <SubType>Form</SubType>

@@ -18,11 +18,11 @@ using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.AudioScripts
 {
-    namespace Mpdn.ScriptChain
+    namespace Mpdn.ScriptGroup
     {
-        public partial class ScriptChainDialog : ScriptChainDialogBase
+        public partial class ScriptGroupDialog : ScriptGroupDialogBase
         {
-            public ScriptChainDialog()
+            public ScriptGroupDialog()
             {
                 InitializeComponent();
             }
@@ -30,15 +30,19 @@ namespace Mpdn.Extensions.AudioScripts
             protected override void LoadSettings()
             {
                 m_ChainList.PresetList = Settings.Options;
+                m_ChainList.SelectedIndex = Settings.SelectedIndex;
+                HotkeyBox.Text = Settings.Hotkey;
             }
 
             protected override void SaveSettings()
             {
                 Settings.Options = m_ChainList.PresetList;
+                Settings.SelectedIndex = m_ChainList.SelectedIndex;
+                Settings.Hotkey = HotkeyBox.Text;
             }
         }
 
-        public class ScriptChainDialogBase : ScriptConfigDialog<ScriptChain>
+        public class ScriptGroupDialogBase : ScriptConfigDialog<ScriptGroup>
         {
         }
     }
