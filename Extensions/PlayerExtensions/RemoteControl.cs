@@ -614,16 +614,39 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void AddFilesToPlaylist(string files)
         {
+            var playlistFiles = new List<string>();
+
             var filesToAdd = new List<string>();
             var filePaths = Regex.Split(files, ">>");
+            if (filePaths.Any(t => t.EndsWith(".mpl")))
+            {
+                playlistFiles.AddRange(filePaths.Where(t => t.EndsWith(".mpl") && File.Exists(t)));
+            }
+
             if (filePaths.Any())
             {
-                filesToAdd.AddRange(filePaths.Where(File.Exists));
+                filesToAdd.AddRange(filePaths.Where(t => !t.EndsWith(".mpl") && (File.Exists(t) || IsValidUrl(t))));
+            }
+            if (playlistFiles.Any())
+            {
+                foreach (var playlistFile in playlistFiles)
+                {
+                    var file = playlistFile;
+                    GuiThread.DoAsync(() => _playlistInstance.GetPlaylistForm.OpenPlaylist(file));
+                }
             }
             if (filesToAdd.Any())
             {
                 GuiThread.DoAsync(() => _playlistInstance.GetPlaylistForm.AddFiles(filesToAdd.ToArray()));
             }
+        }
+
+        private bool IsValidUrl(string url)
+        {
+            Uri uriResult;
+            return Uri.TryCreate(url, UriKind.Absolute, out uriResult)
+                          && (uriResult.Scheme == Uri.UriSchemeHttp
+                              || uriResult.Scheme == Uri.UriSchemeHttps);
         }
 
         private void RemoveWriter(string guid)
