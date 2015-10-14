@@ -16,36 +16,44 @@
 // 
 using System;
 using System.Drawing;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Example
     {
         public class CustomTextures : RenderChain
         {
-            private ITexture m_Texture1;
-            private ITexture m_Texture2;
+            private ISourceTexture m_Texture1;
+            private ISourceTexture m_Texture2;
 
             protected override string ShaderPath
             {
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
-                CreateTextures();
                 var shader = CompileShader("CustomTextures.hlsl");
-                return new ShaderFilter(shader, sourceFilter, new TextureSourceFilter(m_Texture1),
-                    new TextureSourceFilter(m_Texture2));
+                return new ShaderFilter(shader, sourceFilter, new TextureSourceFilter<ISourceTexture>(m_Texture1),
+                    new TextureSourceFilter<ISourceTexture>(m_Texture2));
             }
 
-            public override void RenderScriptDisposed()
+            public override void Initialize()
+            {
+                CreateTextures();
+
+                base.Initialize();
+            }
+
+            public override void Reset()
             {
                 DiscardTextures();
 
-                base.RenderScriptDisposed();
+                base.Reset();
             }
 
             private void DiscardTextures()
@@ -80,7 +88,7 @@ namespace Mpdn.RenderScripts
                 m_Texture2 = CreateTexture(width, height);
             }
 
-            private static ITexture CreateTexture(int width, int height)
+            private static ISourceTexture CreateTexture(int width, int height)
             {
                 int pitch = width*4;
                 var result = Renderer.CreateTexture(new Size(width, height));
@@ -124,6 +132,11 @@ namespace Mpdn.RenderScripts
                         Copyright = "" // Optional field
                     };
                 }
+            }
+
+            public override string Category
+            {
+                get { return "Example"; }
             }
         }
     }

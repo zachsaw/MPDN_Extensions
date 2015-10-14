@@ -19,86 +19,105 @@
 #define sharpness (args0[1])
 #define anti_aliasing (args0[2])
 #define anti_ringing (args0[3])
-
-// -- Edge detection options -- 
-#define acuity 4.0
-#define edge_adaptiveness 2.0
-#define baseline 0.2
-#define radius 1.5
+#define softness (args1[0])
 
 // -- Misc --
-sampler s0 	  : register(s0);
+sampler s0       : register(s0);
 sampler sDiff : register(s1);
-sampler s2	  : register(s2); // Original
-float4 p0	  : register(c0);
-float2 p1	  : register(c1);
+sampler s2      : register(s2); // Original
+float4 p0      : register(c0);
+float2 p1      : register(c1);
 float4 size2  : register(c2); // Original size
 float4 args0  : register(c3);
+float4 args1  : register(c4);
+
+// -- Edge detection options -- 
+#define acuity 20
+#define radius 0.75
 
 #define originalSize size2
 
 #define width  (p0[0])
 #define height (p0[1])
 
-#define px (p1[0])
-#define py (p1[1])
-
-#define ppx (originalSize[2])
-#define ppy (originalSize[3])
+#define dxdy (p1.xy)
+#define ddxddy (originalSize.zw)
 
 #define sqr(x) dot(x,x)
 #define spread (exp(-1/(2.0*radius*radius)))
-#define h 1.5
+#define h 1.2
 
 // -- Colour space Processing --
 #include "../Common/ColourProcessing.hlsl"
 
 // -- Input processing --
 //Current high res value
-#define Get(x,y)  	(tex2D(s0,tex+float2(px,py)*int2(x,y)).rgb)
+#define Get(x,y)      (tex2D(s0,tex+dxdy*int2(x,y)).rgb)
 //Difference between downsampled result and original
-#define Diff(x,y)	(tex2D(sDiff,tex+float2(px,py)*int2(x,y)).rgb)
+#define Diff(x,y)    (tex2D(sDiff,tex+dxdy*int2(x,y)).rgb)
 //Original values
-#define Original(x,y)	(tex2D(s2,float2(ppx,ppy)*(pos2+int2(x,y)+0.5)).rgb)
+#define Original(x,y)    (tex2D(s2,ddxddy*(pos+int2(x,y)+0.5)).rgb)
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
+    float3 stab = 0;
 
-	float3 Ix = (Get(1, 0) - Get(-1, 0)) / (2.0*h);
-	float3 Iy = (Get(0, 1) - Get(0, -1)) / (2.0*h);
-	float3 Ixx = (Get(1, 0) - 2 * Get(0, 0) + Get(-1, 0)) / (h*h);
-	float3 Iyy = (Get(0, 1) - 2 * Get(0, 0) + Get(0, -1)) / (h*h);
-	float3 Ixy = (Get(1, 1) - Get(1, -1) - Get(-1, 1) + Get(-1, -1)) / (4.0*h*h);
-	//	Ixy = (Get(1,1) - Get(1,0) - Get(0,1) + 2*Get(0,0) - Get(-1,0) - Get(0,-1) + Get(-1,-1))/(2.0*h*h);
-	float2x3 I = transpose(float3x2(
-		normalize(float2(Ix[0], Iy[0])),
-		normalize(float2(Ix[1], Iy[1])),
-		normalize(float2(Ix[2], Iy[2]))
-	));
-	float3 stab = -anti_aliasing*(I[0] * I[0] * Iyy - 2 * I[0] * I[1] * Ixy + I[1] * I[1] * Ixx);
-	stab += sharpness*0.5*(Ixx + Iyy);
+    float3 Ix = (Get(1, 0) - Get(-1, 0)) / (2.0*h);
+    float3 Iy = (Get(0, 1) - Get(0, -1)) / (2.0*h);
+    float3 Ixx = (Get(1, 0) - 2 * Get(0, 0) + Get(-1, 0)) / (h*h);
+    float3 Iyy = (Get(0, 1) - 2 * Get(0, 0) + Get(0, -1)) / (h*h);
+    float3 Ixy = (Get(1, 1) - Get(1, -1) - Get(-1, 1) + Get(-1, -1)) / (4.0*h*h);
 
-	//Calculate faithfulness force
-	float3 diff = Diff(0, 0);
-	//diff = mul(DinvLabtoRGB(c0.xyz), diff);
+#ifndef SkipAntiAliasing
+    // Mean curvature flow
+    float3 N = rsqrt(Ix*Ix + Iy*Iy);
+    Ix *= N; Iy *= N;
+    stab -= anti_aliasing*(Ix*Ix*Iyy - 2*Ix*Iy*Ixy + Iy*Iy*Ixx);
+#endif 
 
-	//Apply forces
-	c0.xyz -= strength*(diff + stab);
+#ifndef SkipSharpening
+    // Inverse heat equation
+    stab += sharpness*0.5*(Ixx + Iyy);
+#endif
 
-	//Calculate position
-	int2 pos = floor(tex*p0.xy);
-	int2 pos2 = floor((pos + 0.5) * originalSize / p0.xy - 0.5);
+#ifndef SkipSoftening
+    // Softening
+    float W = 1;
+    float3 soft = 0;
+    float3 D[8] = {  {Get(0,0) - Get(0,1), Get(0,0) - Get(1, 0), Get(0,0) - Get(0 ,-1), Get(0,0) - Get(-1,0)},
+                     {Get(0,0) - Get(1,1), Get(0,0) - Get(1,-1), Get(0,0) - Get(-1,-1), Get(0,0) - Get(-1,1)} };
+    [unroll] for( int k = 0; k < 8; k++)
+    {
+        float3 d = D[k];
+        float x2 = QuasiLabNorm(acuity*d);
+        float w = pow(spread, k < 4 ? 1.0 : 2.0)*exp(-x2);
+        soft += w*d;
+        W += w;
+    }
+    stab += 4 * softness * soft / (1 + 4*spread*(1+spread));
+#endif
 
-	//Find extrema
-	float3 Min = min(min(Original(0, 0), Original(1, 0)),
-					 min(Original(0, 1), Original(1, 1)));
-	float3 Max = max(max(Original(0, 0), Original(1, 0)),
-					 max(Original(0, 1), Original(1, 1)));
+    //Calculate faithfulness force
+    float3 diff = Diff(0, 0);
 
-	//Apply anti-ringing
-	float3 AR = c0.xyz - clamp(c0.xyz, Min, Max);
-	c0.xyz -= AR*smoothstep(0, (Max - Min) / anti_ringing - (Max - Min) + pow(2,-16), abs(AR));
+    //Apply forces
+    c0.xyz -= strength*(diff + stab);
 
-	return c0;
+#ifndef SkipAntiRinging
+    //Calculate position
+    int2 pos = floor(tex * originalSize.xy - 0.5);
+
+    //Find extrema
+    float3 Min = min(min(Original(0, 0), Original(1, 0)),
+                     min(Original(0, 1), Original(1, 1)));
+    float3 Max = max(max(Original(0, 0), Original(1, 0)),
+                     max(Original(0, 1), Original(1, 1)));
+
+    //Apply anti-ringing
+    float3 AR = c0.xyz - clamp(c0.xyz, Min, Max);
+    c0.xyz -= AR*smoothstep(0, (Max - Min) / anti_ringing - (Max - Min) + pow(2,-16), abs(AR));
+#endif
+
+    return c0;
 }

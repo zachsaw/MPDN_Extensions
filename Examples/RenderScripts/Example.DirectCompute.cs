@@ -15,10 +15,12 @@
 // License along with this library.
 // 
 using System;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Mpdn.Resizer;
 using Mpdn.RenderScript;
-using Mpdn.RenderScript.Mpdn.Resizer;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Example
     {
@@ -29,9 +31,9 @@ namespace Mpdn.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
-                if (!Renderer.IsDx11Avail)
+                if (!Renderer.IsDx11Avail || Renderer.RenderQuality.PerformanceMode())
                     return new NullFilter(); // display blank screen on purpose
 
                 // get MPDN to scale image to target size first
@@ -61,6 +63,11 @@ namespace Mpdn.RenderScripts
                         Copyright = "" // Optional field
                     };
                 }
+            }
+
+            public override string Category
+            {
+                get { return "Example"; }
             }
         }
     }

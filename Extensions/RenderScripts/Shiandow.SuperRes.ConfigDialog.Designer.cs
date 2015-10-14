@@ -14,7 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-namespace Mpdn.RenderScript
+
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
@@ -47,34 +48,33 @@ namespace Mpdn.RenderScript
             private void InitializeComponent()
             {
             this.StrengthSetter = new System.Windows.Forms.NumericUpDown();
-            this.SharpnessSetter = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
             this.ButtonOK = new System.Windows.Forms.Button();
             this.ButtonCancel = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
-            this.AntiAliasingSetter = new System.Windows.Forms.NumericUpDown();
-            this.label4 = new System.Windows.Forms.Label();
-            this.AntiRingingSetter = new System.Windows.Forms.NumericUpDown();
-            this.UseNediBox = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.PassesSetter = new System.Windows.Forms.NumericUpDown();
+            this.PrescalerBox = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.ConfigButton = new System.Windows.Forms.Button();
+            this.SoftnessSetter = new System.Windows.Forms.NumericUpDown();
+            this.label8 = new System.Windows.Forms.Label();
+            this.ModifyButton = new System.Windows.Forms.Button();
+            this.HQBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.StrengthSetter)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.SharpnessSetter)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.AntiAliasingSetter)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.AntiRingingSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PassesSetter)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SoftnessSetter)).BeginInit();
             this.SuspendLayout();
             // 
             // StrengthSetter
             // 
+            this.StrengthSetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.StrengthSetter.DecimalPlaces = 2;
             this.StrengthSetter.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
-            this.StrengthSetter.Location = new System.Drawing.Point(81, 33);
+            65536});
+            this.StrengthSetter.Location = new System.Drawing.Point(167, 38);
             this.StrengthSetter.Maximum = new decimal(new int[] {
             1,
             0,
@@ -82,72 +82,32 @@ namespace Mpdn.RenderScript
             0});
             this.StrengthSetter.Name = "StrengthSetter";
             this.StrengthSetter.Size = new System.Drawing.Size(44, 20);
-            this.StrengthSetter.TabIndex = 0;
+            this.StrengthSetter.TabIndex = 3;
             this.StrengthSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.StrengthSetter.Value = new decimal(new int[] {
             8,
             0,
             0,
             65536});
-            this.StrengthSetter.ValueChanged += new System.EventHandler(this.ValueChanged);
-            // 
-            // SharpnessSetter
-            // 
-            this.SharpnessSetter.DecimalPlaces = 2;
-            this.SharpnessSetter.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.SharpnessSetter.Location = new System.Drawing.Point(81, 59);
-            this.SharpnessSetter.Maximum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.SharpnessSetter.Minimum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            -2147483648});
-            this.SharpnessSetter.Name = "SharpnessSetter";
-            this.SharpnessSetter.Size = new System.Drawing.Size(44, 20);
-            this.SharpnessSetter.TabIndex = 1;
-            this.SharpnessSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.SharpnessSetter.Value = new decimal(new int[] {
-            5,
-            0,
-            0,
-            65536});
-            this.SharpnessSetter.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 35);
+            this.label1.Location = new System.Drawing.Point(12, 40);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(47, 13);
             this.label1.TabIndex = 2;
             this.label1.Text = "Strength";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 61);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(57, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Sharpness";
             // 
             // ButtonOK
             // 
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(119, 114);
+            this.ButtonOK.Location = new System.Drawing.Point(55, 165);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
-            this.ButtonOK.TabIndex = 3;
+            this.ButtonOK.TabIndex = 8;
             this.ButtonOK.Text = "OK";
             this.ButtonOK.UseVisualStyleBackColor = true;
             // 
@@ -156,93 +116,17 @@ namespace Mpdn.RenderScript
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(200, 114);
+            this.ButtonCancel.Location = new System.Drawing.Point(136, 165);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
-            this.ButtonCancel.TabIndex = 4;
+            this.ButtonCancel.TabIndex = 9;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(152, 35);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(64, 13);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Anti Aliasing";
-            // 
-            // AntiAliasingSetter
-            // 
-            this.AntiAliasingSetter.DecimalPlaces = 2;
-            this.AntiAliasingSetter.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.AntiAliasingSetter.Location = new System.Drawing.Point(221, 33);
-            this.AntiAliasingSetter.Maximum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.AntiAliasingSetter.Name = "AntiAliasingSetter";
-            this.AntiAliasingSetter.Size = new System.Drawing.Size(44, 20);
-            this.AntiAliasingSetter.TabIndex = 5;
-            this.AntiAliasingSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.AntiAliasingSetter.Value = new decimal(new int[] {
-            10,
-            0,
-            0,
-            65536});
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(152, 61);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(64, 13);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "Anti Ringing";
-            // 
-            // AntiRingingSetter
-            // 
-            this.AntiRingingSetter.DecimalPlaces = 2;
-            this.AntiRingingSetter.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.AntiRingingSetter.Location = new System.Drawing.Point(221, 59);
-            this.AntiRingingSetter.Maximum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.AntiRingingSetter.Name = "AntiRingingSetter";
-            this.AntiRingingSetter.Size = new System.Drawing.Size(44, 20);
-            this.AntiRingingSetter.TabIndex = 7;
-            this.AntiRingingSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.AntiRingingSetter.Value = new decimal(new int[] {
-            8,
-            0,
-            0,
-            65536});
-            // 
-            // UseNediBox
-            // 
-            this.UseNediBox.AutoSize = true;
-            this.UseNediBox.Location = new System.Drawing.Point(15, 85);
-            this.UseNediBox.Name = "UseNediBox";
-            this.UseNediBox.Size = new System.Drawing.Size(74, 17);
-            this.UseNediBox.TabIndex = 9;
-            this.UseNediBox.Text = "Use NEDI";
-            this.UseNediBox.UseVisualStyleBackColor = true;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 9);
+            this.label5.Location = new System.Drawing.Point(12, 14);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(41, 13);
             this.label5.TabIndex = 11;
@@ -250,7 +134,8 @@ namespace Mpdn.RenderScript
             // 
             // PassesSetter
             // 
-            this.PassesSetter.Location = new System.Drawing.Point(81, 7);
+            this.PassesSetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.PassesSetter.Location = new System.Drawing.Point(167, 12);
             this.PassesSetter.Maximum = new decimal(new int[] {
             10,
             0,
@@ -258,7 +143,7 @@ namespace Mpdn.RenderScript
             0});
             this.PassesSetter.Name = "PassesSetter";
             this.PassesSetter.Size = new System.Drawing.Size(44, 20);
-            this.PassesSetter.TabIndex = 10;
+            this.PassesSetter.TabIndex = 2;
             this.PassesSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.PassesSetter.Value = new decimal(new int[] {
             2,
@@ -266,25 +151,114 @@ namespace Mpdn.RenderScript
             0,
             0});
             // 
+            // PrescalerBox
+            // 
+            this.PrescalerBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PrescalerBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.PrescalerBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.PrescalerBox.FormattingEnabled = true;
+            this.PrescalerBox.Location = new System.Drawing.Point(69, 90);
+            this.PrescalerBox.Name = "PrescalerBox";
+            this.PrescalerBox.Size = new System.Drawing.Size(142, 21);
+            this.PrescalerBox.TabIndex = 0;
+            this.PrescalerBox.SelectedIndexChanged += new System.EventHandler(this.SelectionChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(12, 93);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(51, 13);
+            this.label6.TabIndex = 13;
+            this.label6.Text = "Prescaler";
+            // 
+            // ConfigButton
+            // 
+            this.ConfigButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ConfigButton.Location = new System.Drawing.Point(15, 117);
+            this.ConfigButton.Name = "ConfigButton";
+            this.ConfigButton.Size = new System.Drawing.Size(115, 21);
+            this.ConfigButton.TabIndex = 6;
+            this.ConfigButton.Text = "Configure Prescaler";
+            this.ConfigButton.UseVisualStyleBackColor = true;
+            this.ConfigButton.Click += new System.EventHandler(this.ConfigButtonClick);
+            // 
+            // SoftnessSetter
+            // 
+            this.SoftnessSetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SoftnessSetter.DecimalPlaces = 2;
+            this.SoftnessSetter.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            131072});
+            this.SoftnessSetter.Location = new System.Drawing.Point(167, 64);
+            this.SoftnessSetter.Maximum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.SoftnessSetter.Name = "SoftnessSetter";
+            this.SoftnessSetter.Size = new System.Drawing.Size(44, 20);
+            this.SoftnessSetter.TabIndex = 6;
+            this.SoftnessSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.SoftnessSetter.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            65536});
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(12, 66);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(48, 13);
+            this.label8.TabIndex = 16;
+            this.label8.Text = "Softness";
+            // 
+            // ModifyButton
+            // 
+            this.ModifyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ModifyButton.Location = new System.Drawing.Point(136, 117);
+            this.ModifyButton.Name = "ModifyButton";
+            this.ModifyButton.Size = new System.Drawing.Size(75, 21);
+            this.ModifyButton.TabIndex = 17;
+            this.ModifyButton.Text = "Modify List";
+            this.ModifyButton.UseVisualStyleBackColor = true;
+            this.ModifyButton.Click += new System.EventHandler(this.ModifyButtonClick);
+            // 
+            // HQBox
+            // 
+            this.HQBox.AutoSize = true;
+            this.HQBox.Location = new System.Drawing.Point(15, 144);
+            this.HQBox.Name = "HQBox";
+            this.HQBox.Size = new System.Drawing.Size(126, 17);
+            this.HQBox.TabIndex = 18;
+            this.HQBox.Text = "Use HQ downscaling";
+            this.HQBox.UseVisualStyleBackColor = true;
+            // 
             // SuperResConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(287, 149);
+            this.ClientSize = new System.Drawing.Size(223, 200);
+            this.Controls.Add(this.HQBox);
+            this.Controls.Add(this.ModifyButton);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.SoftnessSetter);
+            this.Controls.Add(this.ConfigButton);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.PrescalerBox);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.PassesSetter);
-            this.Controls.Add(this.UseNediBox);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.AntiRingingSetter);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.AntiAliasingSetter);
             this.Controls.Add(this.ButtonCancel);
             this.Controls.Add(this.ButtonOK);
-            this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.SharpnessSetter);
             this.Controls.Add(this.StrengthSetter);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -295,10 +269,8 @@ namespace Mpdn.RenderScript
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "SuperRes Settings";
             ((System.ComponentModel.ISupportInitialize)(this.StrengthSetter)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.SharpnessSetter)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.AntiAliasingSetter)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.AntiRingingSetter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PassesSetter)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SoftnessSetter)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -307,18 +279,18 @@ namespace Mpdn.RenderScript
             #endregion
 
             private System.Windows.Forms.NumericUpDown StrengthSetter;
-            private System.Windows.Forms.NumericUpDown SharpnessSetter;
             private System.Windows.Forms.Label label1;
-            private System.Windows.Forms.Label label2;
             private System.Windows.Forms.Button ButtonOK;
             private System.Windows.Forms.Button ButtonCancel;
-            private System.Windows.Forms.Label label3;
-            private System.Windows.Forms.NumericUpDown AntiAliasingSetter;
-            private System.Windows.Forms.Label label4;
-            private System.Windows.Forms.CheckBox UseNediBox;
-            private System.Windows.Forms.NumericUpDown AntiRingingSetter;
             private System.Windows.Forms.Label label5;
             private System.Windows.Forms.NumericUpDown PassesSetter;
+            private System.Windows.Forms.ComboBox PrescalerBox;
+            private System.Windows.Forms.Label label6;
+            private System.Windows.Forms.Button ConfigButton;
+            private System.Windows.Forms.NumericUpDown SoftnessSetter;
+            private System.Windows.Forms.Label label8;
+            private System.Windows.Forms.Button ModifyButton;
+            private System.Windows.Forms.CheckBox HQBox;
 
         }
     }

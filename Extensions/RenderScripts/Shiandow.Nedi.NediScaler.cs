@@ -13,11 +13,13 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
-using System;
-using System.Drawing;
 
-namespace Mpdn.RenderScript
+using System;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
+using SharpDX;
+
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.Nedi
     {
@@ -28,19 +30,19 @@ namespace Mpdn.RenderScript
             public Nedi()
             {
                 AlwaysDoubleImage = false;
-                Centered = true;
+                ForceCentered = false;
             }
 
             public bool AlwaysDoubleImage { get; set; }
-            public bool Centered { get; set; }
+            public bool ForceCentered { get; set; }
 
             #endregion
 
             public float[] LumaConstants = {0.2126f, 0.7152f, 0.0722f};
 
-            private bool UseNedi(IFilter sourceFilter)
+            private bool UseNedi(IFilter input)
             {
-                var size = sourceFilter.OutputSize;
+                var size = input.OutputSize;
                 if (size.IsEmpty)
                     return false;
 
@@ -51,33 +53,26 @@ namespace Mpdn.RenderScript
                        Renderer.TargetSize.Height > size.Height;
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter input)
             {
-                Func<TextureSize, TextureSize> transformWidth;
-                Func<TextureSize, TextureSize> transformHeight;
-                if (Centered)
-                {
-                    transformWidth = s => new TextureSize(2 * s.Width - 1, s.Height);
-                    transformHeight = s => new TextureSize(s.Width, 2 * s.Height - 1);
-                } else {
-                    transformWidth = s => new TextureSize(2 * s.Width, s.Height);
-                    transformHeight = s => new TextureSize(s.Width, 2 * s.Height);
-                }
+                Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2*s.Width, s.Height);
+                Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2*s.Height);
 
                 var nedi1Shader = CompileShader("NEDI-I.hlsl").Configure(arguments: LumaConstants);
                 var nedi2Shader = CompileShader("NEDI-II.hlsl").Configure(arguments: LumaConstants);
                 var nediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl").Configure(transform: transformWidth);
                 var nediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl").Configure(transform: transformHeight);
 
-                if (!UseNedi(sourceFilter))
-                    return sourceFilter;
+                if (!UseNedi(input))
+                    return input;
 
-                var nedi1 = new ShaderFilter(nedi1Shader, sourceFilter);
-                var nediH = new ShaderFilter(nediHInterleaveShader, sourceFilter, nedi1);
+                var nedi1 = new ShaderFilter(nedi1Shader, input);
+                var nediH = new ShaderFilter(nediHInterleaveShader, input, nedi1);
                 var nedi2 = new ShaderFilter(nedi2Shader, nediH);
                 var nediV = new ShaderFilter(nediVInterleaveShader, nediH, nedi2);
 
-                return nediV;
+                return new ResizeFilter(nediV, nediV.OutputSize, new Vector2(0.5f, 0.5f),
+                    Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
             }
         }
 
@@ -86,6 +81,11 @@ namespace Mpdn.RenderScript
             protected override string ConfigFileName
             {
                 get { return "Shiandow.Nedi"; }
+            }
+
+            public override string Category
+            {
+                get { return "Upscaling"; }
             }
 
             public override ExtensionUiDescriptor Descriptor

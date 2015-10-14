@@ -13,14 +13,13 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using SharpDX;
-using TransformFunc = System.Func<System.Drawing.Size, System.Drawing.Size>;
 
-namespace Mpdn.RenderScript
+using System;
+using System.ComponentModel;
+using Mpdn.Extensions.Framework.RenderChain;
+using SharpDX;
+
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.Chroma
     {
@@ -40,7 +39,7 @@ namespace Mpdn.RenderScript
 
         #endregion
 
-        public class BicubicChroma : RenderChain
+        public class BicubicChroma : RenderChain, IChromaScaler
         {
             #region Settings
 
@@ -60,9 +59,7 @@ namespace Mpdn.RenderScript
 
             public BicubicChroma()
             {
-                B = (float) (1.0/3.0);
-                C = (float) (1.0/3.0);
-                Preset = Presets.Custom;
+                Preset = Presets.MitchellNetravali;
             }
 
             public float B { get; set; }
@@ -90,20 +87,25 @@ namespace Mpdn.RenderScript
                 get { return "ChromaScaler"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter input)
             {
-                var yInput = new YSourceFilter();
-                var uInput = new USourceFilter();
-                var vInput = new VSourceFilter();
+                return this.MakeChromaFilter(input);
+            }
 
-                float[] offset = { 0.0f, 0.5f };
+            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            {
+                var chromaSize = chromaInput.OutputSize;
 
+                // Fall back to default when downscaling is needed
+                if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
+                    return null;
+
+                Vector2 offset = chromaOffset + new Vector2(0.5f, 0.5f);
                 var chromaShader = CompileShader("Chroma.hlsl").Configure(arguments: new[] { B, C, offset[0], offset[1] });
 
-                var chroma = new ShaderFilter(chromaShader, yInput, uInput, vInput);
-                var rgb = chroma.ConvertToRgb();
+                var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
 
-                return rgb;
+                return new ShaderFilter(chromaShader, resizedLuma, chromaInput).ConvertToRgb();
             }
         }
 
@@ -113,6 +115,11 @@ namespace Mpdn.RenderScript
             protected override string ConfigFileName
             {
                 get { return "Shiandow.Chroma"; }
+            }
+
+            public override string Category
+            {
+                get { return "Chroma Scaling"; }
             }
 
             public override ExtensionUiDescriptor Descriptor

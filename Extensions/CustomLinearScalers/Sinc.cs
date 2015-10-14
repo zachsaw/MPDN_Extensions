@@ -16,7 +16,7 @@
 // 
 using System;
 
-namespace Mpdn.CustomLinearScaler
+namespace Mpdn.Extensions.CustomLinearScalers
 {
     public abstract class Sinc : ICustomLinearScaler
     {
@@ -32,6 +32,11 @@ namespace Mpdn.CustomLinearScaler
         public virtual bool AllowDeRing
         {
             get { return true; }
+        }
+
+        public ScalerTaps MinTapCount
+        {
+            get { return ScalerTaps.Four; }
         }
 
         public virtual ScalerTaps MaxTapCount

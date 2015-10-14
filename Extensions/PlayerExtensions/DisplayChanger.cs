@@ -18,12 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using DirectShowLib;
-using Mpdn.PlayerExtensions.GitHub.DisplayChangerNativeMethods;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.PlayerExtensions.DisplayChangerNativeMethods;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public class DisplayChanger : PlayerExtension<DisplayChangerSettings, DisplayChangerConfigDialog>
     {
@@ -54,8 +53,8 @@ namespace Mpdn.PlayerExtensions.GitHub
         {
             base.Initialize();
 
-            PlayerControl.PlayerStateChanged += PlayerStateChanged;
-            PlayerControl.FormClosed += FormClosed;
+            Player.StateChanged += PlayerStateChanged;
+            Player.Closed += FormClosed;
 
             foreach (var screen in Screen.AllScreens)
             {
@@ -67,13 +66,8 @@ namespace Mpdn.PlayerExtensions.GitHub
         {
             base.Destroy();
 
-            PlayerControl.PlayerStateChanged -= PlayerStateChanged;
-            PlayerControl.FormClosed -= FormClosed;
-        }
-
-        public override IList<Verb> Verbs
-        {
-            get { return new Verb[0]; }
+            Player.StateChanged -= PlayerStateChanged;
+            Player.Closed -= FormClosed;
         }
 
         private void FormClosed(object sender, EventArgs eventArgs)
@@ -92,6 +86,8 @@ namespace Mpdn.PlayerExtensions.GitHub
 
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
+            if (Media.VideoInfo == null) return;
+
             if (e.NewState == PlayerState.Closed)
             {
                 RestoreSettings();
@@ -106,14 +102,14 @@ namespace Mpdn.PlayerExtensions.GitHub
 
             m_RestoreFrequency = 0;
 
-            var screen = Screen.FromControl(PlayerControl.VideoPanel);
+            var screen = Screen.FromControl(Gui.VideoBox);
 
             var frequencies = GetFrequencies(screen);
 
             if (!frequencies.Any())
                 return;
 
-            var timePerFrame = PlayerControl.VideoInfo.AvgTimePerFrame;
+            var timePerFrame = Media.VideoInfo.AvgTimePerFrame;
             if (Math.Abs(timePerFrame) < 1)
                 return;
 
@@ -166,40 +162,7 @@ namespace Mpdn.PlayerExtensions.GitHub
 
             // Parse video types
             var videoTypes = Settings.VideoTypes.ToLowerInvariant().Split(' ');
-            return videoTypes.Any(VideoTypeMatches);
-        }
-
-        private bool VideoTypeMatches(string vt)
-        {
-            var regexValidate = new Regex(@"^(w{1}\d+)?(h{1}\d+)?((i|p){1}\d+)?$");
-            if (regexValidate.Matches(vt).Count == 0)
-                return false;
-
-            var vid = PlayerControl.VideoInfo.BmiHeader;
-
-            var regexWidth = new Regex(@"w(\d+)");
-            var widthMatch = regexWidth.Match(vt).Groups[1];
-            var width = widthMatch.Success ? int.Parse(widthMatch.Value) : vid.Width;
-
-            var regexHeight = new Regex(@"h(\d+)");
-            var heightMatch = regexHeight.Match(vt).Groups[1];
-            var height = heightMatch.Success ? int.Parse(heightMatch.Value) : vid.Height;
-
-            var vidIsInterlaced = PlayerControl.VideoInfo.InterlaceFlags.HasFlag(AMInterlace.IsInterlaced);
-            var vidFps = 1000000/(int) PlayerControl.VideoInfo.AvgTimePerFrame;
-
-            bool interlaced = vidIsInterlaced;
-            int frameRate = vidFps;
-
-            var regexFrameRate = new Regex(@"(i|p)(\d+)");
-            var frameRateMatch = regexFrameRate.Match(vt);
-            if (frameRateMatch.Success)
-            {
-                interlaced = frameRateMatch.Groups[1].Value == "i";
-                frameRate = int.Parse(frameRateMatch.Groups[2].Value);
-            }
-
-            return width == vid.Width && height == vid.Height && interlaced == vidIsInterlaced && frameRate == vidFps;
+            return videoTypes.Any(VideoSpecifier.Match);
         }
 
         private void RestoreSettings()
@@ -217,11 +180,11 @@ namespace Mpdn.PlayerExtensions.GitHub
         private void ChangeRefreshRate(Screen screen, int frequency)
         {
             bool wasFullScreen = false;
-            if (PlayerControl.InFullScreenMode)
+            if (Player.FullScreenMode.Active)
             {
                 wasFullScreen = true;
                 // We can't change frequency in exclusive mode
-                PlayerControl.GoWindowed();
+                Player.FullScreenMode.Active = false;
             }
 
             var dm = NativeMethods.CreateDevmode(screen.DeviceName);
@@ -238,10 +201,10 @@ namespace Mpdn.PlayerExtensions.GitHub
             dm.dmDisplayFrequency = frequency;
             dm.dmDeviceName = screen.DeviceName;
             bool continuePlaying = false;
-            if (PlayerControl.PlayerState == PlayerState.Playing)
+            if (Player.State == PlayerState.Playing)
             {
                 continuePlaying = true;
-                PlayerControl.PauseMedia(false);
+                Media.Pause(false);
             }
             if (ChangeSettings(dm))
             {
@@ -249,11 +212,11 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
             if (continuePlaying)
             {
-                PlayerControl.PlayMedia(false);
+                Media.Play(false);
             }
             if (wasFullScreen)
             {
-                PlayerControl.GoFullScreen();
+                Player.FullScreenMode.Active = true;
             }
         }
 

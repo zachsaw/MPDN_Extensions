@@ -37,7 +37,7 @@
 /* ---  Main code --- */
 
 /*------------------------------------------------------------------------------
-						Cartoon
+                        Cartoon
 ------------------------------------------------------------------------------*/
 
 #ifndef CartoonEdgeSlope //for backwards compatiblity with settings preset from earlier versions of SweetFX
@@ -57,15 +57,15 @@ float4 CartoonPass( float4 colorInput, float2 Tex )
   float edge = dot(float2(diff1,diff2),float2(diff1,diff2));
   
   colorInput.rgb =  pow(edge,CartoonEdgeSlope) * -CartoonPower + colorInput.rgb;
-	
+    
   return saturate(colorInput);
 }
 
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = CartoonPass(c0, tex);
-	return c0;
+    c0 = CartoonPass(c0, tex);
+    return c0;
 }

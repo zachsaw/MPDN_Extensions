@@ -17,9 +17,11 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using SharpDX;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Lut3D
     {
@@ -60,7 +62,7 @@ namespace Mpdn.RenderScript
             // and by the array 'lutDataxx', of length 'lutCompressedSize'.
         };
 
-        public class Lut3D : RenderChain
+        public class Lut3DColorCorrection : RenderChain
         {
             #region Settings
 
@@ -69,28 +71,28 @@ namespace Mpdn.RenderScript
 
             #endregion
 
-            private ITexture3D m_Texture3D;
+            private ISourceTexture3D m_Texture3D;
 
             protected override string ShaderPath
             {
                 get { return "Lut3D"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 if (!Activate || !File.Exists(FileName))
-                    return sourceFilter;
+                    return input;
 
                 Create3DTexture();
                 var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling : true);
-                return new ShaderFilter(shader, sourceFilter, new Texture3DSourceFilter(m_Texture3D));
+                return new ShaderFilter(shader, input, new TextureSourceFilter<ISourceTexture3D>(m_Texture3D));
             }
 
-            public override void RenderScriptDisposed()
+            public override void Reset()
             {
                 DiscardTextures();
 
-                base.RenderScriptDisposed();
+                base.Reset();
             }
 
             private void DiscardTextures()
@@ -183,8 +185,13 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class Lut3DUi : RenderChainUi<Lut3D, Lut3DConfigDialog>
+        public class Lut3DUi : RenderChainUi<Lut3DColorCorrection, Lut3DConfigDialog>
         {
+            public override string Category
+            {
+                get { return "Processing"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get

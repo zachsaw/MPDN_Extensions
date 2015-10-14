@@ -15,39 +15,33 @@
 // License along with this library.
 // 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
-using IBaseFilter = Mpdn.RenderScript.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Example
     {
-        public class FrameRateHalver : RenderChain
+        public sealed class FrameRateHalver : RenderChain
         {
-            private class FramerateHalvingFilter : Filter
+            private class FramerateHalvingFilter : BasicFilter
             {
                 private int m_Counter;
 
-                public FramerateHalvingFilter(IBaseFilter inputFilter)
+                public FramerateHalvingFilter(IFilter inputFilter)
                     : base(inputFilter)
                 {
                 }
 
-                protected override void Render(IList<IBaseTexture> inputs)
+                protected override void Render(ITexture2D texture)
                 {
-                    var texture = inputs.OfType<ITexture>().SingleOrDefault();
-                    if (texture == null)
-                        return;
-
                     // Render all frames but only present half of them
                     // In real life scenario, you'd probably want to use Renderer.RenderQueue[i].Frame
                     // to do something useful with the current frame.
                     // (Note: Renderer.RenderQueue.First().Frame is the frame before the current, while 
                     //        Renderer.RenderQueue.Last().Frame is earliest frame in the queue.
                     //        Renderer.RenderQueue will have no elements to start off with!)
-                    Renderer.Render(OutputTexture, texture, false);
+                    Renderer.Render(OutputTarget, texture, false);
 
                     // Note: To get actual odd/even frame number, you should calculate from 
                     //       Renderer.FrameRateHz and Renderer.FrameTimeStampMicrosec instead of relying on m_Counter
@@ -62,7 +56,7 @@ namespace Mpdn.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
                 // apply the halving filter
                 return new FramerateHalvingFilter(sourceFilter);
@@ -83,6 +77,11 @@ namespace Mpdn.RenderScripts
                         Copyright = "" // Optional field
                     };
                 }
+            }
+
+            public override string Category
+            {
+                get { return "Example"; }
             }
         }
     }

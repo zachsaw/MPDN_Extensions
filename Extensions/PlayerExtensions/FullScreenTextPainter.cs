@@ -19,11 +19,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
 using Timer = System.Windows.Forms.Timer;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
-    public class FullScreenTextPainter : IPlayerExtension
+    public class FullScreenTextPainter : PlayerExtension
     {
         private const int TEXT_HEIGHT = 20;
         private Timer m_Timer;
@@ -34,7 +35,7 @@ namespace Mpdn.PlayerExtensions.GitHub
         private long m_Duration;
         private Size m_ScreenSize;
 
-        public ExtensionUiDescriptor Descriptor
+        public override ExtensionUiDescriptor Descriptor
         {
             get
             {
@@ -47,43 +48,28 @@ namespace Mpdn.PlayerExtensions.GitHub
             }
         }
 
-        public bool HasConfigDialog()
+        public override void Initialize()
         {
-            return false;
-        }
-
-        public void Initialize()
-        {
-            m_Text = PlayerControl.CreateText("Verdana", TEXT_HEIGHT, TextFontStyle.Regular);
+            m_Text = Player.CreateText("Verdana", TEXT_HEIGHT, TextFontStyle.Regular);
             m_Timer = new Timer {Interval = 100};
             m_Timer.Tick += TimerOnTick;
             m_Timer.Start();
 
-            PlayerControl.VideoPanel.MouseMove += MouseMove;
-            PlayerControl.PaintOverlay += OnPaintOverlay;
-            PlayerControl.EnteredFullScreenMode += EnteredFullScreenMode;
-            PlayerControl.ExitedFullScreenMode += ExitedFullScreenMode;
+            Gui.VideoBox.MouseMove += MouseMove;
+            Player.PaintOverlay += OnPaintOverlay;
+            Player.FullScreenMode.Entered += EnteredFullScreenMode;
+            Player.FullScreenMode.Exited += ExitedFullScreenMode;
         }
 
-        public void Destroy()
+        public override void Destroy()
         {
-            PlayerControl.VideoPanel.MouseMove -= MouseMove;
-            PlayerControl.PaintOverlay -= OnPaintOverlay;
-            PlayerControl.EnteredFullScreenMode -= EnteredFullScreenMode;
-            PlayerControl.ExitedFullScreenMode -= ExitedFullScreenMode;
+            Gui.VideoBox.MouseMove -= MouseMove;
+            Player.PaintOverlay -= OnPaintOverlay;
+            Player.FullScreenMode.Entered -= EnteredFullScreenMode;
+            Player.FullScreenMode.Exited -= ExitedFullScreenMode;
 
             m_Timer.Dispose();
             m_Text.Dispose();
-        }
-
-        public IList<Verb> Verbs
-        {
-            get { return new Verb[0]; }
-        }
-
-        public bool ShowConfigDialog(IWin32Window owner)
-        {
-            return false;
         }
 
         private void ExitedFullScreenMode(object sender, EventArgs e)
@@ -93,22 +79,22 @@ namespace Mpdn.PlayerExtensions.GitHub
 
         private void EnteredFullScreenMode(object sender, EventArgs e)
         {
-            m_ScreenSize = PlayerControl.VideoPanel.Size;
+            m_ScreenSize = Gui.VideoBox.Size;
             m_FullScreenMode = true;
         }
 
         private void MouseMove(object sender, MouseEventArgs e)
         {
-            m_SeekBarShown = e.Y > PlayerControl.VideoPanel.Height - PlayerControl.FullScreenSeekBarHeight;
+            m_SeekBarShown = e.Y > Gui.VideoBox.Height - Gui.FullScreenSeekBarHeight;
         }
 
         private void TimerOnTick(object sender, EventArgs eventArgs)
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            AtomicWrite(ref m_Position, PlayerControl.MediaPosition);
-            AtomicWrite(ref m_Duration, PlayerControl.MediaDuration);
+            AtomicWrite(ref m_Position, Media.Position);
+            AtomicWrite(ref m_Duration, Media.Duration);
         }
 
         private static string GetTimeString(long usec)
@@ -144,7 +130,7 @@ namespace Mpdn.PlayerExtensions.GitHub
                 var text = string.Format("{0} / {1}", GetTimeString(position), GetTimeString(duration));
                 var width = m_Text.MeasureWidth(text);
                 var size = m_ScreenSize;
-                var seekBarHeight = PlayerControl.FullScreenSeekBarHeight; // Note: This property is thread safe
+                var seekBarHeight = Gui.FullScreenSeekBarHeight; // Note: This property is thread safe
                 const int rightOffset = 12;
                 const int bottomOffset = 1;
                 var location =

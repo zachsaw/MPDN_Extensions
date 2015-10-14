@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.Nedi
     {
@@ -30,13 +30,13 @@ namespace Mpdn.RenderScript
             protected override void LoadSettings()
             {
                 checkBoxAlwaysEnabled.Checked = Settings.AlwaysDoubleImage;
-                checkBoxCentered.Checked = Settings.Centered;
+                checkBoxCentered.Checked = Settings.ForceCentered;
             }
 
             protected override void SaveSettings()
             {
                 Settings.AlwaysDoubleImage = checkBoxAlwaysEnabled.Checked;
-                Settings.Centered = checkBoxCentered.Checked;
+                Settings.ForceCentered = checkBoxCentered.Checked;
             }
         }
 

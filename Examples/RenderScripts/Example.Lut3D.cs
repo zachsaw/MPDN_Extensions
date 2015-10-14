@@ -15,33 +15,41 @@
 // License along with this library.
 // 
 using System;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Example
     {
         public class Lut3D : RenderChain
         {
-            private ITexture3D m_Texture3D;
+            private ISourceTexture3D m_Texture3D;
 
             protected override string ShaderPath
             {
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
-                Create3DTexture();
                 var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling: true);
-                return new ShaderFilter(shader, sourceFilter, new Texture3DSourceFilter(m_Texture3D));
+                return new ShaderFilter(shader, sourceFilter, new TextureSourceFilter<ISourceTexture3D>(m_Texture3D));
             }
 
-            public override void RenderScriptDisposed()
+            public override void Initialize()
+            {
+                Create3DTexture();
+
+                base.Initialize();
+            }
+
+            public override void Reset()
             {
                 DiscardTextures();
 
-                base.RenderScriptDisposed();
+                base.Reset();
             }
 
             private void DiscardTextures()
@@ -101,6 +109,11 @@ namespace Mpdn.RenderScripts
                         Copyright = "" // Optional field
                     };
                 }
+            }
+
+            public override string Category
+            {
+                get { return "Example"; }
             }
         }
     }

@@ -13,79 +13,124 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
-using System;
-using System.Drawing;
 
-namespace Mpdn.RenderScript
+using System;
+using System.Collections.Generic;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
+using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
+using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
+using Mpdn.RenderScript;
+using Mpdn.RenderScript.Scaler;
+
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
-        public class SuperRes : RenderChain
+        public class SuperRes : ScriptGroup
         {
             #region Settings
 
             public int Passes { get; set; }
-
             public float Strength { get; set; }
-            public float Sharpness { get; set; }
-            public float AntiAliasing { get; set; }
-            public float AntiRinging { get; set; }
+            public float Softness { get; set; }
 
-            public bool UseNEDI { get; set; }
-            public bool NoIntermediates { get; set; }
-
-            public bool FirstPassOnly;
+            public bool HQdownscaling { get; set; }
 
             #endregion
 
             public Func<TextureSize> TargetSize; // Not saved
-            private IScaler downscaler, upscaler;
+            private readonly IScaler m_Downscaler;
+            private readonly IScaler m_Upscaler;
+
+            public override bool AllowRegrouping { get { return false; } }
 
             public SuperRes()
             {
                 TargetSize = () => Renderer.TargetSize;
-                m_ShiftedScaler = new Scaler.Custom(new ShiftedScaler(0.5f), ScalerTaps.Six, false);
 
                 Passes = 3;
+                Strength = 1.0f;
+                Softness = 0.0f;
 
-                Strength = 0.75f;
-                Sharpness = 0.5f;
-                AntiAliasing = 0.25f;
-                AntiRinging = 0.75f;
+                HQdownscaling = true;
 
-                UseNEDI = false;
-                NoIntermediates = false;
+                Options = new List<Preset> {
+                    new Preset
+                    {
+                        Name = "Super-xBR",
+                        Script = new SuperXbrUi()
+                    },
+                    new Preset
+                    {
+                        Name = "NEDI",
+                        Script = new Nedi.NediScaler()
+                    },
+                    new Preset
+                    {
+                        Name = "NNEDI3",
+                        Script = new NNedi3.NNedi3Scaler()
+                    },
+                    new Preset
+                    {
+                        Name = "OpenCL NNEDI3",
+                        Script = new OclNNedi3Scaler()
+                    }
+                };
+                SelectedIndex = 0;
 
-                FirstPassOnly = false;
-                upscaler = new Scaler.Jinc(ScalerTaps.Four, false);
-                downscaler = new Scaler.Bilinear();
+                m_Upscaler = new Jinc(ScalerTaps.Four, false); // Deprecated
+                m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.66f, false) : new Bilinear();
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter input)
             {
-                return CreateFilter(sourceFilter, sourceFilter);
+                return CreateFilter(input, input + SelectedOption);
             }
+
+            private bool IsIntegral(double x)
+            {
+                return Math.Abs(x - Math.Truncate(x)) < 0.005;
+            }
+
+            #region Status
+
+            // Revert ScriptGroups changes to Status
+            public override string Status
+            {
+                get { return "SuperRes"; }
+            }
+
+            #endregion
 
             public IFilter CreateFilter(IFilter original, IFilter initial)
             {
-                IFilter lab, linear, result = initial;
+                IFilter result;
 
+                // Calculate Sizes
                 var inputSize = original.OutputSize;
-                var currentSize = original.OutputSize;
                 var targetSize = TargetSize();
 
-                var NEDI = new Shiandow.Nedi.Nedi
-                {
-                    AlwaysDoubleImage = false,
-                    Centered = false,
-                    LumaConstants = new[] { 1.0f, 0.0f, 0.0f }
-                };
+                string macroDefinitions = "";
+                if (IsIntegral(Strength))
+                    macroDefinitions += string.Format("strength = {0};", Strength);
+                if (IsIntegral(Softness))
+                    macroDefinitions += string.Format("softness = {0};", Softness);
 
-                var Consts = new[] { Strength, Sharpness, AntiAliasing, AntiRinging };
+                // Compile Shaders
+                var Diff = CompileShader("Diff.hlsl")
+                    .Configure(format: TextureFormat.Float16);
 
-                var Diff = CompileShader("Diff.hlsl").Configure(format: TextureFormat.Float16);
-                var SuperRes = CompileShader("SuperRes.hlsl").Configure(arguments: Consts);
+                var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions)
+                    .Configure(
+                        arguments: new[] { Strength, Softness }
+                    );
+
+                var FinalSuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions + "FinalPass = 1;")
+                    .Configure(
+                        arguments: new[] { Strength, Softness }
+                    );
 
                 var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
                 var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
@@ -96,113 +141,57 @@ namespace Mpdn.RenderScript
 
                 // Skip if downscaling
                 if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
-                    return initial;
+                    return original;
 
                 // Initial scaling
-                lab = new ShaderFilter(GammaToLab, initial);
-                original = new ShaderFilter(GammaToLab, original);
+                if (initial != original)
+                {
+                    // Always correct offset (if any)
+                    var filter = initial as ResizeFilter;
+                    if (filter != null)
+                        filter.ForceOffsetCorrection();
 
+                    result = new ShaderFilter(GammaToLinear, initial.SetSize(targetSize));
+                }
+                else
+                {
+                    result = new ResizeFilter(new ShaderFilter(GammaToLinear, original), targetSize);
+                }
+
+                IFilter diff = null;
                 for (int i = 1; i <= Passes; i++)
                 {
-                    IFilter res, diff;
-                    bool useBilinear = (upscaler is Scaler.Bilinear) || (FirstPassOnly && !(i == 1));
-
-                    // Calculate size
-                    if (i == Passes || NoIntermediates) currentSize = targetSize;
-                    else currentSize = CalculateSize(currentSize, targetSize, i);
-                                        
-                    // Resize
-                    if (i == 1 && UseNEDI)
-                        lab = new ResizeFilter(lab + NEDI, currentSize, m_ShiftedScaler, m_ShiftedScaler, m_ShiftedScaler);
-                    else 
-                        lab = new ResizeFilter(lab, currentSize, upscaler, downscaler);
+                    IFilter loRes;
 
                     // Downscale and Subtract
-                    linear = new ShaderFilter(LabToLinear, lab);
-                    res = new ResizeFilter(linear, inputSize, upscaler, downscaler); // Downscale result
-                    diff = new ShaderFilter(Diff, res, original);                    // Compare with original
+                    loRes = new ResizeFilter(result, inputSize, m_Upscaler, m_Downscaler); // Downscale result
+                    diff = new ShaderFilter(Diff, loRes, original); // Compare with original  
 
-                    // Scale difference back
-                    if (!useBilinear)
-                        diff = new ResizeFilter(diff, currentSize, upscaler, downscaler);
-                    
                     // Update result
-                    lab = new ShaderFilter(SuperRes.Configure(useBilinear), lab, diff, original);
-                    result = new ShaderFilter(LabToGamma, lab);
+                    result = new ShaderFilter(i != Passes ? SuperRes : FinalSuperRes, result, diff);
                 }
 
                 return result;
             }
 
-            private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k)
-            {
+            private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k, int passes) // Deprecated
+            {            
                 double w, h;
-                var MaxScale = 2.0;
-                var MinScale = Math.Sqrt(MaxScale);
+                var maxScale = 2.25;
+                var minScale = Math.Sqrt(maxScale);
                 
                 int minW = sizeA.Width; int minH = sizeA.Height;
                 int maxW = sizeB.Width; int maxH = sizeB.Height;
 
-                int maxSteps = (int)Math.Floor  (Math.Log((double)(maxH * maxW) / (double)(minH * minW)) / (2 * Math.Log(MinScale)));
-                int minSteps = (int)Math.Ceiling(Math.Log((double)(maxH * maxW) / (double)(minH * minW)) / (2 * Math.Log(MaxScale)));
-                int steps = Math.Max(Math.Max(1,minSteps), Math.Min(maxSteps, Passes - (k - 1)));
+                int maxSteps = (int)Math.Floor  (Math.Log(maxH * maxW / (double)(minH * minW)) / (2 * Math.Log(minScale)));
+                int minSteps = (int)Math.Ceiling(Math.Log(maxH * maxW / (double)(minH * minW)) / (2 * Math.Log(maxScale)));
+                int steps = Math.Max(Math.Max(1,minSteps), Math.Min(maxSteps, passes - (k - 1)));
                 
-                w = minW * Math.Pow((double)maxW / (double)minW, (double)Math.Min(k, steps) / (double)steps);
-                h = minW * Math.Pow((double)maxH / (double)minH, (double)Math.Min(k, steps) / (double)steps);
+                w = minW * Math.Pow(maxW / (double)minW, Math.Min(k, steps) / (double)steps);
+                h = minW * Math.Pow(maxH / (double)minH, Math.Min(k, steps) / (double)steps);
 
                 return new TextureSize(Math.Max(minW, Math.Min(maxW, (int)Math.Round(w))),
-                                Math.Max(minH, Math.Min(maxH, (int)Math.Round(h))));
-            }
-
-            private IScaler m_ShiftedScaler;
-
-            private class ShiftedScaler : ICustomLinearScaler
-            {
-                private float m_Offset;
-
-                public ShiftedScaler(float offset)
-                {
-                    m_Offset = offset;
-                }
-
-                public Guid Guid
-                {
-                    get { return new Guid(); }
-                }
-
-                public string Name
-                {
-                    get { return ""; }
-                }
-
-                public bool AllowDeRing
-                {
-                    get { return false; }
-                }
-
-                public ScalerTaps MaxTapCount
-                {
-                    get { return ScalerTaps.Six; }
-                } 
-
-                public float GetWeight(float n, int width)
-                {
-                    return (float)Kernel(n + m_Offset, width);
-                }
-
-                private static double Kernel(double x, double radius)
-                {
-                    x = Math.Abs(x);
-                    var B = 1.0/3.0;
-                    var C = 1.0/3.0;
-
-                    if (x > 2.0)
-                        return 0;
-                    else if (x <= 1.0)
-                        return ((2 - 1.5 * B - C) * x + (-3 + 2 * B + C)) * x * x + (1 - B / 3.0);
-                    else
-                        return (((-B / 6.0 - C) * x + (B + 5 * C)) * x + (-2 * B - 8 * C)) * x + ((4.0 / 3.0) * B + 4 * C);
-                }
+                                       Math.Max(minH, Math.Min(maxH, (int)Math.Round(h))));
             }
         }
 
@@ -211,6 +200,11 @@ namespace Mpdn.RenderScript
             protected override string ConfigFileName
             {
                 get { return "Shiandow.SuperRes"; }
+            }
+
+            public override string Category
+            {
+                get { return "Upscaling"; }
             }
 
             public override ExtensionUiDescriptor Descriptor

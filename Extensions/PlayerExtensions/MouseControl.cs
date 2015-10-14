@@ -18,8 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.PlayerExtensions.GitHub;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public class MouseControl : PlayerExtension<MouseControlSettings, MouseControlConfigDialog>
     {
@@ -47,21 +49,16 @@ namespace Mpdn.PlayerExtensions.GitHub
         {
             base.Initialize();
 
-            PlayerControl.MouseClick += PlayerMouseClick;
-            PlayerControl.MouseWheel += PlayerMouseWheel;
+            Player.MouseClick += PlayerMouseClick;
+            Player.MouseWheel += PlayerMouseWheel;
         }
 
         public override void Destroy()
         {
             base.Destroy();
 
-            PlayerControl.MouseClick -= PlayerMouseClick;
-            PlayerControl.MouseWheel -= PlayerMouseWheel;
-        }
-
-        public override IList<Verb> Verbs
-        {
-            get { return new Verb[0]; }
+            Player.MouseClick -= PlayerMouseClick;
+            Player.MouseWheel -= PlayerMouseWheel;
         }
 
         private void PlayerMouseWheel(object sender, PlayerControlEventArgs<MouseEventArgs> e)
@@ -69,10 +66,10 @@ namespace Mpdn.PlayerExtensions.GitHub
             if (!Settings.EnableMouseWheelSeek)
                 return;
 
-            var pos = PlayerControl.MediaPosition;
+            var pos = Media.Position;
             pos += e.InputArgs.Delta*1000000/40;
             pos = Math.Max(pos, 0);
-            PlayerControl.SeekMedia(pos);
+            Media.Seek(pos);
             e.Handled = true;
         }
 
@@ -84,12 +81,12 @@ namespace Mpdn.PlayerExtensions.GitHub
                 return;
             }
 
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            var chapters = PlayerControl.Chapters.OrderBy(chapter => chapter.Position);
+            var chapters = Media.Chapters.OrderBy(chapter => chapter.Position);
 
-            var pos = PlayerControl.MediaPosition;
+            var pos = Media.Position;
 
             bool next;
             switch (e.InputArgs.Button)
@@ -109,7 +106,7 @@ namespace Mpdn.PlayerExtensions.GitHub
                 : chapters.TakeWhile(chapter => chapter.Position < Math.Max(pos - 1000000, 0)).LastOrDefault();
             if (nextChapter != null)
             {
-                PlayerControl.SeekMedia(nextChapter.Position);
+                Media.Seek(nextChapter.Position);
                 return;
             }
 
@@ -144,14 +141,7 @@ namespace Mpdn.PlayerExtensions.GitHub
             if (!Settings.EnableMiddleClickFsToggle)
                 return;
 
-            if (PlayerControl.InFullScreenMode)
-            {
-                PlayerControl.GoWindowed();
-            }
-            else
-            {
-                PlayerControl.GoFullScreen();
-            }
+            Player.FullScreenMode.Active = !Player.FullScreenMode.Active;
         }
     }
 

@@ -16,9 +16,9 @@
 // 
 using System.IO;
 using System.Windows.Forms;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Lut3D
     {
@@ -94,7 +94,7 @@ namespace Mpdn.RenderScript
             }
         }
 
-        public class Lut3DConfigDialogBase : ScriptConfigDialog<Lut3D>
+        public class Lut3DConfigDialogBase : ScriptConfigDialog<Lut3DColorCorrection>
         {
         }
     }

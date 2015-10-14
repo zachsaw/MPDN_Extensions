@@ -29,9 +29,9 @@ float2 p1 :  register(c1);
 
 // -- Main code --
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0.xyz = RGBtoLab(GammaInv(c0.rgb));
+    c0.xyz = RGBtoLab(GammaInv(c0.rgb));
 
-	return c0;
+    return c0;
 }

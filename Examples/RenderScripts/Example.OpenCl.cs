@@ -15,13 +15,12 @@
 // License along with this library.
 // 
 using System;
-using System.Runtime.InteropServices;
-using Mpdn.OpenCl;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Mpdn.Resizer;
 using Mpdn.RenderScript;
-using Mpdn.RenderScript.Mpdn.Resizer;
-using SharpDX;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Example
     {
@@ -33,9 +32,9 @@ namespace Mpdn.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
-                if (!Renderer.IsOpenClAvail)
+                if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                     return new NullFilter(); // display blank screen on purpose
 
                 // get MPDN to scale image to target size first
@@ -50,103 +49,103 @@ namespace Mpdn.RenderScripts
             }
         }
 
-/*
-        // Pass color as OpenCL buffer (remember to change BlueTint.cl to match)
-        public class OpenCl : RenderChain
-        {
-            private IDisposable m_Buffer;
-
-            private class MyKernelFilter : ClKernelFilter
-            {
-                private readonly IDisposable m_Buffer;
-
-                public MyKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int[] workSizes, 
-                    params IFilter<IBaseTexture>[] inputFilters) 
-                    : base(settings, workSizes, inputFilters)
+        /*
+                // Pass color as OpenCL buffer (remember to change BlueTint.cl to match)
+                public class OpenCl : RenderChain
                 {
-                    m_Buffer = buffer;
-                }
+                    private IDisposable m_Buffer;
 
-                protected override void LoadCustomInputs()
+                    private class MyKernelFilter : ClKernelFilter
+                    {
+                        private readonly IDisposable m_Buffer;
+
+                        public MyKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int[] workSizes, 
+                            params IFilter<IBaseTexture>[] inputFilters) 
+                            : base(settings, workSizes, inputFilters)
+                        {
+                            m_Buffer = buffer;
+                        }
+
+                        protected override void LoadCustomInputs()
+                        {
+                            Shader.SetBufferArg(2, m_Buffer);
+                        }
+                    }
+
+                    public override void RenderScriptDisposed()
+                    {
+                        DisposeHelper.Dispose(ref m_Buffer);
+
+                        base.RenderScriptDisposed();
+                    }
+
+                    protected override string ShaderPath
+                    {
+                        get { return "Examples"; }
+                    }
+
+                    protected override IFilter CreateFilter(IFilter sourceFilter)
+                    {
+                        if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
+                            return new NullFilter(); // display blank screen on purpose
+
+                        m_Buffer = Renderer.CreateClBuffer(new[] {0.25f, 0.5f, 0.75f});
+
+                        // get MPDN to scale image to target size first
+                        sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
+
+                        // apply our blue tint
+                        var blueTint = CompileClKernel("BlueTint.cl", "BlueTint").Configure();
+
+                        var outputSize = sourceFilter.OutputSize;
+                        return new MyKernelFilter(blueTint, m_Buffer, new[] {outputSize.Width, outputSize.Height}, sourceFilter);
+                    }
+                }
+        */
+
+        /*
+                // Pass color as SharpDX.Vector4 (remember to change BlueTint.cl to match)
+                public class OpenCl : RenderChain
                 {
-                    Shader.SetBufferArg(2, m_Buffer);
+                    private class MyKernelFilter : ClKernelFilter
+                    {
+                        private readonly Vector4 m_Color;
+
+                        public MyKernelFilter(ShaderFilterSettings<IKernel> settings, Vector4 color, int[] workSizes,
+                            params IFilter<IBaseTexture>[] inputFilters)
+                            : base(settings, workSizes, inputFilters)
+                        {
+                            m_Color = color;
+                        }
+
+                        protected override void LoadCustomInputs()
+                        {
+                            Shader.SetArg(2, m_Color);
+                        }
+                    }
+
+                    protected override string ShaderPath
+                    {
+                        get { return "Examples"; }
+                    }
+
+                    protected override IFilter CreateFilter(IFilter sourceFilter)
+                    {
+                        if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
+                            return new NullFilter(); // display blank screen on purpose
+
+                        // get MPDN to scale image to target size first
+                        sourceFilter += new Resizer {ResizerOption = ResizerOption.TargetSize100Percent};
+
+                        // apply our blue tint
+                        var blueTint = CompileClKernel("BlueTint.cl", "BlueTint").Configure();
+
+                        var outputSize = sourceFilter.OutputSize;
+                        return new MyKernelFilter(blueTint, new Vector4(0.25f, 0.5f, 0.75f, 0.0f),
+                            new[] {outputSize.Width, outputSize.Height}, sourceFilter);
+                    }
                 }
-            }
-
-            public override void RenderScriptDisposed()
-            {
-                DisposeHelper.Dispose(ref m_Buffer);
-
-                base.RenderScriptDisposed();
-            }
-
-            protected override string ShaderPath
-            {
-                get { return "Examples"; }
-            }
-
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
-            {
-                if (!Renderer.IsOpenClAvail)
-                    return new NullFilter(); // display blank screen on purpose
-
-                m_Buffer = Renderer.CreateClBuffer(new[] {0.25f, 0.5f, 0.75f});
-
-                // get MPDN to scale image to target size first
-                sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
-
-                // apply our blue tint
-                var blueTint = CompileClKernel("BlueTint.cl", "BlueTint").Configure();
-
-                var outputSize = sourceFilter.OutputSize;
-                return new MyKernelFilter(blueTint, m_Buffer, new[] {outputSize.Width, outputSize.Height}, sourceFilter);
-            }
-        }
-*/
-
-/*
-        // Pass color as SharpDX.Vector4 (remember to change BlueTint.cl to match)
-        public class OpenCl : RenderChain
-        {
-            private class MyKernelFilter : ClKernelFilter
-            {
-                private readonly Vector4 m_Color;
-
-                public MyKernelFilter(ShaderFilterSettings<IKernel> settings, Vector4 color, int[] workSizes,
-                    params IFilter<IBaseTexture>[] inputFilters)
-                    : base(settings, workSizes, inputFilters)
-                {
-                    m_Color = color;
-                }
-
-                protected override void LoadCustomInputs()
-                {
-                    Shader.SetArg(2, m_Color);
-                }
-            }
-
-            protected override string ShaderPath
-            {
-                get { return "Examples"; }
-            }
-
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
-            {
-                if (!Renderer.IsOpenClAvail)
-                    return new NullFilter(); // display blank screen on purpose
-
-                // get MPDN to scale image to target size first
-                sourceFilter += new Resizer {ResizerOption = ResizerOption.TargetSize100Percent};
-
-                // apply our blue tint
-                var blueTint = CompileClKernel("BlueTint.cl", "BlueTint").Configure();
-
-                var outputSize = sourceFilter.OutputSize;
-                return new MyKernelFilter(blueTint, new Vector4(0.25f, 0.5f, 0.75f, 0.0f),
-                    new[] {outputSize.Width, outputSize.Height}, sourceFilter);
-            }
-        }
-*/
+        */
 
         public class OpenClExample : RenderChainUi<OpenCl>
         {
@@ -162,6 +161,11 @@ namespace Mpdn.RenderScripts
                         Copyright = "" // Optional field
                     };
                 }
+            }
+
+            public override string Category
+            {
+                get { return "Example"; }
             }
         }
     }

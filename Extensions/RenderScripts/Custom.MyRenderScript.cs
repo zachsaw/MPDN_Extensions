@@ -13,12 +13,13 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
-using Mpdn.RenderScript.Mpdn.ImageProcessor;
-using Mpdn.RenderScript.Mpdn.Resizer;
-using Mpdn.RenderScript.Shiandow.Chroma;
-using Mpdn.RenderScript.Shiandow.Nedi;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Mpdn.ImageProcessor;
+using Mpdn.Extensions.RenderScripts.Mpdn.Resizer;
+using Mpdn.Extensions.RenderScripts.Shiandow.Chroma;
+using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
 
 namespace Mpdn.RenderScript
 {
@@ -26,59 +27,66 @@ namespace Mpdn.RenderScript
     {
         public class MyRenderChain : RenderChain
         {
-            private string[] Deinterlace = { @"MPC-HC\Deinterlace (blend).hlsl" };
+// Uncomment if you have MPC-HC's shader pack installed
+//            private string[] Deinterlace = { @"MPC-HC\Deinterlace (blend).hlsl" };
             private string[] PostProcess = { @"SweetFX\LumaSharpen.hlsl" };
             private string[] PreProcess = { @"SweetFX\Bloom.hlsl", @"SweetFX\LiftGammaGain.hlsl" };
             private string[] ToGamma = { @"ConvertToGammaLight.hlsl" };
             private string[] ToLinear = { @"ConvertToLinearLight.hlsl" };
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 // Scale chroma first (this bypasses MPDN's chroma scaler)
-                sourceFilter += new BicubicChroma { Preset = Presets.MitchellNetravali };
-
+                input += new BicubicChroma { Preset = Presets.MitchellNetravali };
+// Uncomment if you want to deinterlace with MPC-HC's deinterlace (blend) shader
+/***
                 if (Renderer.InterlaceFlags.HasFlag(InterlaceFlags.IsInterlaced))
                 {
                     // Deinterlace using blend
-                    sourceFilter += new ImageProcessor { ShaderFileNames = Deinterlace };
+                    input += new ImageProcessor { ShaderFileNames = Deinterlace };
                 }
-
+***/
                 // Pre resize shaders, followed by NEDI image doubler
-                sourceFilter += new ImageProcessor { ShaderFileNames = PreProcess };
+                input += new ImageProcessor { ShaderFileNames = PreProcess };
 
                 // Use NEDI once only.
                 // Note: To use NEDI as many times as required to get the image past target size,
                 //       Change the following *if* to *while*
-                if (IsUpscalingFrom(sourceFilter)) // See CombinedChain for other comparer methods
+                if (IsUpscalingFrom(input)) // See CombinedChain for other comparer methods
                 {
-                    sourceFilter += new Nedi { AlwaysDoubleImage = true };
+                    input += new Nedi { AlwaysDoubleImage = true };
                 }
 
-                if (IsDownscalingFrom(sourceFilter))
+                if (IsDownscalingFrom(input))
                 {
                     // Use linear light for downscaling
-                    sourceFilter += new ImageProcessor { ShaderFileNames = ToLinear }
+                    input += new ImageProcessor { ShaderFileNames = ToLinear }
                                   + new Resizer { ResizerOption = ResizerOption.TargetSize100Percent }
                                   + new ImageProcessor { ShaderFileNames = ToGamma };
                 }
                 else
                 {
                     // Otherwise, scale with gamma light
-                    sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
+                    input += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
                 }
 
                 if (Renderer.VideoSize.Width < 1920)
                 {
                     // Sharpen only if video isn't full HD
-                    sourceFilter += new ImageProcessor { ShaderFileNames = PostProcess };
+                    input += new ImageProcessor { ShaderFileNames = PostProcess };
                 }
 
-                return sourceFilter;
+                return input;
             }
         }
 
         public class MyRenderScript : RenderChainUi<MyRenderChain>
         {
+            public override string Category
+            {
+                get { return "Hidden"; } // Change to something else to make it visible in MPDN
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get

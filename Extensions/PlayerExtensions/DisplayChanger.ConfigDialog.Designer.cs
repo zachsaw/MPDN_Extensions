@@ -14,48 +14,49 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-namespace Mpdn.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions
 {
-    namespace GitHub
+    partial class DisplayChangerConfigDialog
     {
-        partial class DisplayChangerConfigDialog
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
         {
-            /// <summary>
-            /// Required designer variable.
-            /// </summary>
-            private System.ComponentModel.IContainer components = null;
-
-            /// <summary>
-            /// Clean up any resources being used.
-            /// </summary>
-            /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-            protected override void Dispose(bool disposing)
+            if (disposing && (components != null))
             {
-                if (disposing && (components != null))
-                {
-                    components.Dispose();
-                }
-                base.Dispose(disposing);
+                components.Dispose();
             }
+            base.Dispose(disposing);
+        }
 
-            #region Windows Form Designer generated code
+        #region Windows Form Designer generated code
 
-            /// <summary>
-            /// Required method for Designer support - do not modify
-            /// the contents of this method with the code editor.
-            /// </summary>
-            private void InitializeComponent()
-            {
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.components = new System.ComponentModel.Container();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
             this.checkBoxActivate = new System.Windows.Forms.CheckBox();
             this.checkBoxRestore = new System.Windows.Forms.CheckBox();
             this.checkBoxRestricted = new System.Windows.Forms.CheckBox();
             this.textBoxVideoTypes = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
+            this.labelFormat = new System.Windows.Forms.Label();
+            this.labelExample = new System.Windows.Forms.Label();
             this.checkBoxRestoreExit = new System.Windows.Forms.CheckBox();
             this.checkBoxHighestRate = new System.Windows.Forms.CheckBox();
+            this.errorProvider = new System.Windows.Forms.ErrorProvider(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonCancel
@@ -116,24 +117,25 @@ namespace Mpdn.PlayerExtensions
             this.textBoxVideoTypes.Name = "textBoxVideoTypes";
             this.textBoxVideoTypes.Size = new System.Drawing.Size(285, 20);
             this.textBoxVideoTypes.TabIndex = 1011;
+            this.textBoxVideoTypes.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxVideoTypesValidating);
             // 
-            // label1
+            // labelFormat
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(54, 174);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(180, 13);
-            this.label1.TabIndex = 1010;
-            this.label1.Text = "Format: [w (0..9)] [h (0..9)] [p | i (0..9)]";
+            this.labelFormat.AutoSize = true;
+            this.labelFormat.Location = new System.Drawing.Point(54, 174);
+            this.labelFormat.Name = "labelFormat";
+            this.labelFormat.Size = new System.Drawing.Size(59, 13);
+            this.labelFormat.TabIndex = 1010;
+            this.labelFormat.Text = "Format: {0}";
             // 
-            // label2
+            // labelExample
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(72, 191);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(152, 13);
-            this.label2.TabIndex = 1011;
-            this.label2.Text = "e.g. w1920p24 p30 w320h180";
+            this.labelExample.AutoSize = true;
+            this.labelExample.Location = new System.Drawing.Point(72, 191);
+            this.labelExample.Name = "labelExample";
+            this.labelExample.Size = new System.Drawing.Size(42, 13);
+            this.labelExample.TabIndex = 1011;
+            this.labelExample.Text = "e.g. {0}";
             // 
             // checkBoxRestoreExit
             // 
@@ -155,6 +157,10 @@ namespace Mpdn.PlayerExtensions
             this.checkBoxHighestRate.Text = "Use highest refresh rate if the one requested is unavailable";
             this.checkBoxHighestRate.UseVisualStyleBackColor = true;
             // 
+            // errorProvider
+            // 
+            this.errorProvider.ContainerControl = this;
+            // 
             // DisplayChangerConfigDialog
             // 
             this.AcceptButton = this.buttonOk;
@@ -164,8 +170,8 @@ namespace Mpdn.PlayerExtensions
             this.ClientSize = new System.Drawing.Size(366, 269);
             this.Controls.Add(this.checkBoxHighestRate);
             this.Controls.Add(this.checkBoxRestoreExit);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.labelExample);
+            this.Controls.Add(this.labelFormat);
             this.Controls.Add(this.textBoxVideoTypes);
             this.Controls.Add(this.checkBoxRestricted);
             this.Controls.Add(this.checkBoxRestore);
@@ -179,24 +185,26 @@ namespace Mpdn.PlayerExtensions
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Display Changer Configuration";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DialogClosing);
+            ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
-            }
-
-            #endregion
-
-            private System.Windows.Forms.Button buttonCancel;
-            private System.Windows.Forms.Button buttonOk;
-            private System.Windows.Forms.CheckBox checkBoxActivate;
-            private System.Windows.Forms.CheckBox checkBoxRestore;
-            private System.Windows.Forms.CheckBox checkBoxRestricted;
-            private System.Windows.Forms.TextBox textBoxVideoTypes;
-            private System.Windows.Forms.Label label1;
-            private System.Windows.Forms.Label label2;
-            private System.Windows.Forms.CheckBox checkBoxRestoreExit;
-            private System.Windows.Forms.CheckBox checkBoxHighestRate;
-
         }
+
+        #endregion
+
+        private System.Windows.Forms.Button buttonCancel;
+        private System.Windows.Forms.Button buttonOk;
+        private System.Windows.Forms.CheckBox checkBoxActivate;
+        private System.Windows.Forms.CheckBox checkBoxRestore;
+        private System.Windows.Forms.CheckBox checkBoxRestricted;
+        private System.Windows.Forms.TextBox textBoxVideoTypes;
+        private System.Windows.Forms.Label labelFormat;
+        private System.Windows.Forms.Label labelExample;
+        private System.Windows.Forms.CheckBox checkBoxRestoreExit;
+        private System.Windows.Forms.CheckBox checkBoxHighestRate;
+        private System.Windows.Forms.ErrorProvider errorProvider;
+
     }
 }

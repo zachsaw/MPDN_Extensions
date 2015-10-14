@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -13,15 +13,17 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
-﻿using System;
+
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.PlayerExtensions
+namespace Mpdn.Extensions.Framework
 {
     public abstract class PlayerExtension : PlayerExtension<NoSettings> { }
 
@@ -33,21 +35,24 @@ namespace Mpdn.PlayerExtensions
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
-        public abstract IList<Verb> Verbs { get; }
-
         #region Implementation
+
+        public virtual IList<Verb> Verbs
+        {
+            get { return new Verb[0]; }
+        }
 
         public override void Initialize()
         {
             base.Initialize();
 
-            PlayerControl.KeyDown += PlayerKeyDown;
+            Player.KeyDown += PlayerKeyDown;
             LoadVerbs();
         }
 
         public override void Destroy()
         {
-            PlayerControl.KeyDown -= PlayerKeyDown;
+            Player.KeyDown -= PlayerKeyDown;
 
             base.Destroy();
         }
@@ -56,10 +61,14 @@ namespace Mpdn.PlayerExtensions
 
         protected void LoadVerbs()
         {
+            m_Actions.Clear();
             foreach (var verb in Verbs)
             {
                 var shortcut = DecodeKeyString(verb.ShortcutDisplayStr);
-                m_Actions.Remove(shortcut); //Prevent duplicates FIFO.
+                if (shortcut == Keys.None)
+                    continue;
+
+                m_Actions.Remove(shortcut); // Prevent duplicates FIFO.
                 m_Actions.Add(shortcut, verb.Action);
             }
         }
@@ -73,26 +82,47 @@ namespace Mpdn.PlayerExtensions
             }
         }
 
-        protected static bool TryDecodeKeyString(String keyString, out Keys keys)
+        protected static bool TryDecodeKeyString(string keyString, out Keys keys)
         {
+            keys = Keys.None;
+            if (string.IsNullOrWhiteSpace(keyString))
+                return false;
+
+            keyString = keyString.ToLower().Trim();
             var keyWords = Regex.Split(keyString, @"\W+");
-            keyString = String.Join(", ", keyWords.Select(DecodeKeyWord).ToArray());
+            var specialKeys = AddSpecialKeys(keyString);
+            keyString = string.Join(", ",
+                keyWords.Concat(specialKeys).Where(k => !string.IsNullOrWhiteSpace(k)).Select(DecodeKeyWord).ToArray());
 
             return (Enum.TryParse(keyString, true, out keys));
         }
 
-        private static Keys DecodeKeyString(String keyString)
+        private static IEnumerable<string> AddSpecialKeys(string keyString)
         {
-            Keys keys;
-            if (TryDecodeKeyString(keyString, out keys))
-                return keys;
-            else
-                throw new ArgumentException("Can't convert string to keys.");
+            var specialKeys = new List<string>();
+            if (keyString.Length >= 1)
+            {
+                var lastChar = keyString[keyString.Length - 1];
+                switch (lastChar)
+                {
+                    case '+':
+                    case '-':
+                        specialKeys.Add(new string(lastChar, 1));
+                        break;
+                }
+            }
+            return specialKeys;
         }
 
-        private static String DecodeKeyWord(String keyWord)
+        private static Keys DecodeKeyString(string keyString)
         {
-            switch (keyWord.ToLower())
+            Keys keys;
+            return TryDecodeKeyString(keyString, out keys) ? keys : Keys.None;
+        }
+
+        private static string DecodeKeyWord(string keyWord)
+        {
+            switch (keyWord)
             {
                 case "ctrl":
                     return "Control";
@@ -116,11 +146,52 @@ namespace Mpdn.PlayerExtensions
                     return "D8";
                 case "9":
                     return "D9";
+                case "+":
+                    return "Add";
+                case "-":
+                    return "Subtract";
                 default:
                     return keyWord;
             }
         }
 
         #endregion
+    }
+
+
+    public class AboutExtensions : PlayerExtension
+    {
+        public override ExtensionUiDescriptor Descriptor
+        {
+            get
+            {
+                return new ExtensionUiDescriptor
+                {
+                    Guid = new Guid("AB0556BA-E743-48FD-8D3E-CDCAFD66E637"),
+                    Name = "About MPDN Extensions",
+                    Description = "View the about box of MPDN Extensions"
+                };
+            }
+        }
+
+        public override IList<Verb> Verbs
+        {
+            get
+            {
+                return new[]
+                {
+                    new Verb(Category.Help, string.Empty, "About MPDN Extensions...", string.Empty, string.Empty, ShowAboutBox)
+                };
+            }
+        }
+
+        private static void ShowAboutBox()
+        {
+            // TODO custom form for about box
+            var version = FileVersionInfo.GetVersionInfo(typeof (AboutExtensions).Assembly.Location).FileVersion;
+            MessageBox.Show(Gui.VideoBox,
+                string.Format("MPDN Extensions version {0}\r\n\r\nLicense: Open Source LGPLv3", version),
+                "About MPDN Extensions", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
     }
 }

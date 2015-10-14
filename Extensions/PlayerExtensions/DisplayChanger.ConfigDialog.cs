@@ -14,42 +14,68 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-using Mpdn.Config;
 
-namespace Mpdn.PlayerExtensions
+using System.Linq;
+using System.Windows.Forms;
+using Mpdn.Extensions.Framework.Config;
+
+namespace Mpdn.Extensions.PlayerExtensions
 {
-    namespace GitHub
+    public partial class DisplayChangerConfigDialog : DisplayChangerConfigBase
     {
-        public partial class DisplayChangerConfigDialog : DisplayChangerConfigBase
+        public DisplayChangerConfigDialog()
         {
-            public DisplayChangerConfigDialog()
-            {
-                InitializeComponent();
-            }
+            InitializeComponent();
 
-            protected override void LoadSettings()
-            {
-                checkBoxActivate.Checked = Settings.Activate;
-                checkBoxRestore.Checked = Settings.Restore;
-                checkBoxRestoreExit.Checked = Settings.RestoreOnExit;
-                checkBoxHighestRate.Checked = Settings.HighestRate;
-                checkBoxRestricted.Checked = Settings.Restricted;
-                textBoxVideoTypes.Text = Settings.VideoTypes;
-            }
-
-            protected override void SaveSettings()
-            {
-                Settings.Activate = checkBoxActivate.Checked;
-                Settings.Restore = checkBoxRestore.Checked;
-                Settings.RestoreOnExit = checkBoxRestoreExit.Checked;
-                Settings.HighestRate = checkBoxHighestRate.Checked;
-                Settings.Restricted = checkBoxRestricted.Checked;
-                Settings.VideoTypes = textBoxVideoTypes.Text;
-            }
+            labelFormat.Text = string.Format(labelFormat.Text, VideoSpecifier.FormatHelp);
+            labelExample.Text = string.Format(labelExample.Text, VideoSpecifier.ExampleHelp);
         }
 
-        public class DisplayChangerConfigBase : ScriptConfigDialog<DisplayChangerSettings>
+        protected override void LoadSettings()
         {
+            checkBoxActivate.Checked = Settings.Activate;
+            checkBoxRestore.Checked = Settings.Restore;
+            checkBoxRestoreExit.Checked = Settings.RestoreOnExit;
+            checkBoxHighestRate.Checked = Settings.HighestRate;
+            checkBoxRestricted.Checked = Settings.Restricted;
+            textBoxVideoTypes.Text = Settings.VideoTypes;
         }
+
+        protected override void SaveSettings()
+        {
+            Settings.Activate = checkBoxActivate.Checked;
+            Settings.Restore = checkBoxRestore.Checked;
+            Settings.RestoreOnExit = checkBoxRestoreExit.Checked;
+            Settings.HighestRate = checkBoxHighestRate.Checked;
+            Settings.Restricted = checkBoxRestricted.Checked;
+            Settings.VideoTypes = textBoxVideoTypes.Text;
+        }
+
+        private void TextBoxVideoTypesValidating(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            var s = textBoxVideoTypes.Text.Split(' ');
+            var valid = s.All(VideoSpecifier.IsValid);
+            errorProvider.SetError(textBoxVideoTypes, !valid ? "Error: Invalid video type specifier" : string.Empty);
+        }
+
+        private void DialogClosing(object sender, FormClosingEventArgs e)
+        {
+            if (DialogResult != DialogResult.OK)
+                return;
+
+            var error = errorProvider.GetError(textBoxVideoTypes);
+            if (error == string.Empty) 
+                return;
+
+            e.Cancel = true;
+            ActiveControl = textBoxVideoTypes;
+            // Force error provider to blink error icon
+            errorProvider.SetError(textBoxVideoTypes, string.Empty);
+            errorProvider.SetError(textBoxVideoTypes, error);
+        }
+    }
+
+    public class DisplayChangerConfigBase : ScriptConfigDialog<DisplayChangerSettings>
+    {
     }
 }

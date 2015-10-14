@@ -15,10 +15,10 @@
 // License along with this library.
 // 
 using System;
-using Mpdn.RenderScript;
-using Mpdn.RenderScript.Mpdn.Resizer;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Mpdn.Resizer;
 
-namespace Mpdn.RenderScripts
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Example
     {
@@ -29,7 +29,7 @@ namespace Mpdn.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
                 // get MPDN to scale image to target size first
                 sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
@@ -55,6 +55,11 @@ namespace Mpdn.RenderScripts
                         Copyright = "" // Optional field
                     };
                 }
+            }
+
+            public override string Category
+            {
+                get { return "Example"; }
             }
         }
     }

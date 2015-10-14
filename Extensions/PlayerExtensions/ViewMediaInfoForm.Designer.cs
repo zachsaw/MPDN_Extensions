@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     partial class ViewMediaInfoForm
     {
@@ -44,59 +44,39 @@ namespace Mpdn.PlayerExtensions.GitHub
         /// </summary>
         private void InitializeComponent()
         {
-            this.ButtonOK = new System.Windows.Forms.Button();
-            this.textBoxInfo = new System.Windows.Forms.TextBox();
+            this.wb_info = new System.Windows.Forms.WebBrowser();
             this.SuspendLayout();
             // 
-            // ButtonOK
+            // wb_info
             // 
-            this.ButtonOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
-            this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(225, 359);
-            this.ButtonOK.Name = "ButtonOK";
-            this.ButtonOK.Size = new System.Drawing.Size(75, 23);
-            this.ButtonOK.TabIndex = 3;
-            this.ButtonOK.Text = "OK";
-            this.ButtonOK.UseVisualStyleBackColor = true;
-            // 
-            // textBoxInfo
-            // 
-            this.textBoxInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxInfo.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxInfo.Location = new System.Drawing.Point(12, 12);
-            this.textBoxInfo.Multiline = true;
-            this.textBoxInfo.Name = "textBoxInfo";
-            this.textBoxInfo.ReadOnly = true;
-            this.textBoxInfo.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBoxInfo.Size = new System.Drawing.Size(502, 330);
-            this.textBoxInfo.TabIndex = 4;
-            this.textBoxInfo.WordWrap = false;
+            this.wb_info.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wb_info.IsWebBrowserContextMenuEnabled = false;
+            this.wb_info.Location = new System.Drawing.Point(0, 0);
+            this.wb_info.MinimumSize = new System.Drawing.Size(20, 20);
+            this.wb_info.Name = "wb_info";
+            this.wb_info.Size = new System.Drawing.Size(724, 661);
+            this.wb_info.TabIndex = 4;
+            this.wb_info.WebBrowserShortcutsEnabled = false;
             // 
             // ViewMediaInfoForm
             // 
-            this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(526, 394);
-            this.Controls.Add(this.textBoxInfo);
-            this.Controls.Add(this.ButtonOK);
+            this.ClientSize = new System.Drawing.Size(724, 661);
+            this.Controls.Add(this.wb_info);
+            this.KeyPreview = true;
             this.MinimizeBox = false;
             this.Name = "ViewMediaInfoForm";
             this.ShowInTaskbar = false;
-            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Media Info";
+            this.Shown += new System.EventHandler(this.ViewMediaInfoFormShown);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Button ButtonOK;
-        private System.Windows.Forms.TextBox textBoxInfo;
+        private System.Windows.Forms.WebBrowser wb_info;
     }
 }

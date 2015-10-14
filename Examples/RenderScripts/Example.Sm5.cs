@@ -13,12 +13,13 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
-using System;
-using Mpdn.RenderScript;
-using Mpdn.RenderScript.Mpdn.Resizer;
 
-namespace Mpdn.RenderScripts
+using System;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Mpdn.Resizer;
+using Mpdn.RenderScript;
+
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Example
     {
@@ -29,7 +30,7 @@ namespace Mpdn.RenderScripts
                 get { return "Examples"; }
             }
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter sourceFilter)
             {
                 if (!Renderer.IsDx11Avail)
                     return new NullFilter(); // display blank screen on purpose
@@ -58,6 +59,11 @@ namespace Mpdn.RenderScripts
                         Copyright = "" // Optional field
                     };
                 }
+            }
+
+            public override string Category
+            {
+                get { return "Example"; }
             }
         }
     }

@@ -39,8 +39,8 @@ cbuffer size0 : register(b1)
 cbuffer args0 : register(b2)
 {
     float r;
-	float g;
-	float b;
+    float g;
+    float b;
     float a;
 };
 

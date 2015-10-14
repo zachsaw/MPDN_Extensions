@@ -15,17 +15,11 @@
 // License along with this library.
 // 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public partial class RemoteControlConfig : RemoteControlConfigBase
     {
@@ -82,7 +76,7 @@ namespace Mpdn.PlayerExtensions
             int.TryParse(portString, out port);
             if(port < 0 || port > 65535)
             {
-                MessageBox.Show("Please enter a port between 1 and 65535", "Invalid Port Number", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(Gui.VideoBox, "Please enter a port between 1 and 65535", "Invalid Port Number", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txbPort.Text = Settings.ConnectionPort.ToString();
             }
         }
@@ -93,8 +87,6 @@ namespace Mpdn.PlayerExtensions
             validatePortNumber();
         }
         #endregion
-
-
     }
 
     public class RemoteControlConfigBase : ScriptConfigDialog<RemoteControlSettings>

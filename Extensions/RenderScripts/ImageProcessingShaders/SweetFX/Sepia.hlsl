@@ -38,32 +38,32 @@
 /* ---  Main code --- */
 
 /*------------------------------------------------------------------------------
-						SEPIA
+                        SEPIA
 ------------------------------------------------------------------------------*/
 
 float4 SepiaPass( float4 colorInput )
 {
-	float3 sepia = colorInput.rgb;
-	
-	// calculating amounts of input, grey and sepia colors to blend and combine
-	float grey = dot(sepia, float3(0.2126, 0.7152, 0.0722));
-	
-	sepia *= ColorTone;
-	
-	float3 blend2 = (grey * GreyPower) + (colorInput.rgb / (GreyPower + 1));
+    float3 sepia = colorInput.rgb;
+    
+    // calculating amounts of input, grey and sepia colors to blend and combine
+    float grey = dot(sepia, float3(0.2126, 0.7152, 0.0722));
+    
+    sepia *= ColorTone;
+    
+    float3 blend2 = (grey * GreyPower) + (colorInput.rgb / (GreyPower + 1));
 
-	colorInput.rgb = lerp(blend2, sepia, SepiaPower);
-	
-	// returning the final color
-	return colorInput;
+    colorInput.rgb = lerp(blend2, sepia, SepiaPower);
+    
+    // returning the final color
+    return colorInput;
 }
 
 
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = SepiaPass(c0);
-	return c0;
+    c0 = SepiaPass(c0);
+    return c0;
 }

@@ -15,11 +15,10 @@
 // License along with this library.
 // 
 using System;
-using System.IO;
 using System.Windows.Forms;
-using System.Collections.Generic;
+using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.Framework
 {
     public static class RenderScript
     {
@@ -32,6 +31,11 @@ namespace Mpdn.RenderScript
 
         private class NullRenderScriptUi : IRenderScriptUi
         {
+            public int Version
+            {
+                get { return Extension.InterfaceVersion; }
+            }
+
             public ExtensionUiDescriptor Descriptor
             {
                 get
@@ -69,46 +73,4 @@ namespace Mpdn.RenderScript
             }
         }
     }
-
-    public static class ShaderCache<T>
-    where T : class
-    {
-        private static readonly Dictionary<string, ShaderWithDateTime> s_CompiledShaders =
-            new Dictionary<string, ShaderWithDateTime>();
-
-        public static T Add(string shaderPath, Func<string, T> compileFunc)
-        {
-            var lastMod = File.GetLastWriteTimeUtc(shaderPath);
-
-            ShaderWithDateTime result;
-            if (s_CompiledShaders.TryGetValue(shaderPath, out result) &&
-                result.LastModified == lastMod)
-            {
-                return result.Shader;
-            }
-
-            if (result != null)
-            {
-                DisposeHelper.Dispose(result.Shader);
-                s_CompiledShaders.Remove(shaderPath);
-            }
-
-            var shader = compileFunc(shaderPath);
-            s_CompiledShaders.Add(shaderPath, new ShaderWithDateTime(shader, lastMod));
-            return shader;
-        }
-
-        public class ShaderWithDateTime
-        {
-            public T Shader { get; private set; }
-            public DateTime LastModified { get; private set; }
-
-            public ShaderWithDateTime(T shader, DateTime lastModified)
-            {
-                Shader = shader;
-                LastModified = lastModified;
-            }
-        }
-    }
-
 }

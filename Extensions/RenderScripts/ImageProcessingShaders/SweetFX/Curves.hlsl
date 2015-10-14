@@ -68,16 +68,16 @@ float4 CurvesPass( float4 colorInput )
     float luma = dot(lumCoeff, colorInput.rgb);
 
     //calculate chroma
-	  float3 chroma = colorInput.rgb - luma;
+      float3 chroma = colorInput.rgb - luma;
   #endif
 
   // -- Which value to put through the contrast formula? --
   // I name it x because makes it easier to copy-paste to Graphtoy or Wolfram Alpha or another graphing program
   #if Curves_mode == 2
-	  float3 x = colorInput.rgb; //if the curve should be applied to both Luma and Chroma
-	#elif Curves_mode == 1
-	  float3 x = chroma; //if the curve should be applied to Chroma
-	  x = x * 0.5 + 0.5; //adjust range of Chroma from -1 -> 1 to 0 -> 1
+      float3 x = colorInput.rgb; //if the curve should be applied to both Luma and Chroma
+    #elif Curves_mode == 1
+      float3 x = chroma; //if the curve should be applied to Chroma
+      x = x * 0.5 + 0.5; //adjust range of Chroma from -1 -> 1 to 0 -> 1
   #else // Curves_mode == 0
     float x = luma; //if the curve should be applied to Luma
   #endif
@@ -124,17 +124,17 @@ float4 CurvesPass( float4 colorInput )
     Curves_contrast_blend = Curves_contrast * 2.0; //I multiply by two to give it a strength closer to the other curves.
   #endif
 
- 	// -- Curve 6 --
+     // -- Curve 6 --
   #if Curves_formula == 6
     x = x*x*x*(x*(x*6.0 - 15.0) + 10.0); //Perlins smootherstep
-	#endif
+    #endif
 
-	// -- Curve 7 --
+    // -- Curve 7 --
   #if Curves_formula == 7
     //x = ((x-0.5) / ((0.5/(4.0/3.0)) + abs((x-0.5)*1.25))) + 0.5;
-	x = x - 0.5;
-	x = x / ((abs(x)*1.25) + 0.375 ) + 0.5;
-	//x = ( (x-0.5) / ((abs(x-0.5)*1.25) + (0.5/(4.0/3.0))) ) + 0.5;
+    x = x - 0.5;
+    x = x / ((abs(x)*1.25) + 0.375 ) + 0.5;
+    //x = ( (x-0.5) / ((abs(x-0.5)*1.25) + (0.5/(4.0/3.0))) ) + 0.5;
   #endif
 
   // -- Curve 8 --
@@ -152,15 +152,15 @@ float4 CurvesPass( float4 colorInput )
 
     #if Curves_mode == 0
       float xstep = step(x,0.5);
-	    float xstep_shift = (xstep - 0.5);
-	    float shifted_x = x + xstep_shift;
+        float xstep_shift = (xstep - 0.5);
+        float shifted_x = x + xstep_shift;
     #else
       float3 xstep = step(x,0.5);
-	    float3 xstep_shift = (xstep - 0.5);
-	    float3 shifted_x = x + xstep_shift;
+        float3 xstep_shift = (xstep - 0.5);
+        float3 shifted_x = x + xstep_shift;
     #endif
 
-	x = abs(xstep - sqrt(-shifted_x * shifted_x + shifted_x) ) - xstep_shift;
+    x = abs(xstep - sqrt(-shifted_x * shifted_x + shifted_x) ) - xstep_shift;
 
   //x = abs(step(x,0.5)-sqrt(-(x+step(x,0.5)-0.5)*(x+step(x,0.5)-0.5)+(x+step(x,0.5)-0.5)))-(step(x,0.5)-0.5); //single line version of the above
     
@@ -171,13 +171,13 @@ float4 CurvesPass( float4 colorInput )
   x = 0.5-sqrt(0.25-x*x);
   else
   x = 0.5+sqrt(0.25-(x-1)*(x-1));
-	*/
+    */
 
   //x = (abs(step(0.5,x)-clamp( 1-sqrt(1-abs(step(0.5,x)- frac(x*2%1)) * abs(step(0.5,x)- frac(x*2%1))),0 ,1))+ step(0.5,x) )*0.5; //worst so far
-	
-	//TODO: Check if I could use an abs split instead of step. It might be more efficient
-	
-	Curves_contrast_blend = Curves_contrast * 0.5; //I divide by two to give it a strength closer to the other curves.
+    
+    //TODO: Check if I could use an abs split instead of step. It might be more efficient
+    
+    Curves_contrast_blend = Curves_contrast * 0.5; //I divide by two to give it a strength closer to the other curves.
   #endif
 
   // -- Curve 11 --
@@ -197,15 +197,15 @@ float4 CurvesPass( float4 colorInput )
     float d = 1.00; //endpoint
 
     float r  = (1-x);
-	float r2 = r*r;
-	float r3 = r2 * r;
-	float x2 = x*x;
-	float x3 = x2*x;
-	//x = dot(float4(a,b,c,d),float4(r3,3*r2*x,3*r*x2,x3));
+    float r2 = r*r;
+    float r3 = r2 * r;
+    float x2 = x*x;
+    float x3 = x2*x;
+    //x = dot(float4(a,b,c,d),float4(r3,3*r2*x,3*r*x2,x3));
 
-	//x = a * r*r*r + r * (3 * b * r * x + 3 * c * x*x) + d * x*x*x;
-	//x = a*(1-x)*(1-x)*(1-x) +(1-x) * (3*b * (1-x) * x + 3 * c * x*x) + d * x*x*x;
-	x = a*(1-x)*(1-x)*(1-x) + 3*b*(1-x)*(1-x)*x + 3*c*(1-x)*x*x + d*x*x*x;
+    //x = a * r*r*r + r * (3 * b * r * x + 3 * c * x*x) + d * x*x*x;
+    //x = a*(1-x)*(1-x)*(1-x) +(1-x) * (3*b * (1-x) * x + 3 * c * x*x) + d * x*x*x;
+    x = a*(1-x)*(1-x)*(1-x) + 3*b*(1-x)*(1-x)*x + 3*c*(1-x)*x*x + d*x*x*x;
   #endif
 
   // -- Curve 13 --
@@ -234,13 +234,13 @@ float4 CurvesPass( float4 colorInput )
   '-----------------------------------------------------------*/
 
   #if Curves_mode == 2 //Both Luma and Chroma
-	float3 color = x;  //if the curve should be applied to both Luma and Chroma
-	colorInput.rgb = lerp(colorInput.rgb, color, Curves_contrast_blend); //Blend by Curves_contrast
+    float3 color = x;  //if the curve should be applied to both Luma and Chroma
+    colorInput.rgb = lerp(colorInput.rgb, color, Curves_contrast_blend); //Blend by Curves_contrast
 
   #elif Curves_mode == 1 //Only Chroma
-	x = x * 2.0 - 1.0; //adjust the Chroma range back to -1 -> 1
-	float3 color = luma + x; //Luma + Chroma
-	colorInput.rgb = lerp(colorInput.rgb, color, Curves_contrast_blend); //Blend by Curves_contrast
+    x = x * 2.0 - 1.0; //adjust the Chroma range back to -1 -> 1
+    float3 color = luma + x; //Luma + Chroma
+    colorInput.rgb = lerp(colorInput.rgb, color, Curves_contrast_blend); //Blend by Curves_contrast
 
   #else // Curves_mode == 0 //Only Luma
     x = lerp(luma, x, Curves_contrast_blend); //Blend by Curves_contrast
@@ -255,8 +255,8 @@ float4 CurvesPass( float4 colorInput )
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = CurvesPass(c0);
-	return c0;
+    c0 = CurvesPass(c0);
+    return c0;
 }

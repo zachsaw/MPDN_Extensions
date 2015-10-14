@@ -31,14 +31,14 @@ float4 size1 : register(c3);
 #define dxdy1 (size1.zw)
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	int2 par = round(frac(tex*p0.xy / 2.0));
+    int2 par = round(frac(tex*p0.xy / 2.0));
 
-	//Fix size mismatch.
-	int2 pos = floor(tex*p0.xy / float2(1.0, 2.0));
+    //Fix size mismatch.
+    int2 pos = floor(tex*p0.xy / float2(1.0, 2.0));
 
-	if (par.x == par.y) {
-		return tex2D(s0, (pos + 0.5)*dxdy0);
-	} else {
-		return tex2D(s1, (pos + 0.5)*dxdy1);
-	}
+    if (par.x == par.y) {
+        return tex2D(s0, (pos + 0.5)*dxdy0);
+    } else {
+        return tex2D(s1, (pos + 0.5)*dxdy1);
+    }
 }

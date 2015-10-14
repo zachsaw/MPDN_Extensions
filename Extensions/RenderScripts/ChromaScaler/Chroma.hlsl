@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-sampler sY : register(s0);
-sampler sU : register(s1);
-sampler sV : register(s2);
+sampler sY  : register(s0);
+sampler sUV : register(s1);
 
 float4 p0 :  register(c0);
 float2 p1 :  register(c1);
@@ -37,34 +36,34 @@ float4 args0 : register(c3);
 #define Weight(x) (BCWeights(BC[0],BC[1],abs(x)))
 #define taps 2
 
-#define UV(xy)     (float2(tex2D(sU, xy)[0], tex2D(sV, xy)[0]))
+#define UV(xy)     (tex2D(sUV, xy).yz)
 #define GetUV(x,y) (UV(pos + float2(px,py)*int2(x,y)))
 #define GetY       (tex2D(sY, tex)[0])
 
 #define EWA 1
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float2 Avg = 0;
-	float W = 0;
+    float2 Avg = 0;
+    float W = 0;
 
-	float2 offset = frac(tex*ChromaSize) - ChromaOffset;
+    float2 offset = frac(tex*ChromaSize) - ChromaOffset;
 
-	float2 pos = tex + floor(offset)*float2(px,py);
-	offset -= floor(offset);
+    float2 pos = tex + floor(offset)*float2(px,py);
+    offset -= floor(offset);
 
-	for (int X = -taps+1; X<=taps; X++) 
-	for (int Y = -taps+1; Y<=taps; Y++) {
-		int2 XY = {X,Y};
-		#if EWA == 0
-			float2 w = Weight(XY-offset);
-			Avg += GetUV(X,Y)*w.x*w.y;
-			W += w.x*w.y;
-		#elif EWA == 1
-			float w = Weight(length(XY-offset));
-			Avg += GetUV(X,Y)*w;
-			W += w;
-		#endif
-	}
+    for (int X = -taps+1; X<=taps; X++) 
+    for (int Y = -taps+1; Y<=taps; Y++) {
+        int2 XY = {X,Y};
+        #if EWA == 0
+            float2 w = Weight(XY-offset);
+            Avg += GetUV(X,Y)*w.x*w.y;
+            W += w.x*w.y;
+        #elif EWA == 1
+            float w = Weight(length(XY-offset));
+            Avg += GetUV(X,Y)*w;
+            W += w;
+        #endif
+    }
 
-	return float4(GetY, Avg/W, 1);
+    return float4(GetY, Avg/W, 1);
 }

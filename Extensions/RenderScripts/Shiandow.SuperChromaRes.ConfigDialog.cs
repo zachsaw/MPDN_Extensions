@@ -15,9 +15,9 @@
 // License along with this library.
 // 
 using System;
-using Mpdn.Config;
+using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
@@ -30,27 +30,18 @@ namespace Mpdn.RenderScript
 
             protected override void LoadSettings()
             {
-                PassesSetter.Value = (Decimal)Settings.Passes;
-                StrengthSetter.Value = (Decimal)Settings.Strength;
-                SharpnessSetter.Value = (Decimal)Settings.Sharpness;
-                AntiAliasingSetter.Value = (Decimal)Settings.AntiAliasing;
-                AntiRingingSetter.Value = (Decimal)Settings.AntiRinging;
-                SoftnessSetter.Value = (Decimal)Settings.Softness;
+                PassesSetter.Value = (decimal)Settings.Passes;
+                StrengthSetter.Value = (decimal)Settings.Strength;
+                SoftnessSetter.Value = (decimal)Settings.Softness;
+                PrescalerBox.Checked = Settings.Prescaler;
             }
 
             protected override void SaveSettings()
             {
                 Settings.Passes = (int)PassesSetter.Value;
                 Settings.Strength = (float)StrengthSetter.Value;
-                Settings.Sharpness = (float)SharpnessSetter.Value;
-                Settings.AntiAliasing = (float)AntiAliasingSetter.Value;
-                Settings.AntiRinging = (float)AntiRingingSetter.Value;
                 Settings.Softness = (float)SoftnessSetter.Value;
-            }
-
-            private void ValueChanged(object sender, EventArgs e)
-            {
-
+                Settings.Prescaler = PrescalerBox.Checked; 
             }
         }
 

@@ -17,8 +17,9 @@
 using System;
 using System.Windows.Forms;
 using System.Net;
+using Mpdn.Extensions.Framework;
 
-namespace Mpdn.PlayerExtensions
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public partial class RemoteClients : Form
     {
@@ -51,7 +52,7 @@ namespace Mpdn.PlayerExtensions
         private void PopulateGrid()
         {
             ClearGrid();
-            foreach(var item in mainRemote.GetClients)
+            foreach(var item in mainRemote.Clients)
             {
                 try
                 {
@@ -63,7 +64,7 @@ namespace Mpdn.PlayerExtensions
                 }
                 catch(Exception ex)
                 {
-                    MessageBox.Show(PlayerControl.VideoPanel, "Error " + ex);
+                    MessageBox.Show(Gui.VideoBox, "Error " + ex);
                 }
             } 
         }

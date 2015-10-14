@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -13,27 +13,20 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Mpdn.RenderScript
+using System;
+using System.Linq;
+using Mpdn.Extensions.Framework.RenderChain;
+
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptChain
     {
-        public class ScriptChain : RenderChain
+        public class ScriptChain : PresetCollection
         {
-            public List<IRenderChainUi> ScriptList { get; set; }
-
-            public ScriptChain()
+            protected override IFilter CreateFilter(IFilter input)
             {
-                ScriptList = new List<IRenderChainUi>();
-            }
-
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
-            {
-                return ScriptList.Select(pair => pair.GetChain()).Aggregate(sourceFilter, (a, b) => a + b);
+                return Options.Aggregate(input, (result, chain) => result + chain);
             }
         }
 
@@ -44,6 +37,11 @@ namespace Mpdn.RenderScript
                 get { return "Mpdn.ScriptChain"; }
             }
 
+            public override string Category
+            {
+                get { return "Meta"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get
@@ -52,16 +50,11 @@ namespace Mpdn.RenderScript
                     {
                         Guid = new Guid("3A462015-2D92-43AC-B559-396DACF896C3"),
                         Name = "Script Chain",
-                        Description = GetDescription(),
+                        Description = Settings.Options.Count > 0
+                            ? string.Join(" ➔ ", Settings.Options.Select(x => x.Name))
+                            : "Chains together multiple renderscripts"
                     };
                 }
-            }
-
-            private string GetDescription()
-            {
-                return Chain.ScriptList.Count == 0
-                    ? "Chain of render scripts"
-                    : string.Join(" ➔ ", Chain.ScriptList.Select(x => x.Descriptor.Name));
             }
         }
     }

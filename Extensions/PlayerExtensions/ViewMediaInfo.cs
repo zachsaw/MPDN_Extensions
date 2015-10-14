@@ -16,12 +16,14 @@
 // 
 using System;
 using System.Collections.Generic;
-using MediaInfoDotNet;
+using Mpdn.Extensions.Framework;
 
-namespace Mpdn.PlayerExtensions.GitHub
+namespace Mpdn.Extensions.PlayerExtensions
 {
     public class ViewMediaInfo : PlayerExtension
     {
+        private readonly PlayerMenuItem m_MenuItem = new PlayerMenuItem(initiallyDisabled: true);
+
         public override ExtensionUiDescriptor Descriptor
         {
             get
@@ -41,19 +43,38 @@ namespace Mpdn.PlayerExtensions.GitHub
             {
                 return new[]
                 {
-                    new Verb(Category.View, string.Empty, "Media Info...", "Ctrl+Shift+I", string.Empty, ShowMediaInfoDialog)
+                    new Verb(Category.View, string.Empty, "Media Info...", "Ctrl+Shift+I", string.Empty, ShowMediaInfoDialog, m_MenuItem)
                 };
             }
         }
 
-        private void ShowMediaInfoDialog()
+        public override void Initialize()
         {
-            if (PlayerControl.PlayerState == PlayerState.Closed)
+            base.Initialize();
+            Player.StateChanged += PlayerStateChanged;
+        }
+
+        public override void Destroy()
+        {
+            Player.StateChanged -= PlayerStateChanged;
+            base.Destroy();
+        }
+
+        private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
+        {
+            m_MenuItem.Enabled = e.NewState != PlayerState.Closed;
+        }
+
+        private static void ShowMediaInfoDialog()
+        {
+            if (Player.State == PlayerState.Closed)
                 return;
 
-            using (var form = new ViewMediaInfoForm(PlayerControl.MediaFilePath))
+            Player.FullScreenMode.Active = false;
+
+            using (var form = new ViewMediaInfoForm(Media.FilePath))
             {
-                form.ShowDialog(PlayerControl.VideoPanel);
+                form.ShowDialog(Gui.VideoBox);
             }
         }
     }

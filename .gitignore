@@ -5,6 +5,8 @@
 *.suo
 *.user
 *.sln.docstates
+Extensions/PlayerExtensions/*.resx
+Extensions/RenderScripts/*.resx
 
 # Build results
 [Dd]ebug/
@@ -187,3 +189,8 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/Installer/unList.exe
+/Sign.bat
+
+# MPDN
+MPDN/

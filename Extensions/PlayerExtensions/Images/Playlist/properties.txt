@@ -1,0 +1,30 @@
+#Below are all the properties you can change in your theme file
+#More may be added at some point
+
+#These control the colors of each element
+#Colors must be given in (a, r, g, b) format
+#Example: fontColor: 255, 150, 100, 200
+#Note that some elements may not support transparency!
+fontColor
+fontDropShadowColor
+selectionFontColor
+playFontColor
+columnHeaderFontColor
+formColor
+dataGridColor
+dataGridAllColor
+selectionColor
+greyOutColor
+playColor
+columnHeaderColor
+columnHeaderBorderColor
+statusHighlightColor
+statusBorderColor
+
+#This determines whether the header can be styled or not
+#Can be true, false or unset
+columnHeaderTransparency
+
+#Background image layout
+#Can be set to stretch, center or zoom
+backgroundImageLayout

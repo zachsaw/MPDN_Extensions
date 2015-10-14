@@ -91,10 +91,10 @@ float4 LumaSharpenPass(float4 inputcolor, float2 tex )
   // -- Pattern 1 -- A (fast) 7 tap gaussian using only 2+1 texture fetches.
   #if pattern == 1
 
-	// -- Gaussian filter --
-	//   [ 1/9, 2/9,    ]     [ 1 , 2 ,   ]
-	//   [ 2/9, 8/9, 2/9]  =  [ 2 , 8 , 2 ]
- 	//   [    , 2/9, 1/9]     [   , 2 , 1 ]
+    // -- Gaussian filter --
+    //   [ 1/9, 2/9,    ]     [ 1 , 2 ,   ]
+    //   [ 2/9, 8/9, 2/9]  =  [ 2 , 8 , 2 ]
+     //   [    , 2/9, 1/9]     [   , 2 , 1 ]
 
     float3 blur_ori = myTex2D(s0, tex + (float2(px,py) / 3.0) * offset_bias).rgb;  // North West
     blur_ori += myTex2D(s0, tex + (float2(-px,-py) / 3.0) * offset_bias).rgb; // South East
@@ -111,10 +111,10 @@ float4 LumaSharpenPass(float4 inputcolor, float2 tex )
   // -- Pattern 2 -- A 9 tap gaussian using 4+1 texture fetches.
   #if pattern == 2
 
-	// -- Gaussian filter --
-	//   [ .25, .50, .25]     [ 1 , 2 , 1 ]
-	//   [ .50,   1, .50]  =  [ 2 , 4 , 2 ]
- 	//   [ .25, .50, .25]     [ 1 , 2 , 1 ]
+    // -- Gaussian filter --
+    //   [ .25, .50, .25]     [ 1 , 2 , 1 ]
+    //   [ .50,   1, .50]  =  [ 2 , 4 , 2 ]
+     //   [ .25, .50, .25]     [ 1 , 2 , 1 ]
 
 
     float3 blur_ori = myTex2D(s0, tex + float2(px,-py) * 0.5 * offset_bias).rgb; // South East
@@ -129,12 +129,12 @@ float4 LumaSharpenPass(float4 inputcolor, float2 tex )
   // -- Pattern 3 -- An experimental 17 tap gaussian using 4+1 texture fetches.
   #if pattern == 3
 
-	// -- Gaussian filter --
-	//   [   , 4 , 6 ,   ,   ]
-	//   [   ,16 ,24 ,16 , 4 ]
-	//   [ 6 ,24 ,   ,24 , 6 ]
-	//   [ 4 ,16 ,24 ,16 ,   ]
-	//   [   ,   , 6 , 4 ,   ]
+    // -- Gaussian filter --
+    //   [   , 4 , 6 ,   ,   ]
+    //   [   ,16 ,24 ,16 , 4 ]
+    //   [ 6 ,24 ,   ,24 , 6 ]
+    //   [ 4 ,16 ,24 ,16 ,   ]
+    //   [   ,   , 6 , 4 ,   ]
 
     float3 blur_ori = myTex2D(s0, tex + float2(0.4*px,-1.2*py)* offset_bias).rgb;  // South South East
     blur_ori += myTex2D(s0, tex + float2(-1.2*px,-0.4*py) * offset_bias).rgb; // West South West
@@ -149,10 +149,10 @@ float4 LumaSharpenPass(float4 inputcolor, float2 tex )
   // -- Pattern 4 -- A 9 tap high pass (pyramid filter) using 4+1 texture fetches.
   #if pattern == 4
 
-	// -- Gaussian filter --
-	//   [ .50, .50, .50]     [ 1 , 1 , 1 ]
-	//   [ .50,    , .50]  =  [ 1 ,   , 1 ]
- 	//   [ .50, .50, .50]     [ 1 , 1 , 1 ]
+    // -- Gaussian filter --
+    //   [ .50, .50, .50]     [ 1 , 1 , 1 ]
+    //   [ .50,    , .50]  =  [ 1 ,   , 1 ]
+     //   [ .50, .50, .50]     [ 1 , 1 , 1 ]
 
     float3 blur_ori = myTex2D(s0, tex + float2(0.5 * px,-py * offset_bias)).rgb;  // South South East
     blur_ori += myTex2D(s0, tex + float2(offset_bias * -px,0.5 * -py)).rgb; // West South West
@@ -169,10 +169,10 @@ float4 LumaSharpenPass(float4 inputcolor, float2 tex )
   // -- Pattern 8 -- A (slower) 9 tap gaussian using 9 texture fetches.
   #if pattern == 8
 
-	// -- Gaussian filter --
-	//   [ 1 , 2 , 1 ]
-	//   [ 2 , 4 , 2 ]
- 	//   [ 1 , 2 , 1 ]
+    // -- Gaussian filter --
+    //   [ 1 , 2 , 1 ]
+    //   [ 2 , 4 , 2 ]
+     //   [ 1 , 2 , 1 ]
 
     half3 blur_ori = myTex2D(s0, tex + float2(-px,py) * offset_bias).rgb; // North West
     blur_ori += myTex2D(s0, tex + float2(px,-py) * offset_bias).rgb;     // South East
@@ -198,10 +198,10 @@ float4 LumaSharpenPass(float4 inputcolor, float2 tex )
   // -- Pattern 9 -- A (slower) 9 tap high pass using 9 texture fetches.
   #if pattern == 9
 
-	// -- Gaussian filter --
-	//   [ 1 , 1 , 1 ]
-	//   [ 1 , 1 , 1 ]
- 	//   [ 1 , 1 , 1 ]
+    // -- Gaussian filter --
+    //   [ 1 , 1 , 1 ]
+    //   [ 1 , 1 , 1 ]
+     //   [ 1 , 1 , 1 ]
 
     float3 blur_ori = myTex2D(s0, tex + float2(-px,py) * offset_bias).rgb; // North West
     blur_ori += myTex2D(s0, tex + float2(px,-py) * offset_bias).rgb;     // South East
@@ -248,7 +248,7 @@ float4 LumaSharpenPass(float4 inputcolor, float2 tex )
     sharp_luma = (sharp_clamp * 2.0) * sharp_luma - sharp_clamp; //scale down
   #endif
 
-  // -- Combining the values to get the final sharpened pixel	--
+  // -- Combining the values to get the final sharpened pixel    --
   //float4 done = ori + sharp_luma;    // Add the sharpening to the original.
   inputcolor.rgb = inputcolor.rgb + sharp_luma;    // Add the sharpening to the input color.
 
@@ -267,8 +267,8 @@ float4 LumaSharpenPass(float4 inputcolor, float2 tex )
 /* --- Main --- */
 
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-	float4 c0 = tex2D(s0, tex);
+    float4 c0 = tex2D(s0, tex);
 
-	c0 = LumaSharpenPass(c0, tex);
-	return c0;
+    c0 = LumaSharpenPass(c0, tex);
+    return c0;
 }

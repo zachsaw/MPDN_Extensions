@@ -13,16 +13,17 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 using System;
 using System.ComponentModel;
-using System.Drawing;
+using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 
-namespace Mpdn.RenderScript
+namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Resizer
     {
-
         #region ResizerOptions
 
         public enum ResizerOption
@@ -58,9 +59,6 @@ namespace Mpdn.RenderScript
         {
             #region Settings
 
-            public IScaler Downscaler; // Not saved
-            public IScaler Upscaler; // Not saved
-
             public Resizer()
             {
                 ResizerOption = ResizerOption.TargetSize100Percent;
@@ -70,10 +68,10 @@ namespace Mpdn.RenderScript
 
             #endregion
 
-            public override IFilter CreateFilter(IResizeableFilter sourceFilter)
+            protected override IFilter CreateFilter(IFilter input)
             {
-                return new ResizeFilter(sourceFilter, GetOutputSize(),
-                    Upscaler ?? Renderer.LumaUpscaler, Downscaler ?? Renderer.LumaDownscaler);
+                return input.SetSize(GetOutputSize(), tagged: true)
+                    .Tagged(new TemporaryTag("Resizer"));
             }
 
             #region Size Calculation
@@ -207,6 +205,11 @@ namespace Mpdn.RenderScript
                 get { return "Mpdn.Resizer"; }
             }
 
+            public override string Category
+            {
+                get { return "Scaling"; }
+            }
+
             public override ExtensionUiDescriptor Descriptor
             {
                 get
@@ -222,9 +225,9 @@ namespace Mpdn.RenderScript
 
             private string GetDescription()
             {
-                var desc = Chain.ResizerOption == ResizerOption.TargetSize100Percent
+                var desc = Settings.ResizerOption == ResizerOption.TargetSize100Percent
                     ? "Resizes the image"
-                    : string.Format("Resize to: {0}", Chain.ResizerOption.ToDescription());
+                    : string.Format("Resize to: {0}", Settings.ResizerOption.ToDescription());
                 return desc;
             }
         }

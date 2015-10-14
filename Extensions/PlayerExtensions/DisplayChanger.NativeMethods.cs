@@ -17,7 +17,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Mpdn.PlayerExtensions.GitHub.DisplayChangerNativeMethods
+namespace Mpdn.Extensions.PlayerExtensions.DisplayChangerNativeMethods
 {
     [Flags]
     internal enum DM
@@ -115,7 +115,7 @@ namespace Mpdn.PlayerExtensions.GitHub.DisplayChangerNativeMethods
         public const int DISP_CHANGE_RESTART = 1;
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr PostMessage(IntPtr hWnd, UInt32 msg, IntPtr wParam, IntPtr lParam);
+        public static extern IntPtr PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll", CharSet = CharSet.Ansi)]
         public static extern int EnumDisplaySettings(string lpszDeviceName, int iModeNum, ref DEVMODE lpDevMode);
@@ -130,8 +130,8 @@ namespace Mpdn.PlayerExtensions.GitHub.DisplayChangerNativeMethods
         {
             var dm = new DEVMODE
             {
-                dmDeviceName = new String(deviceName.ToCharArray()),
-                dmFormName = new String(new char[32]),
+                dmDeviceName = new string(deviceName.ToCharArray()),
+                dmFormName = new string(new char[32]),
                 dmSize = (short) Marshal.SizeOf(typeof (DEVMODE))
             };
             return dm;
