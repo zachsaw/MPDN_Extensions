@@ -130,6 +130,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private AfterPlaybackSettingsOpt m_PrevAfterPlaybackOpt;
 
+        private readonly CancellationTokenSource m_LoadNextCancellation = new CancellationTokenSource();
         private string m_LoadNextFilePath;
         private Task<IMedia> m_LoadNextTask;
         private Exception m_LoadNextException;
@@ -236,6 +237,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     Player.FullScreenMode.Exited -= ExitedFullScreenMode;
                 }
             }
+
+            DisposeHelper.Dispose(m_LoadNextCancellation);
 
             base.Dispose(disposing);
         }
@@ -864,6 +867,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     if (m_LoadNextTask != null && m_LoadNextFilePath == item.FilePath)
                     {
+                        m_LoadNextCancellation.Cancel(false);
                         m_LoadNextTask.Wait();
                         var media = m_LoadNextTask.Result;
                         m_LoadNextTask = null;
@@ -1086,6 +1090,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (m_LoadNextTask == null) return;
 
+            m_LoadNextFilePath = null;
+            Thread.MemoryBarrier();
+            m_LoadNextCancellation.Cancel(false);
             m_LoadNextTask.Wait();
             DisposeHelper.Dispose(m_LoadNextTask.Result);
             m_LoadNextTask = null;
@@ -1127,7 +1134,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_LoadNextFilePath = filePath;
             m_LoadNextTask = Task.Factory.StartNew(() =>
             {
-                Thread.Sleep(1000); // start loading 1s later
+                if (!m_LoadNextCancellation.Token.WaitHandle.WaitOne(1000))
+                {
+                    Thread.MemoryBarrier();
+                    if (m_LoadNextFilePath == null)
+                        return null;
+                }
+
                 try
                 {
                     return Media.Load(filePath);
