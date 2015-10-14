@@ -175,7 +175,7 @@ namespace Mpdn.Extensions.AudioScripts
                             (x == Settings.SelectedOption)
                                 ? "[" + x.Name + "]"
                                 : x.Name))
-                    : "Picks one out of several AudioScripts";
+                    : "Picks one out of several audioscripts";
             }
         }
     }

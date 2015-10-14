@@ -55,7 +55,7 @@ namespace Mpdn.Extensions.AudioScripts
                         Name = "Script Chain",
                         Description = Settings.Options.Count > 0
                             ? string.Join(" ➔ ", Settings.Options.Select(x => x.Name))
-                            : "Chains together multiple renderscripts"
+                            : "Chains together multiple audioscripts"
                     };
                 }
             }
