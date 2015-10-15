@@ -289,6 +289,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void PlayNextInFolder()
         {
             if (Media.Position != Media.Duration) return;
+            if (!File.Exists(Media.FilePath)) return;
             m_Form.PlayNextFileInDirectory();
         }
 
