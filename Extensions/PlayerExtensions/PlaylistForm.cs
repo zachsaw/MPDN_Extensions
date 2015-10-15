@@ -1981,7 +1981,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             {
                 string title = FetchTitleFromUrl(CurrentItem.FilePath);
                 Text = Player.State + " - " + title;
-                dgv_PlayList.CurrentRow.Cells[m_TitleCellIndex].Value = title;
+                if (dgv_PlayList.CurrentRow == null)
+                    dgv_PlayList.CurrentCell = dgv_PlayList.Rows[Math.Max(0, m_SelectedRowIndex)].Cells[0];
+                if (dgv_PlayList.CurrentRow != null)
+                    dgv_PlayList.CurrentRow.Cells[m_TitleCellIndex].Value = title;
             }
             else Text = Player.State + " - " + CurrentItem.FilePath;
 
