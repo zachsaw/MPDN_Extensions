@@ -1115,6 +1115,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 switch (m_PlayListUi.Settings.AfterPlaybackOpt)
                 {
                     case AfterPlaybackSettingsOpt.PlayNextFileInFolder:
+                        if (!File.Exists(Media.FilePath)) return;
                         LoadInBackground(GetNextFileInDirectory());
                         break;
                     case AfterPlaybackSettingsOpt.RepeatPlaylist:
