@@ -54,7 +54,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                     Guid = new Guid("C7FC10786471409DA2F134FF8903D6DA"),
                     Name = "Remote Control",
                     Description = "Remote Control extension to allow control of MPDN over the network.",
-                    Copyright = "Copyright DeadlyEmbrace © 2015. All rights reserved."
+                    Copyright = ""
                 };
             }
         }
@@ -151,6 +151,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.VolumeChanged += PlayerControlVolumeChanged;
             Media.SubtitleTrackChanged += PlayerControlSubtitleTrackChanged;
             Media.AudioTrackChanged += PlayerControlAudioTrackChanged;
+            Media.VideoTrackChanged += MediaOnVideoTrackChanged;
         }
 
         private void SettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -174,6 +175,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.VolumeChanged -= PlayerControlVolumeChanged;
             Media.SubtitleTrackChanged -= PlayerControlSubtitleTrackChanged;
             Media.AudioTrackChanged -= PlayerControlAudioTrackChanged;
+            Media.VideoTrackChanged -= MediaOnVideoTrackChanged;
+        }
+
+        private void MediaOnVideoTrackChanged(object sender, EventArgs eventArgs)
+        {
+            PushToAllListeners("VideoChanged|" + Media.VideoTrack.Description);
         }
 
         private void PlayerControlAudioTrackChanged(object sender, EventArgs e)
@@ -211,6 +218,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                     PushToAllListeners(GetAllChapters());
                     PushToAllListeners(GetAllSubtitleTracks());
                     PushToAllListeners(GetAllAudioTracks());
+                    PushToAllListeners(GetAllVideoTracks());
                     break;
                 case PlayerState.Stopped:
                     _locationTimer.Stop();
@@ -221,6 +229,29 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
 
             PushToAllListeners(e.NewState + "|" + Media.FilePath);
+        }
+
+        private string GetAllVideoTracks()
+        {
+            if (Player.State != PlayerState.Playing && Player.State != PlayerState.Paused) return string.Empty;
+            MediaTrack activeTrack = null;
+            if (Media.VideoTrack != null)
+                activeTrack = Media.VideoTrack;
+            var videoTracks = Media.VideoTracks;
+            var counter = 1;
+            var videoStringBuilder = new StringBuilder();
+            foreach (var track in videoTracks)
+            {
+                if (counter > 1)
+                    videoStringBuilder.Append("]]");
+                videoStringBuilder.Append(counter + ">>" + track.Description + ">>" + track.Type);
+                if (activeTrack != null && track.Description == activeTrack.Description)
+                    videoStringBuilder.Append(">>True");
+                else
+                    videoStringBuilder.Append(">>False");
+                counter++;
+            }
+            return "VideoTracks|" + videoStringBuilder;
         }
 
         private string GetAllAudioTracks()
@@ -502,6 +533,9 @@ namespace Mpdn.Extensions.PlayerExtensions
                 case "RemoveFile":
                     GuiThread.DoAsync(() => RemoveFromPlaylist(command[1]));
                     break;
+                case "ActiveVideoTrack":
+                    GuiThread.DoAsync(() => SetVideoTrack(command[1]));
+                    break;
             }
         }
 
@@ -576,20 +610,45 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ClearPlaylist()
         {
             _playlistInstance.GetPlaylistForm.ClearPlaylist();
+            _playlistInstance.GetPlaylistForm.PopulatePlaylist();
+            GetPlaylist(Guid.Empty, true);
         }
 
         private void AddFilesToPlaylist(string files)
         {
+            var playlistFiles = new List<string>();
+
             var filesToAdd = new List<string>();
             var filePaths = Regex.Split(files, ">>");
+            if (filePaths.Any(t => t.EndsWith(".mpl")))
+            {
+                playlistFiles.AddRange(filePaths.Where(t => t.EndsWith(".mpl") && File.Exists(t)));
+            }
+
             if (filePaths.Any())
             {
-                filesToAdd.AddRange(filePaths.Where(File.Exists));
+                filesToAdd.AddRange(filePaths.Where(t => !t.EndsWith(".mpl") && (File.Exists(t) || IsValidUrl(t))));
+            }
+            if (playlistFiles.Any())
+            {
+                foreach (var playlistFile in playlistFiles)
+                {
+                    var file = playlistFile;
+                    GuiThread.DoAsync(() => _playlistInstance.GetPlaylistForm.OpenPlaylist(file));
+                }
             }
             if (filesToAdd.Any())
             {
                 GuiThread.DoAsync(() => _playlistInstance.GetPlaylistForm.AddFiles(filesToAdd.ToArray()));
             }
+        }
+
+        private bool IsValidUrl(string url)
+        {
+            Uri uriResult;
+            return Uri.TryCreate(url, UriKind.Absolute, out uriResult)
+                          && (uriResult.Scheme == Uri.UriSchemeHttp
+                              || uriResult.Scheme == Uri.UriSchemeHttps);
         }
 
         private void RemoveWriter(string guid)
@@ -653,6 +712,13 @@ namespace Mpdn.Extensions.PlayerExtensions
                 Media.SelectSubtitleTrack(selTrack);
         }
 
+        private void SetVideoTrack(string videoDescription)
+        {
+            var selTrack = Media.VideoTracks.FirstOrDefault(t => t.Description == videoDescription);
+            if(selTrack != null)
+                Media.SelectVideoTrack(selTrack);
+        }
+
         private void SetAudioTrack(string audioDescription)
         {
             var selTrack = Media.AudioTracks.FirstOrDefault(t => t.Description == audioDescription);
@@ -690,6 +756,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
             WriteToSpecificClient(GetAllSubtitleTracks(), guid.ToString());
             WriteToSpecificClient(GetAllAudioTracks(), guid.ToString());
+            WriteToSpecificClient(GetAllVideoTracks(), guid.ToString());
         }
 
         private void FullScreen(object fullScreen)
