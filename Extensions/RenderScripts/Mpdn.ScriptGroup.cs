@@ -47,7 +47,7 @@ namespace Mpdn.Extensions.RenderScripts
             [YAXDontSerialize]
             public Preset<IFilter, IRenderScript> SelectedOption
             {
-                get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) : null; }
+                get { return ActiveOptions != null ? ActiveOptions.ElementAtOrDefault(SelectedIndex) : null; }
             }
 
             [YAXDontSerialize]

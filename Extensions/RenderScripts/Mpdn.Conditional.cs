@@ -33,15 +33,22 @@ namespace Mpdn.Extensions.RenderScripts
             #region Settings
 
             public string Condition { get; set; }
-            public Preset<IFilter,IRenderScript> Preset { get; set; }
+            public Preset<IFilter, IRenderScript> Preset { get; set; }
 
             #endregion
 
             private ScriptEngine m_Engine;
 
+            public override void Initialize()
+            {
+                base.Initialize();
+                Preset.Initialize();
+            }
+
             public override void Reset()
             {
                 DisposeHelper.Dispose(ref m_Engine);
+                Preset.Reset();
                 base.Reset();
             }
 
