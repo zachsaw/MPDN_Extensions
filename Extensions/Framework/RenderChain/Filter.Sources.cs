@@ -16,6 +16,7 @@
 
 using System;
 using Mpdn.RenderScript;
+using Size = System.Drawing.Size;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
