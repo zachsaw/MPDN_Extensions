@@ -59,7 +59,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
             m_Initialized = false;
             m_CompilationResult = null;
-            m_OriginalInputFilters = inputFilters;
+            InputFilters = inputFilters;
 
             Tag = new EmptyTag();
 
@@ -73,7 +73,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region IFilter Implementation
 
-        private readonly IBaseFilter[] m_OriginalInputFilters;
+        private IBaseFilter[] m_OriginalInputFilters;
 
         private bool m_Updated;
         private bool m_Initialized;
@@ -122,7 +122,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (m_CompilationResult != null)
                 return m_CompilationResult;
 
-            InputFilters = m_OriginalInputFilters
+            m_OriginalInputFilters = InputFilters;
+            InputFilters = InputFilters
                 .Select(x => x.Compile())
                 .ToArray();
 
@@ -208,6 +209,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
                 foreach (var filter in InputFilters)
                     DisposeHelper.Dispose(filter);
+
+                m_OriginalInputFilters = null;
+                InputFilters = null;
             }
         }
 

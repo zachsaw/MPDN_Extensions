@@ -56,7 +56,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         private void UpdateStatus()
         {
-            Status = m_Tag.CreateString();
+            Status = m_Tag != null ? m_Tag.CreateString() : "Status Invalid";
         }
 
         public bool Execute()
