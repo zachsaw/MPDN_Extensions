@@ -114,9 +114,14 @@ namespace Mpdn.Extensions.Framework
 
         public static void SetRenderScript(Guid scriptGuid)
         {
-            PlayerControl.PlayerSettings.VideoRendererSettings.RenderScript =
-                new Mpdn.Config.RenderScript {Guid = scriptGuid, SettingsChanged = true};
-            PlayerControl.RefreshSettings();
+            Player.Config.Settings.VideoRendererSettings.RenderScript =
+                new Mpdn.Config.RenderScript { Guid = scriptGuid, SettingsChanged = true };
+            Player.Config.Refresh();
+        }
+
+        public static void RefreshRenderScript()
+        {
+            SetRenderScript(RenderScriptGuid);
         }
     }
 

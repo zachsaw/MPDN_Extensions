@@ -26,25 +26,15 @@ using Rectangle = System.Drawing.Rectangle;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public class TextFilter : BaseSourceFilter<ITexture2D>, IFilter, IDisposable
+    public class TextFilter : TextureSourceFilter<ISourceTexture>
     {
         private Font m_Font;
-        private ISourceTexture m_Texture;
 
         public TextFilter(string text)
+            : base(Renderer.CreateTexture(Renderer.TargetSize))
         {
-            m_Texture = Renderer.CreateTexture(Renderer.TargetSize);
+            manageTexture = true;
             DrawText(text);
-        }
-
-        public override TextureSize OutputSize
-        {
-            get { return m_Texture.GetSize(); }
-        }
-
-        public override ITexture2D OutputTexture
-        {
-            get { return m_Texture; }
         }
 
         public override void Reset()
@@ -67,7 +57,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         private void DrawText(string text)
         {
-            var size = Renderer.TargetSize;
+            var size = OutputSize;
             var width = size.Width;
             var height = size.Height;
             using (var bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb))
@@ -109,7 +99,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                         tex[j, (i + 0)] = *ptr++ / 255.0f; // r
                     }
                 }
-                Renderer.UpdateTexture(m_Texture, tex);
+                Renderer.UpdateTexture(Texture, tex);
             }
             finally
             {
@@ -121,21 +111,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region Resource Disposal Methods
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected void Dispose(bool disposing)
-        {
+            base.Dispose(disposing);
             DisposeHelper.Dispose(ref m_Font);
-            DisposeHelper.Dispose(ref m_Texture);
-        }
-
-        ~TextFilter()
-        {
-            Dispose(false);
         }
 
         #endregion

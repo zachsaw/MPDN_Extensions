@@ -22,7 +22,7 @@ using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseText
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public interface IFilter<out TTexture>
+    public interface IFilter<out TTexture> : IDisposable
         where TTexture : class, IBaseTexture
     {
         TTexture OutputTexture { get; }
@@ -59,7 +59,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
             m_Initialized = false;
             m_CompilationResult = null;
-            InputFilters = inputFilters;
+            m_OriginalInputFilters = inputFilters;
 
             Tag = new EmptyTag();
 
@@ -72,6 +72,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public abstract TextureSize OutputSize { get; }
 
         #region IFilter Implementation
+
+        private readonly IBaseFilter[] m_OriginalInputFilters;
 
         private bool m_Updated;
         private bool m_Initialized;
@@ -120,10 +122,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (m_CompilationResult != null)
                 return m_CompilationResult;
 
-            for (int i = 0; i < InputFilters.Length; i++)
-            {
-                InputFilters[i] = InputFilters[i].Compile();
-            }
+            InputFilters = m_OriginalInputFilters
+                .Select(x => x.Compile())
+                .ToArray();
 
             m_CompilationResult = Optimize();
             return m_CompilationResult;
@@ -181,6 +182,33 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
 
             OutputTarget = null;
+        }
+
+        #endregion
+
+        #region Resource Management
+
+        ~Filter()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (var filter in m_OriginalInputFilters)
+                    DisposeHelper.Dispose(filter);
+
+                foreach (var filter in InputFilters)
+                    DisposeHelper.Dispose(filter);
+            }
         }
 
         #endregion

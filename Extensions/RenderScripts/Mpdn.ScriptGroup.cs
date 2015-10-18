@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mpdn.Config;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
@@ -138,7 +139,7 @@ namespace Mpdn.Extensions.RenderScripts
                     Player.OsdText.Show(Name + ": " + SelectedOption.Name);
                 }
 
-                Extension.SetRenderScript(Extension.RenderScriptGuid);
+                Extension.RefreshRenderScript();
             }
 
             #endregion
