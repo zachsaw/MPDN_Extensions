@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-using System.Drawing;
+using System;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
@@ -68,6 +68,25 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public void AddTag(FilterTag newTag)
         {
             Tag = Tag.Append(newTag);
+        }
+
+        #endregion
+
+        #region Resource Management
+
+        ~BaseSourceFilter()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
         }
 
         #endregion
@@ -286,16 +305,16 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
     }
 
-    public sealed class TextureSourceFilter<TTexture> : BaseSourceFilter<TTexture>
+    public class TextureSourceFilter<TTexture> : BaseSourceFilter<TTexture>
         where TTexture : class, IBaseTexture
     {
-        private readonly TTexture m_Texture;
-        private readonly TextureSize m_Size;
+        protected readonly TTexture Texture;
+        protected bool manageTexture;
 
         public TextureSourceFilter(TTexture texture)
         {
-            m_Texture = texture;
-            m_Size = m_Texture.GetSize();
+            Texture = texture;
+            OutputSize = Texture.GetSize();
 
             /* Don't connect to bottom label */
             Tag = new EmptyTag();
@@ -303,12 +322,70 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public override TTexture OutputTexture
         {
-            get { return m_Texture; }
+            get { return Texture; }
         }
 
-        public override TextureSize OutputSize
+        public override TextureSize OutputSize { get; }
+
+        protected override void Dispose(bool disposing)
         {
-            get { return m_Size; }
+            base.Dispose(disposing);
+            if (manageTexture) // Disabled by default to keep backwards compatibility
+                DisposeHelper.Dispose(Texture);
+        }
+    }
+
+    public class SharedTexture<TTexture>
+    {
+        private readonly TTexture m_Texture;
+        private int m_Leases;
+
+        public SharedTexture(TTexture texture)
+        {
+            m_Texture = texture;
+        }
+
+        public TTexture GetLease()
+        {
+            m_Leases++;
+            return m_Texture;
+        }
+
+        public void RevokeLease()
+        {
+            m_Leases--;
+            if (m_Leases <= 0)
+                DisposeHelper.Dispose(m_Texture);
+        }
+    }
+
+    public class SharedTextureSourceFilter<TTexture> : BaseSourceFilter<TTexture>
+    where TTexture : class, IBaseTexture
+    {
+        protected readonly SharedTexture<TTexture> SharedTexture;
+        protected readonly TTexture Texture;
+
+        public SharedTextureSourceFilter(SharedTexture<TTexture> sharedTexture)
+        {
+            SharedTexture = sharedTexture;
+            Texture = SharedTexture.GetLease();
+            OutputSize = Texture.GetSize();
+
+            /* Don't connect to bottom label */
+            Tag = new EmptyTag();
+        }
+
+        public override TTexture OutputTexture
+        {
+            get { return Texture; }
+        }
+
+        public override TextureSize OutputSize { get; }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            SharedTexture.RevokeLease();
         }
     }
 }

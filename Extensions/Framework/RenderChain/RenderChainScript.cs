@@ -36,22 +36,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Status = string.Empty;
         }
 
-        ~RenderChainScript()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            Chain.Reset();
-        }
-
         public ScriptInterfaceDescriptor Descriptor
         {
             get { return m_SourceFilter == null ? null : m_SourceFilter.Descriptor; }
@@ -61,9 +45,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public void Update()
         {
+            var oldFilter = m_Filter;
+            DisposeHelper.Dispose(ref m_SourceFilter);
+
             m_Filter = CreateOutputFilter();
 
             UpdateStatus();
+            DisposeHelper.Dispose(ref oldFilter);
         }
 
         private void UpdateStatus()
@@ -116,11 +104,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region Error Handling
 
-        private TextFilter m_TextFilter;
-
         public IFilter<ITexture2D> CreateOutputFilter()
         {
-            DisposeHelper.Dispose(ref m_TextFilter);
             try
             {
                 var input = MakeInitialFilter()
@@ -143,7 +128,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             var message = ErrorMessage(e);
             Trace.WriteLine(message);
-            return m_TextFilter = new TextFilter(message);
+            return new TextFilter(message);
         }
 
         protected static Exception InnerMostException(Exception e)
@@ -165,5 +150,27 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #endregion
 
+        #region Resource Management
+
+        ~RenderChainScript()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            Chain.Reset();
+
+            DisposeHelper.Dispose(m_Filter);
+            DisposeHelper.Dispose(ref m_SourceFilter);
+        }
+
+        #endregion
     }
 }
