@@ -26,6 +26,8 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Conditional
     {
+        using Engine = ScriptEngine<RenderChain>;
+
         public class Conditional : RenderChain
         {
             private const string RESULT_VAR = "__$result";
@@ -37,32 +39,15 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private ScriptEngine<RenderChain> m_Engine;
-
-            public override void Reset()
-            {
-                DisposeHelper.Dispose(ref m_Engine);
-                base.Reset();
-            }
-
             protected override IFilter CreateFilter(IFilter input)
             {
                 if (string.IsNullOrWhiteSpace(Condition) || Preset == null)
                     return input;
 
-                CreateEngine();
-                if (!m_Engine.Evaluate(input, GetScript(), GetType().Name))
+                if (!Engine.Evaluate(input, GetScript(), GetType().Name))
                     return input;
 
                 return input + Preset;
-            }
-
-            private void CreateEngine()
-            {
-                if (m_Engine != null)
-                    return;
-
-                m_Engine = new ScriptEngine<RenderChain>();
             }
 
             private string GetScript()

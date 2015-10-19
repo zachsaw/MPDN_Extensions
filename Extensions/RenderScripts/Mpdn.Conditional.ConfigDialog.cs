@@ -35,6 +35,8 @@ namespace Mpdn.Extensions.RenderScripts
 
     namespace Mpdn.Conditional
     {
+        using Engine = ScriptEngine<RenderChain>;
+
         public partial class ConditionalConfigDialog : ConditionalConfigDialogBase
         {
             public ConditionalConfigDialog()
@@ -111,24 +113,21 @@ namespace Mpdn.Extensions.RenderScripts
             private static bool ValidateSyntax(string condition, out string error)
             {
                 error = string.Empty;
-                using (var engine = new ScriptEngine<RenderChain>())
+                try
                 {
-                    try
-                    {
-                        engine.Execute(null, CreateJsCode(Parser.BuildCondition(condition)), "Conditional");
-                    }
-                    catch (MpdnScriptEngineException ex)
-                    {
-                        error = ex.Message;
-                        return false;
-                    }
-                    catch (Exception)
-                    {
-                        // ignore general exceptions for mock clip
-                        return true;
-                    }
+                    Engine.Execute(null, CreateJsCode(Parser.BuildCondition(condition)), "Conditional");
+                }
+                catch (MpdnScriptEngineException ex)
+                {
+                    error = ex.Message;
+                    return false;
+                }
+                catch (Exception)
+                {
+                    // ignore general exceptions for mock clip
                     return true;
                 }
+                return true;
             }
 
             private static string CreateJsCode(string condition)

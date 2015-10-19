@@ -88,43 +88,25 @@ namespace Mpdn.Extensions.RenderScripts
                 return SelectedOption != null ? input + SelectedOption : input;
             }
 
-            public override void Initialize()
-            {
-                RegisterHotkey();
-                base.Initialize();
-            }
-
-            public override void Reset()
-            {
-                DeregisterHotkey();
-                base.Reset();
-            }
-
             #region Hotkey Handling
 
             private readonly Guid m_HotkeyGuid;
             private string m_Hotkey;
-            private bool m_Registered;
 
             private void RegisterHotkey()
             {
                 DynamicHotkeys.RegisterHotkey(m_HotkeyGuid, Hotkey, IncrementSelection);
-                m_Registered = true;
             }
 
             private void DeregisterHotkey()
             {
                 DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
-                m_Registered = false;
             }
 
             private void UpdateHotkey()
             {
-                if (m_Registered)
-                {
-                    DeregisterHotkey();
-                    RegisterHotkey();
-                }
+                DeregisterHotkey();
+                RegisterHotkey();
             }
 
             private void IncrementSelection()
