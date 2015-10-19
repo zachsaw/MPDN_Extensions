@@ -142,9 +142,6 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private IDisposable m_Buffer1;
-            private IDisposable m_Buffer2;
-
             private static readonly uint[][] s_Weights =
             {
                 Weights.Weights16Neurons,
@@ -185,9 +182,6 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                DisposeHelper.Dispose(ref m_Buffer1);
-                DisposeHelper.Dispose(ref m_Buffer2);
-
                 if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
@@ -204,7 +198,9 @@ namespace Mpdn.Extensions.RenderScripts
                 var neuronCount1 = s_NeuronCount[(int) Neurons1];
                 var neuronCount2 = s_NeuronCount[(int) Neurons2];
                 var weights1 = s_Weights[(int) Neurons1];
-                m_Buffer1 = Renderer.CreateClBuffer(weights1);
+                IDisposable m_Buffer1 = Renderer.CreateClBuffer(weights1);
+                IDisposable m_Buffer2 = null;
+
                 var differentWeights = neuronCount1 != neuronCount2;
                 if (differentWeights)
                 {
