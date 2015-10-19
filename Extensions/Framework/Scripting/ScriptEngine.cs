@@ -30,7 +30,7 @@ using ClearScriptEngine = Microsoft.ClearScript.ScriptEngine;
 
 namespace Mpdn.Extensions.Framework.Scripting
 {
-    public class ScriptEngine : IDisposable
+    public class ScriptEngine<T> : IDisposable where T : class
     {
         private ClearScriptEngine m_Engine;
 
@@ -44,9 +44,9 @@ namespace Mpdn.Extensions.Framework.Scripting
             m_Engine = new JScriptEngine(WindowsScriptEngineFlags.EnableDebugging) {AllowReflection = true};
             m_Engine.AddHostType("Debug", typeof (Debug));
 
-            AddEnumTypes(Assembly.GetAssembly(typeof (IRenderScript)));
+            AddEnumTypes(Assembly.GetAssembly(typeof (IScript)));
             foreach (var asm in (Extension.RenderScripts.Select(s => s.GetType().Assembly)
-                .Concat(new[] {typeof (RenderChain.RenderChain).Assembly})).Distinct())
+                .Concat(new[] {typeof (T).Assembly})).Distinct())
             {
                 AddRenderScriptTypes(asm);
                 AddEnumTypes(asm);
@@ -139,7 +139,7 @@ namespace Mpdn.Extensions.Framework.Scripting
                 asm.GetTypes()
                     .Where(
                         t =>
-                            t.IsSubclassOf(typeof (RenderChain.RenderChain)) && t.IsPublic && !t.IsAbstract &&
+                            t.IsSubclassOf(typeof (T)) && t.IsPublic && !t.IsAbstract &&
                             t.GetConstructor(Type.EmptyTypes) != null);
             foreach (var t in filterTypes)
             {

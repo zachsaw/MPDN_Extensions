@@ -33,7 +33,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private ScriptEngine m_Engine;
+            private ScriptEngine<RenderChain> m_Engine;
             private ScriptParser m_ScriptParser;
             private string m_RsFile;
             private string m_RsFileName;
@@ -51,7 +51,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override void Initialize()
             {
-                m_Engine = new ScriptEngine();
+                m_Engine = new ScriptEngine<RenderChain>();
                 m_ScriptParser = new ScriptParser(m_Engine.FilterTypeNames);
                 base.Initialize();
             }

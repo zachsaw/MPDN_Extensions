@@ -111,7 +111,7 @@ namespace Mpdn.Extensions.RenderScripts
             private static bool ValidateSyntax(string condition, out string error)
             {
                 error = string.Empty;
-                using (var engine = new ScriptEngine())
+                using (var engine = new ScriptEngine<RenderChain>())
                 {
                     try
                     {

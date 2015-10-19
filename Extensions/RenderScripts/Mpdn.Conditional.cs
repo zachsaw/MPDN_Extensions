@@ -37,7 +37,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private ScriptEngine m_Engine;
+            private ScriptEngine<RenderChain> m_Engine;
 
             public override void Reset()
             {
@@ -62,7 +62,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (m_Engine != null)
                     return;
 
-                m_Engine = new ScriptEngine();
+                m_Engine = new ScriptEngine<RenderChain>();
             }
 
             private string GetScript()
