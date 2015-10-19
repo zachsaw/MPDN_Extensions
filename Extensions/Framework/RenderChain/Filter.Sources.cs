@@ -365,6 +365,14 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Texture = null;
         }
 
+        public void Discard()
+        {
+            while (Valid)
+            {
+                RevokeLease();
+            }
+        }
+
         public bool Valid
         {
             get { return m_Texture != null; }

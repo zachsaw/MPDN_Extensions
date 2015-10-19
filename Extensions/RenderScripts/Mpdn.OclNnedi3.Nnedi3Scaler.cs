@@ -52,9 +52,9 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class NNedi3HKernelFilter : ClKernelFilter
         {
-            private readonly IDisposable m_Buffer;
             private readonly int m_NeuronCount;
             private readonly TextureSize m_TextureSize;
+            private IDisposable m_Buffer;
 
             public NNedi3HKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, TextureSize textureSize, int[] localWorkSizes,
                 IFilter<IBaseTexture> inputFilter)
@@ -76,14 +76,20 @@ namespace Mpdn.Extensions.RenderScripts
                 Shader.SetArg(5, m_TextureSize.Width); // SrcHeight
                 Shader.SetArg(6, 1); // SwapXy
             }
+
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                DisposeHelper.Dispose(ref m_Buffer);
+            }
         }
 
         public class NNedi3VKernelFilter : ClKernelFilter
         {
             private readonly bool m_ReloadWeights;
-            private readonly IDisposable m_Buffer;
             private readonly int m_NeuronCount;
             private readonly TextureSize m_TextureSize;
+            private IDisposable m_Buffer;
 
             public NNedi3VKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, bool reloadWeights, TextureSize textureSize, int[] localWorkSizes,
                 IFilter<IBaseTexture> inputFilter)
@@ -108,6 +114,12 @@ namespace Mpdn.Extensions.RenderScripts
                 Shader.SetArg(4, m_TextureSize.Width); // SrcWidth
                 Shader.SetArg(5, m_TextureSize.Height); // SrcHeight
                 Shader.SetArg(6, 0); // SwapXy
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                DisposeHelper.Dispose(ref m_Buffer);
             }
         }
 
@@ -150,14 +162,6 @@ namespace Mpdn.Extensions.RenderScripts
                     return string.Format("{0} {1}/{2}", base.Status, s_NeuronCount[(int) Neurons1],
                         s_NeuronCount[(int) Neurons2]);
                 }
-            }
-
-            public override void Reset()
-            {
-                DisposeHelper.Dispose(ref m_Buffer1);
-                DisposeHelper.Dispose(ref m_Buffer2);
-
-                base.Reset();
             }
 
             protected override string ShaderPath

@@ -49,11 +49,13 @@ namespace Mpdn.Extensions.Framework.Chain
         /// <summary>
         /// Called when user activates a render script
         /// </summary>
+        [Obsolete]
         public virtual void Initialize() { }
 
         /// <summary>
         /// Dispose any unmanaged resource that shouldn't be retained when user selects a new render script
         /// </summary>
+        [Obsolete]
         public virtual void Reset() { }
 
         #endregion

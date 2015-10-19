@@ -79,22 +79,6 @@ namespace Mpdn.Extensions.Framework.Chain
             return Script != null ? input + Chain : input;
         }
 
-        public override void Initialize()
-        {
-            base.Initialize();
-
-            if (Script != null)
-                Chain.Initialize();
-        }
-
-        public override void Reset()
-        {
-            base.Reset();
-
-            if (Script != null)
-                Chain.Reset();
-        }
-
         #endregion
 
         #region ChainUi Implementation
@@ -144,6 +128,11 @@ namespace Mpdn.Extensions.Framework.Chain
             return (Script != null) ? Script.CreateScript() : null;
         }
 
+        void IExtensionUi.Initialize()
+        {
+            if (Script != null) Script.Initialize();
+        }
+
         public void Destroy()
         {
             if (Script != null) Script.Destroy();
@@ -179,9 +168,6 @@ namespace Mpdn.Extensions.Framework.Chain
         [YAXDontSerialize]
         public string Name { protected get; set; }
 
-        [YAXDontSerialize]
-        protected List<Preset<T, TScript>> ActiveOptions { get; private set; }
-
         #endregion
 
         public PresetCollection()
@@ -192,38 +178,6 @@ namespace Mpdn.Extensions.Framework.Chain
         public override T Process(T input)
         {
             throw new NotImplementedException();
-        }
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
-            var options = Options;
-            if (options == null)
-            {
-                ActiveOptions = null;
-                return;
-            }
-
-            foreach (var option in options)
-            {
-                option.Initialize();
-            }
-
-            ActiveOptions = options;
-        }
-
-        public override void Reset()
-        {
-            base.Reset();
-
-            if (ActiveOptions == null)
-                return;
-
-            foreach (var option in ActiveOptions)
-            {
-                option.Reset();
-            }
         }
     }
 }

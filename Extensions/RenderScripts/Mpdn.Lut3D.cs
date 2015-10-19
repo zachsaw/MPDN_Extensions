@@ -72,6 +72,7 @@ namespace Mpdn.Extensions.RenderScripts
             #endregion
 
             private ManagedTexture<ISourceTexture3D> m_Texture3D;
+            private string m_CurrentFileName;
 
             protected override string ShaderPath
             {
@@ -90,9 +91,12 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void Create3DTexture()
             {
-                if (m_Texture3D != null && m_Texture3D.Valid)
-                    return;
-
+                if (m_Texture3D != null)
+                {
+                    // If new 3dlut file was selected, manually dispose resources before we load the new one
+                    if (m_CurrentFileName != FileName) m_Texture3D.Discard();
+                    if (m_Texture3D.Valid) return;
+                }
                 Create3DLut(FileName);
             }
 
@@ -140,6 +144,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var texture = Renderer.CreateTexture3D(bSize, gSize, rSize, TextureFormat.Unorm16);
                 Renderer.UpdateTexture3D(texture, data);
                 m_Texture3D = texture.GetManaged();
+                m_CurrentFileName = FileName;
             }
 
             private static Lut3DHeader Load3DLut(FileStream sr, out byte[] lutBuffer)

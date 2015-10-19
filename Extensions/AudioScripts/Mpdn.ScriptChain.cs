@@ -29,7 +29,7 @@ namespace Mpdn.Extensions.AudioScripts
         {
             public override Audio Process(Audio input)
             {
-                return ActiveOptions.Aggregate(input, (result, chain) => result + chain);
+                return Options.Aggregate(input, (result, chain) => result + chain);
             }
         }
 
