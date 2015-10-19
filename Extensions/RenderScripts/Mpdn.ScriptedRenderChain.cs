@@ -41,15 +41,12 @@ namespace Mpdn.Extensions.RenderScripts
 
             public ScriptedRenderChain()
             {
-                if (string.IsNullOrWhiteSpace(ScriptFileName))
+                if (!string.IsNullOrWhiteSpace(ScriptFileName)) return;
+                ScriptFileName = Helpers.DefaultScriptFileName;
+                if (!File.Exists(ScriptFileName))
                 {
-                    ScriptFileName = Helpers.DefaultScriptFileName;
-                    if (!File.Exists(ScriptFileName))
-                    {
-                        CreateDefaultScriptFile();
-                    }
+                    CreateDefaultScriptFile();
                 }
-
             }
 
             public override void Initialize()

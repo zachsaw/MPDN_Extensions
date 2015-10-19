@@ -42,8 +42,6 @@ namespace Mpdn.Extensions.RenderScripts
 
             public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
-                DiscardTextures();
-
                 var chromaSize = chromaInput.OutputSize;
                 CreateWeights(chromaSize, targetSize);
 

@@ -63,14 +63,6 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            public override void Reset()
-            {
-                DisposeHelper.Dispose(ref m_Buffer1);
-                DisposeHelper.Dispose(ref m_Buffer2);
-
-                base.Reset();
-            }
-
             protected override string ShaderPath
             {
                 get { return "OCL_NNEDI3"; }
