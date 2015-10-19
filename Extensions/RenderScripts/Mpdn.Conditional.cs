@@ -39,16 +39,9 @@ namespace Mpdn.Extensions.RenderScripts
 
             private ScriptEngine m_Engine;
 
-            public override void Initialize()
-            {
-                base.Initialize();
-                Preset.Initialize();
-            }
-
             public override void Reset()
             {
                 DisposeHelper.Dispose(ref m_Engine);
-                Preset.Reset();
                 base.Reset();
             }
 
