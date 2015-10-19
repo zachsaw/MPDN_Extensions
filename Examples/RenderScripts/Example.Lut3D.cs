@@ -16,7 +16,6 @@
 // 
 
 using System;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 
@@ -26,7 +25,7 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Lut3D : RenderChain
         {
-            private ISourceTexture3D m_Texture3D;
+            private ManagedTexture<ISourceTexture3D> m_Texture3D;
 
             protected override string ShaderPath
             {
@@ -35,32 +34,15 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter sourceFilter)
             {
-                var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling: true);
-                return new ShaderFilter(shader, sourceFilter, new TextureSourceFilter<ISourceTexture3D>(m_Texture3D));
-            }
-
-            public override void Initialize()
-            {
                 Create3DTexture();
 
-                base.Initialize();
-            }
-
-            public override void Reset()
-            {
-                DiscardTextures();
-
-                base.Reset();
-            }
-
-            private void DiscardTextures()
-            {
-                DisposeHelper.Dispose(ref m_Texture3D);
+                var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling: true);
+                return new ShaderFilter(shader, sourceFilter, m_Texture3D.ToFilter());
             }
 
             private void Create3DTexture()
             {
-                if (m_Texture3D != null)
+                if (m_Texture3D != null && m_Texture3D.Valid)
                     return;
 
                 const int cubeSize = 256;
@@ -68,8 +50,9 @@ namespace Mpdn.Extensions.RenderScripts
                 const int width = cubeSize;
                 const int height = cubeSize;
                 const int depth = cubeSize;
-                m_Texture3D = Renderer.CreateTexture3D(width, height, depth, TextureFormat.Unorm16);
-                Renderer.UpdateTexture3D(m_Texture3D, Create3DLut(width, height, depth));
+                var texture = Renderer.CreateTexture3D(width, height, depth, TextureFormat.Unorm16);
+                Renderer.UpdateTexture3D(texture, Create3DLut(width, height, depth));
+                m_Texture3D = texture.GetManaged();
             }
 
             private static ushort[,,] Create3DLut(int width, int height, int depth)

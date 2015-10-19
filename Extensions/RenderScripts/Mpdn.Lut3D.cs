@@ -18,7 +18,6 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 
@@ -72,7 +71,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private ISourceTexture3D m_Texture3D;
+            private ManagedTexture<ISourceTexture3D> m_Texture3D;
 
             protected override string ShaderPath
             {
@@ -86,24 +85,12 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Create3DTexture();
                 var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling : true);
-                return new ShaderFilter(shader, input, new TextureSourceFilter<ISourceTexture3D>(m_Texture3D));
-            }
-
-            public override void Reset()
-            {
-                DiscardTextures();
-
-                base.Reset();
-            }
-
-            private void DiscardTextures()
-            {
-                DisposeHelper.Dispose(ref m_Texture3D);
+                return new ShaderFilter(shader, input, m_Texture3D.ToFilter());
             }
 
             private void Create3DTexture()
             {
-                if (m_Texture3D != null)
+                if (m_Texture3D != null && m_Texture3D.Valid)
                     return;
 
                 Create3DLut(FileName);
@@ -150,8 +137,9 @@ namespace Mpdn.Extensions.RenderScripts
                     }
                 }
 
-                m_Texture3D = Renderer.CreateTexture3D(bSize, gSize, rSize, TextureFormat.Unorm16);
-                Renderer.UpdateTexture3D(m_Texture3D, data);
+                var texture = Renderer.CreateTexture3D(bSize, gSize, rSize, TextureFormat.Unorm16);
+                Renderer.UpdateTexture3D(texture, data);
+                m_Texture3D = texture.GetManaged();
             }
 
             private static Lut3DHeader Load3DLut(FileStream sr, out byte[] lutBuffer)

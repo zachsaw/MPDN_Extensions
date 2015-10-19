@@ -202,7 +202,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposing) return;
             DisposeHelper.DisposeElements(ref m_OriginalInputFilters);
             DisposeHelper.DisposeElements(InputFilters);
             InputFilters = null;
