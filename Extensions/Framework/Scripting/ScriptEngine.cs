@@ -30,14 +30,15 @@ using ClearScriptEngine = Microsoft.ClearScript.ScriptEngine;
 
 namespace Mpdn.Extensions.Framework.Scripting
 {
-    public class ScriptEngine<T> : IDisposable where T : class
+    public static class ScriptEngine<T> 
+        where T : class
     {
-        private ClearScriptEngine m_Engine;
+        private static ClearScriptEngine m_Engine;
 
-        public HashSet<string> FilterTypeNames { get; private set; }
-        public HashSet<string> EnumTypeNames { get; private set; }
+        public static HashSet<string> FilterTypeNames { get; private set; }
+        public static HashSet<string> EnumTypeNames { get; private set; }
 
-        public ScriptEngine()
+        static ScriptEngine()
         {
             FilterTypeNames = new HashSet<string>();
             EnumTypeNames = new HashSet<string>();
@@ -51,28 +52,16 @@ namespace Mpdn.Extensions.Framework.Scripting
                 AddRenderScriptTypes(asm);
                 AddEnumTypes(asm);
             }
+
+            Player.Closed += Cleanup;
         }
 
-        ~ScriptEngine()
+        private static void Cleanup(object sender, EventArgs e)
         {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public virtual void Dispose(bool disposing)
-        {
-            if (!disposing) // ClearScript cannot be disposed from finalizer
-                return;
-
             DisposeHelper.Dispose(ref m_Engine);
         }
 
-        public FilterClip Execute(IFilter input, string code, string filename = "")
+        public static FilterClip Execute(IFilter input, string code, string filename = "")
         {
             try
             {
@@ -87,7 +76,7 @@ namespace Mpdn.Extensions.Framework.Scripting
             return null;
         }
 
-        public bool Evaluate(IFilter input, string code, string filename = "")
+        public static bool Evaluate(IFilter input, string code, string filename = "")
         {
             try
             {
@@ -102,7 +91,7 @@ namespace Mpdn.Extensions.Framework.Scripting
             return false;
         }
 
-        private void ThrowScriptEngineException(string filename, ScriptEngineException e)
+        private static void ThrowScriptEngineException(string filename, ScriptEngineException e)
         {
             var message = m_Engine.GetStackTrace();
             throw new MpdnScriptEngineException(
@@ -110,7 +99,7 @@ namespace Mpdn.Extensions.Framework.Scripting
                     filename, string.IsNullOrEmpty(message) ? e.ErrorDetails : message));
         }
 
-        private Clip ResetEngine(IFilter input)
+        private static Clip ResetEngine(IFilter input)
         {
             m_Engine.CollectGarbage(true);
             var mock = input == null;
@@ -119,7 +108,7 @@ namespace Mpdn.Extensions.Framework.Scripting
             return mock ? null : clip;
         }
 
-        private void AddEnumTypes(Assembly asm)
+        private static void AddEnumTypes(Assembly asm)
         {
             var enumTypes = asm.GetTypes().Where(t => t.IsEnum && t.IsPublic);
             foreach (var t in enumTypes)
@@ -133,7 +122,7 @@ namespace Mpdn.Extensions.Framework.Scripting
             }
         }
 
-        private void AddRenderScriptTypes(Assembly asm)
+        private static void AddRenderScriptTypes(Assembly asm)
         {
             var filterTypes =
                 asm.GetTypes()
@@ -153,7 +142,7 @@ namespace Mpdn.Extensions.Framework.Scripting
             }
         }
 
-        private void AssignScriptObjects(Clip clip)
+        private static void AssignScriptObjects(Clip clip)
         {
             m_Engine.Script["input"] = clip;
             m_Engine.Script["Script"] = new Script();
