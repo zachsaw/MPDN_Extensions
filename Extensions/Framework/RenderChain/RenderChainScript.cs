@@ -46,12 +46,18 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public void Update()
         {
             var oldFilter = m_Filter;
-            DisposeHelper.Dispose(ref m_SourceFilter);
+            try
+            {
+                DisposeHelper.Dispose(ref m_SourceFilter);
 
-            m_Filter = CreateOutputFilter();
+                m_Filter = CreateOutputFilter();
 
-            UpdateStatus();
-            DisposeHelper.Dispose(ref oldFilter);
+                UpdateStatus();
+            }
+            finally
+            {
+                DisposeHelper.Dispose(ref oldFilter);
+            }
         }
 
         private void UpdateStatus()

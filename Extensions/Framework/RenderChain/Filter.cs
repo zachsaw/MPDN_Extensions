@@ -202,17 +202,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                foreach (var filter in m_OriginalInputFilters)
-                    DisposeHelper.Dispose(filter);
-
-                foreach (var filter in InputFilters)
-                    DisposeHelper.Dispose(filter);
-
-                m_OriginalInputFilters = null;
-                InputFilters = null;
-            }
+            if (!disposing) return;
+            DisposeHelper.DisposeElements(ref m_OriginalInputFilters);
+            DisposeHelper.DisposeElements(InputFilters);
+            InputFilters = null;
         }
 
         #endregion

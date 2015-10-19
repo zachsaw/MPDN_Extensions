@@ -16,6 +16,7 @@
 // 
 
 using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -35,6 +36,21 @@ namespace Mpdn.Extensions.Framework
             var disposable = obj as IDisposable;
             if (disposable == null) return;
             SafeDispose(disposable);
+        }
+
+        public static void DisposeElements<T>(ref T enumerable) where T : IEnumerable
+        {
+            DisposeElements(enumerable);
+            enumerable = default(T);
+        }
+
+        public static void DisposeElements<T>(T enumerable) where T : IEnumerable
+        {
+            if (enumerable == null) return;
+            foreach (var i in enumerable)
+            {
+                SafeDispose(i as IDisposable);
+            }
         }
 
         public static void Dispose<T>(ref T obj) where T : class, IDisposable

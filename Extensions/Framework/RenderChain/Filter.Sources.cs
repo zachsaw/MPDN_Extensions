@@ -310,12 +310,14 @@ namespace Mpdn.Extensions.Framework.RenderChain
         where TTexture : class, IBaseTexture
     {
         protected readonly TTexture Texture;
-        protected bool manageTexture;
+        protected bool ManageTexture;
+
+        private readonly TextureSize m_OutputSize;
 
         public TextureSourceFilter(TTexture texture)
         {
             Texture = texture;
-            OutputSize = Texture.GetSize();
+            m_OutputSize = Texture.GetSize();
 
             /* Don't connect to bottom label */
             Tag = new EmptyTag();
@@ -326,12 +328,15 @@ namespace Mpdn.Extensions.Framework.RenderChain
             get { return Texture; }
         }
 
-        public override TextureSize OutputSize { get; }
+        public override TextureSize OutputSize
+        {
+            get { return m_OutputSize; }
+        }
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            if (manageTexture) // Disabled by default to keep backwards compatibility
+            if (ManageTexture) // Disabled by default to keep backwards compatibility
                 DisposeHelper.Dispose(Texture);
         }
     }
@@ -366,11 +371,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected readonly SharedTexture<TTexture> SharedTexture;
         protected readonly TTexture Texture;
 
+        private readonly TextureSize m_OutputSize;
+
         public SharedTextureSourceFilter(SharedTexture<TTexture> sharedTexture)
         {
             SharedTexture = sharedTexture;
             Texture = SharedTexture.GetLease();
-            OutputSize = Texture.GetSize();
+            m_OutputSize = Texture.GetSize();
 
             /* Don't connect to bottom label */
             Tag = new EmptyTag();
@@ -381,7 +388,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
             get { return Texture; }
         }
 
-        public override TextureSize OutputSize { get; }
+        public override TextureSize OutputSize
+        {
+            get { return m_OutputSize; }
+        }
 
         protected override void Dispose(bool disposing)
         {

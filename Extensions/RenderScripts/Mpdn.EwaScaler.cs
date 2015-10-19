@@ -122,19 +122,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected void DiscardTextures()
             {
-                DiscardWeights(ref m_Weights);
-            }
-
-            private static void DiscardWeights(ref ISourceTexture[] weights)
-            {
-                if (weights == null) 
-                    return;
-
-                foreach (var w in weights)
-                {
-                    DisposeHelper.Dispose(w);
-                }
-                weights = null;
+                DisposeHelper.DisposeElements(ref m_Weights);
             }
 
             private static double GetDistance(double point1, double point2)

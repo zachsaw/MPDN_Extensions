@@ -33,7 +33,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public TextFilter(string text)
             : base(Renderer.CreateTexture(Renderer.TargetSize))
         {
-            manageTexture = true;
+            ManageTexture = true;
             DrawText(text);
         }
 
