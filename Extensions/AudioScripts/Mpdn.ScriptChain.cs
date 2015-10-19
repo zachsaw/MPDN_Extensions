@@ -15,8 +15,8 @@
 // License along with this library.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 using Mpdn.AudioScript;
 using Mpdn.Extensions.Framework.AudioChain;
 using Mpdn.Extensions.Framework.Chain;
@@ -27,9 +27,26 @@ namespace Mpdn.Extensions.AudioScripts
     {
         public class ScriptChain : PresetCollection<Audio, IAudioScript>
         {
+            private List<Preset<Audio, IAudioScript>> m_Chain;
+
             public override Audio Process(Audio input)
             {
-                return Options.Aggregate(input, (result, chain) => result + chain);
+                RefreshChain();
+                return m_Chain.Aggregate(input, (result, chain) => result + chain);
+            }
+
+            private void RefreshChain()
+            {
+                if (ReferenceEquals(m_Chain, Options)) return;
+                foreach (var s in m_Chain)
+                {
+                    s.Reset();
+                }
+                m_Chain = Options;
+                foreach (var s in m_Chain)
+                {
+                    s.Initialize();
+                }
             }
         }
 
@@ -58,18 +75,6 @@ namespace Mpdn.Extensions.AudioScripts
                             : "Chains together multiple audioscripts"
                     };
                 }
-            }
-
-            public override bool ShowConfigDialog(IWin32Window owner)
-            {
-                var result = base.ShowConfigDialog(owner);
-                if (!result)
-                    return false;
-
-                // Activate new options
-                Settings.Reset();
-                Settings.Initialize();
-                return true;
             }
         }
     }
