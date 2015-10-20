@@ -1091,11 +1091,12 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (m_LoadNextTaskThreadId == Thread.CurrentThread.ManagedThreadId) return;
             if (m_LoadNextFilePath == e.Filename)
             {
-                e.Media = GetPreloadedMedia();
+                var media = GetPreloadedMedia();
+                if (media != null) e.Media = media;
             }
             else
             {
-                DisposeLoadNextTask();
+                GuiThread.DoAsync(DisposeLoadNextTask);
             }
         }
 
