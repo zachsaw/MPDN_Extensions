@@ -1094,10 +1094,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 var media = GetPreloadedMedia();
                 if (media != null) e.Media = media;
             }
-            else
-            {
-                GuiThread.DoAsync(DisposeLoadNextTask);
-            }
         }
 
         public void LoadNextInBackground()
@@ -1138,8 +1134,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 return;
 
             m_LoadNextFilePath = filePath;
+            Thread.VolatileWrite(ref m_LoadNextTaskThreadId, -1);
             m_LoadNextTask = Task.Factory.StartNew(() =>
             {
+                Thread.VolatileWrite(ref m_LoadNextTaskThreadId, Thread.CurrentThread.ManagedThreadId);
                 if (!m_LoadNextCancellation.Token.WaitHandle.WaitOne(1000))
                 {
                     Thread.MemoryBarrier();
@@ -1149,15 +1147,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 try
                 {
-                    m_LoadNextTaskThreadId = Thread.CurrentThread.ManagedThreadId;
-                    try
-                    {
-                        return Media.Load(filePath);
-                    }
-                    finally
-                    {
-                        m_LoadNextTaskThreadId = -1;
-                    }
+                    return Media.Load(filePath);
                 }
                 catch (Exception ex)
                 {
