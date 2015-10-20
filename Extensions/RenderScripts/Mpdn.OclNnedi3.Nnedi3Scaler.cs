@@ -198,14 +198,14 @@ namespace Mpdn.Extensions.RenderScripts
                 var neuronCount1 = s_NeuronCount[(int) Neurons1];
                 var neuronCount2 = s_NeuronCount[(int) Neurons2];
                 var weights1 = s_Weights[(int) Neurons1];
-                IDisposable m_Buffer1 = Renderer.CreateClBuffer(weights1);
-                IDisposable m_Buffer2 = null;
+                var buffer1 = Renderer.CreateClBuffer(weights1);
+                var buffer2 = buffer1;
 
                 var differentWeights = neuronCount1 != neuronCount2;
                 if (differentWeights)
                 {
                     var weights2 = s_Weights[(int) Neurons2];
-                    m_Buffer2 = Renderer.CreateClBuffer(weights2);
+                    buffer2 = Renderer.CreateClBuffer(weights2);
                 }
 
                 var sourceSize = input.OutputSize;
@@ -215,10 +215,10 @@ namespace Mpdn.Extensions.RenderScripts
                 var yuv = input.ConvertToYuv();
 
                 var localWorkSizes = new[] {8, 8};
-                var nnedi3H = new NNedi3HKernelFilter(shaderH, m_Buffer1, neuronCount1,
+                var nnedi3H = new NNedi3HKernelFilter(shaderH, buffer1, neuronCount1,
                     new TextureSize(yuv.OutputSize.Width, yuv.OutputSize.Height), 
                     localWorkSizes, yuv);
-                var nnedi3V = new NNedi3VKernelFilter(shaderV, m_Buffer2, neuronCount2, differentWeights,
+                var nnedi3V = new NNedi3VKernelFilter(shaderV, buffer2, neuronCount2, differentWeights,
                     new TextureSize(nnedi3H.OutputSize.Width, nnedi3H.OutputSize.Height), 
                     localWorkSizes, nnedi3H);
 
