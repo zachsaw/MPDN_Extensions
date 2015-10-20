@@ -47,7 +47,8 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 PrescalerBox.DataSource = Settings.PrescalerGroup.Options;
                 PrescalerBox.DisplayMember = "Name";
-                PrescalerBox.SelectedIndex = Settings.PrescalerGroup.SelectedIndex;
+                PrescalerBox.SelectedIndex = Math.Min(Settings.PrescalerGroup.SelectedIndex,
+                    PrescalerBox.Items.Count - 1);
 
                 PassesSetter.Value = Settings.Passes;
                 StrengthSetter.Value = (decimal)Settings.Strength;

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
@@ -80,7 +81,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                return CreateFilter(input, input + PrescalerGroup.SelectedOption);
+                var option = PrescalerGroup.SelectedOption;
+                return option == null ? input : CreateFilter(input, input + option);
             }
 
             private bool IsIntegral(double x)
