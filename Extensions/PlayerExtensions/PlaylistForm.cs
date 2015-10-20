@@ -1094,10 +1094,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void HandleMediaLoading(MediaLoadingEventArgs e)
         {
+            if (m_LoadNextTaskThreadId == Thread.CurrentThread.ManagedThreadId) return;
             lock (m_LoadNextTaskLock)
             {
                 if (m_LoadNextTask == null) return;
-                if (m_LoadNextTaskThreadId == Thread.CurrentThread.ManagedThreadId) return;
                 if (m_LoadNextFilePath == e.Filename)
                 {
                     var media = GetPreloadedMedia();
