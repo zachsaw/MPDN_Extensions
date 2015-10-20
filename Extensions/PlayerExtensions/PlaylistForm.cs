@@ -134,6 +134,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private string m_LoadNextFilePath;
         private Task<IMedia> m_LoadNextTask;
         private Exception m_LoadNextException;
+        private int m_LoadNextTaskThreadId = -1;
 
         #endregion
 
@@ -867,23 +868,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 {
                     if (m_LoadNextTask != null && m_LoadNextFilePath == item.FilePath)
                     {
-                        m_LoadNextCancellation.Cancel(false);
-                        m_LoadNextTask.Wait();
-                        var media = m_LoadNextTask.Result;
-                        m_LoadNextTask = null;
-                        if (media == null)
-                        {
-                            if (m_LoadNextException != null)
-                            {
-                                var exception = m_LoadNextException;
-                                m_LoadNextException = null;
-                                throw new TargetInvocationException(exception);
-                            }
-                        }
-                        Media.Open(media, !queue);
+                        Media.Open(GetPreloadedMedia(), !queue);
                     }
                     else
                     {
+                        DisposeLoadNextTask();
                         Media.Open(item.FilePath, !queue);
                     }
                     SetPlayStyling();
@@ -907,7 +896,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             catch (Exception ex)
             {
-                DisposeLoadNextTask();
                 Player.HandleException(ex);
                 PlayNext();
             }
@@ -965,7 +953,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (!Duration.Visible) return;
             Task.Factory.StartNew(GetCurrentMediaDuration);
-            LoadNextInBackground();
         }
 
         private void AddFilesToPlaylist(IEnumerable<string> fileNames)
@@ -1098,6 +1085,20 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_LoadNextTask = null;
         }
 
+        public void HandleMediaLoading(MediaLoadingEventArgs e)
+        {
+            if (m_LoadNextTask == null) return;
+            if (m_LoadNextTaskThreadId == Thread.CurrentThread.ManagedThreadId) return;
+            if (m_LoadNextFilePath == e.Filename)
+            {
+                e.Media = GetPreloadedMedia();
+            }
+            else
+            {
+                DisposeLoadNextTask();
+            }
+        }
+
         public void LoadNextInBackground()
         {
             if (!m_PlayListUi.Settings.PreloadNextFile)
@@ -1115,8 +1116,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 switch (m_PlayListUi.Settings.AfterPlaybackOpt)
                 {
                     case AfterPlaybackSettingsOpt.PlayNextFileInFolder:
-                        if (!File.Exists(Media.FilePath)) return;
-                        LoadInBackground(GetNextFileInDirectory());
+                        var nextFile = GetNextFileInDirectory();
+                        if (!File.Exists(nextFile)) return;
+                        LoadInBackground(nextFile);
                         break;
                     case AfterPlaybackSettingsOpt.RepeatPlaylist:
                         var item = Playlist[0];
@@ -1129,6 +1131,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void LoadInBackground(string filePath)
         {
+            if (filePath == null)
+
             if (m_LoadNextTask != null)
                 return;
 
@@ -1144,7 +1148,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 try
                 {
-                    return Media.Load(filePath);
+                    m_LoadNextTaskThreadId = Thread.CurrentThread.ManagedThreadId;
+                    try
+                    {
+                        return Media.Load(filePath);
+                    }
+                    finally
+                    {
+                        m_LoadNextTaskThreadId = -1;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1152,6 +1164,24 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                     return null;
                 }
             });
+        }
+
+        private IMedia GetPreloadedMedia()
+        {
+            m_LoadNextCancellation.Cancel(false);
+            m_LoadNextTask.Wait();
+            var media = m_LoadNextTask.Result;
+            m_LoadNextTask = null;
+            if (media == null)
+            {
+                if (m_LoadNextException != null)
+                {
+                    var exception = m_LoadNextException;
+                    m_LoadNextException = null;
+                    throw new TargetInvocationException(exception);
+                }
+            }
+            return media;
         }
 
         public void RemoveFile(int index)

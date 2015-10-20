@@ -94,6 +94,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public override void Destroy()
         {
+            Media.Loading -= OnMediaLoading;
             Player.StateChanged -= OnPlayerStateChanged;
             Player.Playback.Completed -= OnPlaybackCompleted;
             Player.Closed -= OnMpdnFormClosed;
@@ -147,6 +148,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Player.DragEnter += OnDragEnter;
             Player.DragDrop += OnDragDrop;
             Player.CommandLineFileOpen += OnCommandLineFileOpen;
+            Media.Loading += OnMediaLoading;
             m_MpdnForm = Player.ActiveForm;
             m_MpdnForm.Move += OnMpdnFormMove;
             m_MpdnForm.KeyDown += OnMpdnFormKeyDown;
@@ -540,9 +542,18 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             SetupPlaylist();
         }
 
+        private void OnMediaLoading(object sender, MediaLoadingEventArgs e)
+        {
+            m_Form.HandleMediaLoading(e);
+        }
+
         private void OnPlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
             SetActiveFile();
+            if (e.OldState == PlayerState.Closed)
+            {
+                m_Form.LoadNextInBackground();
+            }
         }
 
         private void OnPlaybackCompleted(object sender, EventArgs e)
