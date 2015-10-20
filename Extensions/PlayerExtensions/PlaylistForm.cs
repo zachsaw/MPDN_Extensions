@@ -135,6 +135,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private Task<IMedia> m_LoadNextTask;
         private Exception m_LoadNextException;
         private int m_LoadNextTaskThreadId = -1;
+        private readonly object m_LoadNextTaskLock = new object();
 
         #endregion
 
@@ -866,14 +867,17 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (File.Exists(item.FilePath) || IsValidUrl(item.FilePath))
                 {
-                    if (m_LoadNextTask != null && m_LoadNextFilePath == item.FilePath)
+                    lock (m_LoadNextTaskLock)
                     {
-                        Media.Open(GetPreloadedMedia(), !queue);
-                    }
-                    else
-                    {
-                        DisposeLoadNextTask();
-                        Media.Open(item.FilePath, !queue);
+                        if (m_LoadNextTask != null && m_LoadNextFilePath == item.FilePath)
+                        {
+                            Media.Open(GetPreloadedMedia(), !queue);
+                        }
+                        else
+                        {
+                            DisposeLoadNextTask();
+                            Media.Open(item.FilePath, !queue);
+                        }
                     }
                     SetPlayStyling();
                 }
@@ -1075,24 +1079,34 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void DisposeLoadNextTask()
         {
-            if (m_LoadNextTask == null) return;
+            lock (m_LoadNextTaskLock)
+            {
+                if (m_LoadNextTask == null) return;
 
-            m_LoadNextFilePath = null;
-            Thread.MemoryBarrier();
-            m_LoadNextCancellation.Cancel(false);
-            m_LoadNextTask.Wait();
-            DisposeHelper.Dispose(m_LoadNextTask.Result);
-            m_LoadNextTask = null;
+                m_LoadNextFilePath = null;
+                Thread.MemoryBarrier();
+                m_LoadNextCancellation.Cancel(false);
+                m_LoadNextTask.Wait();
+                DisposeHelper.Dispose(m_LoadNextTask.Result);
+                m_LoadNextTask = null;
+            }
         }
 
         public void HandleMediaLoading(MediaLoadingEventArgs e)
         {
-            if (m_LoadNextTask == null) return;
-            if (m_LoadNextTaskThreadId == Thread.CurrentThread.ManagedThreadId) return;
-            if (m_LoadNextFilePath == e.Filename)
+            lock (m_LoadNextTaskLock)
             {
-                var media = GetPreloadedMedia();
-                if (media != null) e.Media = media;
+                if (m_LoadNextTask == null) return;
+                if (m_LoadNextTaskThreadId == Thread.CurrentThread.ManagedThreadId) return;
+                if (m_LoadNextFilePath == e.Filename)
+                {
+                    var media = GetPreloadedMedia();
+                    if (media != null) e.Media = media;
+                }
+                else
+                {
+                    DisposeLoadNextTask();
+                }
             }
         }
 
@@ -1129,32 +1143,36 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void LoadInBackground(string filePath)
         {
             if (filePath == null)
-
-            if (m_LoadNextTask != null)
                 return;
 
-            m_LoadNextFilePath = filePath;
-            Thread.VolatileWrite(ref m_LoadNextTaskThreadId, -1);
-            m_LoadNextTask = Task.Factory.StartNew(() =>
+            lock (m_LoadNextTaskLock)
             {
-                Thread.VolatileWrite(ref m_LoadNextTaskThreadId, Thread.CurrentThread.ManagedThreadId);
-                if (!m_LoadNextCancellation.Token.WaitHandle.WaitOne(1000))
-                {
-                    Thread.MemoryBarrier();
-                    if (m_LoadNextFilePath == null)
-                        return null;
-                }
+                if (m_LoadNextTask != null)
+                    return;
 
-                try
+                m_LoadNextFilePath = filePath;
+                Thread.VolatileWrite(ref m_LoadNextTaskThreadId, -1);
+                m_LoadNextTask = Task.Factory.StartNew(() =>
                 {
-                    return Media.Load(filePath);
-                }
-                catch (Exception ex)
-                {
-                    m_LoadNextException = ex;
-                    return null;
-                }
-            });
+                    Thread.VolatileWrite(ref m_LoadNextTaskThreadId, Thread.CurrentThread.ManagedThreadId);
+                    if (!m_LoadNextCancellation.Token.WaitHandle.WaitOne(1000))
+                    {
+                        Thread.MemoryBarrier();
+                        if (m_LoadNextFilePath == null)
+                            return null;
+                    }
+
+                    try
+                    {
+                        return Media.Load(filePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        m_LoadNextException = ex;
+                        return null;
+                    }
+                });
+            }
         }
 
         private IMedia GetPreloadedMedia()
