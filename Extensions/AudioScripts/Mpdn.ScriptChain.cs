@@ -38,9 +38,12 @@ namespace Mpdn.Extensions.AudioScripts
             private void RefreshChain()
             {
                 if (ReferenceEquals(m_Chain, Options)) return;
-                foreach (var s in m_Chain)
+                if (m_Chain != null)
                 {
-                    s.Reset();
+                    foreach (var s in m_Chain)
+                    {
+                        s.Reset();
+                    }
                 }
                 m_Chain = Options;
                 foreach (var s in m_Chain)

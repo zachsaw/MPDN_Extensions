@@ -133,6 +133,18 @@ namespace Mpdn.Extensions.Framework.Chain
             if (Script != null) Script.Initialize();
         }
 
+        public override void Initialize()
+        {
+            if (Script != null) Chain.Initialize();
+            base.Initialize();
+        }
+
+        public override void Reset()
+        {
+            if (Script != null) Chain.Reset();
+            base.Reset();
+        }
+
         public void Destroy()
         {
             if (Script != null) Script.Destroy();
