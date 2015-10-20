@@ -71,6 +71,8 @@ namespace Mpdn.Extensions.AudioScripts
 
             #endregion
 
+            private Preset<Audio, IAudioScript> m_CurrentOption;
+
             public ScriptGroup()
             {
                 SelectedIndex = 0;
@@ -84,6 +86,7 @@ namespace Mpdn.Extensions.AudioScripts
 
             public override Audio Process(Audio input)
             {
+                RefreshOption();
                 return SelectedOption != null ? input + SelectedOption : input;
             }
 
@@ -97,6 +100,20 @@ namespace Mpdn.Extensions.AudioScripts
             {
                 DeregisterHotkey();
                 base.Reset();
+            }
+
+            private void RefreshOption()
+            {
+                if (m_CurrentOption == SelectedOption) return;
+                if (m_CurrentOption != null)
+                {
+                    m_CurrentOption.Reset();
+                }
+                m_CurrentOption = SelectedOption;
+                if (m_CurrentOption != null)
+                {
+                    m_CurrentOption.Initialize();
+                }
             }
 
             #region Hotkey Handling
