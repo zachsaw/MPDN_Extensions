@@ -35,8 +35,6 @@ namespace Mpdn.Extensions.RenderScripts
 
     namespace Mpdn.Conditional
     {
-        using Engine = ScriptEngine<RenderChain>;
-
         public partial class ConditionalConfigDialog : ConditionalConfigDialogBase
         {
             public ConditionalConfigDialog()
@@ -115,7 +113,8 @@ namespace Mpdn.Extensions.RenderScripts
                 error = string.Empty;
                 try
                 {
-                    Engine.Execute(null, CreateJsCode(Parser.BuildCondition(condition)), "Conditional");
+                    RenderScriptEngine.Exec(null, CreateJsCode(Parser.BuildCondition(condition)),
+                        "Conditional");
                 }
                 catch (MpdnScriptEngineException ex)
                 {

@@ -30,58 +30,51 @@ using ClearScriptEngine = Microsoft.ClearScript.ScriptEngine;
 
 namespace Mpdn.Extensions.Framework.Scripting
 {
-    public static class ScriptEngine<T> 
-        where T : class
+    public abstract class ScriptEngine<TChain, TInput, TOutput> : IDisposable
+        where TChain : class
     {
-        private static ClearScriptEngine m_Engine;
+        protected ClearScriptEngine Engine;
 
-        public static HashSet<string> FilterTypeNames { get; private set; }
-        public static HashSet<string> EnumTypeNames { get; private set; }
+        public HashSet<string> FilterTypeNames { get; private set; }
+        public HashSet<string> EnumTypeNames { get; private set; }
 
-        static ScriptEngine()
+        protected ScriptEngine()
         {
             FilterTypeNames = new HashSet<string>();
             EnumTypeNames = new HashSet<string>();
-            m_Engine = new JScriptEngine(WindowsScriptEngineFlags.EnableDebugging) {AllowReflection = true};
-            m_Engine.AddHostType("Debug", typeof (Debug));
+            Engine = new JScriptEngine(WindowsScriptEngineFlags.EnableDebugging) {AllowReflection = true};
+            Engine.AddHostType("Debug", typeof (Debug));
 
             AddEnumTypes(Assembly.GetAssembly(typeof (IScript)));
-            foreach (var asm in (Extension.RenderScripts.Select(s => s.GetType().Assembly)
-                .Concat(new[] {typeof (T).Assembly})).Distinct())
+            foreach (var asm in (Extension.Scripts.Select(s => s.GetType().Assembly)
+                .Concat(new[] {typeof (TChain).Assembly})).Distinct())
             {
-                AddRenderScriptTypes(asm);
+                AddScriptTypes(asm);
                 AddEnumTypes(asm);
             }
-
-            Player.Closed += Cleanup;
         }
 
-        private static void Cleanup(object sender, EventArgs e)
-        {
-            DisposeHelper.Dispose(ref m_Engine);
-        }
-
-        public static FilterClip Execute(IFilter input, string code, string filename = "")
+        public TOutput Execute(TInput input, string code, string filename = "")
         {
             try
             {
                 var clip = ResetEngine(input);
-                m_Engine.Execute("RenderScript", true, code);
-                return (FilterClip) clip;
+                Engine.Execute("Script", true, code);
+                return clip;
             }
             catch (ScriptEngineException e)
             {
                 ThrowScriptEngineException(filename, e);
             }
-            return null;
+            return default(TOutput);
         }
 
-        public static bool Evaluate(IFilter input, string code, string filename = "")
+        public bool Evaluate(TInput input, string code, string filename = "")
         {
             try
             {
                 ResetEngine(input);
-                dynamic result = m_Engine.Evaluate("RenderScript", true, code);
+                dynamic result = Engine.Evaluate("Script", true, code);
                 return result is bool ? result : false;
             }
             catch (ScriptEngineException e)
@@ -91,24 +84,23 @@ namespace Mpdn.Extensions.Framework.Scripting
             return false;
         }
 
-        private static void ThrowScriptEngineException(string filename, ScriptEngineException e)
+        private void ThrowScriptEngineException(string filename, ScriptEngineException e)
         {
-            var message = m_Engine.GetStackTrace();
+            var message = Engine.GetStackTrace();
             throw new MpdnScriptEngineException(
-                string.Format("Error in render script ('{0}'):\r\n\r\n{1}",
+                string.Format("Error in script ('{0}'):\r\n\r\n{1}",
                     filename, string.IsNullOrEmpty(message) ? e.ErrorDetails : message));
         }
 
-        private static Clip ResetEngine(IFilter input)
+        protected abstract TOutput Reset(TInput input);
+
+        private TOutput ResetEngine(TInput input)
         {
-            m_Engine.CollectGarbage(true);
-            var mock = input == null;
-            var clip = mock ? (Clip) new MockFilterClip() : new FilterClip(input);
-            AssignScriptObjects(clip);
-            return mock ? null : clip;
+            Engine.CollectGarbage(true);
+            return Reset(input);
         }
 
-        private static void AddEnumTypes(Assembly asm)
+        private void AddEnumTypes(Assembly asm)
         {
             var enumTypes = asm.GetTypes().Where(t => t.IsEnum && t.IsPublic);
             foreach (var t in enumTypes)
@@ -117,38 +109,92 @@ namespace Mpdn.Extensions.Framework.Scripting
                 {
                     throw new MpdnScriptEngineException(string.Format("Conflicting enum types detected: {0}", t.Name));
                 }
-                m_Engine.AddHostType(t.Name, t);
+                Engine.AddHostType(t.Name, t);
                 EnumTypeNames.Add(t.Name);
             }
         }
 
-        private static void AddRenderScriptTypes(Assembly asm)
+        private void AddScriptTypes(Assembly asm)
         {
-            var filterTypes =
-                asm.GetTypes()
-                    .Where(
-                        t =>
-                            t.IsSubclassOf(typeof (T)) && t.IsPublic && !t.IsAbstract &&
-                            t.GetConstructor(Type.EmptyTypes) != null);
+            var filterTypes = asm.GetTypes()
+                .Where(t =>
+                    t.IsSubclassOf(typeof (TChain)) && t.IsPublic && !t.IsAbstract &&
+                    t.GetConstructor(Type.EmptyTypes) != null);
             foreach (var t in filterTypes)
             {
                 if (FilterTypeNames.Contains(t.Name))
                 {
-                    throw new MpdnScriptEngineException(string.Format("Conflicting render script types detected: {0}",
+                    throw new MpdnScriptEngineException(string.Format("Conflicting script types detected: {0}",
                         t.Name));
                 }
-                m_Engine.AddHostType(t.Name, t);
+                Engine.AddHostType(t.Name, t);
                 FilterTypeNames.Add(t.Name);
             }
         }
 
-        private static void AssignScriptObjects(Clip clip)
+        ~ScriptEngine()
         {
-            m_Engine.Script["input"] = clip;
-            m_Engine.Script["Script"] = new Script();
-            m_Engine.Script["Gpu"] = Renderer.Dx9GpuInfo.Details;
-            m_Engine.Script["__$xhost"] = new InternalHostFunctions();
-            m_Engine.Script["Host"] = new Host();
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposing)
+                return;
+
+            DisposeHelper.Dispose(ref Engine);
+        }
+    }
+
+    public class RenderScriptEngine : ScriptEngine<RenderChain.RenderChain, IFilter, Clip>
+    {
+        private static RenderScriptEngine s_ScriptEngine;
+
+        private static RenderScriptEngine Instance
+        {
+            get
+            {
+                if (s_ScriptEngine != null) return s_ScriptEngine;
+                s_ScriptEngine = new RenderScriptEngine();
+                Player.Closed += (sender, args) => s_ScriptEngine.Dispose();
+                return s_ScriptEngine;
+            }
+        }
+
+        public static FilterClip Exec(IFilter input, string code, string filename = "")
+        {
+            return (FilterClip) Instance.Execute(input, code, filename);
+        }
+
+        public static bool Eval(IFilter input, string code, string filename = "")
+        {
+            return Instance.Evaluate(input, code, filename);
+        }
+
+        public static HashSet<string> FilterTypes { get { return Instance.FilterTypeNames; } }
+        public static HashSet<string> EnumTypes { get { return Instance.EnumTypeNames; } }
+
+        protected override Clip Reset(IFilter input)
+        {
+            var mock = input == null;
+            var clip = mock ? (Clip) new MockFilterClip() : new FilterClip(input);
+            AssignScriptObjects(clip);
+            return mock ? null : clip;
+        }
+
+        private void AssignScriptObjects(Clip clip)
+        {
+            Engine.Script["input"] = clip;
+            Engine.Script["Script"] = new Script();
+            Engine.Script["Gpu"] = Renderer.Dx9GpuInfo.Details;
+            Engine.Script["__$xhost"] = new InternalHostFunctions();
+            Engine.Script["Host"] = new Host();
         }
     }
 }

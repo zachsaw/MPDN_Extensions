@@ -16,7 +16,6 @@
 // 
 
 using System;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.Framework.Scripting;
@@ -26,8 +25,6 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Conditional
     {
-        using Engine = ScriptEngine<RenderChain>;
-
         public class Conditional : RenderChain
         {
             private const string RESULT_VAR = "__$result";
@@ -44,7 +41,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (string.IsNullOrWhiteSpace(Condition) || Preset == null)
                     return input;
 
-                if (!Engine.Evaluate(input, GetScript(), GetType().Name))
+                if (!RenderScriptEngine.Eval(input, GetScript(), GetType().Name))
                     return input;
 
                 return input + Preset;

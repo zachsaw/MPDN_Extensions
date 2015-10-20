@@ -17,7 +17,6 @@
 
 using System;
 using System.IO;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.Framework.Scripting;
 
@@ -25,8 +24,6 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptedRenderChain
     {
-        using Engine = ScriptEngine<RenderChain>;
-
         public class ScriptedRenderChain : RenderChain
         {
             #region Settings
@@ -35,7 +32,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private ScriptParser m_ScriptParser;
+            private readonly ScriptParser m_ScriptParser;
             private string m_RsFile;
             private string m_RsFileName;
             private DateTime m_LastModified = DateTime.MinValue;
@@ -48,12 +45,7 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     CreateDefaultScriptFile();
                 }
-            }
-
-            public override void Initialize()
-            {
-                m_ScriptParser = new ScriptParser(Engine.FilterTypeNames);
-                base.Initialize();
+                m_ScriptParser = new ScriptParser(RenderScriptEngine.FilterTypes);
             }
 
             private void CreateDefaultScriptFile()
@@ -63,7 +55,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                var clip = Engine.Execute(input, BuildScript(ScriptFileName), ScriptFileName);
+                var clip = RenderScriptEngine.Exec(input, BuildScript(ScriptFileName), ScriptFileName);
                 if (clip == null)
                     return null;
 
