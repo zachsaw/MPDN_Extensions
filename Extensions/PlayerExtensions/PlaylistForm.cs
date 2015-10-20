@@ -867,17 +867,24 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
                 if (File.Exists(item.FilePath) || IsValidUrl(item.FilePath))
                 {
+                    bool usePreloadedMedia;
                     lock (m_LoadNextTaskLock)
                     {
-                        if (m_LoadNextTask != null && m_LoadNextFilePath == item.FilePath)
+                        usePreloadedMedia = m_LoadNextTask != null && m_LoadNextFilePath == item.FilePath;
+                    }
+                    if (usePreloadedMedia)
+                    {
+                        IMedia media;
+                        lock (m_LoadNextTaskLock)
                         {
-                            Media.Open(GetPreloadedMedia(), !queue);
+                            media = GetPreloadedMedia();
                         }
-                        else
-                        {
-                            DisposeLoadNextTask();
-                            Media.Open(item.FilePath, !queue);
-                        }
+                        Media.Open(media, !queue);
+                    }
+                    else
+                    {
+                        DisposeLoadNextTask();
+                        Media.Open(item.FilePath, !queue);
                     }
                     SetPlayStyling();
                 }
