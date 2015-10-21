@@ -348,11 +348,18 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public ManagedTexture(TTexture texture)
         {
+            if (texture == null)
+            {
+                throw new ArgumentNullException("texture");
+            }
             m_Texture = texture;
         }
 
         public TTexture GetLease()
         {
+            if (!Valid)
+                throw new InvalidOperationException("Cannot to renew lease on a texture that is no longer valid");
+
             m_Leases++;
             return m_Texture;
         }
@@ -362,7 +369,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Leases--;
             if (m_Leases > 0) return;
             DisposeHelper.Dispose(m_Texture);
-            m_Texture = default(TTexture);
+            m_Texture = null;
         }
 
         public void Discard()
