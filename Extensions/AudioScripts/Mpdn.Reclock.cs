@@ -158,6 +158,9 @@ namespace Mpdn.Extensions.AudioScripts
                 if (e.OldState != PlayerState.Closed) return;
                 GuiThread.DoAsync(delegate
                 {
+                    if (Media.AudioTrack == null)
+                        return;
+
                     // This has to be done via GuiThread.DoAsync because when this method is called
                     // Player.Filters has not been populated
                     // Using GuiThread.DoAsync essentially queues this delegate until the media file
