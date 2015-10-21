@@ -955,8 +955,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (m_LoadNextTask == null) return;
                 if (m_LoadNextFilePath == e.Filename)
                 {
-                    var media = GetPreloadedMedia();
-                    if (media != null) e.Media = media;
+                    e.Media = GetPreloadedMedia(false);
                 }
                 else
                 {
@@ -1183,22 +1182,23 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (IsValidUrl(input.Input)) OpenFiles(new[] { input.Input });
         }
 
-        private IMedia GetPreloadedMedia()
+        private IMedia GetPreloadedMedia(bool throwException = true)
         {
             m_LoadNextCancellation.Cancel(false);
             m_LoadNextTask.Wait();
             var media = m_LoadNextTask.Result;
             m_LoadNextTask = null;
-            if (media == null)
-            {
-                if (m_LoadNextException != null)
-                {
-                    var exception = m_LoadNextException;
-                    m_LoadNextException = null;
-                    throw new TargetInvocationException(exception);
-                }
-            }
-            return media;
+
+            if (!throwException)
+                return media;
+
+            if (media != null) return media;
+            Media.Close();
+            Player.ClearScreen();
+            if (m_LoadNextException == null) return null;
+            var exception = m_LoadNextException;
+            m_LoadNextException = null;
+            throw exception;
         }
 
         public void RemoveFile(int index)
