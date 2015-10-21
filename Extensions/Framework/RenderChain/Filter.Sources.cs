@@ -358,7 +358,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public TTexture GetLease()
         {
             if (!Valid)
-                throw new InvalidOperationException("Cannot to renew lease on a texture that is no longer valid");
+                throw new InvalidOperationException("Cannot renew lease on a texture that is no longer valid");
 
             m_Leases++;
             return m_Texture;
