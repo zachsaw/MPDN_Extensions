@@ -1101,7 +1101,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void HandleMediaLoading(MediaLoadingEventArgs e)
         {
-            if (m_LoadNextTaskThreadId == Thread.CurrentThread.ManagedThreadId) return;
+            if (Thread.VolatileRead(ref m_LoadNextTaskThreadId) == Thread.CurrentThread.ManagedThreadId) return;
+
             lock (m_LoadNextTaskLock)
             {
                 if (m_LoadNextTask == null) return;
