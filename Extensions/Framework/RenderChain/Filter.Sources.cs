@@ -368,8 +368,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             m_Leases--;
             if (m_Leases > 0) return;
-            DisposeHelper.Dispose(m_Texture);
-            m_Texture = null;
+            DisposeHelper.Dispose(ref m_Texture);
         }
 
         public void Discard()
