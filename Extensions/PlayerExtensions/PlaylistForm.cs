@@ -931,6 +931,105 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Player.ClearScreen();
         }
 
+        public void DisposeLoadNextTask()
+        {
+            lock (m_LoadNextTaskLock)
+            {
+                if (m_LoadNextTask == null) return;
+
+                m_LoadNextFilePath = null;
+                Thread.MemoryBarrier();
+                m_LoadNextCancellation.Cancel(false);
+                m_LoadNextTask.Wait();
+                DisposeHelper.Dispose(m_LoadNextTask.Result);
+                m_LoadNextTask = null;
+            }
+        }
+
+        public void HandleMediaLoading(MediaLoadingEventArgs e)
+        {
+            if (Thread.VolatileRead(ref m_LoadNextTaskThreadId) == Thread.CurrentThread.ManagedThreadId) return;
+
+            lock (m_LoadNextTaskLock)
+            {
+                if (m_LoadNextTask == null) return;
+                if (m_LoadNextFilePath == e.Filename)
+                {
+                    var media = GetPreloadedMedia();
+                    if (media != null) e.Media = media;
+                }
+                else
+                {
+                    DisposeLoadNextTask();
+                }
+            }
+        }
+
+        public void LoadNextInBackground()
+        {
+            if (!m_PlayListUi.Settings.PreloadNextFile)
+                return;
+
+            var next = m_CurrentPlayIndex + 1;
+            if (next < Playlist.Count)
+            {
+                var item = Playlist[next];
+                if (!File.Exists(item.FilePath) && !IsValidUrl(item.FilePath)) return;
+                LoadInBackground(item.FilePath);
+            }
+            else
+            {
+                switch (m_PlayListUi.Settings.AfterPlaybackOpt)
+                {
+                    case AfterPlaybackSettingsOpt.PlayNextFileInFolder:
+                        var nextFile = GetNextFileInDirectory();
+                        if (!File.Exists(nextFile)) return;
+                        LoadInBackground(nextFile);
+                        break;
+                    case AfterPlaybackSettingsOpt.RepeatPlaylist:
+                        var item = Playlist[0];
+                        if (!File.Exists(item.FilePath) && !IsValidUrl(item.FilePath)) return;
+                        LoadInBackground(item.FilePath);
+                        break;
+                }
+            }
+        }
+
+        private void LoadInBackground(string filePath)
+        {
+            if (filePath == null)
+                return;
+
+            lock (m_LoadNextTaskLock)
+            {
+                if (m_LoadNextTask != null)
+                    return;
+
+                m_LoadNextFilePath = filePath;
+                Thread.VolatileWrite(ref m_LoadNextTaskThreadId, -1);
+                m_LoadNextTask = Task.Factory.StartNew(() =>
+                {
+                    Thread.VolatileWrite(ref m_LoadNextTaskThreadId, Thread.CurrentThread.ManagedThreadId);
+                    if (!m_LoadNextCancellation.Token.WaitHandle.WaitOne(1000))
+                    {
+                        Thread.MemoryBarrier();
+                        if (m_LoadNextFilePath == null)
+                            return null;
+                    }
+
+                    try
+                    {
+                        return Media.Load(filePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        m_LoadNextException = ex;
+                        return null;
+                    }
+                });
+            }
+        }
+
         #endregion
 
         #region The Methods
@@ -1082,105 +1181,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             ClearPlaylist();
             if (IsValidUrl(input.Input)) OpenFiles(new[] { input.Input });
-        }
-
-        public void DisposeLoadNextTask()
-        {
-            lock (m_LoadNextTaskLock)
-            {
-                if (m_LoadNextTask == null) return;
-
-                m_LoadNextFilePath = null;
-                Thread.MemoryBarrier();
-                m_LoadNextCancellation.Cancel(false);
-                m_LoadNextTask.Wait();
-                DisposeHelper.Dispose(m_LoadNextTask.Result);
-                m_LoadNextTask = null;
-            }
-        }
-
-        public void HandleMediaLoading(MediaLoadingEventArgs e)
-        {
-            if (Thread.VolatileRead(ref m_LoadNextTaskThreadId) == Thread.CurrentThread.ManagedThreadId) return;
-
-            lock (m_LoadNextTaskLock)
-            {
-                if (m_LoadNextTask == null) return;
-                if (m_LoadNextFilePath == e.Filename)
-                {
-                    var media = GetPreloadedMedia();
-                    if (media != null) e.Media = media;
-                }
-                else
-                {
-                    DisposeLoadNextTask();
-                }
-            }
-        }
-
-        public void LoadNextInBackground()
-        {
-            if (!m_PlayListUi.Settings.PreloadNextFile)
-                return;
-
-            var next = m_CurrentPlayIndex + 1;
-            if (next < Playlist.Count)
-            {
-                var item = Playlist[next];
-                if (!File.Exists(item.FilePath) && !IsValidUrl(item.FilePath)) return;
-                LoadInBackground(item.FilePath);
-            }
-            else
-            {
-                switch (m_PlayListUi.Settings.AfterPlaybackOpt)
-                {
-                    case AfterPlaybackSettingsOpt.PlayNextFileInFolder:
-                        var nextFile = GetNextFileInDirectory();
-                        if (!File.Exists(nextFile)) return;
-                        LoadInBackground(nextFile);
-                        break;
-                    case AfterPlaybackSettingsOpt.RepeatPlaylist:
-                        var item = Playlist[0];
-                        if (!File.Exists(item.FilePath) && !IsValidUrl(item.FilePath)) return;
-                        LoadInBackground(item.FilePath);
-                        break;
-                }
-            }
-        }
-
-        private void LoadInBackground(string filePath)
-        {
-            if (filePath == null)
-                return;
-
-            lock (m_LoadNextTaskLock)
-            {
-                if (m_LoadNextTask != null)
-                    return;
-
-                m_LoadNextFilePath = filePath;
-                Thread.VolatileWrite(ref m_LoadNextTaskThreadId, -1);
-                m_LoadNextTask = Task.Factory.StartNew(() =>
-                {
-                    Thread.VolatileWrite(ref m_LoadNextTaskThreadId, Thread.CurrentThread.ManagedThreadId);
-                    if (!m_LoadNextCancellation.Token.WaitHandle.WaitOne(1000))
-                    {
-                        Thread.MemoryBarrier();
-                        if (m_LoadNextFilePath == null)
-                            return null;
-                    }
-
-                    try
-                    {
-                        return Media.Load(filePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        m_LoadNextException = ex;
-                        return null;
-                    }
-                });
-            }
         }
 
         private IMedia GetPreloadedMedia()

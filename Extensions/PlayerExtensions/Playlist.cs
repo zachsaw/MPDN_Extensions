@@ -78,6 +78,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private bool m_Moving;
         private bool m_Resizing;
 
+        private readonly Timer m_Timer = new Timer();
+
         #endregion
 
         #region Playlist (re)init and dispose
@@ -90,6 +92,13 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (!string.IsNullOrEmpty(Settings.Theme)) m_Form.Theme = Settings.Theme;
 
             Player.Loaded += OnPlayerLoaded;
+
+            m_Timer.Interval = 500;
+            m_Timer.Tick += delegate
+            {
+                m_Timer.Stop();
+                m_Form.DisposeLoadNextTask();
+            };
         }
 
         public override void Destroy()
@@ -112,6 +121,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_Form.SizeChanged -= OnFormSizeChanged;
 
             base.Destroy();
+            m_Timer.Dispose();
             m_Form.Dispose();
         }
 
@@ -544,6 +554,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnMediaLoading(object sender, MediaLoadingEventArgs e)
         {
+            m_Timer.Stop();
             m_Form.HandleMediaLoading(e);
         }
 
@@ -553,6 +564,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (e.OldState == PlayerState.Closed)
             {
                 m_Form.LoadNextInBackground();
+            }
+            else if (e.NewState == PlayerState.Closed)
+            {
+                // If we're not playing the next file anytime soon, clean up the preloaded media
+                m_Timer.Start();
             }
         }
 
