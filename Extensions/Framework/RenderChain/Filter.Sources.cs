@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
+using System;
 using Mpdn.RenderScript;
 using Size = System.Drawing.Size;
 
@@ -71,6 +72,25 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
 
         #endregion
+
+        #region Resource Management
+
+        ~BaseSourceFilter()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
+        #endregion
     }
 
     public abstract class BaseSourceFilter : BaseSourceFilter<ITexture2D>, IFilter
@@ -87,7 +107,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_OutputSize = targetSize;
         }
 
-        public void MakeTagged()
+        public void EnableTag()
         {
             m_Tagged = true;
         }
@@ -286,16 +306,18 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
     }
 
-    public sealed class TextureSourceFilter<TTexture> : BaseSourceFilter<TTexture>
+    public class TextureSourceFilter<TTexture> : BaseSourceFilter<TTexture>
         where TTexture : class, IBaseTexture
     {
-        private readonly TTexture m_Texture;
-        private readonly TextureSize m_Size;
+        protected readonly TTexture Texture;
+        protected bool ManageTexture;
+
+        private readonly TextureSize m_OutputSize;
 
         public TextureSourceFilter(TTexture texture)
         {
-            m_Texture = texture;
-            m_Size = m_Texture.GetSize();
+            Texture = texture;
+            m_OutputSize = Texture.GetSize();
 
             /* Don't connect to bottom label */
             Tag = new EmptyTag();
@@ -303,12 +325,116 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public override TTexture OutputTexture
         {
-            get { return m_Texture; }
+            get { return Texture; }
         }
 
         public override TextureSize OutputSize
         {
-            get { return m_Size; }
+            get { return m_OutputSize; }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (ManageTexture) // Disabled by default to keep backwards compatibility
+                DisposeHelper.Dispose(Texture);
+        }
+    }
+
+    public class ManagedTexture<TTexture> where TTexture : class, IBaseTexture
+    {
+        private TTexture m_Texture;
+        private int m_Leases;
+
+        public ManagedTexture(TTexture texture)
+        {
+            if (texture == null)
+            {
+                throw new ArgumentNullException("texture");
+            }
+            m_Texture = texture;
+        }
+
+        public TTexture GetLease()
+        {
+            if (!Valid)
+                throw new InvalidOperationException("Cannot renew lease on a texture that is no longer valid");
+
+            m_Leases++;
+            return m_Texture;
+        }
+
+        public void RevokeLease()
+        {
+            m_Leases--;
+            if (m_Leases > 0) return;
+            DisposeHelper.Dispose(ref m_Texture);
+        }
+
+        public void Discard()
+        {
+            while (Valid)
+            {
+                RevokeLease();
+            }
+        }
+
+        public bool Valid
+        {
+            get { return m_Texture != null; }
+        }
+    }
+
+    public static class SharedTextureHelpers
+    {
+        public static ManagedTexture<TTexture> GetManaged<TTexture>(this TTexture texture) where TTexture : class, IBaseTexture
+        {
+            return new ManagedTexture<TTexture>(texture);
+        }
+
+        public static SharedTextureSourceFilter<TTexture> ToFilter<TTexture>(this ManagedTexture<TTexture> texture)
+            where TTexture : class, IBaseTexture
+        {
+            return new SharedTextureSourceFilter<TTexture>(texture);
+        }
+    }
+
+    public class SharedTextureSourceFilter<TTexture> : BaseSourceFilter<TTexture>
+        where TTexture : class, IBaseTexture
+    {
+        private readonly TextureSize m_OutputSize;
+        protected readonly ManagedTexture<TTexture> ManagedTexture;
+        protected TTexture Texture;
+
+        public SharedTextureSourceFilter(ManagedTexture<TTexture> managedTexture)
+        {
+            ManagedTexture = managedTexture;
+            Texture = ManagedTexture.GetLease();
+            m_OutputSize = Texture.GetSize();
+
+            /* Don't connect to bottom label */
+            Tag = new EmptyTag();
+        }
+
+        public override TTexture OutputTexture
+        {
+            get { return Texture; }
+        }
+
+        public override TextureSize OutputSize
+        {
+            get { return m_OutputSize; }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (Texture == null)
+                return;
+
+            ManagedTexture.RevokeLease();
+            Texture = null;
         }
     }
 }

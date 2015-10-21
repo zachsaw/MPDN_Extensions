@@ -18,26 +18,14 @@
 using System;
 using Cudafy;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.AudioChain;
 
 namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Gain : Extensions.Framework.AudioScript
+        public class Gain : AudioChain
         {
-            public override ExtensionUiDescriptor Descriptor
-            {
-                get
-                {
-                    return new ExtensionUiDescriptor
-                    {
-                        Guid = new Guid("02C441FE-1592-41A2-9901-5FC41DEAA3D2"),
-                        Name = "Gain",
-                        Description = "Amplifies audio by 2x with OpenCL"
-                    };
-                }
-            }
-
             protected override void OnLoadAudioKernel()
             {
                 Gpu.LoadAudioKernel(typeof (Gain));
@@ -70,6 +58,27 @@ namespace Mpdn.Examples.AudioScripts
                     }
                     tid += thread.gridDim.x;
                 }
+            }
+        }
+
+        public class GainUi : AudioChainUi<Gain>
+        {
+            public override ExtensionUiDescriptor Descriptor
+            {
+                get
+                {
+                    return new ExtensionUiDescriptor
+                    {
+                        Guid = new Guid("02C441FE-1592-41A2-9901-5FC41DEAA3D2"),
+                        Name = "Gain",
+                        Description = "Amplifies audio by 2x with OpenCL"
+                    };
+                }
+            }
+
+            public override string Category
+            {
+                get { return "Volume"; }
             }
         }
     }

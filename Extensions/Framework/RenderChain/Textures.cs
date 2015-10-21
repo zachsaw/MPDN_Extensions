@@ -99,6 +99,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
     {
         public static TextureSize GetSize(this IBaseTexture texture)
         {
+            if (texture == null)
+            {
+                throw new NullReferenceException("GetSize() is called on a null texture");
+            }
             if (texture is ITexture2D)
             {
                 var t = (ITexture2D) texture;

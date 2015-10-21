@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -77,6 +78,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private bool m_Moving;
         private bool m_Resizing;
 
+        private readonly Timer m_Timer = new Timer();
+
         #endregion
 
         #region Playlist (re)init and dispose
@@ -89,10 +92,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (!string.IsNullOrEmpty(Settings.Theme)) m_Form.Theme = Settings.Theme;
 
             Player.Loaded += OnPlayerLoaded;
+
+            m_Timer.Interval = 500;
+            m_Timer.Tick += delegate
+            {
+                m_Timer.Stop();
+                if (Player.State != PlayerState.Closed)
+                    return;
+
+                m_Form.DisposeLoadNextTask();
+            };
         }
 
         public override void Destroy()
         {
+            Media.Loading -= OnMediaLoading;
             Player.StateChanged -= OnPlayerStateChanged;
             Player.Playback.Completed -= OnPlaybackCompleted;
             Player.Closed -= OnMpdnFormClosed;
@@ -110,6 +124,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_Form.SizeChanged -= OnFormSizeChanged;
 
             base.Destroy();
+            m_Timer.Dispose();
             m_Form.Dispose();
         }
 
@@ -146,6 +161,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Player.DragEnter += OnDragEnter;
             Player.DragDrop += OnDragDrop;
             Player.CommandLineFileOpen += OnCommandLineFileOpen;
+            Media.Loading += OnMediaLoading;
             m_MpdnForm = Player.ActiveForm;
             m_MpdnForm.Move += OnMpdnFormMove;
             m_MpdnForm.KeyDown += OnMpdnFormKeyDown;
@@ -288,6 +304,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void PlayNextInFolder()
         {
             if (Media.Position != Media.Duration) return;
+            if (!File.Exists(Media.FilePath)) return;
             m_Form.PlayNextFileInDirectory();
         }
 
@@ -538,9 +555,24 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             SetupPlaylist();
         }
 
-        private void OnPlayerStateChanged(object sender, EventArgs e)
+        private void OnMediaLoading(object sender, MediaLoadingEventArgs e)
+        {
+            m_Timer.Stop();
+            m_Form.HandleMediaLoading(e);
+        }
+
+        private void OnPlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
             SetActiveFile();
+            if (e.OldState == PlayerState.Closed)
+            {
+                m_Form.LoadNextInBackground();
+            }
+            else if (e.NewState == PlayerState.Closed)
+            {
+                // If we're not playing the next file anytime soon, clean up the preloaded media
+                m_Timer.Start();
+            }
         }
 
         private void OnPlaybackCompleted(object sender, EventArgs e)
@@ -652,6 +684,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void OnMpdnFormClosed(object sender, EventArgs e)
         {
             RememberSettings();
+            // Do the following in the background to prevent it holding up the UI thread
+            Task.Factory.StartNew(() => m_Form.DisposeLoadNextTask());
         }
 
         private void OnMpdnFormMove(object sender, EventArgs e)
@@ -849,6 +883,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public AfterPlaybackSettingsOpt AfterPlaybackOpt { get; set; }
         public AfterPlaybackSettingsAction AfterPlaybackAction { get; set; }
         public IconScale IconScale { get; set; }
+        public bool PreloadNextFile { get; set; }
         public bool BeginPlaybackOnStartup { get; set; }
         public bool RememberWindowSize { get; set; }
         public bool RememberWindowPosition { get; set; }
@@ -896,6 +931,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             ShowPlaylistOnStartup = false;
             AfterPlaybackOpt = AfterPlaybackSettingsOpt.DoNothing;
             AfterPlaybackAction = AfterPlaybackSettingsAction.DoNothing;
+            PreloadNextFile = true;
             BeginPlaybackOnStartup = false;
             ShowToolTips = true;
             SnapWithPlayer = true;

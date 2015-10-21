@@ -14,10 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
-using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.Framework.Scripting;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -30,36 +32,19 @@ namespace Mpdn.Extensions.RenderScripts
             #region Settings
 
             public string Condition { get; set; }
-            public Preset Preset { get; set; }
+            public Preset<IFilter, IRenderScript> Preset { get; set; }
 
             #endregion
-
-            private ScriptEngine m_Engine;
-
-            public override void Reset()
-            {
-                DisposeHelper.Dispose(ref m_Engine);
-                base.Reset();
-            }
 
             protected override IFilter CreateFilter(IFilter input)
             {
                 if (string.IsNullOrWhiteSpace(Condition) || Preset == null)
                     return input;
 
-                CreateEngine();
-                if (!m_Engine.Evaluate(input, GetScript(), GetType().Name))
+                if (!RenderScriptEngine.Eval(input, GetScript(), GetType().Name))
                     return input;
 
                 return input + Preset;
-            }
-
-            private void CreateEngine()
-            {
-                if (m_Engine != null)
-                    return;
-
-                m_Engine = new ScriptEngine();
             }
 
             private string GetScript()

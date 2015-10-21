@@ -66,7 +66,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (chromaFilter == null)
                     return input;
 
-                var bilateral = Prescaler ? new Bilateral.Bilateral() : Identity;
+                var bilateral = Prescaler ? new Bilateral.Bilateral() : IdentityChain;
                 input += bilateral;
 
                 var chromaScaler = new SuperChromaResScaler((ChromaFilter)input, this);
@@ -76,8 +76,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             public virtual IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
-                var input = new ChromaFilter(lumaInput, chromaInput, targetSize: targetSize, chromaOffset: chromaOffset);
-                return MakeFilter(input);
+                var input = new ChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
+                return Process(input);
             }
 
             private class SuperChromaResScaler: SuperChromaRes

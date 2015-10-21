@@ -48,7 +48,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private class DxvaHdResizeFilter : ResizeFilter
             {
-                private readonly IDxvaHd m_DxvaHd;
+                private IDxvaHd m_DxvaHd;
 
                 public DxvaHdResizeFilter(IDxvaHd dxvaHd, IFilter inputFilter)
                     : base(inputFilter)
@@ -75,29 +75,25 @@ namespace Mpdn.Extensions.RenderScripts
 
                     m_DxvaHd.Render(texture, OutputTarget);
                 }
+
+                protected override void Dispose(bool disposing)
+                {
+                    base.Dispose(disposing);
+                    DisposeHelper.Dispose(ref m_DxvaHd);
+                }
             }
 
             #endregion
 
             private IDxvaHd m_DxvaHd;
-            private ITargetTexture m_TextureUnorm8;
 
             protected override string ShaderPath
             {
                 get { return "DxvaHdScaler"; }
             }
 
-            public override void Reset()
-            {
-                Cleanup();
-
-                base.Reset();
-            }
-
             protected override IFilter CreateFilter(IFilter sourceFilter)
             {
-                Cleanup();
-
                 if (sourceFilter.OutputSize == Renderer.TargetSize)
                     return sourceFilter;
 
@@ -125,12 +121,6 @@ namespace Mpdn.Extensions.RenderScripts
                 var result = new DxvaHdResizeFilter(m_DxvaHd, input);
 
                 return YuvMode ? result.ConvertToRgb() : result;
-            }
-
-            private void Cleanup()
-            {
-                DisposeHelper.Dispose(ref m_DxvaHd);
-                DisposeHelper.Dispose(ref m_TextureUnorm8);
             }
         }
 

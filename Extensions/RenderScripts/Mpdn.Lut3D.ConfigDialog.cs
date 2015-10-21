@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
+using System;
+using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
@@ -41,7 +44,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Settings.FileName = textBoxFileName.Text;
             }
 
-            private void ButtonOkClick(object sender, System.EventArgs e)
+            private void ButtonOkClick(object sender, EventArgs e)
             {
                 if (!ValidateTextBox(true))
                 {
@@ -49,7 +52,7 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            private void ButtonOpenClick(object sender, System.EventArgs e)
+            private void ButtonOpenClick(object sender, EventArgs e)
             {
                 if (openFileDialog.ShowDialog(this) != DialogResult.OK) 
                     return;
@@ -58,7 +61,7 @@ namespace Mpdn.Extensions.RenderScripts
                 ValidateTextBox();
             }
 
-            private void TextBoxFileNameValidating(object sender, System.ComponentModel.CancelEventArgs e)
+            private void TextBoxFileNameValidating(object sender, CancelEventArgs e)
             {
                 ValidateTextBox();
             }
@@ -88,7 +91,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return true;
             }
 
-            private void CheckBoxActivateCheckedChanged(object sender, System.EventArgs e)
+            private void CheckBoxActivateCheckedChanged(object sender, EventArgs e)
             {
                 ValidateTextBox();
             }

@@ -17,19 +17,19 @@
 
 using System;
 using System.Linq;
-using DirectShowLib;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.AudioChain;
 
 namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn
     {
-        public class Reclock : Framework.AudioScript
+        public class Reclock : AudioChain
         {
             private const double MAX_PERCENT_ADJUST = 3; // automatically reclock if the difference is less than 3%
             private const double SANEAR_OVERSHOOT = 13;
             private const double DIRECTSOUND_OVERSHOOT = 8;
-            private const double MAX_SWING = 0.0001;
+            private const double MAX_SWING = 0.0003;
             private const int RATIO_ADJUST_INTERVAL = 64*1024;
             
             private static readonly Guid s_SanearSoundClsId = new Guid("DF557071-C9FD-433A-9627-81E0D3640ED9");
@@ -42,20 +42,7 @@ namespace Mpdn.Extensions.AudioScripts
             private int m_SampleIndex = -4*RATIO_ADJUST_INTERVAL;
             private double m_Ratio = 1;
 
-            public override ExtensionUiDescriptor Descriptor
-            {
-                get
-                {
-                    return new ExtensionUiDescriptor
-                    {
-                        Guid = new Guid("51DA709D-7DDC-448B-BF0B-8691C9F39FF1"),
-                        Name = "Reclock",
-                        Description = "Reclock for MPDN"
-                    };
-                }
-            }
-
-            public override bool Process(AudioParam input, AudioParam output)
+            public override bool Process(Audio input, Audio output)
             {
                 if (!CalculateRatio(input))
                 {
@@ -72,7 +59,7 @@ namespace Mpdn.Extensions.AudioScripts
                 return true;
             }
 
-            private bool CalculateRatio(AudioParam input)
+            private bool CalculateRatio(Audio input)
             {
                 if (!CompatibleAudioRenderer)
                     return false;
@@ -101,7 +88,7 @@ namespace Mpdn.Extensions.AudioScripts
                 return true;
             }
 
-            private void CalculateRatio(AudioParam input, double ratio, double refclk, double videoHz, double displayHz)
+            private void CalculateRatio(Audio input, double ratio, double refclk, double videoHz, double displayHz)
             {
                 var format = input.Format;
                 var bytesPerSample = format.wBitsPerSample/8;
@@ -128,7 +115,7 @@ namespace Mpdn.Extensions.AudioScripts
                 m_Ratio = ratio;
             }
 
-            private void PerformReclock(AudioParam output)
+            private void PerformReclock(Audio output)
             {
                 long start, end;
                 output.Sample.GetTime(out start, out end);
@@ -142,18 +129,38 @@ namespace Mpdn.Extensions.AudioScripts
                 get { return m_Sanear || m_DirectSoundWaveOut; }
             }
 
-            public override void OnMediaClosed()
+            public override void Initialize()
+            {
+                base.Initialize();
+
+                Player.StateChanged += PlayerStateChanged;
+            }
+
+            public override void Reset()
             {
                 m_Sanear = false;
                 m_DirectSoundWaveOut = false;
                 m_SampleIndex = -4*RATIO_ADJUST_INTERVAL;
                 m_Ratio = 1;
+
+                Player.StateChanged -= PlayerStateChanged;
+
+                base.Reset();
             }
 
-            public override void OnGetMediaType(WaveFormatExtensible format)
+            protected override void Process(float[,] samples, short channels, int sampleCount)
             {
+                throw new InvalidOperationException();
+            }
+
+            private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
+            {
+                if (e.OldState != PlayerState.Closed) return;
                 GuiThread.DoAsync(delegate
                 {
+                    if (Media.AudioTrack == null)
+                        return;
+
                     // This has to be done via GuiThread.DoAsync because when this method is called
                     // Player.Filters has not been populated
                     // Using GuiThread.DoAsync essentially queues this delegate until the media file
@@ -172,10 +179,26 @@ namespace Mpdn.Extensions.AudioScripts
                     }
                 });
             }
+        }
 
-            protected override void Process(float[,] samples, short channels, int sampleCount)
+        public class ReclockUi : AudioChainUi<Reclock>
+        {
+            public override string Category
             {
-                throw new InvalidOperationException();
+                get { return "Timing"; }
+            }
+
+            public override ExtensionUiDescriptor Descriptor
+            {
+                get
+                {
+                    return new ExtensionUiDescriptor
+                    {
+                        Guid = new Guid("51DA709D-7DDC-448B-BF0B-8691C9F39FF1"),
+                        Name = "Reclock",
+                        Description = "Reclock for MPDN"
+                    };
+                }
             }
         }
     }

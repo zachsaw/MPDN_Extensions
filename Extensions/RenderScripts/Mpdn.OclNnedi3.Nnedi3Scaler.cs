@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,9 +52,9 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class NNedi3HKernelFilter : ClKernelFilter
         {
-            private readonly IDisposable m_Buffer;
             private readonly int m_NeuronCount;
             private readonly TextureSize m_TextureSize;
+            private IDisposable m_Buffer;
 
             public NNedi3HKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, TextureSize textureSize, int[] localWorkSizes,
                 IFilter<IBaseTexture> inputFilter)
@@ -75,14 +76,20 @@ namespace Mpdn.Extensions.RenderScripts
                 Shader.SetArg(5, m_TextureSize.Width); // SrcHeight
                 Shader.SetArg(6, 1); // SwapXy
             }
+
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                DisposeHelper.Dispose(ref m_Buffer);
+            }
         }
 
         public class NNedi3VKernelFilter : ClKernelFilter
         {
             private readonly bool m_ReloadWeights;
-            private readonly IDisposable m_Buffer;
             private readonly int m_NeuronCount;
             private readonly TextureSize m_TextureSize;
+            private IDisposable m_Buffer;
 
             public NNedi3VKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, bool reloadWeights, TextureSize textureSize, int[] localWorkSizes,
                 IFilter<IBaseTexture> inputFilter)
@@ -108,6 +115,12 @@ namespace Mpdn.Extensions.RenderScripts
                 Shader.SetArg(5, m_TextureSize.Height); // SrcHeight
                 Shader.SetArg(6, 0); // SwapXy
             }
+
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                DisposeHelper.Dispose(ref m_Buffer);
+            }
         }
 
         public class OclNNedi3 : RenderChain
@@ -129,9 +142,6 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private IDisposable m_Buffer1;
-            private IDisposable m_Buffer2;
-
             private static readonly uint[][] s_Weights =
             {
                 Weights.Weights16Neurons,
@@ -149,14 +159,6 @@ namespace Mpdn.Extensions.RenderScripts
                     return string.Format("{0} {1}/{2}", base.Status, s_NeuronCount[(int) Neurons1],
                         s_NeuronCount[(int) Neurons2]);
                 }
-            }
-
-            public override void Reset()
-            {
-                DisposeHelper.Dispose(ref m_Buffer1);
-                DisposeHelper.Dispose(ref m_Buffer2);
-
-                base.Reset();
             }
 
             protected override string ShaderPath
@@ -180,9 +182,6 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                DisposeHelper.Dispose(ref m_Buffer1);
-                DisposeHelper.Dispose(ref m_Buffer2);
-
                 if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
@@ -199,12 +198,14 @@ namespace Mpdn.Extensions.RenderScripts
                 var neuronCount1 = s_NeuronCount[(int) Neurons1];
                 var neuronCount2 = s_NeuronCount[(int) Neurons2];
                 var weights1 = s_Weights[(int) Neurons1];
-                m_Buffer1 = Renderer.CreateClBuffer(weights1);
+                var buffer1 = Renderer.CreateClBuffer(weights1);
+                var buffer2 = buffer1;
+
                 var differentWeights = neuronCount1 != neuronCount2;
                 if (differentWeights)
                 {
                     var weights2 = s_Weights[(int) Neurons2];
-                    m_Buffer2 = Renderer.CreateClBuffer(weights2);
+                    buffer2 = Renderer.CreateClBuffer(weights2);
                 }
 
                 var sourceSize = input.OutputSize;
@@ -214,10 +215,10 @@ namespace Mpdn.Extensions.RenderScripts
                 var yuv = input.ConvertToYuv();
 
                 var localWorkSizes = new[] {8, 8};
-                var nnedi3H = new NNedi3HKernelFilter(shaderH, m_Buffer1, neuronCount1,
+                var nnedi3H = new NNedi3HKernelFilter(shaderH, buffer1, neuronCount1,
                     new TextureSize(yuv.OutputSize.Width, yuv.OutputSize.Height), 
                     localWorkSizes, yuv);
-                var nnedi3V = new NNedi3VKernelFilter(shaderV, m_Buffer2, neuronCount2, differentWeights,
+                var nnedi3V = new NNedi3VKernelFilter(shaderV, buffer2, neuronCount2, differentWeights,
                     new TextureSize(nnedi3H.OutputSize.Width, nnedi3H.OutputSize.Height), 
                     localWorkSizes, nnedi3H);
 

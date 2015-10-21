@@ -16,7 +16,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
@@ -27,29 +27,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private IFilter<ITexture2D> m_Filter;
         private FilterTag m_Tag;
 
-        protected readonly RenderChain Chain;
+        protected readonly Chain<IFilter> Chain;
 
-        public RenderChainScript(RenderChain chain)
+        public RenderChainScript(Chain<IFilter> chain)
         {
             Chain = chain;
             Chain.Initialize();
             Status = string.Empty;
-        }
-
-        ~RenderChainScript()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            Chain.Reset();
         }
 
         public ScriptInterfaceDescriptor Descriptor
@@ -61,35 +45,49 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public void Update()
         {
-            var initialFilter = MakeInitialFilter();
-            initialFilter.MakeTagged();
+            var oldFilter = m_Filter;
+            try
+            {
+                DisposeHelper.Dispose(ref m_SourceFilter);
 
-            m_Filter = CreateSafeFilter(Chain, initialFilter)
-                .SetSize(Renderer.TargetSize)
-                .GetTag(out m_Tag)
-                .Compile()
-                .InitializeFilter();
+                m_Filter = CreateOutputFilter();
 
-            UpdateStatus();
+                UpdateStatus();
+            }
+            finally
+            {
+                DisposeHelper.Dispose(ref oldFilter);
+            }
         }
 
         private void UpdateStatus()
         {
-            Status = m_Tag.CreateString();
+            Status = m_Tag != null ? m_Tag.CreateString() : "Status Invalid";
         }
 
-        public void Render()
+        public bool Execute()
         {
-            if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
-                TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
+            try
+            {
+                if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
+                    TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
 
-            m_Filter.Render();
+                m_Filter.Render();
 
-            if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
-                Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
+                if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
+                    Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
 
-            m_Filter.Reset();
-            TexturePool.FlushTextures();
+                m_Filter.Reset();
+                TexturePool.FlushTextures();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                var message = ErrorMessage(e);
+                Trace.WriteLine(message);
+                return false;
+            }
         }
 
         private IResizeableFilter MakeInitialFilter()
@@ -112,14 +110,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region Error Handling
 
-        private TextFilter m_TextFilter;
-
-        public IFilter CreateSafeFilter(RenderChain chain, IFilter input)
+        public IFilter<ITexture2D> CreateOutputFilter()
         {
-            DisposeHelper.Dispose(ref m_TextFilter);
             try
             {
-                return Chain.MakeFilter(input);
+                var input = MakeInitialFilter()
+                    .MakeTagged();
+
+                return Chain
+                    .Process(input)
+                    .SetSize(Renderer.TargetSize)
+                    .GetTag(out m_Tag)
+                    .Compile()
+                    .InitializeFilter();
             }
             catch (Exception ex)
             {
@@ -127,11 +130,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
         }
 
-        private IFilter DisplayError(Exception e)
+        private TextFilter DisplayError(Exception e)
         {
             var message = ErrorMessage(e);
             Trace.WriteLine(message);
-            return m_TextFilter = new TextFilter(message);
+            return new TextFilter(message);
         }
 
         protected static Exception InnerMostException(Exception e)
@@ -153,5 +156,27 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #endregion
 
+        #region Resource Management
+
+        ~RenderChainScript()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            Chain.Reset();
+
+            DisposeHelper.Dispose(m_Filter);
+            DisposeHelper.Dispose(ref m_SourceFilter);
+        }
+
+        #endregion
     }
 }

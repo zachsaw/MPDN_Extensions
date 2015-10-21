@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
@@ -31,7 +30,7 @@ namespace Mpdn.Extensions.Framework
         where TSettings : class, new()
     { }
 
-    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<Config.Internal.PlayerExtensions, TSettings, TDialog>, IPlayerExtension
+    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<IPlayerExtension, TSettings, TDialog>, IPlayerExtension
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {

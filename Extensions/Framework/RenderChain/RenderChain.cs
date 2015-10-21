@@ -15,14 +15,14 @@
 // License along with this library.
 // 
 
-using System;
 using System.IO;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public abstract class RenderChain
+    public abstract class RenderChain : Chain<IFilter>
     {
         protected RenderChain()
         {
@@ -31,7 +31,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected abstract IFilter CreateFilter(IFilter input);
 
-        public IFilter MakeFilter(IFilter input)
+        public sealed override IFilter Process(IFilter input)
         {
             IFilter output = CreateFilter(input);
 
@@ -54,32 +54,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public virtual string Status
         {
             get { return GetType().Name; }
-        }
-
-        #endregion
-
-        #region Operators
-
-        public static readonly RenderChain Identity = RenderChainUi.Identity.Chain;
-
-        public static implicit operator Func<IFilter, IFilter>(RenderChain map)
-        {
-            return map.MakeFilter;
-        }
-
-        public static explicit operator RenderChain(Func<IFilter, IFilter> map)
-        {
-            return new StaticChain(map);
-        }
-
-        public static IFilter operator +(IFilter filter, RenderChain map)
-        {
-            return filter.Apply(map);
-        }
-
-        public static RenderChain operator +(RenderChain f, RenderChain g)
-        {
-            return (RenderChain) (filter => (filter + f) + g);
         }
 
         #endregion
@@ -127,20 +101,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #endregion
 
-        #region Implicit Shader Conversion
-
-        public static implicit operator RenderChain(ShaderFilterSettings<IShader> shaderSettings)
-        {
-            return (RenderChain)(f => new ShaderFilter(shaderSettings, f));
-        }
-
-        public static implicit operator RenderChain(ShaderFilterSettings<IShader11> shaderSettings)
-        {
-            return (RenderChain)(f => new Shader11Filter(shaderSettings, f));
-        }
-
-        #endregion
-
         #region Size Calculations
 
         public bool IsDownscalingFrom(TextureSize size)
@@ -175,39 +135,5 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
 
         #endregion
-
-        #region Resource Management Methods
-
-        /// <summary>
-        /// Called when user activates a render script
-        /// </summary>
-        public virtual void Initialize()
-        {
-        }
-
-        /// <summary>
-        /// Dispose any unmanaged resource that shouldn't be retained when user selects a new render script
-        /// </summary>
-        public virtual void Reset()
-        {
-        }
-
-        #endregion
-
-    }
-
-    public class StaticChain : RenderChain
-    {
-        private readonly Func<IFilter, IFilter> m_Compiler;
-
-        public StaticChain(Func<IFilter, IFilter> compiler)
-        {
-            m_Compiler = compiler;
-        }
-
-        protected override IFilter CreateFilter(IFilter input)
-        {
-            return m_Compiler(input);
-        }
     }
 }

@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
@@ -60,14 +61,6 @@ namespace Mpdn.Extensions.RenderScripts
                     return string.Format("{0} {1}/{2}", base.Status, s_NeuronCount[(int) Neurons1],
                         s_NeuronCount[(int) Neurons2]);
                 }
-            }
-
-            public override void Reset()
-            {
-                DisposeHelper.Dispose(ref m_Buffer1);
-                DisposeHelper.Dispose(ref m_Buffer2);
-
-                base.Reset();
             }
 
             protected override string ShaderPath

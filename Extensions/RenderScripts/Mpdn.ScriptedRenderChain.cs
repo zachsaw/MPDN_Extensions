@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.IO;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.Framework.Scripting;
 
@@ -32,36 +32,20 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private ScriptEngine m_Engine;
-            private ScriptParser m_ScriptParser;
+            private readonly ScriptParser m_ScriptParser;
             private string m_RsFile;
             private string m_RsFileName;
             private DateTime m_LastModified = DateTime.MinValue;
 
             public ScriptedRenderChain()
             {
-                if (string.IsNullOrWhiteSpace(ScriptFileName))
+                if (!string.IsNullOrWhiteSpace(ScriptFileName)) return;
+                ScriptFileName = Helpers.DefaultScriptFileName;
+                if (!File.Exists(ScriptFileName))
                 {
-                    ScriptFileName = Helpers.DefaultScriptFileName;
-                    if (!File.Exists(ScriptFileName))
-                    {
-                        CreateDefaultScriptFile();
-                    }
+                    CreateDefaultScriptFile();
                 }
-
-            }
-
-            public override void Initialize()
-            {
-                m_Engine = new ScriptEngine();
-                m_ScriptParser = new ScriptParser(m_Engine.FilterTypeNames);
-                base.Initialize();
-            }
-
-            public override void Reset()
-            {
-                DisposeHelper.Dispose(ref m_Engine);
-                base.Reset();
+                m_ScriptParser = new ScriptParser(RenderScriptEngine.FilterTypes);
             }
 
             private void CreateDefaultScriptFile()
@@ -71,7 +55,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter input)
             {
-                var clip = m_Engine.Execute(input, BuildScript(ScriptFileName), ScriptFileName);
+                var clip = RenderScriptEngine.Exec(input, BuildScript(ScriptFileName), ScriptFileName);
                 if (clip == null)
                     return null;
 

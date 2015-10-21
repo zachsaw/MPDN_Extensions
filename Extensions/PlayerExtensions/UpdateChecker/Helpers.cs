@@ -90,7 +90,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
                     registryKey = Registry.CurrentUser.OpenSubKey(subKey, false);
                     break;
                 default:
-                    throw new System.InvalidOperationException(
+                    throw new InvalidOperationException(
                         "parameter subKey must be either \"HKLM\" or \"HKCU\"");
             }
 

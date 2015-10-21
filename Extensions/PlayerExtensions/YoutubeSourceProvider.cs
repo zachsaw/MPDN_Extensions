@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -238,14 +239,15 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static void OnMediaLoading(object sender, MediaLoadingEventArgs e)
         {
-            if (!IsYouTubeSource(e.Filename))
+            var filename = e.Filename;
+            if (!IsYouTubeSource(filename))
                 return;
 
             e.CustomSourceFilter = graph =>
             {
                 try
                 {
-                    return new YouTubeSource(graph, e.Filename);
+                    return new YouTubeSource(graph, filename);
                 }
                 catch (Exception ex)
                 {
@@ -261,16 +263,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (string.IsNullOrWhiteSpace(fileNameOrUri))
                 return false;
 
-            try
-            {
-                var uri = new Uri(fileNameOrUri);
-                return uri.Scheme != Uri.UriSchemeFile &&
-                       s_SupportedSites.Any(s => uri.Host.ToLowerInvariant().Contains(s));
-            }
-            catch (UriFormatException)
-            {
-                return false;
-            }
+            Uri uri;
+            return Uri.TryCreate(fileNameOrUri, UriKind.Absolute, out uri) &&
+                    (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps) &&
+                    s_SupportedSites.Any(s => uri.Host.ToLowerInvariant().Contains(s));
         }
     }
 }

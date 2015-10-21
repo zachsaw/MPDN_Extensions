@@ -17,16 +17,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mpdn.Config;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.PlayerExtensions;
+using Mpdn.RenderScript;
 using YAXLib;
 
 namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptGroup
     {
-        public class ScriptGroup : PresetCollection
+        public class ScriptGroup : PresetCollection<IFilter, IRenderScript>
         {
             #region Settings
 
@@ -43,7 +46,7 @@ namespace Mpdn.Extensions.RenderScripts
             }
 
             [YAXDontSerialize]
-            public Preset SelectedOption
+            public Preset<IFilter, IRenderScript> SelectedOption
             {
                 get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) : null; }
             }
@@ -75,58 +78,35 @@ namespace Mpdn.Extensions.RenderScripts
                 m_HotkeyGuid = Guid.NewGuid();
             }
 
-            public Preset GetPreset(Guid guid)
-            {
-                return Options.FirstOrDefault(o => o.Guid == guid);
-            }
-
             public int GetPresetIndex(Guid guid)
             {
                 return Options.FindIndex(o => o.Guid == guid);
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            public override IFilter Process(IFilter input)
             {
                 return SelectedOption != null ? input + SelectedOption : input;
-            }
-
-            public override void Initialize()
-            {
-                RegisterHotkey();
-                base.Initialize();
-            }
-
-            public override void Reset()
-            {
-                DeregisterHotkey();
-                base.Reset();
             }
 
             #region Hotkey Handling
 
             private readonly Guid m_HotkeyGuid;
             private string m_Hotkey;
-            private bool m_Registered;
 
             private void RegisterHotkey()
             {
                 DynamicHotkeys.RegisterHotkey(m_HotkeyGuid, Hotkey, IncrementSelection);
-                m_Registered = true;
             }
 
             private void DeregisterHotkey()
             {
                 DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
-                m_Registered = false;
             }
 
             private void UpdateHotkey()
             {
-                if (m_Registered)
-                {
-                    DeregisterHotkey();
-                    RegisterHotkey();
-                }
+                DeregisterHotkey();
+                RegisterHotkey();
             }
 
             private void IncrementSelection()
@@ -141,7 +121,7 @@ namespace Mpdn.Extensions.RenderScripts
                     Player.OsdText.Show(Name + ": " + SelectedOption.Name);
                 }
 
-                Extension.SetRenderScript(Extension.RenderScriptGuid);
+                Extension.RefreshRenderScript();
             }
 
             #endregion

@@ -17,7 +17,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 

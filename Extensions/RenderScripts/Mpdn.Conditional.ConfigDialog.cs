@@ -20,15 +20,19 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.Framework.Exceptions;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.Framework.Scripting;
-using BoxItem = Mpdn.Extensions.Framework.Controls.ComboBoxItem<Mpdn.Extensions.Framework.RenderChain.Preset>;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
+    using Preset = Preset<IFilter, IRenderScript>;
+    using BoxItem = ComboBoxItem<Preset<IFilter, IRenderScript>>;
+
     namespace Mpdn.Conditional
     {
         public partial class ConditionalConfigDialog : ConditionalConfigDialogBase
@@ -61,7 +65,7 @@ namespace Mpdn.Extensions.RenderScripts
                     var guid = Settings.Preset.Script.Descriptor.Guid;
                     comboBoxPreset.SelectedIndex = comboBoxPreset
                         .Items
-                        .Cast<ComboBoxItem<Preset>>()
+                        .Cast<ComboBoxItem<Preset<IFilter, IRenderScript>>>()
                         .Select(item => item.Value.Script)
                         .ToList()
                         .FindIndex(ui => ui.Descriptor.Guid == guid);
@@ -107,24 +111,22 @@ namespace Mpdn.Extensions.RenderScripts
             private static bool ValidateSyntax(string condition, out string error)
             {
                 error = string.Empty;
-                using (var engine = new ScriptEngine())
+                try
                 {
-                    try
-                    {
-                        engine.Execute(null, CreateJsCode(Parser.BuildCondition(condition)), "Conditional");
-                    }
-                    catch (MpdnScriptEngineException ex)
-                    {
-                        error = ex.Message;
-                        return false;
-                    }
-                    catch (Exception)
-                    {
-                        // ignore general exceptions for mock clip
-                        return true;
-                    }
+                    RenderScriptEngine.Exec(null, CreateJsCode(Parser.BuildCondition(condition)),
+                        "Conditional");
+                }
+                catch (MpdnScriptEngineException ex)
+                {
+                    error = ex.Message;
+                    return false;
+                }
+                catch (Exception)
+                {
+                    // ignore general exceptions for mock clip
                     return true;
                 }
+                return true;
             }
 
             private static string CreateJsCode(string condition)

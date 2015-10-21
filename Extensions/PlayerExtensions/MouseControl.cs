@@ -14,12 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.PlayerExtensions.GitHub;
+using Mpdn.Extensions.PlayerExtensions.Playlist;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -110,7 +111,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 return;
             }
 
-            if (Playlist.PlaylistForm.PlaylistCount <= 1)
+            if (PlaylistForm.PlaylistCount <= 1)
             {
                 switch (e.InputArgs.Button)
                 {

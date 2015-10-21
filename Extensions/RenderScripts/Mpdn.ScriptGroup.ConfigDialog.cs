@@ -29,15 +29,15 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
-                RenderChainList.PresetList = Settings.Options;
-                RenderChainList.SelectedIndex = Settings.SelectedIndex;
+                m_ChainList.PresetList = Settings.Options;
+                m_ChainList.SelectedIndex = Settings.SelectedIndex;
                 HotkeyBox.Text = Settings.Hotkey;
             }
 
             protected override void SaveSettings()
             {
-                Settings.Options = RenderChainList.PresetList;
-                Settings.SelectedIndex = RenderChainList.SelectedIndex;
+                Settings.Options = m_ChainList.PresetList;
+                Settings.SelectedIndex = m_ChainList.SelectedIndex;
                 Settings.Hotkey = HotkeyBox.Text;
             }
         }

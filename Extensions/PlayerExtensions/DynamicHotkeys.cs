@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using System.Linq;
+using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions

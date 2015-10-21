@@ -16,15 +16,32 @@
 // 
 
 using System;
+using Mpdn.Extensions.Framework.AudioChain;
 
 namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Silencer : Extensions.Framework.AudioScript
+        public class Silencer : AudioChain
         {
             private const int CHANNEL_TO_SILENT = 0;
 
+            protected override bool CpuOnly
+            {
+                get { return true; }
+            }
+
+            protected override void Process(float[,] samples, short channels, int sampleCount)
+            {
+                for (int i = 0; i < sampleCount; i++)
+                {
+                    samples[CHANNEL_TO_SILENT, i] = 0;
+                }
+            }
+        }
+
+        public class SilencerUi : AudioChainUi<Silencer>
+        {
             public override ExtensionUiDescriptor Descriptor
             {
                 get
@@ -38,17 +55,9 @@ namespace Mpdn.Examples.AudioScripts
                 }
             }
 
-            protected override bool CpuOnly
+            public override string Category
             {
-                get { return true; }
-            }
-
-            protected override void Process(float[,] samples, short channels, int sampleCount)
-            {
-                for (int i = 0; i < sampleCount; i++)
-                {
-                    samples[CHANNEL_TO_SILENT, i] = 0;
-                }
+                get { return "Volume"; }
             }
         }
     }

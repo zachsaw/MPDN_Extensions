@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Drawing;
 using System.Linq;
+using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
-using Timer = System.Windows.Forms.Timer;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -52,18 +53,23 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_Text = Player.CreateText("Verdana", TEXT_HEIGHT, TextFontStyle.Regular);
             m_VideoBoxSize = Gui.VideoBox.ClientSize;
 
-            m_Timer = new Timer { Interval = 30 };
+            m_Timer = new Timer { Interval = 25 };
             m_Timer.Tick += TimerOnTick;
             Player.Loaded += OnPlayerLoaded;
             Player.PaintOverlay += OnPaintOverlay;
             Gui.VideoBox.SizeChanged += VideoBoxResize;
+            Player.FullScreenMode.Entering += EnteringFullScreenMode;
+            Player.FullScreenMode.Entered += EnteredFullScreenMode;
         }
 
         public override void Destroy()
         {
-            Player.Loaded -= OnPlayerLoaded;
+            Player.FullScreenMode.Entering -= EnteringFullScreenMode;
+            Player.FullScreenMode.Entered -= EnteredFullScreenMode;
             Gui.VideoBox.SizeChanged -= VideoBoxResize;
             Player.PaintOverlay -= OnPaintOverlay;
+            Player.Loaded -= OnPlayerLoaded;
+            m_Timer.Tick -= TimerOnTick;
 
             m_Text.Dispose();
 
@@ -83,11 +89,19 @@ namespace Mpdn.Extensions.PlayerExtensions
             });
         }
 
+        private void EnteringFullScreenMode(object sender, EventArgs e)
+        {
+            m_Text.Hide();
+        }
+
+        private void EnteredFullScreenMode(object sender, EventArgs eventArgs)
+        {
+            UpdateVideoBoxSize();
+        }
+
         private void TimerOnTick(object sender, EventArgs eventArgs)
         {
-            m_Timer.Stop();
-            m_VideoBoxSize = Gui.VideoBox.ClientSize;
-            m_Resizing = false;
+            UpdateVideoBoxSize();
         }
 
         private void VideoBoxResize(object sender, EventArgs eventArgs)
@@ -131,6 +145,13 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_Text.Show(text, location, Color.FromArgb(0xff, 0xbb, 0xcc, 0xdd),
                 Color.FromArgb(255*40/100, Color.FromArgb(0xff, 0x00, 0x1f, 0x2f)),
                 new Padding(horizontalPadding, verticalPadding, horizontalPadding, height + verticalPadding*2));
+        }
+
+        private void UpdateVideoBoxSize()
+        {
+            m_Timer.Stop();
+            m_VideoBoxSize = Gui.VideoBox.ClientSize;
+            m_Resizing = false;
         }
 
         private static string GetInternalScalerDesc()

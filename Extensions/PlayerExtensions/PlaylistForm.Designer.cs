@@ -837,7 +837,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Playlist";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PlaylistFormClosing);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.PlaylistForm_KeyDown);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.PlaylistFormKeyDown);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_PlayList)).EndInit();

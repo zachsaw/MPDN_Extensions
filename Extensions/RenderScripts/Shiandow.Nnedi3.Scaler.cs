@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3.Filters;
 using Mpdn.RenderScript;
@@ -74,26 +73,8 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            public override void Reset()
-            {
-                base.Reset();
-                foreach (var s in ChromaScalers)
-                {
-                    s.Reset();
-                }
-                Cleanup();
-            }
-
-            private void Cleanup()
-            {
-                DisposeHelper.Dispose(ref m_Filter1);
-                DisposeHelper.Dispose(ref m_Filter2);
-            }
-
             protected override IFilter CreateFilter(IFilter input)
             {
-                Cleanup();
-
                 if (!Renderer.IsDx11Avail)
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD

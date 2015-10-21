@@ -15,9 +15,9 @@
 // License along with this library.
 // 
 // -- Edge detection options -- 
-#define acuity 100.0
-#define radius 0.66
-#define power 0.5
+#define acuity 25.0
+#define radius 0.5
+#define power 1.0
 
 // -- Misc --
 sampler s0 : register(s0);
@@ -36,6 +36,13 @@ float4 args0  : register(c3);
 #define ddxddy (chromaSize.zw)
 #define chromaOffset (args0.xy)
 
+// -- Window Size --
+#define taps 3
+#define even (taps - 2 * (taps / 2) == 0)
+#define minX (1-ceil(taps/2.0))
+#define maxX (floor(taps/2.0))
+
+// -- Convenience --
 #define sqr(x) dot(x,x)
 
 // -- Input processing --
@@ -56,19 +63,20 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 
     // Calculate position
     float2 pos = tex * chromaSize.xy - chromaOffset - 0.5;
-    float2 offset = pos - round(pos);
+    float2 offset = pos - (even ? floor(pos) : round(pos));
     pos -= offset;
 
     // Calculate mean
     float weightSum = 0;
     float2 meanUV = 0;
-
-    [unroll] for (int X = -1; X <= 1; X++)
-    [unroll] for (int Y = -1; Y <= 1; Y++)
+   
+    [unroll] for (int X = minX; X <= maxX; X++)
+    [unroll] for (int Y = minX; Y <= maxX; Y++)
     {
         float dI2 = sqr(acuity*(y - GetY(X,Y)));
-        float dXY2 = sqr(float2(X,Y) - offset);
-        float weight = exp(-dXY2 / (2 * radius * radius)) * pow(1 + dI2 / power, -power);
+        float dXY2 = sqr((float2(X,Y) - offset)/radius);
+
+        float weight = exp(-0.5*dXY2) * pow(1 + dI2/power, - power);
         
         meanUV += weight*GetUV(X,Y);
         weightSum += weight;
@@ -76,7 +84,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     meanUV /= weightSum;
 
     // Update c0
-    c0.gb = meanUV;
+    c0.yz = meanUV;
     
     return c0;
 }

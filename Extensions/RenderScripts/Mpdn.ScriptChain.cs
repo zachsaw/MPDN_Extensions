@@ -16,15 +16,17 @@
 
 using System;
 using System.Linq;
+using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptChain
     {
-        public class ScriptChain : PresetCollection
+        public class ScriptChain : PresetCollection<IFilter, IRenderScript>
         {
-            protected override IFilter CreateFilter(IFilter input)
+            public override IFilter Process(IFilter input)
             {
                 return Options.Aggregate(input, (result, chain) => result + chain);
             }

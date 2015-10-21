@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Windows.Forms;
 using Mpdn.RenderScript;
@@ -49,7 +50,7 @@ namespace Mpdn.Extensions.Framework
                 }
             }
 
-            public IRenderScript CreateRenderScript()
+            public IRenderScript CreateScript()
             {
                 return null;
             }

@@ -23,7 +23,6 @@ using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Controls;
 using Mpdn.Extensions.PlayerExtensions.Exceptions;
-using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {

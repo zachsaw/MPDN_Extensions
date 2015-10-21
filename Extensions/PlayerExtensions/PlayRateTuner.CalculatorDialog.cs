@@ -15,6 +15,7 @@
 // License along with this library.
 // 
 
+using System;
 using System.Globalization;
 using System.Windows.Forms;
 
@@ -45,7 +46,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 Clipboard.SetText(value);
             }
 
-            private void InputTextChanged(object sender, System.EventArgs e)
+            private void InputTextChanged(object sender, EventArgs e)
             {
                 double displayHz = double.TryParse(textBoxVsyncHz.Text, NumberStyles.Any, CultureInfo.CurrentUICulture, out displayHz) ? displayHz : 0;
                 double videoHz = double.TryParse(textBoxFrameRateHz.Text, NumberStyles.Any, CultureInfo.CurrentUICulture, out videoHz) ? videoHz : 0;

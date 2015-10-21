@@ -252,11 +252,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             Renderer.Render(OutputTarget, shader);
 
-            foreach (var b in m_Buffers)
-            {
-                DisposeHelper.Dispose(b);
-            }
-
+            DisposeHelper.DisposeElements(m_Buffers);
             m_Buffers.Clear();
         }
     }

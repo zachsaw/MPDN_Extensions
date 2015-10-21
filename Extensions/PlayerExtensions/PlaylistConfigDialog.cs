@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,6 +45,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         protected override void LoadSettings()
         {
             cb_showPlaylistOnStartup.Checked = Settings.ShowPlaylistOnStartup;
+            cb_preload.Checked = Settings.PreloadNextFile;
             cb_afterPlaybackOpt.SelectedIndex = (int)Settings.AfterPlaybackOpt;
             cb_afterPlaybackAction.SelectedIndex = (int)Settings.AfterPlaybackAction;
             cb_iconScale.SelectedIndex = (int)Settings.IconScale;
@@ -64,6 +66,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         protected override void SaveSettings()
         {
             Settings.ShowPlaylistOnStartup = cb_showPlaylistOnStartup.Checked;
+            Settings.PreloadNextFile = cb_preload.Checked;
             Settings.AfterPlaybackOpt = (AfterPlaybackSettingsOpt)cb_afterPlaybackOpt.SelectedIndex;
             Settings.AfterPlaybackAction = (AfterPlaybackSettingsAction)cb_afterPlaybackAction.SelectedIndex;
             Settings.IconScale = (IconScale)cb_iconScale.SelectedIndex;

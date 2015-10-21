@@ -23,7 +23,6 @@ using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.PlayerExtensions.GitHub;
-using Control = System.Windows.Forms.Control;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {

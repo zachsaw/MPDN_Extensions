@@ -21,6 +21,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
+using SharpDX;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
@@ -102,9 +103,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 {
                     shader = compileFunc();
                 }
-                catch (SharpDX.CompilationException e)
+                catch (CompilationException e)
                 {
-                    throw new SharpDX.CompilationException(e.ResultCode,
+                    throw new CompilationException(e.ResultCode,
                         "Compilation Error in " + key + "\r\n\r\n" + e.Message);
                 }
                 catch (OpenClException e)

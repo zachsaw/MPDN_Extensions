@@ -190,7 +190,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             get { return (IFilter<ITexture2D>)InputFilters[0]; }
         }
 
-        public void MakeTagged() 
+        public void EnableTag() 
         {
             m_Tagged = true;
         }
@@ -297,7 +297,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             var resizeable = (filter as IResizeableFilter) ?? new ResizeFilter(filter);
             if (tagged)
-                resizeable.MakeTagged();
+                resizeable.EnableTag();
             resizeable.SetSize(size);
             return resizeable;
         }
@@ -325,9 +325,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return m_Transformation(m_InputFilter);
             }
 
-            public void MakeTagged() 
+            public void EnableTag() 
             {
-                m_InputFilter.MakeTagged();
+                m_InputFilter.EnableTag();
             }
 
             public void SetSize(TextureSize outputSize)

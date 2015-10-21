@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
 using System;
 using System.Drawing;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -27,8 +27,8 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class CustomTextures : RenderChain
         {
-            private ISourceTexture m_Texture1;
-            private ISourceTexture m_Texture2;
+            private ManagedTexture<ISourceTexture> m_Texture1;
+            private ManagedTexture<ISourceTexture> m_Texture2;
 
             protected override string ShaderPath
             {
@@ -37,29 +37,10 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override IFilter CreateFilter(IFilter sourceFilter)
             {
-                var shader = CompileShader("CustomTextures.hlsl");
-                return new ShaderFilter(shader, sourceFilter, new TextureSourceFilter<ISourceTexture>(m_Texture1),
-                    new TextureSourceFilter<ISourceTexture>(m_Texture2));
-            }
-
-            public override void Initialize()
-            {
                 CreateTextures();
 
-                base.Initialize();
-            }
-
-            public override void Reset()
-            {
-                DiscardTextures();
-
-                base.Reset();
-            }
-
-            private void DiscardTextures()
-            {
-                DisposeHelper.Dispose(ref m_Texture1);
-                DisposeHelper.Dispose(ref m_Texture2);
+                var shader = CompileShader("CustomTextures.hlsl");
+                return new ShaderFilter(shader, sourceFilter, m_Texture1.ToFilter(), m_Texture2.ToFilter());
             }
 
             private void CreateTextures()
@@ -75,7 +56,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 const int width = 10;
                 const int height = 10;
-                m_Texture1 = CreateTexture(width, height);
+                m_Texture1 = CreateTexture(width, height).GetManaged();
             }
 
             private void CreateTexture2()
@@ -85,7 +66,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 const int width = 40;
                 const int height = 40;
-                m_Texture2 = CreateTexture(width, height);
+                m_Texture2 = CreateTexture(width, height).GetManaged();
             }
 
             private static ISourceTexture CreateTexture(int width, int height)

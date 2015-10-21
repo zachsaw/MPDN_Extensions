@@ -20,24 +20,6 @@ using System.Windows.Forms;
 
 namespace Mpdn.Extensions.Framework.Config
 {
-    namespace Internal
-    {
-        public class RenderScripts
-        {
-            // No implementation - we are only using this class as our folder name to pass into ScriptSettingsBase
-        }
-
-        public class PlayerExtensions
-        {
-            // No implementation - we are only using this class as our folder name to pass into ScriptSettingsBase
-        }
-
-        public class AudioScripts
-        {
-            // No implementation - we are only using this class as our folder name to pass into ScriptSettingsBase
-        }
-    }
-
     public class NoSettings
     {
     }
@@ -157,7 +139,8 @@ namespace Mpdn.Extensions.Framework.Config
 
     public static class ExtensionUi
     {
-        public static IExtensionUi CreateNew(this IExtensionUi scriptUi)
+        public static T CreateNew<T>(this T scriptUi)
+            where T: IExtensionUi
         {
             var constructor = scriptUi.GetType().GetConstructor(Type.EmptyTypes);
             if (constructor == null)
@@ -165,7 +148,7 @@ namespace Mpdn.Extensions.Framework.Config
                 throw new EntryPointNotFoundException("ExtensionUi must implement parameter-less constructor");
             }
 
-            return (IExtensionUi) constructor.Invoke(new object[0]);
+            return (T) constructor.Invoke(new object[0]);
         }
 
         public static IExtensionUi Identity = new IdentityExtensionUi();

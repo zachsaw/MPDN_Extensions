@@ -22,7 +22,7 @@ using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseText
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public interface IFilter<out TTexture>
+    public interface IFilter<out TTexture> : IDisposable
         where TTexture : class, IBaseTexture
     {
         TTexture OutputTexture { get; }
@@ -45,7 +45,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public interface IResizeableFilter : IFilter
     {
         void SetSize(TextureSize outputSize);
-        void MakeTagged();
+        void EnableTag();
     }
 
     public abstract class Filter : IFilter
@@ -72,6 +72,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public abstract TextureSize OutputSize { get; }
 
         #region IFilter Implementation
+
+        private IBaseFilter[] m_OriginalInputFilters;
 
         private bool m_Updated;
         private bool m_Initialized;
@@ -120,10 +122,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (m_CompilationResult != null)
                 return m_CompilationResult;
 
-            for (int i = 0; i < InputFilters.Length; i++)
-            {
-                InputFilters[i] = InputFilters[i].Compile();
-            }
+            m_OriginalInputFilters = InputFilters;
+            InputFilters = InputFilters
+                .Select(x => x.Compile())
+                .ToArray();
 
             m_CompilationResult = Optimize();
             return m_CompilationResult;
@@ -184,6 +186,28 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
 
         #endregion
+
+        #region Resource Management
+
+        ~Filter()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            DisposeHelper.DisposeElements(ref m_OriginalInputFilters);
+            DisposeHelper.DisposeElements(InputFilters);
+            InputFilters = null;
+        }
+
+        #endregion
     }
 
     public static class FilterHelper
@@ -207,6 +231,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
             where TFilter : IBaseFilter
         {
             filter.AddTag(tag);
+            return filter;
+        }
+
+        public static TFilter MakeTagged<TFilter>(this TFilter filter)
+            where TFilter : IResizeableFilter
+        {
+            filter.EnableTag();
             return filter;
         }
     }

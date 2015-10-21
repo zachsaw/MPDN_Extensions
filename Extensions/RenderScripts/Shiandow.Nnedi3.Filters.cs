@@ -117,7 +117,7 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
 
-        public class Nnedi3Filter : Shader11Filter, IDisposable
+        public class Nnedi3Filter : Shader11Filter
         {
             private readonly bool m_Structured;
 
@@ -130,22 +130,12 @@ namespace Mpdn.Extensions.RenderScripts
                 m_Structured = structured;
             }
 
-            ~Nnedi3Filter()
+            protected override void Dispose(bool disposing)
             {
-                Dispose(false);
-            }
-
-            protected virtual void Dispose(bool disposing)
-            {
+                base.Dispose(disposing);
                 DisposeHelper.Dispose(ref m_Weights1);
                 DisposeHelper.Dispose(ref m_Weights2);
                 DisposeHelper.Dispose(ref m_WeightsSum);
-            }
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
             }
 
             protected void CreateWeightsStruct(Weights[] weights1, Weights[] weights2, WeightsSum[] weightsSum)

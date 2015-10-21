@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
+
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
+
 namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptGroup
@@ -49,7 +53,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonOk = new System.Windows.Forms.Button();
             this.HotkeyLabel = new System.Windows.Forms.Label();
             this.HotkeyBox = new Framework.Controls.HotkeyBox();
-            this.RenderChainList = new Framework.Controls.RenderChainList();
+            this.m_ChainList = new RenderScriptChainList();
             this.SuspendLayout();
             // 
             // buttonCancel
@@ -98,14 +102,14 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             // RenderChainList
             // 
-            this.RenderChainList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.m_ChainList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.RenderChainList.Location = new System.Drawing.Point(18, 18);
-            this.RenderChainList.Name = "RenderChainList";
-            this.RenderChainList.SelectedIndex = -1;
-            this.RenderChainList.Size = new System.Drawing.Size(848, 497);
-            this.RenderChainList.TabIndex = 16;
+            this.m_ChainList.Location = new System.Drawing.Point(18, 18);
+            this.m_ChainList.Name = "m_ChainList";
+            this.m_ChainList.SelectedIndex = -1;
+            this.m_ChainList.Size = new System.Drawing.Size(848, 497);
+            this.m_ChainList.TabIndex = 16;
             // 
             // PresetGroupDialog
             // 
@@ -114,7 +118,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(884, 562);
-            this.Controls.Add(this.RenderChainList);
+            this.Controls.Add(this.m_ChainList);
             this.Controls.Add(this.HotkeyBox);
             this.Controls.Add(this.HotkeyLabel);
             this.Controls.Add(this.buttonCancel);
@@ -139,7 +143,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button buttonOk;
             private System.Windows.Forms.Label HotkeyLabel;
             private Framework.Controls.HotkeyBox HotkeyBox;
-            private Framework.Controls.RenderChainList RenderChainList;
+            private RenderScriptChainList m_ChainList;
         }
     }
 }  
