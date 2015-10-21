@@ -97,6 +97,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             m_Timer.Tick += delegate
             {
                 m_Timer.Stop();
+                if (Player.State != PlayerState.Closed)
+                    return;
+
                 m_Form.DisposeLoadNextTask();
             };
         }
