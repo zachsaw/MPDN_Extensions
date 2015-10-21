@@ -341,7 +341,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
     }
 
-    public class ManagedTexture<TTexture> where TTexture : class, IDisposable
+    public class ManagedTexture<TTexture> where TTexture : class, IBaseTexture
     {
         private TTexture m_Texture;
         private int m_Leases;
@@ -362,7 +362,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Leases--;
             if (m_Leases > 0) return;
             DisposeHelper.Dispose(m_Texture);
-            m_Texture = null;
+            m_Texture = default(TTexture);
         }
 
         public void Discard()
@@ -381,7 +381,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public static class SharedTextureHelpers
     {
-        public static ManagedTexture<TTexture> GetManaged<TTexture>(this TTexture texture) where TTexture : class, IDisposable
+        public static ManagedTexture<TTexture> GetManaged<TTexture>(this TTexture texture) where TTexture : class, IBaseTexture
         {
             return new ManagedTexture<TTexture>(texture);
         }
