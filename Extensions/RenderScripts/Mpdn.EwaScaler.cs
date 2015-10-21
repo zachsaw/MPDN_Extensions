@@ -118,7 +118,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected void CreateWeights(TextureSize sourceSize, TextureSize targetSize)
             {
-                if (m_Weights != null)
+                if (m_Weights != null && m_Weights.All(w => w.Valid))
                     return;
 
                 double scaleFactorX = GetScaleFactor(targetSize.Width, sourceSize.Width);
