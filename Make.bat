@@ -69,6 +69,7 @@ if exist Sign.bat (
     echo Signing release...
     Echo.
     call Sign.bat Release\Extensions\Mpdn.Extensions.dll
+    call Sign.bat Release\Extensions\Mpdn.Extensions.Framework.dll
 )
 
 echo Zipping release...
