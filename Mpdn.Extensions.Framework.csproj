@@ -154,7 +154,7 @@
     <Compile Include="Extensions\Framework\Scripting\ScriptEngine.cs" />
     <Compile Include="Extensions\Framework\Scripting\ScriptEngineUtilities.cs" />
     <Compile Include="Extensions\Framework\Chain\Presets.cs" />
-    <None Include="Properties\DataSources\System.Globalization.CultureAndRegionInfoBuilder.datasource" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
