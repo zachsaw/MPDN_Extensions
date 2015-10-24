@@ -355,13 +355,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Texture = texture;
         }
 
-        public TTexture GetLease()
+        public Lease GetLease()
         {
             if (!Valid)
                 throw new InvalidOperationException("Cannot renew lease on a texture that is no longer valid");
 
             m_Leases++;
-            return m_Texture;
+            return new Lease(this);
         }
 
         public void RevokeLease()
@@ -383,6 +383,41 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             get { return m_Texture != null; }
         }
+
+        public class Lease : IDisposable
+        {
+            private ManagedTexture<TTexture> m_Owner;
+
+            public Lease(ManagedTexture<TTexture> owner)
+            {
+                m_Owner = owner;
+            }
+
+            public TTexture Texture
+            {
+                get { return m_Owner.m_Texture; }
+            }
+
+            ~Lease()
+            {
+                Dispose(false);
+            }
+
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (m_Owner == null)
+                    return;
+
+                m_Owner.RevokeLease();
+                m_Owner = null;
+            }
+        }
     }
 
     public static class SharedTextureHelpers
@@ -402,14 +437,15 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public class SharedTextureSourceFilter<TTexture> : BaseSourceFilter<TTexture>
         where TTexture : class, IBaseTexture
     {
+        protected readonly TTexture Texture;
+
         private readonly TextureSize m_OutputSize;
-        protected readonly ManagedTexture<TTexture> ManagedTexture;
-        protected TTexture Texture;
+        private ManagedTexture<TTexture>.Lease m_Lease; 
 
         public SharedTextureSourceFilter(ManagedTexture<TTexture> managedTexture)
         {
-            ManagedTexture = managedTexture;
-            Texture = ManagedTexture.GetLease();
+            m_Lease = managedTexture.GetLease();
+            Texture = m_Lease.Texture;
             m_OutputSize = Texture.GetSize();
 
             /* Don't connect to bottom label */
@@ -429,12 +465,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-
-            if (Texture == null)
-                return;
-
-            ManagedTexture.RevokeLease();
-            Texture = null;
+            DisposeHelper.Dispose(ref m_Lease);
         }
     }
 }
