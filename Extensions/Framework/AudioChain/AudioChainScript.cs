@@ -51,6 +51,9 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         public bool Execute()
         {
+            if (m_Audio == null)
+                return false;
+
             try
             {
                 var output = Chain.Process(new Audio(m_Audio.InputFormat, m_Audio.Input));
@@ -76,9 +79,11 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 throw new InvalidOperationException();
             }
 
-            m_Audio = audio;
-            AudioProc.Initialize();
+            if (!AudioProc.Initialize())
+                return;
+
             Chain.Initialize();
+            m_Audio = audio;
         }
     }
 

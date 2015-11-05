@@ -35,10 +35,10 @@ namespace Mpdn.Extensions.Framework.AudioChain
             get { return s_Gpu; }
         }
 
-        public static void Initialize()
+        public static bool Initialize()
         {
             if (s_Gpu != null)
-                return;
+                return true;
 
             try
             {
@@ -67,7 +67,10 @@ namespace Mpdn.Extensions.Framework.AudioChain
             catch (Exception ex)
             {
                 Trace.WriteLine(ex);
+                return false;
             }
+
+            return true;
         }
 
         private static void Destroy()
