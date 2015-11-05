@@ -308,10 +308,8 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
     public sealed class MediaSample : IMediaSample, IDisposable
     {
-        private readonly IMediaSample m_Sample;
         private readonly int m_Size;
         private readonly IntPtr m_Buffer;
-        private readonly AMMediaType m_MediaType;
 
         private int m_ActualDataLength;
         private bool m_IsSyncPoint;
@@ -326,13 +324,11 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         public MediaSample(IMediaSample sample)
         {
-            m_Sample = sample;
             m_Size = sample.GetSize();
             m_ActualDataLength = sample.GetActualDataLength();
             m_IsSyncPoint = sample.IsSyncPoint() == 0;
             m_IsPreroll = sample.IsPreroll() == 0;
             m_IsDiscontinuity = sample.IsDiscontinuity() == 0;
-            sample.GetMediaType(out m_MediaType);
             sample.GetTime(out m_TimeStart, out m_TimeEnd);
             sample.GetMediaTime(out m_MediaTimeStart, out m_MediaTimeEnd);
             m_Buffer = Marshal.AllocCoTaskMem(m_Size);
@@ -396,46 +392,14 @@ namespace Mpdn.Extensions.Framework.AudioChain
             return 0;
         }
 
-        public int GetMediaType(out AMMediaType ppMediaType)
+        public int GetMediaType(out AMMediaType mediaType)
         {
-            var result = m_Sample.GetMediaType(out ppMediaType);
-            if (result != 0)
-                return result;
-
-            if (ppMediaType == null)
-                return 0;
-
-            ppMediaType.fixedSizeSamples = m_MediaType.fixedSizeSamples;
-            ppMediaType.formatPtr = m_MediaType.formatPtr;
-            ppMediaType.formatSize = m_MediaType.formatSize;
-            ppMediaType.formatType = m_MediaType.formatType;
-            ppMediaType.majorType = m_MediaType.majorType;
-            ppMediaType.sampleSize = m_MediaType.sampleSize;
-            ppMediaType.subType = m_MediaType.subType;
-            ppMediaType.temporalCompression = m_MediaType.temporalCompression;
-            ppMediaType.unkPtr = m_MediaType.unkPtr;
-            return 0;
+            mediaType = null;
+            return 1;
         }
 
         public int SetMediaType(AMMediaType pMediaType)
         {
-            if ((m_MediaType == null && pMediaType != null) || (m_MediaType != null && pMediaType == null))
-            {
-                throw new NotSupportedException("Changing media type is not supported");
-            }
-
-            if (pMediaType == null)
-                return 0;
-
-            m_MediaType.fixedSizeSamples = pMediaType.fixedSizeSamples;
-            m_MediaType.formatPtr = pMediaType.formatPtr;
-            m_MediaType.formatSize = pMediaType.formatSize;
-            m_MediaType.formatType = pMediaType.formatType;
-            m_MediaType.majorType = pMediaType.majorType;
-            m_MediaType.sampleSize = pMediaType.sampleSize;
-            m_MediaType.subType = pMediaType.subType;
-            m_MediaType.temporalCompression = pMediaType.temporalCompression;
-            m_MediaType.unkPtr = pMediaType.unkPtr;
             return 0;
         }
 
@@ -470,7 +434,6 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 return;
 
             Marshal.FreeCoTaskMem(m_Buffer);
-            DsUtils.FreeAMMediaType(m_MediaType);
             m_Disposed = true;
         }
     }

@@ -117,9 +117,12 @@ namespace Mpdn.Extensions.Framework
 
             // Copy the media type
             AMMediaType mediaType;
-            src.GetMediaType(out mediaType);
-            dest.SetMediaType(mediaType);
-            DsUtils.FreeAMMediaType(mediaType);
+            var changed = src.GetMediaType(out mediaType) == 0;
+            if (changed)
+            {
+                dest.SetMediaType(mediaType);
+                DsUtils.FreeAMMediaType(mediaType);
+            }
 
             dest.SetSyncPoint(src.IsSyncPoint() == S_OK);
             dest.SetPreroll(src.IsPreroll() == S_OK);
