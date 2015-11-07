@@ -415,6 +415,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 DisplayTextMessage("Remote Connected");
                 WriteToSpecificClient("Connected|Authorized", clientGuid.ToString());
+                WriteToSpecificClient("ClientGUID|" + clientGuid, clientGuid.ToString());
                 _authHandler.AddAuthedClient(msgValue);
                 if (_clientManager.Visible)
                     _clientManager.ForceUpdate();
