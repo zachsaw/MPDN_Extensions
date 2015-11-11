@@ -24,9 +24,9 @@ using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
-    public class DvdSourceProvider : PlayerExtension
+    public class RarFileSourceProvider : PlayerExtension
     {
-        private DvdSourceFilter m_DvdSourceFilter;
+        private RarFileSourceFilter m_RarFileSourceFilter;
 
         public override ExtensionUiDescriptor Descriptor
         {
@@ -34,41 +34,41 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 return new ExtensionUiDescriptor
                 {
-                    Guid = new Guid("22147EF1-082F-41BE-A6EA-065D11EDAD56"),
-                    Name = "DVD Source Provider",
-                    Description = "Play DVD VOB files via its IFO file"
+                    Guid = new Guid("8B61465F-D892-4C29-A99A-ED34C0426CCE"),
+                    Name = "RAR File Source Provider",
+                    Description = "Play media files from RAR archive"
                 };
             }
         }
 
         public override void Initialize()
         {
-            m_DvdSourceFilter = new DvdSourceFilter();
+            m_RarFileSourceFilter = new RarFileSourceFilter();
 
             Media.Loading += OnMediaLoading;
         }
 
         public override void Destroy()
         {
-            DisposeHelper.Dispose(ref m_DvdSourceFilter);
+            DisposeHelper.Dispose(ref m_RarFileSourceFilter);
 
             Media.Loading -= OnMediaLoading;
         }
 
-        private class DvdSource : ICustomSourceFilter
+        private class RarFileSource : ICustomSourceFilter
         {
             [ComImport, Guid("171252A0-8820-4AFE-9DF8-5C92B2D66B04")]
             private class LavSplitter { }
 
-            public DvdSource(DvdSourceFilter dvdSourceFilter, IGraphBuilder graph, string filename)
+            public RarFileSource(RarFileSourceFilter rarFileSourceFilter, IGraphBuilder graph, string filename)
             {
-                m_Filter = dvdSourceFilter.CreateInstance();
+                m_Filter = rarFileSourceFilter.CreateInstance();
                 m_Splitter = (IBaseFilter) new LavSplitter();
 
                 var sourceFilter = (IFileSourceFilter) m_Filter;
                 DsError.ThrowExceptionForHR(sourceFilter.Load(filename, null));
 
-                DsError.ThrowExceptionForHR(graph.AddFilter(m_Filter, "DVD Source Filter"));
+                DsError.ThrowExceptionForHR(graph.AddFilter(m_Filter, "RAR File Source Filter"));
                 DsError.ThrowExceptionForHR(graph.AddFilter(m_Splitter, "LAV Splitter"));
 
                 var outpins = GetPins(m_Filter, "Output");
@@ -187,14 +187,14 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void OnMediaLoading(object sender, MediaLoadingEventArgs e)
         {
             var filename = e.Filename;
-            if (!IsDvdFile(filename))
+            if (!IsRarFile(filename))
                 return;
 
             e.CustomSourceFilter = graph =>
             {
                 try
                 {
-                    return new DvdSource(m_DvdSourceFilter, graph, filename);
+                    return new RarFileSource(m_RarFileSourceFilter, graph, filename);
                 }
                 catch (Exception ex)
                 {
@@ -204,22 +204,22 @@ namespace Mpdn.Extensions.PlayerExtensions
             };
         }
 
-        private static bool IsDvdFile(string filename)
+        private static bool IsRarFile(string filename)
         {
             if (string.IsNullOrWhiteSpace(filename))
                 return false;
 
-            return PathHelper.GetExtension(filename).ToLowerInvariant() == ".ifo";
+            return PathHelper.GetExtension(filename).ToLowerInvariant() == ".rar";
         }
 
-        public class DvdSourceFilter : DynamicDirectShowFilter
+        public class RarFileSourceFilter : DynamicDirectShowFilter
         {
-            private const string FILTER_CLSID = "D665F3B1-1530-EADB-DA01-22175EE16456";
+            private const string FILTER_CLSID = "8B61465F-D892-4C29-A99A-ED34C0426CCF";
             private static readonly Guid s_ClsId = new Guid(FILTER_CLSID);
 
             protected override string FilterName
             {
-                get { return "DvdSourceFilter"; }
+                get { return "RarFileSourceFilter"; }
             }
 
             protected override Guid FilterClsId

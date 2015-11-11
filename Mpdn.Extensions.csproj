@@ -152,6 +152,8 @@
     <Compile Include="Extensions\CustomLinearScalers\SincHamming.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHann.cs" />
     <Compile Include="Extensions\PlayerExtensions\DvdSourceProvider.cs" />
+    <Compile Include="Extensions\PlayerExtensions\DynamicDirectShowFilter.cs" />
+    <Compile Include="Extensions\PlayerExtensions\RarFileSourceProvider.cs" />
     <Compile Include="Extensions\PlayerExtensions\YouTubeSourceProvider.cs" />
     <Compile Include="Extensions\PlayerExtensions\BitmapHelper.cs" />
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.ConfigDialog.cs">
