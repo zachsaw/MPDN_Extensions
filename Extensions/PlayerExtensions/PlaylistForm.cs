@@ -25,7 +25,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
@@ -845,6 +844,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private string GetNextFileInDirectory(bool next = true)
         {
             string mediaPath = Media.FilePath;
+            if (IsValidUrl(mediaPath))
+                return null;
             string mediaDir = Path.GetDirectoryName(mediaPath);
             var mediaFiles = m_PlayListUi.GetMediaFiles(mediaDir);
             string nextFile = next
