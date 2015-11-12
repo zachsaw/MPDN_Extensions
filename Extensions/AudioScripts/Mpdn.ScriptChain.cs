@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.AudioScript;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.AudioChain;
 using Mpdn.Extensions.Framework.Chain;
 
@@ -38,18 +39,21 @@ namespace Mpdn.Extensions.AudioScripts
             private void RefreshChain()
             {
                 if (ReferenceEquals(m_Chain, Options)) return;
-                if (m_Chain != null)
+                GuiThread.Do(() =>
                 {
+                    if (m_Chain != null)
+                    {
+                        foreach (var s in m_Chain)
+                        {
+                            s.Reset();
+                        }
+                    }
+                    m_Chain = Options;
                     foreach (var s in m_Chain)
                     {
-                        s.Reset();
+                        s.Initialize();
                     }
-                }
-                m_Chain = Options;
-                foreach (var s in m_Chain)
-                {
-                    s.Initialize();
-                }
+                });
             }
         }
 
