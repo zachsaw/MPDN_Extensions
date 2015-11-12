@@ -2417,7 +2417,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (destinationRow == -1 || destinationRow >= Playlist.Count) return;
                 var playItem = Playlist.ElementAt(m_DragRowIndex);
                 Playlist.RemoveAt(m_DragRowIndex);
-                NotifyPlaylistChanged();
+                //NotifyPlaylistChanged();
                 Playlist.Insert(destinationRow, playItem);
                 PopulatePlaylist();
                 dgv_PlayList.CurrentCell = dgv_PlayList.Rows[destinationRow].Cells[m_TitleCellIndex];
