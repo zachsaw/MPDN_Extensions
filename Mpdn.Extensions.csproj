@@ -151,6 +151,7 @@
     <Compile Include="Extensions\CustomLinearScalers\SincCosine.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHamming.cs" />
     <Compile Include="Extensions\CustomLinearScalers\SincHann.cs" />
+    <Compile Include="Extensions\PlayerExtensions\CustomSourceFilter.cs" />
     <Compile Include="Extensions\PlayerExtensions\DvdSourceProvider.cs" />
     <Compile Include="Extensions\PlayerExtensions\DynamicDirectShowFilter.cs" />
     <Compile Include="Extensions\PlayerExtensions\RarFileSourceProvider.cs" />

@@ -16,7 +16,6 @@
 // 
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using DirectShowLib;
@@ -55,11 +54,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             Media.Loading -= OnMediaLoading;
         }
 
-        private class RarFileSource : ICustomSourceFilter
+        private class RarFileSource : CustomSourceFilter
         {
-            [ComImport, Guid("171252A0-8820-4AFE-9DF8-5C92B2D66B04")]
-            private class LavSplitter { }
-
             public RarFileSource(RarFileSourceFilter rarFileSourceFilter, IGraphBuilder graph, string filename)
             {
                 m_Filter = rarFileSourceFilter.CreateInstance();
@@ -84,25 +80,13 @@ namespace Mpdn.Extensions.PlayerExtensions
                 SubtitleStreamSelect = null;
             }
 
-            public void Dispose()
+            protected override void Dispose(bool disposing)
             {
                 if (m_Disposed)
                     return;
 
                 m_Disposed = true;
 
-                if (VideoOutputPin != null)
-                {
-                    Marshal.ReleaseComObject(VideoOutputPin);
-                }
-                if (AudioOutputPin != null)
-                {
-                    Marshal.ReleaseComObject(AudioOutputPin);
-                }
-                foreach (var pin in SubtitleOutputPins)
-                {
-                    Marshal.ReleaseComObject(pin);
-                }
                 if (m_Filter != null)
                 {
                     Marshal.ReleaseComObject(m_Filter);
@@ -112,72 +96,6 @@ namespace Mpdn.Extensions.PlayerExtensions
                     Marshal.ReleaseComObject(m_Splitter);
                 }
             }
-
-            private static IPin[] GetPins(IBaseFilter filter, string vPinName)
-            {
-                var result = new List<IPin>();
-                var ppPins = new IPin[1];
-                IEnumPins ppEnum;
-                DsError.ThrowExceptionForHR(filter.EnumPins(out ppEnum));
-                try
-                {
-                    while (ppEnum.Next(1, ppPins, IntPtr.Zero) == 0)
-                    {
-                        PinInfo pInfo;
-                        DsError.ThrowExceptionForHR(ppPins[0].QueryPinInfo(out pInfo));
-                        if (pInfo.name == vPinName)
-                        {
-                            result.Add(ppPins[0]);
-                        }
-                        else
-                        {
-                            Marshal.ReleaseComObject(ppPins[0]);
-                        }
-                        DsUtils.FreePinInfo(pInfo);
-                    }
-                }
-                finally
-                {
-                    Marshal.ReleaseComObject(ppEnum);
-                }
-                return result.ToArray();
-            }
-
-            private static void ConnectPins(IGraphBuilder graphBuilder, IPin pinOut, IBaseFilter toFilter,
-                string toPinName)
-            {
-                IPin pinIn = null;
-                try
-                {
-                    pinIn = GetPin(toFilter, toPinName);
-                    DsError.ThrowExceptionForHR(graphBuilder.ConnectDirect(pinOut, pinIn, null));
-                }
-                finally
-                {
-                    if (pinIn != null)
-                    {
-                        Marshal.ReleaseComObject(pinIn);
-                    }
-                }
-            }
-
-            private static IPin GetPin(IBaseFilter filter, string pinName)
-            {
-                var pin = DsFindPin.ByName(filter, pinName);
-                if (pin == null)
-                {
-                    throw new Exception("Failed to get DirectShow filter pin " + pinName);
-                }
-                return pin;
-            }
-
-            public IPin VideoOutputPin { get; private set; }
-            public IPin AudioOutputPin { get; private set; }
-            public IPin[] SubtitleOutputPins { get; private set; }
-            public IAMExtendedSeeking ExtendedSeeking { get; private set; }
-            public IAMStreamSelect VideoStreamSelect { get; private set; }
-            public IAMStreamSelect AudioStreamSelect { get; private set; }
-            public IAMStreamSelect SubtitleStreamSelect { get; private set; }
 
             private readonly IBaseFilter m_Filter;
             private readonly IBaseFilter m_Splitter;
