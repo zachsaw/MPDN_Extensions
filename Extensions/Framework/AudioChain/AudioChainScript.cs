@@ -80,7 +80,10 @@ namespace Mpdn.Extensions.Framework.AudioChain
             }
 
             if (!AudioProc.Initialize())
+            {
+                Player.OsdText.Show("Warning: Audio Script failed to initialize (Intel/AMD OpenCL Drivers unavailable)");
                 return;
+            }
 
             Chain.Initialize();
             m_Audio = audio;
