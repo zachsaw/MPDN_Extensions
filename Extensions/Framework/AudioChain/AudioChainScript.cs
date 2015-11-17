@@ -81,7 +81,10 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
             if (!AudioProc.Initialize())
             {
-                Player.OsdText.Show("Warning: Audio Script failed to initialize (Intel/AMD OpenCL Drivers unavailable)");
+                // Note: Using GuiThread.DoAsync ensures the warning gets displayed after the current media filename
+                GuiThread.DoAsync(() =>
+                    Player.OsdText.Show(
+                        "Warning: Audio Script failed to initialize (Intel/AMD OpenCL Drivers unavailable)"));
                 return;
             }
 
