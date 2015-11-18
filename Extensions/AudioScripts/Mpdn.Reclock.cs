@@ -29,7 +29,7 @@ namespace Mpdn.Extensions.AudioScripts
             private const double MAX_PERCENT_ADJUST = 3; // automatically reclock if the difference is less than 3%
             private const double SANEAR_OVERSHOOT = 5;
             private const double DIRECTSOUND_OVERSHOOT = 3;
-            private const double MAX_SWING = 0.00015;
+            private const double MAX_SWING = 0.0001;
             private const int RATIO_ADJUST_INTERVAL = 64*1024;
             
             private static readonly Guid s_SanearSoundClsId = new Guid("DF557071-C9FD-433A-9627-81E0D3640ED9");
