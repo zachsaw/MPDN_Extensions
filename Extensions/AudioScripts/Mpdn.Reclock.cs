@@ -27,9 +27,9 @@ namespace Mpdn.Extensions.AudioScripts
         public class Reclock : AudioChain
         {
             private const double MAX_PERCENT_ADJUST = 3; // automatically reclock if the difference is less than 3%
-            private const double SANEAR_OVERSHOOT = 13;
-            private const double DIRECTSOUND_OVERSHOOT = 8;
-            private const double MAX_SWING = 0.0003;
+            private const double SANEAR_OVERSHOOT = 5;
+            private const double DIRECTSOUND_OVERSHOOT = 3;
+            private const double MAX_SWING = 0.00015;
             private const int RATIO_ADJUST_INTERVAL = 64*1024;
             
             private static readonly Guid s_SanearSoundClsId = new Guid("DF557071-C9FD-433A-9627-81E0D3640ED9");
@@ -39,14 +39,14 @@ namespace Mpdn.Extensions.AudioScripts
             private bool m_Sanear;
             private bool m_DirectSoundWaveOut;
 
-            private int m_SampleIndex = -4*RATIO_ADJUST_INTERVAL;
+            private int m_SampleIndex = -8*RATIO_ADJUST_INTERVAL;
             private double m_Ratio = 1;
 
             public override bool Process(Audio input, Audio output)
             {
                 if (!CalculateRatio(input))
                 {
-                    m_SampleIndex = -4*RATIO_ADJUST_INTERVAL;
+                    m_SampleIndex = -8*RATIO_ADJUST_INTERVAL;
                     m_Ratio = 1;
                     return false;
                 }
@@ -72,17 +72,28 @@ namespace Mpdn.Extensions.AudioScripts
                 if (videoInterval < 1e-8)
                     return false; // audio only - no need to reclock
 
-                var refclk = stats.RefClockDeviation;
-                var hasRefClk = refclk > -10 && refclk < 10;
-                if (!hasRefClk)
-                    return false;
+                if (Math.Abs(stats.ActualSourceVideoIntervalUsec - videoInterval/2) < 1000)
+                {
+                    videoInterval /= 2; // video is coming at twice the rate as reported (e.g. interlaced)
+                }
 
                 const int oneSecond = 1000000;
                 var videoHz = oneSecond/videoInterval;
                 var displayHz = oneSecond/stats.DisplayRefreshIntervalUsec;
                 var ratio = displayHz/videoHz;
                 if (ratio > (100 + MAX_PERCENT_ADJUST)/100 || ratio < (100 - MAX_PERCENT_ADJUST)/100)
-                    return false;
+                {
+                    m_SampleIndex = -8 * RATIO_ADJUST_INTERVAL;
+                    return true;
+                }
+
+                var refclk = stats.RefClockDeviation;
+                var hasRefClk = refclk > -10 && refclk < 10;
+                if (!hasRefClk)
+                {
+                    m_SampleIndex = -8 * RATIO_ADJUST_INTERVAL;
+                    return true;
+                }
 
                 CalculateRatio(input, ratio, refclk, videoHz, displayHz);
                 return true;
