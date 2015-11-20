@@ -17,14 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 using SharpDX;
 using TransformFunc = System.Func<Mpdn.Extensions.Framework.RenderChain.TextureSize, Mpdn.Extensions.Framework.RenderChain.TextureSize>;
-using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
+    using IBaseTextureFilter = IFilter<ITextureOutput<IBaseTexture>>;
+
     public class ShaderFilterSettings<T>
     {
         public T Shader;
@@ -88,14 +90,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
     }
 
-    public abstract class GenericShaderFilter<T> : Filter where T : class
+    public abstract class GenericShaderFilter<T> : TextureFilter where T : class
     {
-        protected GenericShaderFilter(T shader, params IBaseFilter[] inputFilters)
+        protected GenericShaderFilter(T shader, params IBaseTextureFilter[] inputFilters)
             : this((ShaderFilterSettings<T>) shader, inputFilters)
-        {
-        }
+        { }
 
-        protected GenericShaderFilter(ShaderFilterSettings<T> settings, params IBaseFilter[] inputFilters)
+        protected GenericShaderFilter(ShaderFilterSettings<T> settings, params IBaseTextureFilter[] inputFilters)
             : base(inputFilters)
         {
             Shader = settings.Shader;
@@ -124,12 +125,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected int SizeIndex { get; private set; }
         protected float[] Args { get; private set; }
 
-        public override TextureSize OutputSize
+        protected override TextureSize OutputSize
         {
-            get { return Transform(InputFilters[SizeIndex].OutputSize); }
+            get { return Transform(InputFilters[SizeIndex].Output.Size); }
         }
 
-        public override TextureFormat OutputFormat
+        protected override TextureFormat OutputFormat
         {
             get { return Format; }
         }
@@ -137,21 +138,21 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected abstract void LoadInputs(IList<IBaseTexture> inputs);
         protected abstract void Render(T shader);
 
-        protected override void Render(IList<IBaseTexture> inputs)
+        protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
         {
-            LoadInputs(inputs);
+            LoadInputs(inputs.Select(x => x.Texture).ToList());
             Render(Shader);
         }
     }
 
     public class ShaderFilter : GenericShaderFilter<IShader>
     {
-        public ShaderFilter(ShaderFilterSettings<IShader> settings, params IBaseFilter[] inputFilters)
+        public ShaderFilter(ShaderFilterSettings<IShader> settings, params IBaseTextureFilter[] inputFilters)
             : base(settings, inputFilters)
         {
         }
 
-        public ShaderFilter(IShader shader, params IBaseFilter[] inputFilters)
+        public ShaderFilter(IShader shader, params IBaseTextureFilter[] inputFilters)
             : base(shader, inputFilters)
         {
         }
@@ -187,7 +188,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
 
             // Legacy constants 
-            var output = OutputTarget;
+            var output = Output.Texture;
             Shader.SetConstant(0, new Vector4(output.Width, output.Height, Counter++ & 0x7fffff, Renderer.FrameTimeStampMicrosec / 1000000.0f),
                 false);
             Shader.SetConstant(1, new Vector4(1.0f/output.Width, 1.0f/output.Height, 0, 0), false);
@@ -195,7 +196,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override void Render(IShader shader)
         {
-            Renderer.Render(OutputTarget, shader);
+            Renderer.Render(Target.Texture, shader);
         }
     }
 
@@ -203,12 +204,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
     {
         private readonly List<IDisposable> m_Buffers = new List<IDisposable>();
 
-        public Shader11Filter(ShaderFilterSettings<IShader11> settings, params IBaseFilter[] inputFilters)
+        public Shader11Filter(ShaderFilterSettings<IShader11> settings, params IBaseTextureFilter[] inputFilters)
             : base(settings, inputFilters)
         {
         }
 
-        public Shader11Filter(IShader11 shader, params IBaseFilter[] inputFilters)
+        public Shader11Filter(IShader11 shader, params IBaseTextureFilter[] inputFilters)
             : base(shader, inputFilters)
         {
         }
@@ -250,7 +251,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override void Render(IShader11 shader)
         {
-            Renderer.Render(OutputTarget, shader);
+            Renderer.Render(Target.Texture, shader);
 
             DisposeHelper.DisposeElements(m_Buffers);
             m_Buffers.Clear();
@@ -260,7 +261,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public class DirectComputeFilter : Shader11Filter
     {
         public DirectComputeFilter(ShaderFilterSettings<IShader11> settings, int threadGroupX, int threadGroupY,
-            int threadGroupZ, params IBaseFilter[] inputFilters)
+            int threadGroupZ, params IBaseTextureFilter[] inputFilters)
             : base(settings, inputFilters)
         {
             ThreadGroupX = threadGroupX;
@@ -269,7 +270,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
 
         public DirectComputeFilter(IShader11 shader, int threadGroupX, int threadGroupY, int threadGroupZ,
-            params IBaseFilter[] inputFilters)
+            params IBaseTextureFilter[] inputFilters)
             : base(shader, inputFilters)
         {
             ThreadGroupX = threadGroupX;
@@ -279,7 +280,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override void Render(IShader11 shader)
         {
-            Renderer.Compute(OutputTarget, shader, ThreadGroupX, ThreadGroupY, ThreadGroupZ);
+            Renderer.Compute(Target.Texture, shader, ThreadGroupX, ThreadGroupY, ThreadGroupZ);
         }
 
         public int ThreadGroupX { get; private set; }
@@ -289,28 +290,28 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public class ClKernelFilter : GenericShaderFilter<IKernel>
     {
-        public ClKernelFilter(ShaderFilterSettings<IKernel> settings, int[] globalWorkSizes, params IBaseFilter[] inputFilters)
+        public ClKernelFilter(ShaderFilterSettings<IKernel> settings, int[] globalWorkSizes, params IBaseTextureFilter[] inputFilters)
             : base(settings, inputFilters)
         {
             GlobalWorkSizes = globalWorkSizes;
             LocalWorkSizes = null;
         }
 
-        public ClKernelFilter(IKernel shader, int[] globalWorkSizes, params IBaseFilter[] inputFilters)
+        public ClKernelFilter(IKernel shader, int[] globalWorkSizes, params IBaseTextureFilter[] inputFilters)
             : base(shader, inputFilters)
         {
             GlobalWorkSizes = globalWorkSizes;
             LocalWorkSizes = null;
         }
 
-        public ClKernelFilter(ShaderFilterSettings<IKernel> settings, int[] globalWorkSizes, int[] localWorkSizes, params IBaseFilter[] inputFilters)
+        public ClKernelFilter(ShaderFilterSettings<IKernel> settings, int[] globalWorkSizes, int[] localWorkSizes, params IBaseTextureFilter[] inputFilters)
             : base(settings, inputFilters)
         {
             GlobalWorkSizes = globalWorkSizes;
             LocalWorkSizes = localWorkSizes;
         }
 
-        public ClKernelFilter(IKernel shader, int[] globalWorkSizes, int[] localWorkSizes, params IBaseFilter[] inputFilters)
+        public ClKernelFilter(IKernel shader, int[] globalWorkSizes, int[] localWorkSizes, params IBaseTextureFilter[] inputFilters)
             : base(shader, inputFilters)
         {
             GlobalWorkSizes = globalWorkSizes;
@@ -324,7 +325,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override void LoadInputs(IList<IBaseTexture> inputs)
         {
-            Shader.SetOutputTextureArg(0, OutputTarget); // Note: MPDN only supports one output texture per kernel
+            Shader.SetOutputTextureArg(0, Output.Texture); // Note: MPDN only supports one output texture per kernel
 
             var i = 1;
             foreach (var input in inputs)

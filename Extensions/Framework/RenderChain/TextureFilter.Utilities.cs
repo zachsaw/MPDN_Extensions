@@ -16,42 +16,45 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 using SharpDX;
-using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public abstract class BasicFilter : Filter
+    public abstract class BasicFilter : TextureFilter
     {
-        protected BasicFilter(IFilter inputFilter)
+        protected BasicFilter(ITextureFilter inputFilter)
             : base(inputFilter)
-        {
-        }
+        { }
 
         protected abstract void Render(ITexture2D input);
 
-        protected override void Render(IList<IBaseTexture> inputs)
+        protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
         {
-            var texture = inputs.OfType<ITexture2D>().SingleOrDefault();
+            var texture = inputs
+                .Select(x => x.Texture)
+                .OfType<ITexture2D>()
+                .SingleOrDefault();
+
             if (texture == null)
                 return;
 
             Render(texture);
         }
 
-        public override TextureSize OutputSize
+        protected override TextureSize OutputSize
         {
-            get { return InputFilters[0].OutputSize; }
+            get { return InputFilters[0].Output.Size; }
         }
 
-        public override TextureFormat OutputFormat
+        protected override TextureFormat OutputFormat
         {
-            get { return InputFilters[0].OutputFormat; }
+            get { return InputFilters[0].Output.Format; }
         }
-
     }
 
     public sealed class RgbFilter : BasicFilter
@@ -60,12 +63,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public readonly bool OutputLimitedRange;
         public readonly bool OutputLimitChroma;
 
-        public RgbFilter(IFilter inputFilter, bool limitedRange)
+        public RgbFilter(ITextureFilter inputFilter, bool limitedRange)
             : this(inputFilter, null, limitedRange)
         {
         }
 
-        public RgbFilter(IFilter inputFilter, YuvColorimetric? colorimetric = null, bool? limitedRange = null, bool? limitChroma = null)
+        public RgbFilter(ITextureFilter inputFilter, YuvColorimetric? colorimetric = null, bool? limitedRange = null, bool? limitChroma = null)
             : base(inputFilter)
         {
             Colorimetric = colorimetric ?? Renderer.Colorimetric;
@@ -73,18 +76,18 @@ namespace Mpdn.Extensions.Framework.RenderChain
             OutputLimitChroma = limitChroma ?? Renderer.LimitChroma;
         }
 
-        protected override IFilter<ITexture2D> Optimize()
+        protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
             var input = InputFilters[0] as YuvFilter;
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
-                return (IFilter<ITexture2D>) input.InputFilters[0];
+                return (ITextureFilter) input.InputFilters[0];
 
             return this;
         }
 
         protected override void Render(ITexture2D input)
         {
-            Renderer.ConvertToRgb(OutputTarget, input, Colorimetric, OutputLimitedRange, OutputLimitChroma);
+            Renderer.ConvertToRgb(Target.Texture, input, Colorimetric, OutputLimitedRange, OutputLimitChroma);
         }
     }
 
@@ -93,25 +96,25 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public readonly YuvColorimetric Colorimetric;
         public readonly bool OutputLimitedRange;
 
-        public YuvFilter(IFilter inputFilter, bool limitedRange)
+        public YuvFilter(ITextureFilter inputFilter, bool limitedRange)
             : this(inputFilter, null, limitedRange)
         {
         }
 
-        public YuvFilter(IFilter inputFilter, YuvColorimetric? colorimetric = null, bool? limitedRange = null)
+        public YuvFilter(ITextureFilter inputFilter, YuvColorimetric? colorimetric = null, bool? limitedRange = null)
             : base(inputFilter)
         {
             Colorimetric = colorimetric ?? Renderer.Colorimetric;
             OutputLimitedRange = limitedRange ?? Renderer.OutputLimitedRange;
         }
 
-        protected override IFilter<ITexture2D> Optimize()
+        protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
             var input = InputFilters[0] as RgbFilter;
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
-                return (IFilter<ITexture2D>) input.InputFilters[0];
+                return (ITextureFilter) input.InputFilters[0];
 
-            var sourceFilter = InputFilters[0] as SourceFilter;
+            var sourceFilter = InputFilters[0] as VideoSourceFilter;
             if (sourceFilter != null)
                 return sourceFilter.GetYuv();
 
@@ -120,7 +123,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override void Render(ITexture2D input)
         {
-            Renderer.ConvertToYuv(OutputTarget, input, Colorimetric, OutputLimitedRange);
+            Renderer.ConvertToYuv(Target.Texture, input, Colorimetric, OutputLimitedRange);
         }
     }
 
@@ -141,7 +144,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
     }
 
-    public class ResizeFilter : Filter, IResizeableFilter
+    public class ResizeFilter : TextureFilter, IResizeableFilter
     {
         private TextureSize m_OutputSize;
         private readonly TextureChannels m_Channels;
@@ -152,27 +155,27 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private IScaler m_Convolver;
         private bool m_Tagged;
 
-        public ResizeFilter(IFilter<ITexture2D> inputFilter, 
+        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, 
             IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null)
-            : this(inputFilter, inputFilter.OutputSize, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver)
+            : this(inputFilter, inputFilter.Output.Size, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver)
         { }
 
-        public ResizeFilter(IFilter<ITexture2D> inputFilter, TextureSize outputSize,
+        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize,
             IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null)
             : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver)
         { }
 
-        public ResizeFilter(IFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, 
+        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, 
             IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null)
             : this(inputFilter, outputSize, channels, Vector2.Zero, upscaler, downscaler, convolver)
         { }
 
-        public ResizeFilter(IFilter<ITexture2D> inputFilter, TextureSize outputSize, Vector2 offset, 
+        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, Vector2 offset, 
             IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null)
             : this(inputFilter, outputSize, TextureChannels.All, offset, upscaler, downscaler, convolver)
         { }
 
-        public ResizeFilter(IFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, 
+        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, 
             IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null)
             : base(inputFilter)
         {
@@ -185,9 +188,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Convolver = convolver;
         }
 
-        private IFilter<ITexture2D> InputFilter
+        private ITextureFilter<ITexture2D> InputFilter
         {
-            get { return (IFilter<ITexture2D>)InputFilters[0]; }
+            get { return (ITextureFilter<ITexture2D>)InputFilters[0]; }
         }
 
         public void EnableTag() 
@@ -206,9 +209,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_OutputSize = targetSize;
         }
 
-        protected override IFilter<ITexture2D> Optimize()
+        protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
-            if (InputFilter.OutputSize == m_OutputSize && m_Convolver == null)
+            if (InputFilter.Output.Size == m_OutputSize && m_Convolver == null)
                 return InputFilter;
 
             if (m_Tagged)
@@ -219,38 +222,41 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public string Status()
         {
-            var inputSize = InputFilters[0].OutputSize;
+            var inputSize = InputFilters[0].Output.Size;
             return StatusHelpers.ScaleDescription(inputSize, OutputSize, m_Upscaler, m_Downscaler, m_Convolver);            
         }
 
-        public override TextureSize OutputSize
+        protected override TextureSize OutputSize
         {
             get { return m_OutputSize; }
         }
 
-        public override TextureFormat OutputFormat
+        protected override TextureFormat OutputFormat
         {
-            get { return InputFilter.OutputFormat; }
+            get { return InputFilter.Output.Format; }
         }
 
-        protected override void Render(IList<IBaseTexture> inputs)
+        protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
         {
-            var texture = inputs.OfType<ITexture2D>().SingleOrDefault();
+            var texture = inputs
+                .Select(x => x.Texture)
+                .OfType<ITexture2D>()
+                .SingleOrDefault();
             if (texture == null)
                 return;
 
-            Renderer.Scale(OutputTarget, texture, m_Channels, m_Offset, m_Upscaler, m_Downscaler, m_Convolver);
+            Renderer.Scale(Target.Texture, texture, m_Channels, m_Offset, m_Upscaler, m_Downscaler, m_Convolver);
         }
     }
 
     public sealed class MergeFilter : ShaderFilter
     {
-        public MergeFilter(IFilter inputY, IFilter inputUv)
+        public MergeFilter(ITextureFilter inputY, ITextureFilter inputUv)
             : base(GetShader(true), inputY, inputUv)
         {
         }
 
-        public MergeFilter(IFilter inputY, IFilter inputU, IFilter inputV)
+        public MergeFilter(ITextureFilter inputY, ITextureFilter inputU, ITextureFilter inputV)
             : base(GetShader(false), inputY, inputU, inputV)
         {
         }
@@ -268,32 +274,32 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public static class ConversionHelper
     {
-        public static IFilter ConvertToRgb(this IFilter filter)
+        public static ITextureFilter ConvertToRgb(this ITextureFilter filter)
         {
             return new RgbFilter(filter);
         }
 
-        public static IFilter ConvertToYuv(this IFilter filter)
+        public static ITextureFilter ConvertToYuv(this ITextureFilter filter)
         {
             return new YuvFilter(filter);
         }
 
-        public static IResizeableFilter Transform(this IResizeableFilter filter, Func<IFilter, IFilter> transformation)
+        public static IResizeableFilter Transform(this IResizeableFilter filter, Func<ITextureFilter, ITextureFilter> transformation)
         {
             return new TransformedResizeableFilter(transformation, filter);
         }
 
-        public static IFilter Apply(this IFilter filter, Func<IFilter, IFilter> map)
+        public static ITextureFilter Apply(this ITextureFilter filter, Func<ITextureFilter, ITextureFilter> map)
         {
             return map(filter);
         }
 
-        public static IFilter AddTaggedResizer(this IFilter<ITexture2D> filter)
+        public static ITextureFilter AddTaggedResizer(this ITextureFilter<ITexture2D> filter)
         {
-            return filter.SetSize(filter.OutputSize, true);
+            return filter.SetSize(filter.Output.Size, true);
         }
 
-        public static IFilter SetSize(this IFilter<ITexture2D> filter, TextureSize size, bool tagged = false)
+        public static ITextureFilter SetSize(this ITextureFilter<ITexture2D> filter, TextureSize size, bool tagged = false)
         {
             var resizeable = (filter as IResizeableFilter) ?? new ResizeFilter(filter);
             if (tagged)
@@ -304,22 +310,22 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region Auxilary class(es)
 
-        private sealed class TransformedResizeableFilter : Filter, IResizeableFilter
+        private sealed class TransformedResizeableFilter : TextureFilter, IResizeableFilter
         {
             private readonly IResizeableFilter m_InputFilter;
-            private readonly Func<IFilter, IFilter> m_Transformation;
+            private readonly Func<ITextureFilter, ITextureFilter> m_Transformation;
 
-            public TransformedResizeableFilter(Func<IFilter, IFilter> transformation, IResizeableFilter inputFilter)
+            public TransformedResizeableFilter(Func<ITextureFilter, ITextureFilter> transformation, IResizeableFilter inputFilter)
             {
                 m_InputFilter = inputFilter;
                 m_Transformation = transformation;
             }
 
-            protected override IFilter<ITexture2D> Optimize()
+            protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
             {
                 var result = m_Transformation(m_InputFilter);
 
-                if (m_InputFilter.OutputSize != result.OutputSize)
+                if (m_InputFilter.Output.Size != result.Output.Size)
                     throw new InvalidOperationException("Transformation is not allowed to change the size.");
                
                 return m_Transformation(m_InputFilter);
@@ -335,17 +341,17 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 m_InputFilter.SetSize(outputSize);
             }
 
-            public override TextureSize OutputSize
+            protected override TextureSize OutputSize
             {
-                get { return m_InputFilter.OutputSize; }
+                get { return m_InputFilter.Output.Size; }
             }
 
-            public override TextureFormat OutputFormat
+            protected override TextureFormat OutputFormat
             {
-                get { return m_InputFilter.OutputFormat; }
+                get { return m_InputFilter.Output.Format; }
             }
 
-            protected override void Render(IList<IBaseTexture> inputs)
+            protected override void Render(IList<ITextureOutput<IBaseTexture>> textureOutputs)
             {
                 throw new NotImplementedException();
             }
