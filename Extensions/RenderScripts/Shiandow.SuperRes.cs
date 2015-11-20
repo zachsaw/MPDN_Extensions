@@ -20,11 +20,9 @@ using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
 using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
-using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
-using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3;
+using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
 
@@ -44,6 +42,18 @@ namespace Mpdn.Extensions.RenderScripts
 
             public bool HQdownscaling { get; set; }
 
+            public override void Initialize()
+            {
+                base.Initialize();
+                PrescalerGroup.Initialize();
+            }
+
+            public override void Reset()
+            {
+                base.Reset();
+                PrescalerGroup.Reset();
+            }
+
             #endregion
 
             public Func<TextureSize> TargetSize; // Not saved
@@ -60,20 +70,30 @@ namespace Mpdn.Extensions.RenderScripts
 
                 HQdownscaling = true;
 
+                var fastSuperXbrUi = new SuperXbrUi
+                {
+                    Settings = new SuperXbr
+                    {
+                        FastMethod = true,
+                        ThirdPass = false
+                    }
+                }.ToPreset("Super-xBR (Fast)");
+
                 PrescalerGroup = new ScriptGroup
                 {
-                    Options = new List<IRenderChainUi>
-                    {
-                        new SuperXbrUi(),
-                        new NediScaler(),
-                        new NNedi3Scaler(),
-                        new OclNNedi3Scaler()
-                    }
-                        .Select(x => x.ToPreset())
-                        .ToList()
+                    Options = (new[] {fastSuperXbrUi})
+                        .Concat(
+                            new List<IRenderChainUi>
+                            {
+                                new SuperXbrUi(),
+                                new Nedi.NediScaler(),
+                                new NNedi3.NNedi3Scaler(),
+                                new OclNNedi3Scaler()
+                            }
+                                .Select(x => x.ToPreset()))
+                        .ToList(),
+                    SelectedIndex = 0
                 };
-
-                PrescalerGroup.SelectedIndex = 0;
 
                 m_Upscaler = new Jinc(ScalerTaps.Four, false); // Deprecated
                 m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.75f, false) : new Bilinear();

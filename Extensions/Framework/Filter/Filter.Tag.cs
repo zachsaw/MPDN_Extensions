@@ -16,10 +16,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.Extensions.Framework.RenderChain
+namespace Mpdn.Extensions.Framework.Filter
 {
+    using IBaseFilter = IFilter<IFilterOutput>;
+
     public abstract class FilterTag
     {
         public static readonly FilterTag Bottom = new BottomTag();
