@@ -411,7 +411,7 @@ namespace Mpdn.Extensions.Framework
             PlayerControl.ShowOptionsDialog();
         }
 
-        public static IList<Filter> Filters
+        public static IList<DirectShow.Filter> Filters
         {
             get { return PlayerControl.Filters; }
         }

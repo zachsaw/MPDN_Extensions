@@ -152,7 +152,7 @@ namespace Mpdn.Extensions.Framework.Scripting
         }
     }
 
-    public class RenderScriptEngine : ScriptEngine<RenderChain.RenderChain, IFilter, Clip>
+    public class RenderScriptEngine : ScriptEngine<RenderChain.RenderChain, ITextureFilter, Clip>
     {
         private static RenderScriptEngine s_ScriptEngine;
 
@@ -167,12 +167,12 @@ namespace Mpdn.Extensions.Framework.Scripting
             }
         }
 
-        public static FilterClip Exec(IFilter input, string code, string filename = "")
+        public static FilterClip Exec(ITextureFilter input, string code, string filename = "")
         {
             return (FilterClip) Instance.Execute(input, code, filename);
         }
 
-        public static bool Eval(IFilter input, string code, string filename = "")
+        public static bool Eval(ITextureFilter input, string code, string filename = "")
         {
             return Instance.Evaluate(input, code, filename);
         }
@@ -180,7 +180,7 @@ namespace Mpdn.Extensions.Framework.Scripting
         public static HashSet<string> FilterTypes { get { return Instance.FilterTypeNames; } }
         public static HashSet<string> EnumTypes { get { return Instance.EnumTypeNames; } }
 
-        protected override Clip Reset(IFilter input)
+        protected override Clip Reset(ITextureFilter input)
         {
             var mock = input == null;
             var clip = mock ? (Clip) new MockFilterClip() : new FilterClip(input);

@@ -167,7 +167,7 @@ namespace Mpdn.Extensions.Framework.Filter
             return this;
         }
 
-        public void Render()
+        public virtual void Render()
         {
             if (m_Updated)
                 return;
@@ -197,7 +197,7 @@ namespace Mpdn.Extensions.Framework.Filter
             }
         }
 
-        public void Reset()
+        public virtual void Reset()
         {
             m_Updated = false;
 

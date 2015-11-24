@@ -16,10 +16,7 @@
 
 using System;
 using System.Collections.Generic;
-using Mpdn;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Filter;
-using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using Size = System.Drawing.Size;
 

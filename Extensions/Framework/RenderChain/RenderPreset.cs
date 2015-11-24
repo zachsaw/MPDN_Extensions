@@ -5,9 +5,9 @@ using SharpDX;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public class ChromaScalerPreset : Preset<IFilter, IRenderScript>, IChromaScaler
+    public class ChromaScalerPreset : Preset<ITextureFilter, IRenderScript>, IChromaScaler
     {
-        public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+        public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
         {
             var chroma = new ChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
 
@@ -17,12 +17,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public static class ChromaScalerPresetHelper
     {
-        public static ChromaScalerPreset MakeNewChromaScalerPreset(this IChainUi<IFilter, IRenderScript> renderScript, string name = null)
+        public static ChromaScalerPreset MakeNewChromaScalerPreset(this IChainUi<ITextureFilter, IRenderScript> renderScript, string name = null)
         {
             return renderScript.CreateNew().ToChromaScalerPreset();
         }
 
-        public static ChromaScalerPreset ToChromaScalerPreset(this IChainUi<IFilter, IRenderScript> renderScript, string name = null)
+        public static ChromaScalerPreset ToChromaScalerPreset(this IChainUi<ITextureFilter, IRenderScript> renderScript, string name = null)
         {
             return new ChromaScalerPreset { Name = name ?? renderScript.Descriptor.Name, Script = renderScript };
         }

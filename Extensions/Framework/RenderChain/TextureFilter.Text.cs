@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
@@ -57,7 +56,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         private void DrawText(string text)
         {
-            var size = OutputSize;
+            var size = Output.Size;
             var width = size.Width;
             var height = size.Height;
             using (var bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb))
@@ -99,7 +98,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                         tex[j, (i + 0)] = *ptr++ / 255.0f; // r
                     }
                 }
-                Renderer.UpdateTexture(Texture, tex);
+                Renderer.UpdateTexture(Output.Texture, tex);
             }
             finally
             {

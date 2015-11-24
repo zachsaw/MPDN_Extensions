@@ -15,6 +15,7 @@
 // License along with this library.
 
 using System.Collections.Generic;
+using Mpdn.Extensions.Framework.RenderChain;
 
 namespace Mpdn.Extensions.Framework.Filter
 {

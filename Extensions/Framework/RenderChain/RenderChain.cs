@@ -17,23 +17,24 @@
 
 using System.IO;
 using Mpdn.Extensions.Framework.Chain;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public abstract class RenderChain : Chain<IFilter>
+    public abstract class RenderChain : Chain<ITextureFilter>
     {
         protected RenderChain()
         {
             ShaderCache.Load();
         }
 
-        protected abstract IFilter CreateFilter(IFilter input);
+        protected abstract ITextureFilter CreateFilter(ITextureFilter input);
 
-        public sealed override IFilter Process(IFilter input)
+        public sealed override ITextureFilter Process(ITextureFilter input)
         {
-            IFilter output = CreateFilter(input);
+            ITextureFilter output = CreateFilter(input);
 
             if (output == input)
                 return input;
@@ -119,19 +120,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return targetSize.Width > size.Width || targetSize.Height > size.Height;
         }
 
-        public bool IsDownscalingFrom(IFilter chain)
+        public bool IsDownscalingFrom(ITextureFilter chain)
         {
-            return IsDownscalingFrom(chain.OutputSize);
+            return IsDownscalingFrom(chain.Output.Size);
         }
 
-        public bool IsNotScalingFrom(IFilter chain)
+        public bool IsNotScalingFrom(ITextureFilter chain)
         {
-            return IsNotScalingFrom(chain.OutputSize);
+            return IsNotScalingFrom(chain.Output.Size);
         }
 
-        public bool IsUpscalingFrom(IFilter chain)
+        public bool IsUpscalingFrom(ITextureFilter chain)
         {
-            return IsUpscalingFrom(chain.OutputSize);
+            return IsUpscalingFrom(chain.Output.Size);
         }
 
         #endregion

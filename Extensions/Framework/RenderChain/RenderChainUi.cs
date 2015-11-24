@@ -21,7 +21,7 @@ using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public interface IRenderChainUi : IRenderScriptUi, IChainUi<IFilter, IRenderScript> { }
+    public interface IRenderChainUi : IRenderScriptUi, IChainUi<ITextureFilter, IRenderScript> { }
 
     public static class RenderChainUi
     {
@@ -32,7 +32,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return chainUi is IdentityRenderChainUi;
         }
 
-        private class IdentityRenderChain : StaticChain<IFilter>
+        private class IdentityRenderChain : StaticChain<ITextureFilter>
         {
             public IdentityRenderChain() : base(x => x) { }
         }
@@ -60,13 +60,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
     }
 
     public abstract class RenderChainUi<TChain> : RenderChainUi<TChain, ScriptConfigDialog<TChain>>
-        where TChain : Chain<IFilter>, new()
+        where TChain : Chain<ITextureFilter>, new()
     { }
 
     public abstract class RenderChainUi<TChain, TDialog> : 
-            ChainUi<IFilter, IRenderScript, TChain, TDialog>,
+            ChainUi<ITextureFilter, IRenderScript, TChain, TDialog>,
             IRenderChainUi
-        where TChain : Chain<IFilter>, new()
+        where TChain : Chain<ITextureFilter>, new()
         where TDialog : IScriptConfigDialog<TChain>, new()
     {
         public override IRenderScript CreateScript()
