@@ -17,19 +17,20 @@
 using System;
 using System.Diagnostics;
 using Mpdn.Extensions.Framework.Chain;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class RenderChainScript : IRenderScript, IDisposable
     {
-        private SourceFilter m_SourceFilter;
-        private IFilter<ITexture2D> m_Filter;
+        private VideoSourceFilter m_SourceFilter;
+        private IFilter<ITextureOutput<ITexture2D>> m_Filter;
         private FilterTag m_Tag;
 
-        protected readonly Chain<IFilter> Chain;
+        protected readonly Chain<ITextureFilter> Chain;
 
-        public RenderChainScript(Chain<IFilter> chain)
+        public RenderChainScript(Chain<ITextureFilter> chain)
         {
             Chain = chain;
             Chain.Initialize();
@@ -74,8 +75,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
                 m_Filter.Render();
 
-                if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
-                    Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
+                if (Renderer.OutputRenderTarget != m_Filter.Output.Texture)
+                    Scale(Renderer.OutputRenderTarget, m_Filter.Output.Texture);
 
                 m_Filter.Reset();
                 TexturePool.FlushTextures();
@@ -92,7 +93,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         private IResizeableFilter MakeInitialFilter()
         {
-            m_SourceFilter = new SourceFilter();
+            m_SourceFilter = new VideoSourceFilter();
 
             if (Renderer.InputFormat.IsRgb())
                 return m_SourceFilter;
@@ -110,7 +111,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region Error Handling
 
-        public IFilter<ITexture2D> CreateOutputFilter()
+        public IFilter<ITextureOutput<ITexture2D>> CreateOutputFilter()
         {
             try
             {
