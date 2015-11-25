@@ -28,9 +28,6 @@ float4 size1 : register(c4);
 #define acuity args0[0]
 #define power  args0[1]
 
-#define sqr(x) dot(x,x)
-#define norm(x) (rsqrt(rsqrt(sqr(sqr(x)))))
-
 /* Noise between -0.5 and 0.5 */
 float noise(float2 c0){
 	for (int i = 0; i<2; i++) {
@@ -77,20 +74,23 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 	float3 SSres = sqr(mul(float4(0.5,-0.5,-0.5,0.5),X).xyz); // Residual sum of squares
 	float3 SStot = (sqr(X[0].xyz) + sqr(X[1].xyz) + sqr(X[2].xyz) + sqr(X[3].xyz)) - sqr(mul(float4(0.5,0.5,0.5,0.5),X).xyz); // Total sum of squares
 	float3 R = 1 - (SSres/SStot); // Coefficient of determination
+
+	// Calculate variance of current value
 	float3 p = saturate(abs(c0 - avg)*acuity);
+	float3 varX = p*(1-p);
+
+	// Include current value (minus noise) as sample
 	float n = 5; // samples
 	float k = 3; // degrees of freedom
-	SSres = (SSres + max(0, sqr((c0 - avg)*acuity) - p*(1-p)))/(n-k); // Include current value as sample.
+	SSres = (SSres + max(0, sqr((c0 - avg)*acuity) - varX))/(n-k);
+
+	// Calculate variance of debanded value
+	float3 varY = SSres;
 
 	// Merge with high res values
-	float3 varX = p*(1-p)*power;
-	float3 varY = SSres*(1 - power);
 	float3 str = varX/(varX + varY);
 	c0.rgb += str*(avg - c0);
 
-	// Debugging
-	//if (all(p0.xy == size0.xy)) return float4(dot(p*(1-p),1/3.0),0.5,0.5,1);
-	
 	// Dithering
 #ifndef SkipDithering
 	[branch] if (all(p0.xy == size0.xy))  {

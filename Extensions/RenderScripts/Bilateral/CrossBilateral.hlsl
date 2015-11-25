@@ -77,6 +77,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
         float dXY2 = sqr((float2(X,Y) - offset)/radius);
 
         float weight = exp(-0.5*dXY2) * pow(1 + dI2/power, - power);
+        //float weight = pow(rsqrt(dXY2 + dI2),3);
         
         meanUV += weight*GetUV(X,Y);
         weightSum += weight;
