@@ -36,7 +36,7 @@ namespace Mpdn.Extensions.RenderScripts
                 grain = true;
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 if (Renderer.InputFormat.IsRgb())
                     return input;
@@ -56,8 +56,8 @@ namespace Mpdn.Extensions.RenderScripts
                 var SubtractLimited = CompileShader("SubtractLimited.hlsl")
                     .Configure(perTextureLinearSampling: new[] { false, true }, arguments: Consts);*/
 
-                IFilter yuv = input.ConvertToYuv();
-                var inputsize = yuv.OutputSize;
+                ITextureFilter yuv = input.ConvertToYuv();
+                var inputsize = yuv.Output.Size;
 
                 var deband = yuv;
                 double factor = 2.0;// 0.5 * Math.Sqrt(5) + 0.5;

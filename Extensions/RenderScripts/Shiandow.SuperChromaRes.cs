@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return Math.Abs(x - Math.Truncate(x)) < 0.005;
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 var chromaFilter = input as ChromaFilter;
                 if (chromaFilter == null)
@@ -74,7 +74,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return input + chromaScaler;
             }
 
-            public virtual IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public virtual ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 var input = new ChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
                 return Process(input);
@@ -95,15 +95,15 @@ namespace Mpdn.Extensions.RenderScripts
                     Softness = parent.Softness;
                 }
 
-                protected override IFilter CreateFilter(IFilter input)
+                protected override ITextureFilter CreateFilter(ITextureFilter input)
                 {
                     return this.MakeChromaFilter(input);
                 }
 
-                public override IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+                public override ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
                 {
-                    var chromaSize = chromaInput.OutputSize;
-                    var lumaSize = lumaInput.OutputSize;
+                    var chromaSize = chromaInput.Output.Size;
+                    var lumaSize = lumaInput.Output.Size;
 
                     float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
                     int bitdepth = Renderer.InputFormat.GetBitDepth();
@@ -137,7 +137,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                     for (int i = 1; i <= Passes; i++)
                     {
-                        IFilter diff, linear;
+                        ITextureFilter diff, linear;
 
                         // Compare to chroma
                         linear = new ShaderFilter(GammaToLinear, hiRes.ConvertToRgb());

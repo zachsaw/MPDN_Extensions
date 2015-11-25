@@ -20,7 +20,7 @@ using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
-    public class RenderScriptChainList : ChainList<IFilter, IRenderScript>
+    public class RenderScriptChainList : ChainList<ITextureFilter, IRenderScript>
     {
     }
 }

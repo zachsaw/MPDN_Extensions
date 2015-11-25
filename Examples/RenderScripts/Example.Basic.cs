@@ -30,7 +30,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Examples"; }
             }
 
-            protected override IFilter CreateFilter(IFilter sourceFilter)
+            protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
             {
                 // get MPDN to scale image to target size first
                 sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };

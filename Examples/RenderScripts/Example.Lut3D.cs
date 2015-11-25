@@ -32,7 +32,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Examples"; }
             }
 
-            protected override IFilter CreateFilter(IFilter sourceFilter)
+            protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
             {
                 Create3DTexture();
 

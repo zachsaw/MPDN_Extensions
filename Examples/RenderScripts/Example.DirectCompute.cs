@@ -32,7 +32,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Examples"; }
             }
 
-            protected override IFilter CreateFilter(IFilter sourceFilter)
+            protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
             {
                 if (!Renderer.IsDx11Avail || Renderer.RenderQuality.PerformanceMode())
                     return new NullFilter(); // display blank screen on purpose
@@ -44,8 +44,8 @@ namespace Mpdn.Extensions.RenderScripts
                 var blueTint =
                     CompileShader11("BlueTintDirectCompute.hlsl", "cs_5_0")
                         .Configure(arguments: new[] {0.25f, 0.5f, 0.75f});
-                var width = sourceFilter.OutputSize.Width;
-                var height = sourceFilter.OutputSize.Height;
+                var width = sourceFilter.Output.Size.Width;
+                var height = sourceFilter.Output.Size.Height;
                 return new DirectComputeFilter(blueTint, width/32 + 1, height/32 + 1, 1, sourceFilter);
             }
         }

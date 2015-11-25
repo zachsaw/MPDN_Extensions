@@ -156,7 +156,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static string GetInternalScalerDesc()
         {
-            var sourceFilter = new SourceFilter();
+            var sourceFilter = new VideoSourceFilter();
             sourceFilter.SetSize(Renderer.TargetSize);
             sourceFilter.Initialize();
             return sourceFilter.Status();

@@ -99,7 +99,7 @@ namespace Mpdn.Extensions.RenderScripts
                 m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.75f, false) : new Bilinear();
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 var option = PrescalerGroup.SelectedOption;
                 return option == null ? input : CreateFilter(input, input + option);
@@ -110,12 +110,12 @@ namespace Mpdn.Extensions.RenderScripts
                 return Math.Abs(x - Math.Truncate(x)) < 0.005;
             }
 
-            public IFilter CreateFilter(IFilter original, IFilter initial)
+            public ITextureFilter CreateFilter(ITextureFilter original, ITextureFilter initial)
             {
-                IFilter result;
+                ITextureFilter result;
 
                 // Calculate Sizes
-                var inputSize = original.OutputSize;
+                var inputSize = original.Output.Size;
                 var targetSize = TargetSize();
 
                 string macroDefinitions = "";

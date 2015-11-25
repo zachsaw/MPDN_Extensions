@@ -74,12 +74,12 @@ namespace Mpdn.Extensions.RenderScripts
                     string.Format("-cl-fast-relaxed-math -D {0}", u ? "CHROMA_U=1" : "CHROMA_V=1"));
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 return this.MakeChromaFilter(input);
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 DisposeHelper.Dispose(ref m_Buffer1);
                 DisposeHelper.Dispose(ref m_Buffer2);
@@ -90,8 +90,8 @@ namespace Mpdn.Extensions.RenderScripts
                     return null; // OpenCL is not available; fallback
                 }
 
-                var lumaSize = lumaInput.OutputSize;
-                var chromaSize = chromaInput.OutputSize;
+                var lumaSize = lumaInput.Output.Size;
+                var chromaSize = chromaInput.Output.Size;
 
                 if (lumaSize.Width != 2*chromaSize.Width || lumaSize.Height != 2*chromaSize.Height)
                     return null; // Chroma shouldn't be doubled; fallback
@@ -119,17 +119,17 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var localWorkSizes = new[] { 8, 8 };
                 var nnedi3Uh = new NNedi3HKernelFilter(shaderUh, m_Buffer1, neuronCount1,
-                    new TextureSize(chromaInput.OutputSize.Width, chromaInput.OutputSize.Height),
+                    new TextureSize(chromaInput.Output.Size.Width, chromaInput.Output.Size.Height),
                     localWorkSizes, chromaInput);
                 var nnedi3Uv = new NNedi3VKernelFilter(shaderUv, m_Buffer2, neuronCount2, differentWeights,
-                    new TextureSize(nnedi3Uh.OutputSize.Width, nnedi3Uh.OutputSize.Height),
+                    new TextureSize(nnedi3Uh.Output.Size.Width, nnedi3Uh.Output.Size.Height),
                     localWorkSizes, nnedi3Uh);
 
                 var nnedi3Vh = new NNedi3HKernelFilter(shaderVh, m_Buffer1, neuronCount1,
-                    new TextureSize(chromaInput.OutputSize.Width, chromaInput.OutputSize.Height),
+                    new TextureSize(chromaInput.Output.Size.Width, chromaInput.Output.Size.Height),
                     localWorkSizes, chromaInput);
                 var nnedi3Vv = new NNedi3VKernelFilter(shaderVv, m_Buffer2, neuronCount2, differentWeights,
-                    new TextureSize(nnedi3Vh.OutputSize.Width, nnedi3Vh.OutputSize.Height),
+                    new TextureSize(nnedi3Vh.Output.Size.Width, nnedi3Vh.Output.Size.Height),
                     localWorkSizes, nnedi3Vh);
 
                 return new MergeFilter(lumaInput, nnedi3Uv, nnedi3Vv).ConvertToRgb();

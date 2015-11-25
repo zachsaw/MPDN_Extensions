@@ -32,11 +32,11 @@ namespace Mpdn.Extensions.RenderScripts
             #region Settings
 
             public string Condition { get; set; }
-            public Preset<IFilter, IRenderScript> Preset { get; set; }
+            public Preset<ITextureFilter, IRenderScript> Preset { get; set; }
 
             #endregion
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 if (string.IsNullOrWhiteSpace(Condition) || Preset == null)
                     return input;

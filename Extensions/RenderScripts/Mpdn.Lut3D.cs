@@ -79,7 +79,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Lut3D"; }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 if (!Activate || !File.Exists(FileName))
                     return input;

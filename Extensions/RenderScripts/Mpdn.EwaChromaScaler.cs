@@ -35,14 +35,14 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "EwaScaler"; }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 return this.MakeChromaFilter(input);
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
-                var chromaSize = chromaInput.OutputSize;
+                var chromaSize = chromaInput.Output.Size;
                 CreateWeights(chromaSize, targetSize);
 
                 var offset = chromaOffset + new Vector2(0.5f, 0.5f);

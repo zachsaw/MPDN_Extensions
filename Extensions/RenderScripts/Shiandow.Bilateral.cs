@@ -26,12 +26,12 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Bilateral : RenderChain, IChromaScaler
         {
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 return this.MakeChromaFilter(input);
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
 
@@ -42,7 +42,7 @@ namespace Mpdn.Extensions.RenderScripts
                     );
 
                 // Fall back to default when downscaling is needed
-                var chromaSize = chromaInput.OutputSize;
+                var chromaSize = chromaInput.Output.Size;
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
                     return null;
 

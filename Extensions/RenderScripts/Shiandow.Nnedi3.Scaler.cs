@@ -73,7 +73,7 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 if (!Renderer.IsDx11Avail)
                 {
@@ -87,7 +87,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var shaderPass2 = LoadShader11(GetShaderFileName(Neurons2));
                 var interleave = CompileShader("Interleave.hlsl").Configure(transform: transform);
 
-                var sourceSize = input.OutputSize;
+                var sourceSize = input.Output.Size;
                 if (!IsUpscalingFrom(sourceSize))
                     return input;
 
@@ -100,7 +100,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var result = new ChromaFilter(luma, yuv, chromaScaler: ChromaScaler, chromaOffset: new Vector2(-0.25f, -0.25f));
 
-                return new ResizeFilter(result, result.OutputSize, new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+                return new ResizeFilter(result, result.Output.Size, new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }
 
             private string GetShaderFileName(NNedi3Neurons neurons)

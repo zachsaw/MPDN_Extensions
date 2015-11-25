@@ -20,10 +20,11 @@ using System.Drawing;
 using System.Linq;
 using Mpdn.Extensions.CustomLinearScalers.Functions;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
-using WeightFilter = Mpdn.Extensions.Framework.RenderChain.SharedTextureSourceFilter<Mpdn.ISourceTexture>;
+using WeightFilter = Mpdn.Extensions.Framework.RenderChain.TextureSourceFilter<Mpdn.ISourceTexture>;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -77,9 +78,9 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "EwaScaler"; }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
-                var sourceSize = input.OutputSize;
+                var sourceSize = input.Output.Size;
                 if (!IsUpscalingFrom(sourceSize))
                     return input;
 
@@ -105,10 +106,11 @@ namespace Mpdn.Extensions.RenderScripts
                 return Math.Log(dest/(double)source, 2);
             }
 
-            protected IFilter GetEwaFilter(ShaderFilterSettings<IShader> shader, IFilter[] inputs)
+            protected ITextureFilter GetEwaFilter(ShaderFilterSettings<IShader> shader, ITextureFilter[] inputs)
             {
-                var filters = m_Weights.Select(w => new WeightFilter(w));
-                return new ShaderFilter(shader, inputs.Concat((IEnumerable<IFilter<IBaseTexture>>) filters).ToArray());
+                var filters = m_Weights.Select(w => new WeightFilter(w.GetLease()));
+                return new ShaderFilter(shader,
+                    inputs.Concat((IEnumerable<IFilter<ITextureOutput<IBaseTexture>>>) filters).ToArray());
             }
 
             private static double GetDistance(double point1, double point2)

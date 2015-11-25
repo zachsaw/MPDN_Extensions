@@ -42,33 +42,28 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
-                IFilter xbr;
-
-                Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2 * s.Width, s.Height);
-                Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2 * s.Height);
                 Func<TextureSize, TextureSize> transform = s => new TextureSize(2 * s.Width, 2 * s.Height);
 
                 float[] arguments = { EdgeStrength, Sharpness };
                 string fastToggle = FastMethod ? "FAST_METHOD=1;" : "";
 
-                var Pass0 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 0;" + fastToggle).Configure(transform: transform, arguments: arguments);
-                var Pass1 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 1;" + fastToggle).Configure(arguments: arguments);
-                var Pass2 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 2;" + fastToggle).Configure(arguments: arguments);
+                var pass0 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 0;" + fastToggle).Configure(transform: transform, arguments: arguments);
+                var pass1 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 1;" + fastToggle).Configure(arguments: arguments);
+                var pass2 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 2;" + fastToggle).Configure(arguments: arguments);
 
                 // Skip if downscaling
-                if (Renderer.TargetSize.Width  <= input.OutputSize.Width 
-                 && Renderer.TargetSize.Height <= input.OutputSize.Height)
+                if (Renderer.TargetSize.Width  <= input.Output.Size.Width 
+                 && Renderer.TargetSize.Height <= input.Output.Size.Height)
                     return input;
                 
-                xbr = new ShaderFilter(Pass0, input);
-                xbr = new ShaderFilter(Pass1, xbr);
+                ITextureFilter xbr = new ShaderFilter(pass0, input);
+                xbr = new ShaderFilter(pass1, xbr);
 
-                if (ThirdPass)
-                    return new ShaderFilter(Pass2, xbr);
-                else
-                    return new ResizeFilter(xbr, xbr.OutputSize, new Vector2(0.5f, 0.5f));
+                return ThirdPass
+                    ? (ITextureFilter) new ShaderFilter(pass2, xbr)
+                    : new ResizeFilter(xbr, xbr.Output.Size, new Vector2(0.5f, 0.5f));
             }
 
             protected override string ShaderPath

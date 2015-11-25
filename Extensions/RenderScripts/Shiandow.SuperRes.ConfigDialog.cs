@@ -30,7 +30,7 @@ namespace Mpdn.Extensions.RenderScripts
         {
             protected int? selectedIndex;
 
-            protected Preset<IFilter,IRenderScript> selectedPreset
+            protected Preset<ITextureFilter,IRenderScript> selectedPreset
             {
                 get
                 {
@@ -77,13 +77,13 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void UpdateGui()
             {
-                var preset = PrescalerBox.SelectedValue as Preset<IFilter, IRenderScript>;
+                var preset = PrescalerBox.SelectedValue as Preset<ITextureFilter, IRenderScript>;
                 ConfigButton.Enabled = (preset != null) && preset.HasConfigDialog();
             }
 
             private void ConfigButtonClick(object sender, EventArgs e)
             {
-                ((Preset<IFilter, IRenderScript>) PrescalerBox.SelectedValue).ShowConfigDialog(Owner);
+                ((Preset<ITextureFilter, IRenderScript>) PrescalerBox.SelectedValue).ShowConfigDialog(Owner);
             }
 
             private void ModifyButtonClick(object sender, EventArgs e)

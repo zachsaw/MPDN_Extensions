@@ -57,7 +57,7 @@ namespace Mpdn.Extensions.RenderScripts
             private IDisposable m_Buffer;
 
             public NNedi3HKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, TextureSize textureSize, int[] localWorkSizes,
-                IFilter<IBaseTexture> inputFilter)
+                ITextureFilter<IBaseTexture> inputFilter)
                 : base(settings, GlobalWorkSizesHelper.Get(textureSize.Height, textureSize.Width, localWorkSizes), localWorkSizes, inputFilter)
             {
                 m_Buffer = buffer;
@@ -69,7 +69,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 Shader.SetInputTextureArg(0, (ITexture2D)inputs[0]); // srcImg
                                                                      // First pass doesn't require result to be copied back to Direct3D - so we use a 'temp' texture
-                Shader.SetTempTextureArg(1, OutputTarget); // dstImg
+                Shader.SetTempTextureArg(1, Target.Texture); // dstImg
                 Shader.SetBufferArg(2, m_Buffer); // weights
                 Shader.SetArg(3, m_NeuronCount); // nnst
                 Shader.SetArg(4, m_TextureSize.Height); // SrcWidth
@@ -92,7 +92,7 @@ namespace Mpdn.Extensions.RenderScripts
             private IDisposable m_Buffer;
 
             public NNedi3VKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, bool reloadWeights, TextureSize textureSize, int[] localWorkSizes,
-                IFilter<IBaseTexture> inputFilter)
+                ITextureFilter<IBaseTexture> inputFilter)
                 : base(settings, GlobalWorkSizesHelper.Get(textureSize.Width, textureSize.Height, localWorkSizes), localWorkSizes, inputFilter)
             {
                 m_Buffer = buffer;
@@ -105,7 +105,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 // Use the 'temp' texture from first pass as input
                 Shader.SetTempTextureArg(0, (ITexture2D)inputs[0]); // srcImg
-                Shader.SetOutputTextureArg(1, OutputTarget); // dstImg
+                Shader.SetOutputTextureArg(1, Target.Texture); // dstImg
                 if (m_ReloadWeights)
                 {
                     Shader.SetBufferArg(2, m_Buffer); // weights
@@ -180,7 +180,7 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                 {
@@ -208,7 +208,7 @@ namespace Mpdn.Extensions.RenderScripts
                     buffer2 = Renderer.CreateClBuffer(weights2);
                 }
 
-                var sourceSize = input.OutputSize;
+                var sourceSize = input.Output.Size;
                 if (!IsUpscalingFrom(sourceSize))
                     return input;
 
@@ -216,15 +216,15 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var localWorkSizes = new[] {8, 8};
                 var nnedi3H = new NNedi3HKernelFilter(shaderH, buffer1, neuronCount1,
-                    new TextureSize(yuv.OutputSize.Width, yuv.OutputSize.Height), 
+                    new TextureSize(yuv.Output.Size.Width, yuv.Output.Size.Height), 
                     localWorkSizes, yuv);
                 var nnedi3V = new NNedi3VKernelFilter(shaderV, buffer2, neuronCount2, differentWeights,
-                    new TextureSize(nnedi3H.OutputSize.Width, nnedi3H.OutputSize.Height), 
+                    new TextureSize(nnedi3H.Output.Size.Width, nnedi3H.Output.Size.Height), 
                     localWorkSizes, nnedi3H);
 
                 var result = ChromaScaler.CreateChromaFilter(nnedi3V, yuv, new Vector2(-0.25f, -0.25f));
 
-                return new ResizeFilter(result, result.OutputSize, new Vector2(0.5f, 0.5f),
+                return new ResizeFilter(result, result.Output.Size, new Vector2(0.5f, 0.5f),
                     Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }
         }

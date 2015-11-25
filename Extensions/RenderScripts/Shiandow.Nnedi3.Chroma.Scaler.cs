@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return typeof (NNedi3).Name; }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 return this.MakeChromaFilter(input);
             }
@@ -71,7 +71,7 @@ namespace Mpdn.Extensions.RenderScripts
                     Structured ? "_S" : string.Empty, u ? "u" : "v");
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 if (!Renderer.IsDx11Avail)
                 {
@@ -79,8 +79,8 @@ namespace Mpdn.Extensions.RenderScripts
                     return null; // DX11 is not available; fallback
                 }
 
-                var lumaSize = lumaInput.OutputSize;
-                var chromaSize = chromaInput.OutputSize;
+                var lumaSize = lumaInput.Output.Size;
+                var chromaSize = chromaInput.Output.Size;
 
                 if (lumaSize.Width != 2*chromaSize.Width || lumaSize.Height != 2*chromaSize.Height)
                     return null; // Chroma shouldn't be doubled; fallback

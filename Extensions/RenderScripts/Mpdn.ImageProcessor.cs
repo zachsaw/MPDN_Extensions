@@ -69,7 +69,7 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 return ShaderFileNames.Aggregate(input,
                     (current, filename) =>

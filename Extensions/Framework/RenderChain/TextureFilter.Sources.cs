@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 using Size = System.Drawing.Size;
@@ -41,12 +42,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected SourceTextureOutput() { }
 
-        public TextureSize Size
+        public virtual TextureSize Size
         {
             get { return Texture.GetSize(); }
         }
 
-        public TextureFormat Format
+        public virtual TextureFormat Format
         {
             get { return Texture.Format; }
         }
@@ -147,6 +148,14 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Tag = new EmptyTag();
         }
     }
+    
+    public sealed class NullFilter : BaseSourceFilter<ITextureOutput<ITexture2D>>, ITextureFilter
+    {
+        protected override ITextureOutput<ITexture2D> DefineOutput()
+        {
+            return new SourceTextureOutput<ITexture2D>(Renderer.OutputRenderTarget);
+        }
+    }
 
     public sealed class YSourceFilter : BaseSourceFilter<ITextureOutput<ITexture2D>>, ITextureFilter
     {
@@ -180,7 +189,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public void SetSize(TextureSize targetSize)
         {
-            m_OutputSize = targetSize;
+            m_VideoSource.Size = targetSize;
         }
 
         public void EnableTag()
@@ -196,7 +205,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 {
                     WantYuv = m_YuvFilter != null,
                     Prescale = LastDependentIndex > 0 || m_YuvFilter != null,
-                    PrescaleSize = (Size)Output.Size
+                    PrescaleSize = (Size) OutputSize
                 };
             }
         }
@@ -278,28 +287,33 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
         }
 
-        private class VideoSourceOutput : SourceTextureOutput<ITargetTexture>
+        private sealed class VideoSourceOutput : FilterOutput, ITextureOutput<ITargetTexture>
         {
-            private int m_Allocations;
+            private TextureSize m_OutputSize;
 
-            public override ITargetTexture Texture
+            public VideoSourceOutput()
+            {
+                Allocate();
+            }
+
+            public TextureSize Size
+            {
+                get { return m_OutputSize.IsEmpty ? Renderer.VideoSize : m_OutputSize; }
+                set { m_OutputSize = value; }
+            }
+
+            public TextureFormat Format
+            {
+                get { return Renderer.InputRenderTarget.Format; }
+            }
+
+            public ITargetTexture Texture
             {
                 get { return Renderer.InputRenderTarget; }
             }
 
-            public override void Allocate()
-            {
-                m_Allocations++;
-            }
-
-            public override void Deallocate()
-            {
-                m_Allocations--;
-                if (m_Allocations <= 0)
-                {
-                    TexturePool.PutTempTexture(Texture);
-                }
-            }
+            public override void Allocate() { }
+            public override void Deallocate() { }
         }
 
         #endregion

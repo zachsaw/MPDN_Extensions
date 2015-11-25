@@ -87,14 +87,14 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "ChromaScaler"; }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 return this.MakeChromaFilter(input);
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
-                var chromaSize = chromaInput.OutputSize;
+                var chromaSize = chromaInput.Output.Size;
 
                 // Fall back to default when downscaling is needed
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)

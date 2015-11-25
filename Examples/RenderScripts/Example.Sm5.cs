@@ -30,7 +30,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Examples"; }
             }
 
-            protected override IFilter CreateFilter(IFilter sourceFilter)
+            protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
             {
                 if (!Renderer.IsDx11Avail)
                     return new NullFilter(); // display blank screen on purpose

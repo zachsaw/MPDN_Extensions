@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mpdn.Config;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
@@ -29,7 +28,7 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptGroup
     {
-        public class ScriptGroup : PresetCollection<IFilter, IRenderScript>
+        public class ScriptGroup : PresetCollection<ITextureFilter, IRenderScript>
         {
             #region Settings
 
@@ -46,7 +45,7 @@ namespace Mpdn.Extensions.RenderScripts
             }
 
             [YAXDontSerialize]
-            public Preset<IFilter, IRenderScript> SelectedOption
+            public Preset<ITextureFilter, IRenderScript> SelectedOption
             {
                 get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) : null; }
             }
@@ -83,7 +82,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return Options.FindIndex(o => o.Guid == guid);
             }
 
-            public override IFilter Process(IFilter input)
+            public override ITextureFilter Process(ITextureFilter input)
             {
                 return SelectedOption != null ? input + SelectedOption : input;
             }

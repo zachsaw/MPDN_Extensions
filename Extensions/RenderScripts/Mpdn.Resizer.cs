@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 
@@ -68,7 +69,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 return input.SetSize(GetOutputSize(), tagged: true)
                     .Tagged(new TemporaryTag("Resizer"));

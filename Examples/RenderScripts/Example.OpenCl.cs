@@ -33,7 +33,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Examples"; }
             }
 
-            protected override IFilter CreateFilter(IFilter sourceFilter)
+            protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
             {
                 if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                     return new NullFilter(); // display blank screen on purpose
@@ -45,7 +45,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var blueTint = CompileClKernel("BlueTint.cl", "BlueTint")
                     .Configure(arguments: new[] {0.25f, 0.5f, 0.75f});
 
-                var outputSize = sourceFilter.OutputSize;
+                var outputSize = sourceFilter.Output.Size;
                 return new ClKernelFilter(blueTint, new[] {outputSize.Width, outputSize.Height}, sourceFilter);
             }
         }
@@ -61,7 +61,7 @@ namespace Mpdn.Extensions.RenderScripts
                         private readonly IDisposable m_Buffer;
 
                         public MyKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int[] workSizes, 
-                            params IFilter<IBaseTexture>[] inputFilters) 
+                            params ITextureFilter<IBaseTexture>[] inputFilters) 
                             : base(settings, workSizes, inputFilters)
                         {
                             m_Buffer = buffer;
@@ -85,7 +85,7 @@ namespace Mpdn.Extensions.RenderScripts
                         get { return "Examples"; }
                     }
 
-                    protected override IFilter CreateFilter(IFilter sourceFilter)
+                    protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
                     {
                         if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                             return new NullFilter(); // display blank screen on purpose
@@ -113,7 +113,7 @@ namespace Mpdn.Extensions.RenderScripts
                         private readonly Vector4 m_Color;
 
                         public MyKernelFilter(ShaderFilterSettings<IKernel> settings, Vector4 color, int[] workSizes,
-                            params IFilter<IBaseTexture>[] inputFilters)
+                            params ITextureFilter<IBaseTexture>[] inputFilters)
                             : base(settings, workSizes, inputFilters)
                         {
                             m_Color = color;
@@ -130,7 +130,7 @@ namespace Mpdn.Extensions.RenderScripts
                         get { return "Examples"; }
                     }
 
-                    protected override IFilter CreateFilter(IFilter sourceFilter)
+                    protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
                     {
                         if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                             return new NullFilter(); // display blank screen on purpose

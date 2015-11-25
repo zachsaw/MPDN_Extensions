@@ -30,8 +30,8 @@ using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
-    using Preset = Preset<IFilter, IRenderScript>;
-    using BoxItem = ComboBoxItem<Preset<IFilter, IRenderScript>>;
+    using Preset = Preset<ITextureFilter, IRenderScript>;
+    using BoxItem = ComboBoxItem<Preset<ITextureFilter, IRenderScript>>;
 
     namespace Mpdn.Conditional
     {
@@ -65,7 +65,7 @@ namespace Mpdn.Extensions.RenderScripts
                     var guid = Settings.Preset.Script.Descriptor.Guid;
                     comboBoxPreset.SelectedIndex = comboBoxPreset
                         .Items
-                        .Cast<ComboBoxItem<Preset<IFilter, IRenderScript>>>()
+                        .Cast<ComboBoxItem<Preset<ITextureFilter, IRenderScript>>>()
                         .Select(item => item.Value.Script)
                         .ToList()
                         .FindIndex(ui => ui.Descriptor.Guid == guid);

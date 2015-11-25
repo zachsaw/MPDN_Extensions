@@ -24,9 +24,9 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptChain
     {
-        public class ScriptChain : PresetCollection<IFilter, IRenderScript>
+        public class ScriptChain : PresetCollection<ITextureFilter, IRenderScript>
         {
-            public override IFilter Process(IFilter input)
+            public override ITextureFilter Process(ITextureFilter input)
             {
                 return Options.Aggregate(input, (result, chain) => result + chain);
             }
