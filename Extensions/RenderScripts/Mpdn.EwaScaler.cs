@@ -15,7 +15,6 @@
 // License along with this library.
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Mpdn.Extensions.CustomLinearScalers.Functions;
@@ -107,9 +106,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected ITextureFilter GetEwaFilter(ShaderFilterSettings<IShader> shader, ITextureFilter[] inputs)
             {
-                var filters = m_Weights.Select(w => w.ToFilter());
-                return new ShaderFilter(shader,
-                    inputs.Concat((IEnumerable<IFilter<ITextureOutput<IBaseTexture>>>) filters).ToArray());
+                var filters = m_Weights.Select(w => (IFilter<ITextureOutput<IBaseTexture>>) w.ToFilter());
+                return new ShaderFilter(shader, inputs.Concat(filters).ToArray());
             }
 
             private static double GetDistance(double point1, double point2)
