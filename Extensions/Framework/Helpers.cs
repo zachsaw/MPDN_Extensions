@@ -47,9 +47,9 @@ namespace Mpdn.Extensions.Framework
         public static void DisposeElements<T>(T enumerable) where T : IEnumerable
         {
             if (enumerable == null) return;
-            foreach (var i in enumerable)
+            foreach (var obj in enumerable.OfType<IDisposable>())
             {
-                SafeDispose(i as IDisposable);
+                SafeDispose(obj);
             }
         }
 

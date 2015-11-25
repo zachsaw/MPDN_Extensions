@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 using Size = System.Drawing.Size;
@@ -66,7 +65,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
     };
 
-    public class ManagedTexture<TTexture> where TTexture : class, IBaseTexture
+    public class ManagedTexture<TTexture> : IDisposable where TTexture : class, IBaseTexture
     {
         private TTexture m_Texture;
         private int m_Leases;
@@ -78,6 +77,22 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 throw new ArgumentNullException("texture");
             }
             m_Texture = texture;
+        }
+
+        ~ManagedTexture()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public virtual void Dispose(bool disposing)
+        {
+            Discard();
         }
 
         public Lease GetLease()
@@ -95,9 +110,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (m_Leases <= 0) Discard();
         }
 
-        public virtual void Discard()
+        private void Discard()
         {
             DisposeHelper.Dispose(ref m_Texture);
+            m_Leases = 0;
         }
 
         public bool Valid
@@ -184,7 +200,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public sealed class VideoSourceFilter : TextureFilter, IResizeableFilter
     {
         private readonly VideoSourceOutput m_VideoSource = new VideoSourceOutput();
-        private TextureSize m_OutputSize;
         private YuvSourceFilter m_YuvFilter;
 
         public void SetSize(TextureSize targetSize)
@@ -251,7 +266,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override TextureSize OutputSize
         {
-            get { return (m_OutputSize.IsEmpty ? Renderer.VideoSize : m_OutputSize); }
+            get { return Renderer.VideoSize; }
         }
 
         protected override void Render(IList<ITextureOutput<IBaseTexture>> textureOutputs)

@@ -24,7 +24,6 @@ using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
-using WeightFilter = Mpdn.Extensions.Framework.RenderChain.TextureSourceFilter<Mpdn.ISourceTexture>;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -108,7 +107,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected ITextureFilter GetEwaFilter(ShaderFilterSettings<IShader> shader, ITextureFilter[] inputs)
             {
-                var filters = m_Weights.Select(w => new WeightFilter(w.GetLease()));
+                var filters = m_Weights.Select(w => w.ToFilter());
                 return new ShaderFilter(shader,
                     inputs.Concat((IEnumerable<IFilter<ITextureOutput<IBaseTexture>>>) filters).ToArray());
             }
@@ -120,8 +119,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected void CreateWeights(TextureSize sourceSize, TextureSize targetSize)
             {
-                if (m_Weights != null && m_Weights.All(w => w.Valid))
-                    return;
+                DisposeHelper.DisposeElements(ref m_Weights);
 
                 double scaleFactorX = GetScaleFactor(targetSize.Width, sourceSize.Width);
                 double scaleFactorY = GetScaleFactor(targetSize.Height, sourceSize.Height);
