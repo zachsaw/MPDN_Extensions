@@ -23,9 +23,9 @@
 #endif
 
 // -- Edge detection options -- 
-#define acuity 6.0
-#define radius 0.66
-#define power 1.0
+#define acuity 100.0
+#define radius 0.5
+#define power 0.5
 
 // -- Misc --
 sampler s0 	  : register(s0);
@@ -54,10 +54,10 @@ float4 args1  : register(c4);
 
 // -- Input processing --
 //Current high res value
-#define Get(x,y)      (tex2D(s0,ddxddy*(pos+chromaOffset+int2(x,y)+0.5)).xyz)
-#define GetY(x,y)      (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)).a)
+#define Get(x,y)    (tex2D(s0,tex + dxdy*int2(x,y)).xyz)
+#define GetY(x,y)   (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)).a)
 //Downsampled result
-#define Diff(x,y)     (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)))
+#define Diff(x,y)   (tex2D(sDiff,ddxddy*(pos+int2(x,y)+0.5)))
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
@@ -71,21 +71,43 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     // Calculate faithfulness force
     float weightSum = 0;
     float4 diff = 0;
+    float3 soft = 0;
 
     [unroll] for (int X = -1; X <= 1; X++)
     [unroll] for (int Y = -1; Y <= 1; Y++)
     {
         float dI2 = sqr(acuity*(Luma(c0.rgb) - GetY(X,Y)));
-        float dXY2 = sqr(float2(X,Y) - offset);
-        float weight = exp(-dXY2 / (2 * radius * radius)) * pow(1 + dI2 / power, -power);
+        float dXY2 = sqr((float2(X,Y) - offset)/radius);
+        // float weight = pow(rsqrt(dXY2 + dI2),3);
+        float weight = exp(-0.5 * (dXY2) ) * pow(1 + dI2 / power, -power);
 
         diff += weight*Diff(X,Y);
         weightSum += weight;
     }
     diff /= weightSum;
 
+// #ifndef FinalPass
+    weightSum=0;
+    #define softAcuity 6.0
+
+    [unroll] for (int X = -1; X <= 1; X++)
+    [unroll] for (int Y = -1; Y <= 1; Y++)
+    if (X != 0 || Y != 0) {
+        float3 dI = Get(X,Y) - c0.rgb;
+        float dI2 = sqr(softAcuity*mul(YUVtoRGB, dI));
+        float dXY2 = sqr(float2(X,Y)/radius);
+        float weight = pow(rsqrt(dXY2 + dI2),3); // Fundamental solution to the 5d Laplace equation
+
+        soft += weight * dI;
+        weightSum += weight;
+    }
+    soft /= weightSum;
+
+    c0.yz += softness * soft.yz;
+// #endif
+
     // Apply force
-    c0.yz -= strength*diff.yz;
+    c0.yz -= strength * diff.yz;
     
     return c0;
 }

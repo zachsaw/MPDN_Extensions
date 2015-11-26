@@ -98,8 +98,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 
     [unroll] for (int X = -1; X <= 1; X++)
     [unroll] for (int Y = -1; Y <= 1; Y++)
-    if (X != 0 || Y != 0)
-    {
+    if (X != 0 || Y != 0) {
         float3 dI = Get(X,Y) - Lin;
         float dI2 = sqr(softAcuity*dI);
         float dXY2 = sqr(float2(X,Y)/radius);

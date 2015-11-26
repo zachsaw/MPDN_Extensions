@@ -114,7 +114,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (input != null && input.Colorimetric == Colorimetric && input.OutputLimitedRange == OutputLimitedRange)
                 return (ITextureFilter) input.InputFilters[0];
 
-            var sourceFilter = InputFilters[0] as VideoSourceFilter;
+            var sourceFilter = InputFilters[0] as VideoSourceFilter.TrueSourceFilter;
             if (sourceFilter != null)
                 return sourceFilter.GetYuv();
 

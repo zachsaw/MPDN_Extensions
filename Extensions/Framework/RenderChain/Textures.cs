@@ -123,13 +123,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private static readonly List<ITargetTexture> s_SavedTextures = new List<ITargetTexture>();
         private static readonly List<ITargetTexture> s_TempTextures = new List<ITargetTexture>();
 
-        public static ITargetTexture GetTexture(TextureSize textureSize, TextureFormat textureFormat, bool sameFormat = true)
+        public static ITargetTexture GetTexture(TextureSize textureSize, TextureFormat? textureFormat = null)
         {
             foreach (var list in new[] {s_SavedTextures, s_OldTextures})
             {
-                var index = list.FindIndex(x =>
-                    x.GetSize() == textureSize && (!sameFormat || x.Format == textureFormat));
-
+                var index = list.FindIndex(x => (x.GetSize() == textureSize) && (x.Format == textureFormat));
                 if (index < 0) 
                     continue;
 
@@ -138,13 +136,14 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return texture;
             }
 
-            return Renderer.CreateRenderTarget(textureSize.Width, textureSize.Height, textureFormat);
+            return Renderer.CreateRenderTarget(textureSize.Width, textureSize.Height,
+                textureFormat ?? Renderer.RenderQuality.GetTextureFormat());
         }
 
         public static void PutTempTexture(ITargetTexture texture)
         {
             s_TempTextures.Add(texture);
-            s_SavedTextures.Insert(0, texture);
+            s_SavedTextures.Add(texture);
         }
 
         public static void PutTexture(ITargetTexture texture)

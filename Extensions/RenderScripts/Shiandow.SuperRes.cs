@@ -18,11 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
 using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
-using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
+using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
+using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
 
@@ -57,8 +58,6 @@ namespace Mpdn.Extensions.RenderScripts
             #endregion
 
             public Func<TextureSize> TargetSize; // Not saved
-            private readonly IScaler m_Downscaler;
-            private readonly IScaler m_Upscaler;
 
             public SuperRes()
             {
@@ -86,8 +85,8 @@ namespace Mpdn.Extensions.RenderScripts
                             new List<IRenderChainUi>
                             {
                                 new SuperXbrUi(),
-                                new Nedi.NediScaler(),
-                                new NNedi3.NNedi3Scaler(),
+                                new NediScaler(),
+                                new NNedi3Scaler(),
                                 new OclNNedi3Scaler()
                             }
                                 .Select(x => x.ToPreset()))
@@ -95,8 +94,6 @@ namespace Mpdn.Extensions.RenderScripts
                     SelectedIndex = 0
                 };
 
-                m_Upscaler = new Jinc(ScalerTaps.Four, false); // Deprecated
-                m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.75f, false) : new Bilinear();
             }
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)
@@ -113,6 +110,7 @@ namespace Mpdn.Extensions.RenderScripts
             public ITextureFilter CreateFilter(ITextureFilter original, ITextureFilter initial)
             {
                 ITextureFilter result;
+                var downscaler = HQdownscaling ? (IScaler)new Bicubic(0.75f, false) : new Bilinear();
 
                 // Calculate Sizes
                 var inputSize = original.Output.Size;
@@ -167,7 +165,7 @@ namespace Mpdn.Extensions.RenderScripts
                 for (int i = 1; i <= Passes; i++)
                 {
                     // Downscale and Subtract
-                    var loRes = new ResizeFilter(result, inputSize, m_Upscaler, m_Downscaler);
+                    var loRes = new ResizeFilter(result, inputSize, null, downscaler);
                     var diff = new ShaderFilter(Diff, loRes, original);
 
                     // Update result

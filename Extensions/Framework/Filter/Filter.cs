@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.Filter
 {
@@ -30,7 +28,7 @@ namespace Mpdn.Extensions.Framework.Filter
         TOutput Output { get; }
 
         int LastDependentIndex { get; }
-        void Render(int level = 0);
+        void Render();
         void Reset();
         void Initialize(int time = 1);
         IFilter<TOutput> Compile();
@@ -41,13 +39,13 @@ namespace Mpdn.Extensions.Framework.Filter
 
     public interface IFilterOutput : IDisposable
     {
-        void Allocate(bool terminal = false);
+        void Allocate();
         void Deallocate();
     }
 
     public abstract class FilterOutput : IFilterOutput
     {
-        public abstract void Allocate(bool terminal);
+        public abstract void Allocate();
 
         public abstract void Deallocate();
 
@@ -130,6 +128,9 @@ namespace Mpdn.Extensions.Framework.Filter
                 LastDependentIndex = f.LastDependentIndex;
             }
 
+            // Fix output
+            m_Output = Output;
+
             m_FilterIndex = LastDependentIndex;
 
             foreach (var filter in InputFilters)
@@ -145,8 +146,6 @@ namespace Mpdn.Extensions.Framework.Filter
         {
             if (m_CompilationResult != null)
                 return m_CompilationResult;
-
-            m_Output = Output;
 
             m_OriginalInputFilters = InputFilters;
             InputFilters = InputFilters
@@ -169,7 +168,7 @@ namespace Mpdn.Extensions.Framework.Filter
             return this;
         }
 
-        public virtual void Render(int level)
+        public virtual void Render()
         {
             if (m_Updated)
                 return;
@@ -178,7 +177,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
             foreach (var filter in InputFilters)
             {
-                filter.Render(level+1);
+                filter.Render();
             }
 
             var inputTextures =
@@ -186,18 +185,11 @@ namespace Mpdn.Extensions.Framework.Filter
                     .Select(f => f.Output)
                     .ToList();
 
-            if (level == 0 && Renderer.InputRenderTarget == Renderer.OutputRenderTarget &&
-                inputTextures.OfType<ITextureOutput<ITexture2D>>().All(t => t.Texture != Renderer.InputRenderTarget))
-            {
-                // We can render straight to OutputRT thus saving us a GPU memcpy op
-                TexturePool.PutTempTexture(Renderer.InputRenderTarget);
-            }
-
-            Output.Allocate(level == 0);
+            Output.Allocate();
 
             Render(inputTextures);
 
-            foreach (var filter in InputFilters.Where(f => f.LastDependentIndex <= m_FilterIndex))
+            foreach (var filter in InputFilters.Where(filter => filter.LastDependentIndex <= m_FilterIndex))
             {
                 filter.Reset();
             }
@@ -232,7 +224,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
             DisposeHelper.DisposeElements(ref m_OriginalInputFilters);
             DisposeHelper.DisposeElements(InputFilters);
-            DisposeHelper.Dispose(Output);
+            DisposeHelper.Dispose(m_Output);
             InputFilters = null;
         }
 

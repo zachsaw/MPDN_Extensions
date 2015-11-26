@@ -30,18 +30,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private Font m_Font;
 
         public TextFilter(string text)
-            : base(Renderer.CreateTexture(Renderer.TargetSize))
+            : base(Renderer.CreateTexture(Renderer.TargetSize), true)
         {
-            ManageTexture = true;
             DrawText(text);
-        }
-
-        public override void Reset()
-        {
-        }
-
-        public override void Render(int level)
-        {
         }
 
         #region Text rendering
