@@ -35,9 +35,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public TextureSize Size { get; set; }
         public TextureFormat Format { get; set; }
 
-        public override void Allocate(bool terminal)
+        public override void Allocate()
         {
-            Texture = TexturePool.GetTexture(Size, Format, !terminal);
+            Texture = TexturePool.GetTexture(Size, Format);
         }
 
         public override void Deallocate()

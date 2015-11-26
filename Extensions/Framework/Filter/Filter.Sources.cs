@@ -15,7 +15,6 @@
 // License along with this library.
 
 using System.Collections.Generic;
-using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.Filter
 {
@@ -27,8 +26,7 @@ namespace Mpdn.Extensions.Framework.Filter
             Tag = FilterTag.Bottom;
         }
 
-        protected override void Render(IList<IFilterOutput> inputs)
-        { }
+        protected override void Render(IList<IFilterOutput> inputs) { }
     }
 
     public class SourceFilter<TOutput> : BaseSourceFilter<TOutput>
