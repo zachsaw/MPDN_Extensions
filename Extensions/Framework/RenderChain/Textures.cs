@@ -123,11 +123,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private static readonly List<ITargetTexture> s_SavedTextures = new List<ITargetTexture>();
         private static readonly List<ITargetTexture> s_TempTextures = new List<ITargetTexture>();
 
-        public static ITargetTexture GetTexture(TextureSize textureSize, TextureFormat? textureFormat = null)
+        public static ITargetTexture GetTexture(TextureSize textureSize, TextureFormat textureFormat, bool sameFormat = true)
         {
             foreach (var list in new[] {s_SavedTextures, s_OldTextures})
             {
-                var index = list.FindIndex(x => (x.GetSize() == textureSize) && (x.Format == textureFormat));
+                var index = list.FindIndex(x =>
+                    x.GetSize() == textureSize && (!sameFormat || x.Format == textureFormat));
+
                 if (index < 0) 
                     continue;
 
@@ -136,14 +138,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return texture;
             }
 
-            return Renderer.CreateRenderTarget(textureSize.Width, textureSize.Height,
-                textureFormat ?? Renderer.RenderQuality.GetTextureFormat());
+            return Renderer.CreateRenderTarget(textureSize.Width, textureSize.Height, textureFormat);
         }
 
         public static void PutTempTexture(ITargetTexture texture)
         {
             s_TempTextures.Add(texture);
-            s_SavedTextures.Add(texture);
+            s_SavedTextures.Insert(0, texture);
         }
 
         public static void PutTexture(ITargetTexture texture)
@@ -153,10 +154,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public static void FlushTextures()
         {
-            foreach (var texture in s_OldTextures)
-            {
-                DisposeHelper.Dispose(texture);
-            }
+            DisposeHelper.DisposeElements(s_OldTextures);
 
             foreach (var texture in s_TempTextures)
             {

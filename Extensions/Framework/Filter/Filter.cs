@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.Filter
 {
@@ -28,7 +30,7 @@ namespace Mpdn.Extensions.Framework.Filter
         TOutput Output { get; }
 
         int LastDependentIndex { get; }
-        void Render();
+        void Render(int level = 0);
         void Reset();
         void Initialize(int time = 1);
         IFilter<TOutput> Compile();
@@ -39,13 +41,13 @@ namespace Mpdn.Extensions.Framework.Filter
 
     public interface IFilterOutput : IDisposable
     {
-        void Allocate();
+        void Allocate(bool terminal = false);
         void Deallocate();
     }
 
     public abstract class FilterOutput : IFilterOutput
     {
-        public abstract void Allocate();
+        public abstract void Allocate(bool terminal);
 
         public abstract void Deallocate();
 
@@ -167,7 +169,7 @@ namespace Mpdn.Extensions.Framework.Filter
             return this;
         }
 
-        public virtual void Render()
+        public virtual void Render(int level)
         {
             if (m_Updated)
                 return;
@@ -176,7 +178,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
             foreach (var filter in InputFilters)
             {
-                filter.Render();
+                filter.Render(level+1);
             }
 
             var inputTextures =
@@ -184,16 +186,20 @@ namespace Mpdn.Extensions.Framework.Filter
                     .Select(f => f.Output)
                     .ToList();
 
-            Output.Allocate();
+            if (level == 0 && Renderer.InputRenderTarget == Renderer.OutputRenderTarget &&
+                inputTextures.OfType<ITextureOutput<ITexture2D>>().All(t => t.Texture != Renderer.InputRenderTarget))
+            {
+                // We can render straight to OutputRT thus saving us a GPU memcpy op
+                TexturePool.PutTempTexture(Renderer.InputRenderTarget);
+            }
+
+            Output.Allocate(level == 0);
 
             Render(inputTextures);
 
-            foreach (var filter in InputFilters)
+            foreach (var filter in InputFilters.Where(f => f.LastDependentIndex <= m_FilterIndex))
             {
-                if (filter.LastDependentIndex <= m_FilterIndex)
-                {
-                    filter.Reset();
-                }
+                filter.Reset();
             }
         }
 

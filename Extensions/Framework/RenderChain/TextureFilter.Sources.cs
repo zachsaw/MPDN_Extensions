@@ -51,7 +51,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             get { return Texture.Format; }
         }
 
-        public override void Allocate()
+        public override void Allocate(bool terminal)
         { }
 
         public override void Deallocate()
@@ -199,16 +199,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public sealed class VideoSourceFilter : TextureFilter, IResizeableFilter
     {
+        private readonly VideoSourceOutput m_VideoSource = new VideoSourceOutput();
         private YuvSourceFilter m_YuvFilter;
-
-        public VideoSourceFilter()
-        {
-            VideoSourceOutput.Instance.Allocate();
-        }
 
         public void SetSize(TextureSize targetSize)
         {
-            VideoSourceOutput.Instance.Size = targetSize;
+            m_VideoSource.Size = targetSize;
         }
 
         public void EnableTag()
@@ -262,12 +258,15 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override ITextureOutput<ITexture2D> DefineOutput()
         {
-            return m_YuvFilter == null ? VideoSourceOutput.Instance : base.DefineOutput();
+            if (m_YuvFilter == null)
+                return m_VideoSource;
+
+            return base.DefineOutput();
         }
 
         protected override TextureSize OutputSize
         {
-            get { return Renderer.VideoSize; }
+            get { return m_VideoSource.Size.IsEmpty ? Renderer.VideoSize : m_VideoSource.Size; }
         }
 
         protected override void Render(IList<ITextureOutput<IBaseTexture>> textureOutputs)
@@ -306,18 +305,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private sealed class VideoSourceOutput : FilterOutput, ITextureOutput<ITargetTexture>
         {
             private TextureSize m_OutputSize;
-            private bool m_PoolInput;
-
-            private static VideoSourceOutput s_Instance;
-
-            private VideoSourceOutput()
-            {
-            }
-
-            public static VideoSourceOutput Instance
-            {
-                get { return s_Instance ?? (s_Instance = new VideoSourceOutput()); }
-            }
 
             public TextureSize Size
             {
@@ -335,21 +322,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 get { return Renderer.InputRenderTarget; }
             }
 
-            public override void Allocate()
-            {
-                m_PoolInput = true;
-            }
-
-            public override void Deallocate()
-            {
-                if (!m_PoolInput)
-                    return;
-
-                m_PoolInput = false;
-
-                if (Renderer.InputRenderTarget != null)
-                    TexturePool.PutTempTexture(Renderer.InputRenderTarget);
-            }
+            public override void Allocate(bool terminal) { }
+            public override void Deallocate() { }
         }
 
         #endregion

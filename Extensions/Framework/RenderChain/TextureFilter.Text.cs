@@ -40,7 +40,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
         }
 
-        public override void Render()
+        public override void Render(int level)
         {
         }
 
