@@ -79,7 +79,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
                     Scale(Renderer.OutputRenderTarget, m_Filter.Output.Texture);
 
                 m_Filter.Reset();
-                TexturePool.FlushTextures();
 
                 return true;
             }
@@ -88,6 +87,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 var message = ErrorMessage(e);
                 Trace.WriteLine(message);
                 return false;
+            }
+            finally
+            {
+                TexturePool.FlushTextures();
             }
         }
 

@@ -199,12 +199,16 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public sealed class VideoSourceFilter : TextureFilter, IResizeableFilter
     {
-        private readonly VideoSourceOutput m_VideoSource = new VideoSourceOutput();
         private YuvSourceFilter m_YuvFilter;
+
+        public VideoSourceFilter()
+        {
+            VideoSourceOutput.Instance.Allocate();
+        }
 
         public void SetSize(TextureSize targetSize)
         {
-            m_VideoSource.Size = targetSize;
+            VideoSourceOutput.Instance.Size = targetSize;
         }
 
         public void EnableTag()
@@ -258,10 +262,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override ITextureOutput<ITexture2D> DefineOutput()
         {
-            if (m_YuvFilter == null)
-                return m_VideoSource;
-
-            return base.DefineOutput();
+            return m_YuvFilter == null ? VideoSourceOutput.Instance : base.DefineOutput();
         }
 
         protected override TextureSize OutputSize
@@ -305,10 +306,17 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private sealed class VideoSourceOutput : FilterOutput, ITextureOutput<ITargetTexture>
         {
             private TextureSize m_OutputSize;
+            private bool m_PoolInput;
 
-            public VideoSourceOutput()
+            private static VideoSourceOutput s_Instance;
+
+            private VideoSourceOutput()
             {
-                Allocate();
+            }
+
+            public static VideoSourceOutput Instance
+            {
+                get { return s_Instance ?? (s_Instance = new VideoSourceOutput()); }
             }
 
             public TextureSize Size
@@ -327,8 +335,21 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 get { return Renderer.InputRenderTarget; }
             }
 
-            public override void Allocate() { }
-            public override void Deallocate() { }
+            public override void Allocate()
+            {
+                m_PoolInput = true;
+            }
+
+            public override void Deallocate()
+            {
+                if (!m_PoolInput)
+                    return;
+
+                m_PoolInput = false;
+
+                if (Renderer.InputRenderTarget != null)
+                    TexturePool.PutTempTexture(Renderer.InputRenderTarget);
+            }
         }
 
         #endregion
