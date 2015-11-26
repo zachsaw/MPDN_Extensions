@@ -37,7 +37,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             : this(manageTexture)
         {
             if (texture == null)
-                throw new ArgumentNullException(nameof(texture));
+                throw new ArgumentNullException("texture");
 
             Texture = texture;
         }
@@ -76,7 +76,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private readonly Func<TextureFormat> m_Format;
 
         public DeferredTextureOutput(Func<TTexture> textureFunc, TextureSize size)
-            : this(textureFunc, () => size, null)
+            : this(textureFunc, () => size)
         { }
 
         public DeferredTextureOutput(Func<TTexture> textureFunc, TextureSize size, TextureFormat format)
@@ -237,13 +237,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public sealed class VideoSourceFilter : TextureFilter, IResizeableFilter
     {
         private readonly TrueSourceFilter m_TrueSource;
-        private RgbFilter m_RgbSource;
 
         public VideoSourceFilter() 
             : base(new RgbFilter(new TrueSourceFilter()))
         {
-            m_RgbSource = (RgbFilter) InputFilters[0];
-            m_TrueSource = (TrueSourceFilter) m_RgbSource.InputFilters[0];
+            var rgbSource = (RgbFilter) InputFilters[0];
+            m_TrueSource = (TrueSourceFilter) rgbSource.InputFilters[0];
         }
 
         public void SetSize(TextureSize targetSize)
