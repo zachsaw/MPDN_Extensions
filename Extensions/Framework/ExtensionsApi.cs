@@ -64,7 +64,7 @@ namespace Mpdn.Extensions.Framework
     {
         public static int InterfaceVersion
         {
-            get { return 8; }
+            get { return 9; }
         }
 
         public static IList<IExtensionUi> Scripts

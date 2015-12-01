@@ -67,16 +67,13 @@ namespace Mpdn.Extensions.Framework.AudioChain
             }
         }
 
-        public void OnGetMediaType(WaveFormatExtensible format)
-        {
-            // Provides script a chance to change the output format
-        }
-
         public void Update(IAudio audio)
         {
             if (m_Audio != null)
             {
-                throw new InvalidOperationException();
+                Chain.Reset();
+                Chain.Initialize();
+                return;
             }
 
             if (!AudioProc.Initialize())
