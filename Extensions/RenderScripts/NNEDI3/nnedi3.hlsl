@@ -115,7 +115,7 @@ struct PS_IN
 #endif
 #endif
 
-#define EPSILON_F32 1.19209290e-07
+#define EPSILON_FL32 1.19209290e-07
 
 /* Main code */
 float4 main( PS_IN In ) : SV_TARGET
