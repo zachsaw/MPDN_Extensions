@@ -138,7 +138,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             var message = ErrorMessage(e);
             Trace.WriteLine(message);
-            return new TextFilter(message);
+            return new TextFilter(message).InitializeFilter();
         }
 
         protected static Exception InnerMostException(Exception e)
