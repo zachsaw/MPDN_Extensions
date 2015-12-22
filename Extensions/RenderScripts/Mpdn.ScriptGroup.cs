@@ -15,118 +15,14 @@
 // License along with this library.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.PlayerExtensions;
-using Mpdn.RenderScript;
-using YAXLib;
 
 namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptGroup
     {
-        public class ScriptGroup : PresetCollection<ITextureFilter, IRenderScript>
-        {
-            #region Settings
-
-            public int SelectedIndex { get; set; }
-
-            public string Hotkey
-            {
-                get { return m_Hotkey; }
-                set
-                {
-                    m_Hotkey = value ?? "";
-                    UpdateHotkey();
-                }
-            }
-
-            [YAXDontSerialize]
-            public Preset<ITextureFilter, IRenderScript> SelectedOption
-            {
-                get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) : null; }
-            }
-
-            [YAXDontSerialize]
-            public string ScriptName
-            {
-                get
-                {
-                    var preset = SelectedOption;
-                    return preset == null ? string.Empty : preset.Name; 
-                }
-                set
-                {
-                    var index = Options.FindIndex(p => p.Name == value);
-                    if (index < 0)
-                    {
-                        throw new KeyNotFoundException(string.Format("ScriptName '{0}' is not found", value));
-                    }
-                    SelectedIndex = index;
-                }
-            }
-
-            #endregion
-
-            public ScriptGroup()
-            {
-                SelectedIndex = 0;
-                m_HotkeyGuid = Guid.NewGuid();
-            }
-
-            public int GetPresetIndex(Guid guid)
-            {
-                return Options.FindIndex(o => o.Guid == guid);
-            }
-
-            public override ITextureFilter Process(ITextureFilter input)
-            {
-                return SelectedOption != null ? input + SelectedOption : input;
-            }
-
-            #region Hotkey Handling
-
-            private readonly Guid m_HotkeyGuid;
-            private string m_Hotkey;
-
-            private void RegisterHotkey()
-            {
-                DynamicHotkeys.RegisterHotkey(m_HotkeyGuid, Hotkey, IncrementSelection);
-            }
-
-            private void DeregisterHotkey()
-            {
-                DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
-            }
-
-            private void UpdateHotkey()
-            {
-                DeregisterHotkey();
-                RegisterHotkey();
-            }
-
-            private void IncrementSelection()
-            {
-                if (Options.Count > 0)
-                {
-                    SelectedIndex = (SelectedIndex + 1)%Options.Count;
-                }
-
-                if (SelectedOption != null)
-                {
-                    Player.OsdText.Show(Name + ": " + SelectedOption.Name);
-                }
-
-                Extension.RefreshRenderScript();
-            }
-
-            #endregion
-        }
-
-        public class ScriptGroupScript : RenderChainUi<ScriptGroup, ScriptGroupDialog>
+        public class ScriptGroupScript : RenderChainUi<RenderScriptGroup, RenderScriptGroupDialog>
         {
             protected override string ConfigFileName
             {

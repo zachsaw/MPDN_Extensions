@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
+using Mpdn.AudioScript;
+using Mpdn.Extensions.Framework.Chain;
+using Mpdn.Extensions.Framework.Chain.Dialogs;
 using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.Framework.AudioChain
@@ -23,6 +26,12 @@ namespace Mpdn.Extensions.Framework.AudioChain
     { }
 
     public class StaticAudioChain<TFilter> : StaticFilterChain<TFilter, IAudioFilter>
-    where TFilter : PinFilter<IAudioOutput>, IAudioFilter, new()
+        where TFilter : PinFilter<IAudioOutput>, IAudioFilter, new()
     { }
+
+    public class AudioScriptChain : ScriptChain<IAudioFilter, IAudioScript> { }
+    public class AudioScriptChainDialog : ScriptChainDialog<IAudioFilter, IAudioScript> { }
+
+    public class AudioScriptGroup : ScriptGroup<IAudioFilter, IAudioScript> { }
+    public class AudioScriptGroupDialog : ScriptGroupDialog<IAudioFilter, IAudioScript> { }
 }

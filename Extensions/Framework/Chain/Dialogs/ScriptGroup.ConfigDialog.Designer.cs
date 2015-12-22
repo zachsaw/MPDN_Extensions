@@ -15,45 +15,42 @@
 // License along with this library.
 // 
 
-using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.RenderScript;
+using Mpdn.Extensions.Framework.Controls;
 
-namespace Mpdn.Extensions.RenderScripts
+namespace Mpdn.Extensions.Framework.Chain.Dialogs
 {
-    namespace Mpdn.ScriptGroup
+    partial class ScriptGroupDialog<T, TScript> where TScript : class, IScript
     {
-        partial class ScriptGroupDialog
+        /// <summary> 
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary> 
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
         {
-            /// <summary> 
-            /// Required designer variable.
-            /// </summary>
-            private System.ComponentModel.IContainer components = null;
-
-            /// <summary> 
-            /// Clean up any resources being used.
-            /// </summary>
-            /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-            protected override void Dispose(bool disposing)
+            if (disposing && (components != null))
             {
-                if (disposing && (components != null))
-                {
-                    components.Dispose();
-                }
+                components.Dispose();
             }
+        }
 
-            #region Component Designer generated code
+        #region Component Designer generated code
 
-            /// <summary> 
-            /// Required method for Designer support - do not modify 
-            /// the contents of this method with the code editor.
-            /// </summary>
-            private void InitializeComponent()
-            {
+        /// <summary> 
+        /// Required method for Designer support - do not modify 
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
             this.HotkeyLabel = new System.Windows.Forms.Label();
             this.HotkeyBox = new Framework.Controls.HotkeyBox();
-            this.m_ChainList = new RenderScriptChainList();
+            this.m_ChainList = new ChainList<T, TScript>();
             this.SuspendLayout();
             // 
             // buttonCancel
@@ -103,8 +100,8 @@ namespace Mpdn.Extensions.RenderScripts
             // RenderChainList
             // 
             this.m_ChainList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+                                                                             | System.Windows.Forms.AnchorStyles.Left) 
+                                                                            | System.Windows.Forms.AnchorStyles.Right)));
             this.m_ChainList.Location = new System.Drawing.Point(18, 18);
             this.m_ChainList.Name = "m_ChainList";
             this.m_ChainList.SelectedIndex = -1;
@@ -135,15 +132,14 @@ namespace Mpdn.Extensions.RenderScripts
             this.ResumeLayout(false);
             this.PerformLayout();
 
-            }
-
-            #endregion
-
-            private System.Windows.Forms.Button buttonCancel;
-            private System.Windows.Forms.Button buttonOk;
-            private System.Windows.Forms.Label HotkeyLabel;
-            private Framework.Controls.HotkeyBox HotkeyBox;
-            private RenderScriptChainList m_ChainList;
         }
+
+        #endregion
+
+        private System.Windows.Forms.Button buttonCancel;
+        private System.Windows.Forms.Button buttonOk;
+        private System.Windows.Forms.Label HotkeyLabel;
+        private HotkeyBox HotkeyBox;
+        private ChainList<T, TScript> m_ChainList;
     }
-}  
+}

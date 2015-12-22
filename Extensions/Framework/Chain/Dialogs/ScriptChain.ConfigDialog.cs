@@ -16,30 +16,28 @@
 
 using Mpdn.Extensions.Framework.Config;
 
-namespace Mpdn.Extensions.RenderScripts
+namespace Mpdn.Extensions.Framework.Chain.Dialogs
 {
-    namespace Mpdn.ScriptChain
+    public partial class ScriptChainDialog<T, TScript> : ScriptChainDialogBase<T, TScript> 
+        where TScript : class, IScript
     {
-        public partial class ScriptChainDialog : ScriptChainDialogBase
+        public ScriptChainDialog()
         {
-            public ScriptChainDialog()
-            {
-                InitializeComponent();
-            }
-
-            protected override void LoadSettings()
-            {
-                m_ChainList.PresetList = Settings.Options;
-            }
-
-            protected override void SaveSettings()
-            {
-                Settings.Options = m_ChainList.PresetList;
-            }
+            InitializeComponent();
         }
 
-        public class ScriptChainDialogBase : ScriptConfigDialog<ScriptChain>
+        protected override void LoadSettings()
         {
+            m_ChainList.PresetList = Settings.Options;
+        }
+
+        protected override void SaveSettings()
+        {
+            Settings.Options = m_ChainList.PresetList;
         }
     }
+
+    public class ScriptChainDialogBase<T, TScript> : ScriptConfigDialog<ScriptChain<T, TScript>> 
+        where TScript : class, IScript
+    { }
 }
