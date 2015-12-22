@@ -28,7 +28,7 @@ namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn.ScriptGroup
     {
-        public class ScriptGroup : PresetCollection<Audio, IAudioScript>
+        public class ScriptGroup : PresetCollection<AudioOutput, IAudioScript>
         {
             #region Settings
 
@@ -45,7 +45,7 @@ namespace Mpdn.Extensions.AudioScripts
             }
 
             [YAXDontSerialize]
-            public Preset<Audio, IAudioScript> SelectedOption
+            public Preset<AudioOutput, IAudioScript> SelectedOption
             {
                 get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) : null; }
             }
@@ -71,7 +71,7 @@ namespace Mpdn.Extensions.AudioScripts
 
             #endregion
 
-            private Preset<Audio, IAudioScript> m_CurrentOption;
+            private Preset<AudioOutput, IAudioScript> m_CurrentOption;
 
             public ScriptGroup()
             {
@@ -84,7 +84,7 @@ namespace Mpdn.Extensions.AudioScripts
                 return Options.FindIndex(o => o.Guid == guid);
             }
 
-            public override Audio Process(Audio input)
+            public override AudioOutput Process(AudioOutput input)
             {
                 RefreshOption();
                 return SelectedOption != null ? input + SelectedOption : input;

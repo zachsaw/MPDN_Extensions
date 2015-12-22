@@ -22,10 +22,6 @@ using Size = System.Drawing.Size;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public abstract class BaseTextureSourceFilter<TTexture> : BaseSourceFilter<ITextureOutput<TTexture>>, ITextureFilter<TTexture>
-        where TTexture : class, IBaseTexture
-    { }
-
     public class SourceTextureOutput<TTexture> : FilterOutput, ITextureOutput<TTexture>
         where TTexture : class, IBaseTexture
     {
@@ -252,7 +248,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public void EnableTag()
         {
-            m_Tagged = true;
+            m_AddTag = true;
         }
 
         public ScriptInterfaceDescriptor Descriptor
@@ -275,7 +271,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region IFilter Implementation
 
-        private bool m_Tagged;
+        private bool m_AddTag;
 
         protected override TextureSize OutputSize
         {
@@ -287,17 +283,18 @@ namespace Mpdn.Extensions.Framework.RenderChain
             throw new NotImplementedException();
         }
 
+        protected override void Initialize()
+        {
+            if (m_AddTag)
+            {
+                AddTag(Status());
+                m_AddTag = false; // Only add tag once.
+            }
+        }
+
         protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
-            var result = m_TrueSource.WantYuv ? (IFilter<ITextureOutput<ITexture2D>>) m_TrueSource.RgbSource : m_TrueSource;
-
-            if (m_Tagged)
-            {
-                result.AddTag(Status());
-                m_Tagged = false;
-            }
-
-            return result;
+            return m_TrueSource.WantYuv ? (IFilter<ITextureOutput<ITexture2D>>)m_TrueSource.RgbSource : m_TrueSource; ;
         }
 
         #endregion

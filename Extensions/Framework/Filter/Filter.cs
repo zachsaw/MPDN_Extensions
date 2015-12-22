@@ -130,6 +130,8 @@ namespace Mpdn.Extensions.Framework.Filter
 
             // Fix output
             m_Output = Output;
+            
+            Initialize();
 
             m_FilterIndex = LastDependentIndex;
 
@@ -141,6 +143,9 @@ namespace Mpdn.Extensions.Framework.Filter
             LastDependentIndex++;
             m_Initialized = true;
         }
+
+        // Called if the filter is actually used, but before it is used.
+        protected virtual void Initialize() { }
 
         public IFilter<TOutput> Compile()
         {
@@ -168,7 +173,7 @@ namespace Mpdn.Extensions.Framework.Filter
             return this;
         }
 
-        public virtual void Render()
+        public void Render()
         {
             if (m_Updated)
                 return;
@@ -253,6 +258,13 @@ namespace Mpdn.Extensions.Framework.Filter
         {
             filter.AddTag(tag);
             return filter;
+        }
+
+        public static TOther Apply<TFilter, TOther>(this TFilter filter, Func<TFilter, TOther> map)
+            where TFilter : IBaseFilter
+            where TOther : IBaseFilter
+        {
+            return map(filter);
         }
     }
 }

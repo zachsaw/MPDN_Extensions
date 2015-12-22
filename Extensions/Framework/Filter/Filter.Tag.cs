@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -20,6 +20,12 @@ using System.Linq;
 namespace Mpdn.Extensions.Framework.Filter
 {
     using IBaseFilter = IFilter<IFilterOutput>;
+
+    public interface ITaggableFilter<out TOutput> : IFilter<TOutput> 
+        where TOutput : class, IFilterOutput
+    {
+        void EnableTag();
+    }
 
     public abstract class FilterTag
     {
@@ -146,7 +152,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
         private class BottomTag : StringTag
         {
-            public BottomTag() : base("_|_") { }
+            public BottomTag() : base("⊥") { }
 
             public override int Initialize(int count = 1)
             {
@@ -278,6 +284,16 @@ namespace Mpdn.Extensions.Framework.Filter
                 newTag.AddInputLabel(tag);
 
             return newTag ?? tag;
+        }
+
+        public static TFilter MakeTagged<TFilter>(this TFilter filter)
+            where TFilter : IFilter<IFilterOutput>
+        {
+            var taggableFilter = filter as ITaggableFilter<IFilterOutput>;
+            if (taggableFilter != null)
+                taggableFilter.EnableTag();
+
+            return filter;
         }
     }
 }

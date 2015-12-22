@@ -20,7 +20,7 @@ using Mpdn.Extensions.Framework.Controls;
 
 namespace Mpdn.Extensions.AudioScripts
 {
-    public class AudioScriptChainList : ChainList<Audio, IAudioScript>
+    public class AudioScriptChainList : ChainList<AudioOutput, IAudioScript>
     {
     }
 }

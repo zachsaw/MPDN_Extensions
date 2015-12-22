@@ -24,7 +24,7 @@ namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn
     {
-        public class Reclock : AudioChain
+        public class Reclock : AudioFilter
         {
             private const double MAX_PERCENT_ADJUST = 3; // automatically reclock if the difference is less than 3%
             private const double SANEAR_OVERSHOOT = 5;
@@ -42,7 +42,7 @@ namespace Mpdn.Extensions.AudioScripts
             private int m_SampleIndex = -8*RATIO_ADJUST_INTERVAL;
             private double m_Ratio = 1;
 
-            public override bool Process(Audio input, Audio output)
+            public override bool Process(AudioOutput input, AudioOutput output)
             {
                 if (!CalculateRatio(input))
                 {
@@ -59,7 +59,7 @@ namespace Mpdn.Extensions.AudioScripts
                 return true;
             }
 
-            private bool CalculateRatio(Audio input)
+            private bool CalculateRatio(AudioOutput input)
             {
                 if (!CompatibleAudioRenderer)
                     return false;
@@ -99,7 +99,7 @@ namespace Mpdn.Extensions.AudioScripts
                 return true;
             }
 
-            private void CalculateRatio(Audio input, double ratio, double refclk, double videoHz, double displayHz)
+            private void CalculateRatio(AudioOutput input, double ratio, double refclk, double videoHz, double displayHz)
             {
                 var format = input.Format;
                 var bytesPerSample = format.wBitsPerSample/8;
@@ -126,7 +126,7 @@ namespace Mpdn.Extensions.AudioScripts
                 m_Ratio = ratio;
             }
 
-            private void PerformReclock(Audio output)
+            private void PerformReclock(AudioOutput output)
             {
                 long start, end;
                 output.Sample.GetTime(out start, out end);
@@ -140,7 +140,7 @@ namespace Mpdn.Extensions.AudioScripts
                 get { return m_Sanear || m_DirectSoundWaveOut; }
             }
 
-            public override void Initialize()
+            protected override void Initialize()
             {
                 base.Initialize();
 

@@ -17,84 +17,41 @@
 using System;
 using System.Diagnostics;
 using Mpdn.Extensions.Framework.Chain;
-using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public class RenderChainScript : IRenderScript, IDisposable
+    public class RenderChainScript : FilterChainScript<ITextureFilter, ITextureOutput<ITexture2D>>, IRenderScript
     {
         private VideoSourceFilter m_SourceFilter;
-        private IFilter<ITextureOutput<ITexture2D>> m_Filter;
-        private FilterTag m_Tag;
-
-        protected readonly Chain<ITextureFilter> Chain;
 
         public RenderChainScript(Chain<ITextureFilter> chain)
-        {
-            Chain = chain;
-            Chain.Initialize();
-            Status = string.Empty;
-        }
+            : base(chain) 
+        { }
 
         public ScriptInterfaceDescriptor Descriptor
         {
             get { return m_SourceFilter == null ? null : m_SourceFilter.Descriptor; }
         }
 
-        public string Status { get; private set; }
-
-        public void Update()
+        protected override void StartRendering()
         {
-            var oldFilter = m_Filter;
-            try
-            {
-                DisposeHelper.Dispose(ref m_SourceFilter);
-
-                m_Filter = CreateOutputFilter();
-
-                UpdateStatus();
-            }
-            finally
-            {
-                DisposeHelper.Dispose(ref oldFilter);
-            }
+            if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
+                TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
         }
 
-        private void UpdateStatus()
+        protected override void OutputResult(ITextureOutput<ITexture2D> result)
         {
-            Status = m_Tag != null ? m_Tag.CreateString() : "Status Invalid";
+            if (Renderer.OutputRenderTarget != result.Texture)
+                Scale(Renderer.OutputRenderTarget, result.Texture);
         }
 
-        public bool Execute()
+        protected override void FinalizeRendering()
         {
-            try
-            {
-                if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
-                    TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
-
-                m_Filter.Render();
-
-                if (Renderer.OutputRenderTarget != m_Filter.Output.Texture)
-                    Scale(Renderer.OutputRenderTarget, m_Filter.Output.Texture);
-
-                m_Filter.Reset();
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                var message = ErrorMessage(e);
-                Trace.WriteLine(message);
-                return false;
-            }
-            finally
-            {
-                TexturePool.FlushTextures();
-            }
+            TexturePool.FlushTextures();
         }
 
-        private IResizeableFilter MakeInitialFilter()
+        protected override ITextureFilter MakeInitialFilter()
         {
             m_SourceFilter = new VideoSourceFilter();
 
@@ -107,77 +64,28 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return m_SourceFilter;
         }
 
+        protected override ITextureFilter ModifyOutput(ITextureFilter output)
+        {
+            return output.SetSize(Renderer.TargetSize);
+        }
+
+        protected override ITextureFilter HandleError(Exception e)
+        {
+            var message = ErrorMessage(e);
+            Trace.WriteLine(message);
+            return new TextFilter(message);
+        }
+
         private static void Scale(ITargetTexture output, ITexture2D input)
         {
             Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }
 
-        #region Error Handling
-
-        public IFilter<ITextureOutput<ITexture2D>> CreateOutputFilter()
-        {
-            try
-            {
-                var input = MakeInitialFilter()
-                    .MakeTagged();
-
-                return Chain
-                    .Process(input)
-                    .SetSize(Renderer.TargetSize)
-                    .GetTag(out m_Tag)
-                    .Compile()
-                    .InitializeFilter();
-            }
-            catch (Exception ex)
-            {
-                return DisplayError(ex);
-            }
-        }
-
-        private TextFilter DisplayError(Exception e)
-        {
-            var message = ErrorMessage(e);
-            Trace.WriteLine(message);
-            return new TextFilter(message).InitializeFilter();
-        }
-
-        protected static Exception InnerMostException(Exception e)
-        {
-            while (e.InnerException != null)
-            {
-                e = e.InnerException;
-            }
-
-            return e;
-        }
-
-        private string ErrorMessage(Exception e)
-        {
-            var ex = InnerMostException(e);
-            return string.Format("Error in {0}:\r\n\r\n{1}\r\n\r\n~\r\nStack Trace:\r\n{2}",
-                    GetType().Name, ex.Message, ex.StackTrace);
-        }
-
-        #endregion
-
         #region Resource Management
 
-        ~RenderChainScript()
+        protected override void Dispose(bool disposing)
         {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            Chain.Reset();
-
-            DisposeHelper.Dispose(m_Filter);
+            base.Dispose(disposing);
             DisposeHelper.Dispose(ref m_SourceFilter);
         }
 

@@ -53,18 +53,18 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
-        public static void Dispose<T>(ref T obj) where T : class, IDisposable
+        public static void Dispose<T>(ref T obj)
         {
             if (obj == null) return;
             SafeDispose(obj);
             obj = default(T);
         }
 
-        private static void SafeDispose(IDisposable disposable)
+        private static void SafeDispose(object disposable)
         {
             try
             {
-                disposable.Dispose();
+                Dispose(disposable);
             }
             catch (Exception ex)
             {
