@@ -14,32 +14,24 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
+using System;
 using Mpdn.AudioScript;
-using Mpdn.Extensions.Framework.Chain;
-using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public interface IAudioChainUi : IAudioScriptUi, IChainUi<IAudioFilter, IAudioScript> { }
-
-    public abstract class AudioChainUi<TChain> : AudioChainUi<TChain, ScriptConfigDialog<TChain>>
-        where TChain : Chain<IAudioFilter>, new()
-    { }
-
-    public abstract class AudioChainUi<TChain, TDialog> : 
-            ChainUi<IAudioFilter, IAudioScript, TChain, TDialog>, 
-            IAudioChainUi
-        where TChain : Chain<IAudioFilter>, new()
-        where TDialog : IScriptConfigDialog<TChain>, new()
+    public class AudioSource : BaseSourceFilter<IAudioOutput>, IAudioFilter
     {
-        protected AudioChainUi()
+        private IAudio m_Audio;
+
+        public AudioSource(IAudio audio)
         {
-            CudafyInitializer.Init();
+            m_Audio = audio;
         }
 
-        public override IAudioScript CreateScript()
+        protected override IAudioOutput DefineOutput()
         {
-            return new AudioChainScript(Settings);
+            return new AudioOutput(() => m_Audio.InputFormat, () => m_Audio.Input);
         }
     }
 }

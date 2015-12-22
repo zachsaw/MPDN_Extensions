@@ -26,11 +26,11 @@ namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn.ScriptChain
     {
-        public class ScriptChain : PresetCollection<Audio, IAudioScript>
+        public class ScriptChain : PresetCollection<AudioOutput, IAudioScript>
         {
-            private List<Preset<Audio, IAudioScript>> m_Chain;
+            private List<Preset<AudioOutput, IAudioScript>> m_Chain;
 
-            public override Audio Process(Audio input)
+            public override AudioOutput Process(AudioOutput input)
             {
                 RefreshChain();
                 return m_Chain.Aggregate(input, (result, chain) => result + chain);

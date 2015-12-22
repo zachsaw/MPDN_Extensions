@@ -24,7 +24,7 @@ namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Gain : AudioChain
+        public class Gain : AudioFilter
         {
             protected override void OnLoadAudioKernel()
             {
@@ -61,7 +61,7 @@ namespace Mpdn.Examples.AudioScripts
             }
         }
 
-        public class GainUi : AudioChainUi<Gain>
+        public class GainUi : AudioChainUi<StaticAudioChain<Gain>>
         {
             public override ExtensionUiDescriptor Descriptor
             {

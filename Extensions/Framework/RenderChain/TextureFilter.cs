@@ -56,10 +56,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public interface ITextureFilter : ITextureFilter<ITexture2D>
     { }
 
-    public interface IResizeableFilter : ITextureFilter
+    public interface IResizeableFilter : ITextureFilter, ITaggableFilter<ITextureOutput<ITexture2D>>
     {
         void SetSize(TextureSize outputSize);
-        void EnableTag();
     }
 
     public abstract class TextureFilter : Filter<ITextureOutput<IBaseTexture>, ITextureOutput<ITexture2D>>, ITextureFilter
@@ -84,16 +83,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 Size = OutputSize,
                 Format = OutputFormat
             };
-        }
-    }
-
-    public static class TextureFilterHelper
-    {
-        public static TFilter MakeTagged<TFilter>(this TFilter filter)
-            where TFilter : IResizeableFilter
-        {
-            filter.EnableTag();
-            return filter;
         }
     }
 }

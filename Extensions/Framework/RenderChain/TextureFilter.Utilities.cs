@@ -289,11 +289,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return new TransformedResizeableFilter(transformation, filter);
         }
 
-        public static ITextureFilter Apply(this ITextureFilter filter, Func<ITextureFilter, ITextureFilter> map)
-        {
-            return map(filter);
-        }
-
         public static ITextureFilter AddTaggedResizer(this ITextureFilter<ITexture2D> filter)
         {
             return filter.SetSize(filter.Output.Size, true);

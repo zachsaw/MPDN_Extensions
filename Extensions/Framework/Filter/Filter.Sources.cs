@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace Mpdn.Extensions.Framework.Filter
 {
-    public abstract class BaseSourceFilter<TOutput> : Filter<IFilterOutput,  TOutput>
+    public abstract class BaseSourceFilter<TOutput> : Filter<IFilterOutput, TOutput>
         where TOutput : class, IFilterOutput
     {
         protected BaseSourceFilter()

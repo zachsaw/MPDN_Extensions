@@ -22,7 +22,7 @@ namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Silencer : AudioChain
+        public class Silencer : AudioFilter
         {
             private const int CHANNEL_TO_SILENT = 0;
 
@@ -40,7 +40,7 @@ namespace Mpdn.Examples.AudioScripts
             }
         }
 
-        public class SilencerUi : AudioChainUi<Silencer>
+        public class SilencerUi : AudioChainUi<StaticAudioChain<Silencer>>
         {
             public override ExtensionUiDescriptor Descriptor
             {

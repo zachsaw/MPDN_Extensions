@@ -25,13 +25,15 @@ using Rectangle = System.Drawing.Rectangle;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public class TextFilter : TextureSourceFilter<ISourceTexture>
+    public class TextFilter : TextureSourceFilter<ITexture2D>, ITextureFilter
     {
         private Font m_Font;
+        private readonly ISourceTexture m_SourceTexture;
 
         public TextFilter(string text)
             : base(Renderer.CreateTexture(Renderer.TargetSize), true)
         {
+            m_SourceTexture = (ISourceTexture)Output.Texture;
             DrawText(text);
         }
 
@@ -89,7 +91,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                         tex[j, (i + 0)] = *ptr++ / 255.0f; // r
                     }
                 }
-                Renderer.UpdateTexture(Output.Texture, tex);
+                Renderer.UpdateTexture(m_SourceTexture, tex);
             }
             finally
             {
