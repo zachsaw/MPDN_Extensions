@@ -44,9 +44,9 @@ namespace Mpdn.Extensions.Framework.AudioChain
             }
         }
 
-        public override void Reset()
+        protected override void Dispose(bool disposing)
         {
-            base.Reset();
+            base.Dispose(disposing);
             try
             {
                 m_SampleFormat = AudioSampleFormat.Unknown;
@@ -72,10 +72,8 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             if (inputs.Count != 1)
                 throw new ArgumentException("Incorrect number of inputs.");
-            Render(inputs.First());
+            Process(inputs.First(), Output);
         }
-
-        protected abstract void Render(IAudioOutput input);
 
         private bool Process(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
         {
