@@ -208,7 +208,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
     public class UpdateChecker
     {
-        public static readonly string MpdnRepoUrl = "http://mpdn.zachsaw.com/";
+        public static readonly string MpdnRepoUrl = "https://mpdn.zachsaw.com/";
         public static readonly string LatestFolderUrl = string.Format("{0}Latest/", MpdnRepoUrl);
         protected readonly UpdateCheckerSettings Settings;
         protected readonly WebClient WebClient = new WebClient();
