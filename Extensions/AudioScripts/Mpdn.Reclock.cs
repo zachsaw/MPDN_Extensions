@@ -42,7 +42,7 @@ namespace Mpdn.Extensions.AudioScripts
             private int m_SampleIndex = -8*RATIO_ADJUST_INTERVAL;
             private double m_Ratio = 1;
 
-            public override bool Process(AudioOutput input, AudioOutput output)
+            public override bool Process(IAudioOutput input, IAudioOutput output)
             {
                 if (!CalculateRatio(input))
                 {
@@ -59,7 +59,7 @@ namespace Mpdn.Extensions.AudioScripts
                 return true;
             }
 
-            private bool CalculateRatio(AudioOutput input)
+            private bool CalculateRatio(IAudioOutput input)
             {
                 if (!CompatibleAudioRenderer)
                     return false;
@@ -99,7 +99,7 @@ namespace Mpdn.Extensions.AudioScripts
                 return true;
             }
 
-            private void CalculateRatio(AudioOutput input, double ratio, double refclk, double videoHz, double displayHz)
+            private void CalculateRatio(IAudioOutput input, double ratio, double refclk, double videoHz, double displayHz)
             {
                 var format = input.Format;
                 var bytesPerSample = format.wBitsPerSample/8;
@@ -126,7 +126,7 @@ namespace Mpdn.Extensions.AudioScripts
                 m_Ratio = ratio;
             }
 
-            private void PerformReclock(AudioOutput output)
+            private void PerformReclock(IAudioOutput output)
             {
                 long start, end;
                 output.Sample.GetTime(out start, out end);
@@ -147,7 +147,7 @@ namespace Mpdn.Extensions.AudioScripts
                 Player.StateChanged += PlayerStateChanged;
             }
 
-            public override void Reset()
+            protected override void Dispose(bool disposing)
             {
                 m_Sanear = false;
                 m_DirectSoundWaveOut = false;
@@ -156,7 +156,7 @@ namespace Mpdn.Extensions.AudioScripts
 
                 Player.StateChanged -= PlayerStateChanged;
 
-                base.Reset();
+                base.Dispose(disposing);
             }
 
             protected override void Process(float[,] samples, short channels, int sampleCount)
@@ -192,7 +192,7 @@ namespace Mpdn.Extensions.AudioScripts
             }
         }
 
-        public class ReclockUi : AudioChainUi<Reclock>
+        public class ReclockUi : AudioChainUi<StaticAudioChain<Reclock>>
         {
             public override string Category
             {

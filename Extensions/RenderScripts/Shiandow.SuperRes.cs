@@ -21,7 +21,6 @@ using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
 using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
-using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
 using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
 using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3;
 using Mpdn.RenderScript;
@@ -35,25 +34,13 @@ namespace Mpdn.Extensions.RenderScripts
         {
             #region Settings
 
-            public ScriptGroup PrescalerGroup { get; set; }
+            public RenderScriptGroup PrescalerGroup { get; set; }
 
             public int Passes { get; set; }
             public float Strength { get; set; }
             public float Softness { get; set; }
 
             public bool HQdownscaling { get; set; }
-
-            public override void Initialize()
-            {
-                base.Initialize();
-                PrescalerGroup.Initialize();
-            }
-
-            public override void Reset()
-            {
-                base.Reset();
-                PrescalerGroup.Reset();
-            }
 
             #endregion
 
@@ -78,7 +65,7 @@ namespace Mpdn.Extensions.RenderScripts
                     }
                 }.ToPreset("Super-xBR (Fast)");
 
-                PrescalerGroup = new ScriptGroup
+                PrescalerGroup = new RenderScriptGroup
                 {
                     Options = (new[] {fastSuperXbrUi})
                         .Concat(
@@ -93,7 +80,6 @@ namespace Mpdn.Extensions.RenderScripts
                         .ToList(),
                     SelectedIndex = 0
                 };
-
             }
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)

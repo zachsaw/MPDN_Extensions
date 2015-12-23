@@ -17,6 +17,7 @@
 
 using System.IO;
 using Mpdn.Extensions.Framework.Chain;
+using Mpdn.Extensions.Framework.Chain.Dialogs;
 using Mpdn.Extensions.Framework.Filter;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
@@ -137,4 +138,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #endregion
     }
+
+    public class RenderScriptChain : ScriptChain<ITextureFilter, IRenderScript> { }
+    public class RenderScriptChainDialog : ScriptChainDialog<ITextureFilter, IRenderScript> { }
+
+    public class RenderScriptGroup : ScriptGroup<ITextureFilter, IRenderScript> { }
+    public class RenderScriptGroupDialog : ScriptGroupDialog<ITextureFilter, IRenderScript> { }
 }
