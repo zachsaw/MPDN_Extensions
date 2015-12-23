@@ -125,8 +125,7 @@ namespace Mpdn.Extensions.Framework.Chain
             {
                 Player.OsdText.Show(Name + ": " + SelectedOption.Name);
                 
-                // Refresh everythign until a better method can be found
-                Player.Config.Refresh();
+                // Refresh everything until a better method can be found
                 Extension.RefreshRenderScript();
             }
         }
