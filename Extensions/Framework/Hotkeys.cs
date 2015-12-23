@@ -48,7 +48,7 @@ namespace Mpdn.Extensions.Framework
         private static void OnHotkeysChanged()
         {
             if (HotkeysChanged != null)
-                HotkeysChanged.Invoke(null, EventArgs.Empty);
+                HotkeysChanged(null, EventArgs.Empty);
         }
     }
 
