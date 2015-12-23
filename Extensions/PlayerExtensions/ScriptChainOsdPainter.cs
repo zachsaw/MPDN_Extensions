@@ -78,7 +78,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void OnPlayerLoaded(object sender, EventArgs eventArgs)
         {
-            DynamicHotkeys.RegisterHotkey(Guid.NewGuid(), "Ctrl+K", () =>
+            HotkeyRegister.RegisterHotkey(Guid.NewGuid(), "Ctrl+K", () =>
             {
                 Settings.ShowOsd = !Settings.ShowOsd;
 

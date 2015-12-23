@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
 
@@ -63,7 +61,7 @@ namespace Mpdn.Extensions.Framework
             m_Actions.Clear();
             foreach (var verb in Verbs)
             {
-                var shortcut = DecodeKeyString(verb.ShortcutDisplayStr);
+                var shortcut = HotkeyHelper.SafeDecodeKeyString(verb.ShortcutDisplayStr);
                 if (shortcut == Keys.None)
                     continue;
 
@@ -78,79 +76,6 @@ namespace Mpdn.Extensions.Framework
             if (m_Actions.TryGetValue(e.InputArgs.KeyData, out action))
             {
                 action();
-            }
-        }
-
-        protected static bool TryDecodeKeyString(string keyString, out Keys keys)
-        {
-            keys = Keys.None;
-            if (string.IsNullOrWhiteSpace(keyString))
-                return false;
-
-            keyString = keyString.ToLower().Trim();
-            var keyWords = Regex.Split(keyString, @"\W+");
-            var specialKeys = AddSpecialKeys(keyString);
-            keyString = string.Join(", ",
-                keyWords.Concat(specialKeys).Where(k => !string.IsNullOrWhiteSpace(k)).Select(DecodeKeyWord).ToArray());
-
-            return (Enum.TryParse(keyString, true, out keys));
-        }
-
-        private static IEnumerable<string> AddSpecialKeys(string keyString)
-        {
-            var specialKeys = new List<string>();
-            if (keyString.Length >= 1)
-            {
-                var lastChar = keyString[keyString.Length - 1];
-                switch (lastChar)
-                {
-                    case '+':
-                    case '-':
-                        specialKeys.Add(new string(lastChar, 1));
-                        break;
-                }
-            }
-            return specialKeys;
-        }
-
-        private static Keys DecodeKeyString(string keyString)
-        {
-            Keys keys;
-            return TryDecodeKeyString(keyString, out keys) ? keys : Keys.None;
-        }
-
-        private static string DecodeKeyWord(string keyWord)
-        {
-            switch (keyWord)
-            {
-                case "ctrl":
-                    return "Control";
-                case "0":
-                    return "D0";
-                case "1":
-                    return "D1";
-                case "2":
-                    return "D2";
-                case "3":
-                    return "D3";
-                case "4":
-                    return "D4";
-                case "5":
-                    return "D5";
-                case "6":
-                    return "D6";
-                case "7":
-                    return "D7";
-                case "8":
-                    return "D8";
-                case "9":
-                    return "D9";
-                case "+":
-                    return "Add";
-                case "-":
-                    return "Subtract";
-                default:
-                    return keyWord;
             }
         }
 

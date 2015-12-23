@@ -172,7 +172,7 @@
     <Compile Include="Extensions\Framework\Chain\Chain.cs" />
     <Compile Include="Extensions\Framework\Scripting\ScriptEngine.cs" />
     <Compile Include="Extensions\Framework\Scripting\ScriptEngineUtilities.cs" />
-    <Compile Include="Extensions\Framework\Chain\Presets.cs" />
+    <Compile Include="Extensions\Framework\Chain\Preset.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

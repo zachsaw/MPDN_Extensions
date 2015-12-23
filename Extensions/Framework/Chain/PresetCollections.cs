@@ -17,16 +17,10 @@ namespace Mpdn.Extensions.Framework.Chain
 
         #endregion
 
-        public PresetCollection()
+        protected PresetCollection()
         {
             Options = new List<Preset<T, TScript>>();
         }
-
-        /*
-        public override T Process(T input)
-        {
-            throw new NotImplementedException();
-        }*/
     }
 
     public class ScriptChain<T, TScript> : PresetCollection<T, TScript>
@@ -98,31 +92,25 @@ namespace Mpdn.Extensions.Framework.Chain
             return SelectedOption != null ? input + SelectedOption : input;
         }
 
-        #region Hotkey Handling (Broken)
+        #region Hotkey Handling
 
         private readonly Guid m_HotkeyGuid;
         private string m_Hotkey;
-        private bool m_Registered;
 
         private void RegisterHotkey()
         {
-            //DynamicHotkeys.RegisterHotkey(m_HotkeyGuid, Hotkey, IncrementSelection);
-            m_Registered = true;
+            HotkeyRegister.RegisterHotkey(m_HotkeyGuid, Hotkey, IncrementSelection);
         }
 
         private void DeregisterHotkey()
         {
-            //DynamicHotkeys.RemoveHotkey(m_HotkeyGuid);
-            m_Registered = false;
+            HotkeyRegister.DeregisterHotkey(m_HotkeyGuid);
         }
 
         private void UpdateHotkey()
         {
-            if (m_Registered)
-            {
-                DeregisterHotkey();
-                RegisterHotkey();
-            }
+            DeregisterHotkey();
+            RegisterHotkey();
         }
 
         private void IncrementSelection()
@@ -130,15 +118,19 @@ namespace Mpdn.Extensions.Framework.Chain
             if (Options.Count > 0)
             {
                 SelectedIndex = (SelectedIndex + 1) % Options.Count;
+                
             }
 
             if (SelectedOption != null)
             {
                 Player.OsdText.Show(Name + ": " + SelectedOption.Name);
+                
+                // Refresh everythign until a better method can be found
+                Player.Config.Refresh();
+                Extension.RefreshRenderScript();
             }
         }
 
         #endregion
     }
-
 }

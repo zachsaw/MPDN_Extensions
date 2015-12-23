@@ -24,7 +24,6 @@ using System.Windows.Forms;
 using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Config;
-using Mpdn.DirectShow;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework
