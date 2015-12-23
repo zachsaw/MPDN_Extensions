@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -26,29 +25,27 @@ namespace Mpdn.Extensions.PlayerExtensions
     public class DynamicHotkeys : PlayerExtension
     {
         private static IList<Verb> s_Verbs = new List<Verb>();
-        private static Action s_Reload;
 
-        public static void RegisterHotkey(Guid guid, string hotkey, Action action)
+        public override void Initialize()
         {
-            Keys keys;
-            if (TryDecodeKeyString(hotkey, out keys))
-            {
-                s_Verbs.Add(new Verb(Category.Window, "Dynamic Hotkeys", guid.ToString(), hotkey, "", action));
-                s_Reload();
-            }
+            base.Initialize();
+            HotkeyRegister.HotkeysChanged += OnHotkeysChanged;
         }
 
-        public static void RemoveHotkey(Guid guid)
+        public override void Destroy()
         {
-            s_Verbs = s_Verbs.Where(v => v.Caption != guid.ToString()).ToList();
-            s_Reload();
+            HotkeyRegister.HotkeysChanged -= OnHotkeysChanged;
+            base.Destroy();
         }
 
-        public DynamicHotkeys()
+        public void OnHotkeysChanged(object sender, EventArgs e)
         {
-            s_Reload = LoadVerbs;
+            s_Verbs = HotkeyRegister.Hotkeys.Select(
+                (hotkey, i) => new Verb(Category.Window, "Dynamic Hotkey " + i.ToString(), "", hotkey.Keys.ToString(), "", hotkey.Action)).ToList();
+            LoadVerbs();
         }
 
+        // TODO implement Verb hotkeys using HotkeyRegister instead of the other way around.
         public override IList<Verb> Verbs { get { return s_Verbs; } }
 
         public override ExtensionUiDescriptor Descriptor
