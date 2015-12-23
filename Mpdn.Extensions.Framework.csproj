@@ -173,6 +173,7 @@
     <Compile Include="Extensions\Framework\Scripting\ScriptEngine.cs" />
     <Compile Include="Extensions\Framework\Scripting\ScriptEngineUtilities.cs" />
     <Compile Include="Extensions\Framework\Chain\Preset.cs" />
+    <Compile Include="Extensions\Framework\Hotkeys.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
