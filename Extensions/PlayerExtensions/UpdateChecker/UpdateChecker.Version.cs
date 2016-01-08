@@ -172,7 +172,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         }
     }
 
-    public class GitHubVersion
+    public class GitHubVersion // ReSharper disable InconsistentNaming
     {
         public string tag_name { get; set; }
         public string body { get; set; }
@@ -183,7 +183,7 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
             public string name { get; set; }
             public string browser_download_url { get; set; }
         }
-    }
+    } // ReSharper restore InconsistentNaming
 
     public class ExtensionVersion : Version
     {
