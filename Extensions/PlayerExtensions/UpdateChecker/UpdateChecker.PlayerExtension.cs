@@ -211,19 +211,17 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         public static readonly string MpdnRepoUrl = "http://mpdn.zachsaw.com/";
         public static readonly string LatestFolderUrl = string.Format("{0}Latest/", MpdnRepoUrl);
         protected readonly UpdateCheckerSettings Settings;
-        protected readonly WebClient WebClient = new WebClient();
         protected readonly Uri ChangelogUrl;
 
         public UpdateChecker(UpdateCheckerSettings settings, Uri url)
         {
             Settings = settings;
-            WebClient.DownloadStringCompleted += DownloadStringCompleted;
             ChangelogUrl = url;
         }
 
-        protected void SetHeaders()
+        protected void SetHeaders(WebClient webClient)
         {
-           WebClientHelper.SetHeaders(WebClient);
+           WebClientHelper.SetHeaders(webClient);
         }
 
         private void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
@@ -258,10 +256,11 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
 
         public void CheckVersion()
         {
-            SetHeaders();
+            var wc = new WebClient();
+            SetHeaders(wc);
             try
             {
-                var changelog = WebClient.DownloadString(ChangelogUrl);
+                var changelog = wc.DownloadString(ChangelogUrl);
                 ParseChangelog(changelog);
             }
             catch (WebException e)
@@ -273,10 +272,12 @@ namespace Mpdn.Extensions.PlayerExtensions.UpdateChecker
         }
         public void CheckVersionAsync()
         {
-            SetHeaders();
+            var wc = new WebClient();
+            wc.DownloadStringCompleted += DownloadStringCompleted;
+            SetHeaders(wc);
             // DownloadStringAsync isn't fully async!
             // It blocks when it is detecting proxy settings and especially noticeable if user is behind a proxy server
-            Task.Factory.StartNew(() => WebClient.DownloadStringAsync(ChangelogUrl));
+            Task.Factory.StartNew(() => wc.DownloadStringAsync(ChangelogUrl));
         }
     }
 
