@@ -17,6 +17,8 @@
 // See also: Perceptually Based Downscaling of Images, by Oztireli, A. Cengiz and Gross, Markus, 10.1145/2766891, https://graphics.ethz.ch/~cengizo/Files/Sig15PerceptualDownscaling.pdf
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 
@@ -24,67 +26,67 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SSimDownscaling
     {
+        public static class ShaderFilterHelper
+        {
+            public static IFilter ApplyTo<T>(this ShaderFilterSettings<T> settings, params IFilter<IBaseTexture>[] inputFilters)
+                where T : IShaderBase
+            {
+                if (settings is ShaderFilterSettings<IShader>)
+                    return new ShaderFilter(settings as ShaderFilterSettings<IShader>, inputFilters);
+                if (settings is ShaderFilterSettings<IShader11>)
+                    return new Shader11Filter(settings as ShaderFilterSettings<IShader11>, inputFilters);
+
+                throw new ArgumentException("Unsupported Shader type.");
+            }
+
+            public static IFilter ApplyTo<T>(this ShaderFilterSettings<T> settings, IEnumerable<IFilter<IBaseTexture>> inputFilters)
+                where T : IShaderBase
+            {
+                return settings.ApplyTo(inputFilters.ToArray());
+            }
+
+            public static IFilter Apply<T>(this IFilter filter, ShaderFilterSettings<T> settings)
+                where T : IShaderBase
+            {
+                return settings.ApplyTo(filter);
+            }
+
+            public static IFilter ApplyTo<T>(this T shader, params IFilter<IBaseTexture>[] inputFilters)
+                where T : IShaderBase
+            {
+                if (shader is IShader)
+                    return new ShaderFilter((IShader)shader, inputFilters);
+                if (shader is IShader11)
+                    return new Shader11Filter((IShader11)shader, inputFilters);
+
+                throw new ArgumentException("Unsupported Shader type.");
+            }
+
+            public static IFilter ApplyTo<T>(this T shader, IEnumerable<IFilter<IBaseTexture>> inputFilters)
+                where T : IShaderBase
+            {
+                return shader.ApplyTo(inputFilters.ToArray());
+            }
+
+            public static IFilter Apply<T>(this IFilter filter, T shader)
+                where T : IShaderBase
+            {
+                return shader.ApplyTo(filter);
+            }
+        }
+
         public class SSimDownscaler : RenderChain
         {
-		    public static class ShaderFilterHelper
-		    {
-		        public static ITextureFilter ApplyTo<T>(this IShaderFilterSettings<T> settings, params IBaseTextureFilter[] inputFilters)
-		            where T : IShaderBase
-		        {
-		            if (settings is IShaderFilterSettings<IShader>)
-		                return new ShaderFilter((IShaderFilterSettings<IShader>)settings, inputFilters);
-		            if (settings is IShaderFilterSettings<IShader11>)
-		                return new Shader11Filter((IShaderFilterSettings<IShader11>)settings, inputFilters);
-
-		            throw new ArgumentException("Unsupported Shader type.");
-		        }
-
-		        public static ITextureFilter ApplyTo<T>(this IShaderFilterSettings<T> settings, IEnumerable<IBaseTextureFilter> inputFilters)
-		            where T : IShaderBase
-		        {
-		            return settings.ApplyTo(inputFilters.ToArray());
-		        }
-
-		        public static ITextureFilter Apply<T>(this ITextureFilter filter, IShaderFilterSettings<T> settings)
-		            where T : IShaderBase
-		        {
-		            return settings.ApplyTo(filter);
-		        }
-
-		        public static ITextureFilter ApplyTo<T>(this T shader, params IBaseTextureFilter[] inputFilters)
-		            where T : IShaderBase
-		        {
-		            if (shader is IShader)
-		                return new ShaderFilter((IShader)shader, inputFilters);
-		            if (shader is IShader11)
-		                return new Shader11Filter((IShader11)shader, inputFilters);
-
-		            throw new ArgumentException("Unsupported Shader type.");
-		        }
-
-		        public static ITextureFilter ApplyTo<T>(this T shader, IEnumerable<IBaseTextureFilter> inputFilters)
-		            where T : IShaderBase
-		        {
-		            return shader.ApplyTo(inputFilters.ToArray());
-		        }
-
-		        public static ITextureFilter Apply<T>(this ITextureFilter filter, T shader)
-		            where T : IShaderBase
-		        {
-		            return shader.ApplyTo(filter);
-		        }
-		    }
-
-            private Tuple<ITextureFilter, ITextureFilter> DownscaledVariance(ITextureFilter input, TextureSize targetSize)
+            private Tuple<IFilter, IFilter> DownscaledVariance(IFilter input, TextureSize targetSize)
             {
                 var HDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
-                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
+                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.OutputFormat);
                 var VDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.Output.Format);
+                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.OutputFormat);
                 var HVar = CompileShader("Scalers/DownscaledVar_H.hlsl")
-                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
+                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.OutputFormat);
                 var VVar = CompileShader("Scalers/DownscaledVar_V.hlsl")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.Output.Format);
+                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.OutputFormat);
 
                 var hMean = HDownscaler.ApplyTo(input);
                 var mean = VDownscaler.ApplyTo(hMean);
@@ -92,15 +94,15 @@ namespace Mpdn.Extensions.RenderScripts
                 var hVariance = HVar.ApplyTo(input, hMean);
                 var variance = VVar.ApplyTo(hVariance, hMean, mean);
 
-                return new Tuple<ITextureFilter, ITextureFilter>(mean, variance);
+                return new Tuple<IFilter, IFilter>(mean, variance);
             }
 
-            private Tuple<ITextureFilter, ITextureFilter> ConvolvedVariance(ITextureFilter input)
+            private Tuple<IFilter, IFilter> ConvolvedVariance(IFilter input)
             {
-                var HConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 0;").Configure(format: input.Output.Format);
-                var VConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 1;").Configure(format: input.Output.Format);
-                var HVar = CompileShader("Scalers/ConvolvedVar_H.hlsl").Configure(format: input.Output.Format);
-                var VVar = CompileShader("Scalers/ConvolvedVar_V.hlsl").Configure(format: input.Output.Format);
+                var HConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 0;").Configure(format: input.OutputFormat);
+                var VConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 1;").Configure(format: input.OutputFormat);
+                var HVar = CompileShader("Scalers/ConvolvedVar_H.hlsl").Configure(format: input.OutputFormat);
+                var VVar = CompileShader("Scalers/ConvolvedVar_V.hlsl").Configure(format: input.OutputFormat);
 
                 var hMean = HConvolver.ApplyTo(input);
                 var mean = VConvolver.ApplyTo(hMean);
@@ -108,15 +110,15 @@ namespace Mpdn.Extensions.RenderScripts
                 var hVariance = HVar.ApplyTo(input, hMean);
                 var variance = VVar.ApplyTo(hVariance, hMean, mean);
 
-                return new Tuple<ITextureFilter, ITextureFilter>(mean, variance);
+                return new Tuple<IFilter, IFilter>(mean, variance);
             }
 
-            private ITextureFilter Downscale(ITextureFilter input, TextureSize targetSize)
+            private IFilter Downscale(IFilter input, TextureSize targetSize)
             {
                 var HDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
-                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
+                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.OutputFormat);
                 var VDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.Output.Format);
+                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.OutputFormat);
 
                 var hMean = HDownscaler.ApplyTo(input);
                 var mean = VDownscaler.ApplyTo(hMean);
@@ -124,10 +126,10 @@ namespace Mpdn.Extensions.RenderScripts
                 return mean;
             }
 
-            private ITextureFilter Convolve(ITextureFilter input)
+            private IFilter Convolve(IFilter input)
             {
-                var HConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 0;").Configure(format: input.Output.Format);
-                var VConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 1;").Configure(format: input.Output.Format);
+                var HConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 0;").Configure(format: input.OutputFormat);
+                var VConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 1;").Configure(format: input.OutputFormat);
 
                 var hMean = HConvolver.ApplyTo(input);
                 var mean = VConvolver.ApplyTo(hMean);
@@ -135,7 +137,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return mean;
             }
 
-            protected override ITextureFilter CreateFilter(ITextureFilter input)
+            protected override IFilter CreateFilter(IFilter input)
             {
                 var targetSize = Renderer.TargetSize;
 
@@ -163,7 +165,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return CalcD.ApplyTo(Tc, Rc, L.Item1); // D = Tc + Rc*L;;
             }
         }
-        
+
         public class SSimDownscalerUi : RenderChainUi<SSimDownscaler>
         {
             protected override string ConfigFileName

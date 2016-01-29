@@ -403,6 +403,7 @@
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Chroma.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Bilateral.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.SSimDownscaling.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperChromaRes.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
