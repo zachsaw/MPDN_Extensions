@@ -54,7 +54,7 @@ namespace Mpdn.Extensions.RenderScripts
                 StrengthSetter.Value = (decimal)Settings.Strength;
                 SoftnessSetter.Value = (decimal)Settings.Softness;
 
-                HQBox.Checked = Settings.HQdownscaling;
+                LegacyBox.Checked = Settings.LegacyDownscaling;
                 
                 UpdateGui();
             }
@@ -67,7 +67,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Settings.Strength = (float)StrengthSetter.Value;
                 Settings.Softness = (float)SoftnessSetter.Value;
 
-                Settings.HQdownscaling = HQBox.Checked;
+                Settings.LegacyDownscaling = LegacyBox.Checked;
             }
 
             private void SelectionChanged(object sender, EventArgs e)
