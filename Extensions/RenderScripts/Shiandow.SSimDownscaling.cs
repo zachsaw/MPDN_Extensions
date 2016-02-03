@@ -77,92 +77,47 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class SSimDownscaler : RenderChain
         {
-            private Tuple<IFilter, IFilter> DownscaledVariance(IFilter input, TextureSize targetSize)
+            private void DownscaleAndCalcVar(IFilter input, TextureSize targetSize, out IFilter mean, out IFilter var)
             {
                 var HDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
                     .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.OutputFormat);
                 var VDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 1;")
                     .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.OutputFormat);
-                var HVar = CompileShader("Scalers/DownscaledVar_H.hlsl")
+                var HVar = CompileShader("DownscaledVarI.hlsl", macroDefinitions: "axis = 0;")
                     .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.OutputFormat);
-                var VVar = CompileShader("Scalers/DownscaledVar_V.hlsl")
+                var VVar = CompileShader("DownscaledVarII.hlsl", macroDefinitions: "axis = 1;")
                     .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.OutputFormat);
 
                 var hMean = HDownscaler.ApplyTo(input);
-                var mean = VDownscaler.ApplyTo(hMean);
+                mean = VDownscaler.ApplyTo(hMean);
 
                 var hVariance = HVar.ApplyTo(input, hMean);
-                var variance = VVar.ApplyTo(hVariance, hMean, mean);
-
-                return new Tuple<IFilter, IFilter>(mean, variance);
+                var = VVar.ApplyTo(hVariance, hMean, mean);
             }
 
-            private Tuple<IFilter, IFilter> ConvolvedVariance(IFilter input)
+            private void ConvolveAndCalcR(IFilter input, IFilter sh, out IFilter mean, out IFilter r)
             {
-                var HConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 0;").Configure(format: input.OutputFormat);
-                var VConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 1;").Configure(format: input.OutputFormat);
-                var HVar = CompileShader("Scalers/ConvolvedVar_H.hlsl").Configure(format: input.OutputFormat);
-                var VVar = CompileShader("Scalers/ConvolvedVar_V.hlsl").Configure(format: input.OutputFormat);
+                var Convolver = CompileShader("SinglePassConvolver.hlsl").Configure(format: input.OutputFormat);
+                var CalcR = CompileShader("CalcR.hlsl").Configure(format: TextureFormat.Float16);
 
-                var hMean = HConvolver.ApplyTo(input);
-                var mean = VConvolver.ApplyTo(hMean);
-
-                var hVariance = HVar.ApplyTo(input, hMean);
-                var variance = VVar.ApplyTo(hVariance, hMean, mean);
-
-                return new Tuple<IFilter, IFilter>(mean, variance);
-            }
-
-            private IFilter Downscale(IFilter input, TextureSize targetSize)
-            {
-                var HDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
-                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.OutputFormat);
-                var VDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.OutputFormat);
-
-                var hMean = HDownscaler.ApplyTo(input);
-                var mean = VDownscaler.ApplyTo(hMean);
-
-                return mean;
-            }
-
-            private IFilter Convolve(IFilter input)
-            {
-                var HConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 0;").Configure(format: input.OutputFormat);
-                var VConvolver = CompileShader("Scalers/Convolver.hlsl", macroDefinitions: "axis = 1;").Configure(format: input.OutputFormat);
-
-                var hMean = HConvolver.ApplyTo(input);
-                var mean = VConvolver.ApplyTo(hMean);
-
-                return mean;
+                mean = input.Apply(Convolver);
+                r = CalcR.ApplyTo(input, mean, sh);
             }
 
             protected override IFilter CreateFilter(IFilter input)
             {
+                IFilter H = input, Sh, L, M, R;
                 var targetSize = Renderer.TargetSize;
 
                 if (!IsDownscalingFrom(input))
                     return input;
 
-                var CalcR = CompileShader("calcR.hlsl").Configure(format: TextureFormat.Float16);
-                var calcT = CompileShader("calcT.hlsl").Configure(format: TextureFormat.Float16);
-                var CalcD = CompileShader("calcD.hlsl");
+                var Calc = CompileShader("calc.hlsl");
 
-                var H = input;
+                DownscaleAndCalcVar(H, targetSize, out L, out Sh);
+                ConvolveAndCalcR(L, Sh, out M, out R);
 
-                var L = DownscaledVariance(H, targetSize);
-                var M = ConvolvedVariance(L.Item1);
-
-                var Sl = M.Item2;
-                var Sh = Convolve(L.Item2);
-
-                var R = CalcR.ApplyTo(Sh, Sl, M.Item1); // R = sqrt(1 + Sh / Sl)
-                var T = calcT.ApplyTo(R, M.Item1); // T = (1-R)*M
-
-                var Tc = Convolve(T);
-                var Rc = Convolve(R);
-
-                return CalcD.ApplyTo(Tc, Rc, L.Item1); // D = Tc + Rc*L;;
+                return Calc.ApplyTo(R, M, L);
             }
         }
 

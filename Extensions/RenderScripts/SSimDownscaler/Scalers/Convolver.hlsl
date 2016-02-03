@@ -14,8 +14,88 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-#define kernelWidth 2
-#define Kernel(x) saturate(0.5 + (kernelWidth*0.5 - abs(x)))
-#define taps (kernelWidth + 1)
+// -- Misc --
+#ifndef Initialized
+	sampler s0:	register(s0);
+	float4 p0 : register(c0);
+	float2 p1 : register(c1);
+	float4 size0 : register(c2);
 
-#include "./Upscaler.hlsl"
+	#define Initialized 1
+#endif
+
+#define dxdy (p1.xy)
+
+// -- Definitions --
+#define factor (1)
+#define GetFrom(s, pos) (tex2D(s, pos, 0, 0))
+
+// -- Handles --
+#ifndef Get
+	#define Get(pos)    (GetFrom(s0, pos))
+#endif
+
+#ifndef axis
+	#define axis 0
+#endif
+
+#ifndef Initialization
+	#define Initialization
+#endif
+
+#ifndef Postprocessing
+	#define Postprocessing(x) x
+#endif
+
+#ifndef Kernel
+	#define kernelWidth 2
+	#define Kernel(x) saturate(0.5 + (kernelWidth*0.5 - abs(x)))
+	#define taps (kernelWidth + 1)
+	#define maxtaps taps
+#endif
+
+#ifndef EntryPoint
+	#define EntryPoint main
+#endif
+
+#ifndef AverageFormat
+	#define AverageFormat float4
+#endif
+
+#ifndef OutputFormat
+	#define OutputFormat AverageFormat
+#endif
+
+// -- Main code --
+OutputFormat EntryPoint(float2 tex : TEXCOORD0
+#ifdef ExtraArguments
+, ExtraArguments
+#endif
+) : COLOR{
+    // Calculate bounds
+	int low  = floor(-0.5*taps); // + tex * size0 + 0.5
+	int high = floor(+0.5*taps); // + tex * size0 + 0.5
+
+    float W = 0;
+	AverageFormat avg = 0;
+	float2 pos = tex;
+    Initialization;
+
+	#ifndef maxtaps
+    	int maxtaps = high - low;
+    	[loop]
+    #else
+    	[unroll]
+    #endif 
+    for (int k = 0; k < maxtaps; k++) {
+		float offset = (k + low + 1);
+		pos[axis] = tex[axis] + dxdy[axis] * offset;
+		float w = Kernel(offset);
+
+		avg += w*Get(pos);
+		W += w;
+	}
+	avg /= W;
+	
+	return Postprocessing(avg);
+}
