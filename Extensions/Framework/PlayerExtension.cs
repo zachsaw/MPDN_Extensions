@@ -28,11 +28,14 @@ namespace Mpdn.Extensions.Framework
         where TSettings : class, new()
     { }
 
-    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<IPlayerExtension, TSettings, TDialog>, IPlayerExtension
+    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<IPlayerExtension, TSettings, TDialog>,
+        IPlayerExtension
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
         #region Implementation
+
+        private readonly Guid m_HotkeyGuid = Guid.NewGuid();
 
         public virtual IList<Verb> Verbs
         {
@@ -42,46 +45,18 @@ namespace Mpdn.Extensions.Framework
         public override void Initialize()
         {
             base.Initialize();
-
-            Player.KeyDown += PlayerKeyDown;
             LoadVerbs();
         }
 
-        public override void Destroy()
-        {
-            Player.KeyDown -= PlayerKeyDown;
-
-            base.Destroy();
-        }
-
-        private readonly IDictionary<Keys, Action> m_Actions = new Dictionary<Keys, Action>();
-
         protected void LoadVerbs()
         {
-            m_Actions.Clear();
+            HotkeyRegister.DeregisterHotkey(m_HotkeyGuid);
             foreach (var verb in Verbs)
-            {
-                var shortcut = HotkeyHelper.SafeDecodeKeyString(verb.ShortcutDisplayStr);
-                if (shortcut == Keys.None)
-                    continue;
-
-                m_Actions.Remove(shortcut); // Prevent duplicates FIFO.
-                m_Actions.Add(shortcut, verb.Action);
-            }
-        }
-
-        private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
-        {
-            Action action;
-            if (m_Actions.TryGetValue(e.InputArgs.KeyData, out action))
-            {
-                action();
-            }
+                HotkeyRegister.RegisterHotkey(m_HotkeyGuid, verb.ShortcutDisplayStr, verb.Action);
         }
 
         #endregion
     }
-
 
     public class AboutExtensions : PlayerExtension
     {

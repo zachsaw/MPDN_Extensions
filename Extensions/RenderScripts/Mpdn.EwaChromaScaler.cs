@@ -43,6 +43,7 @@ namespace Mpdn.Extensions.RenderScripts
             public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 var chromaSize = chromaInput.Output.Size;
+
                 CreateWeights(chromaSize, targetSize);
 
                 var offset = chromaOffset + new Vector2(0.5f, 0.5f);

@@ -22,21 +22,25 @@ namespace Mpdn.Extensions.Framework
     {
         public static event EventHandler HotkeysChanged;
 
-        private static Dictionary<Guid, Hotkey> s_Hotkeys = new Dictionary<Guid, Hotkey>();
+        private static readonly Dictionary<Guid, List<Hotkey>> s_Hotkeys = new Dictionary<Guid, List<Hotkey>>();
 
         public static IEnumerable<Hotkey> Hotkeys
         {
-            get { return s_Hotkeys.Values; }
+            get { return s_Hotkeys.SelectMany(x => x.Value); }
         }
 
         public static void RegisterHotkey(Guid guid, string hotkey, Action action)
         {
             Keys keys;
-            if (HotkeyHelper.TryDecodeKeyString(hotkey, out keys))
-            {
-                s_Hotkeys.Add(guid, new Hotkey(keys, action));
-                OnHotkeysChanged();
-            }
+            if (!HotkeyHelper.TryDecodeKeyString(hotkey, out keys))
+                return;
+
+            List<Hotkey> list;
+            if (!s_Hotkeys.TryGetValue(guid, out list))
+                s_Hotkeys.Add(guid, list = new List<Hotkey>());
+
+            list.Add(new Hotkey(keys, action));
+            OnHotkeysChanged();
         }
 
         public static void DeregisterHotkey(Guid guid)
@@ -45,7 +49,7 @@ namespace Mpdn.Extensions.Framework
             OnHotkeysChanged();
         }
 
-        private static void OnHotkeysChanged()
+        public static void OnHotkeysChanged()
         {
             if (HotkeysChanged != null)
                 HotkeysChanged(null, EventArgs.Empty);
