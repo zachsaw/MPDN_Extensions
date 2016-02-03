@@ -72,6 +72,7 @@ namespace Mpdn.Extensions.Framework.Filter
             }
             
             SubTags = tags.Distinct().ToList();
+
             return ++m_Index;
         }
 
@@ -214,61 +215,6 @@ namespace Mpdn.Extensions.Framework.Filter
         public TemporaryTag(string label) : base(label) { }
 
         public override bool IsEmpty() { return Initialized; }
-    }
-
-    public class ChromaScalerTag : StringTag
-    {
-        private readonly IBaseFilter m_ChromaFilter;
-
-        private FilterTag m_ChromaTag;
-
-        public ChromaScalerTag(IBaseFilter chromaFilter, string label)
-            : base(label)
-        {
-            m_ChromaFilter = chromaFilter;
-
-            AddInput(m_ChromaFilter);
-        }
-
-        public override int Initialize(int count = 1)
-        {
-            if (!Initialized)
-            {
-                m_ChromaTag = m_ChromaFilter.Tag;
-            }
-
-            return base.Initialize(count);
-        }
-
-        public override string CreateString(int minIndex = -1)
-        {
-            Initialize();
-
-            var lumaPart = new EmptyTag();
-            var chromaPart = new StringTag(Label);
-
-            foreach (var tag in SubTags)
-                if (tag.ConnectedTo(m_ChromaTag))
-                    chromaPart.AddInputLabel(tag);
-                else
-                    lumaPart.AddInputLabel(tag);
-
-            lumaPart.Initialize();
-            chromaPart.Initialize();
-
-            var luma = lumaPart
-                .CreateString(minIndex)
-                .FlattenStatus()
-                .PrependToStatus("Luma: ");
-
-            var chroma = chromaPart
-                .CreateString(minIndex)
-                .FlattenStatus();
-            if (!chroma.StartsWith("Chroma: "))
-                chroma = chroma.PrependToStatus(luma == "" ? "" : "Chroma: ");
-
-            return chroma.AppendStatus(luma);
-        }
     }
 
     public static class TagHelper

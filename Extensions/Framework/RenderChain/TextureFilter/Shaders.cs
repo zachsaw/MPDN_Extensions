@@ -21,25 +21,30 @@ using Mpdn.Extensions.Framework.Filter;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 using SharpDX;
-using TransformFunc = System.Func<Mpdn.Extensions.Framework.RenderChain.TextureSize, Mpdn.Extensions.Framework.RenderChain.TextureSize>;
 
-namespace Mpdn.Extensions.Framework.RenderChain
+namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 {
+    using TransformFunc = Func<TextureSize, TextureSize>;
     using IBaseTextureFilter = IFilter<ITextureOutput<IBaseTexture>>;
 
-    public class ShaderFilterSettings<T>
+    public class ShaderFilterSettings<T> : IShaderFilterSettings<T>
+        where T : IShaderBase
     {
-        public T Shader;
-        public bool LinearSampling;
-        public bool[] PerTextureLinearSampling = new bool[0];
-        public TransformFunc Transform = (s => s);
-        public TextureFormat Format = Renderer.RenderQuality.GetTextureFormat();
-        public int SizeIndex;
-        public float[] Args = new float[0];
+        public T Shader { get; private set; }
+        public bool LinearSampling { get; private set; }
+        public bool[] PerTextureLinearSampling { get; private set; }
+        public TransformFunc Transform { get; private set; }
+        public TextureFormat Format { get; private set; }
+        public int SizeIndex { get; private set; }
+        public float[] Args { get; private set; }
 
         public ShaderFilterSettings(T shader)
         {
             Shader = shader;
+            PerTextureLinearSampling = new bool[0];
+            Transform = (s => s);
+            Format = Renderer.RenderQuality.GetTextureFormat();
+            Args = new float[0];
         }
 
         public static implicit operator ShaderFilterSettings<T>(T shader)
@@ -47,9 +52,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return new ShaderFilterSettings<T>(shader);
         }
 
-        public ShaderFilterSettings<T> Configure(bool? linearSampling = null, 
-            float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null, TextureFormat? format = null, 
-            bool[] perTextureLinearSampling = null)
+        public IShaderFilterSettings<T> Configure(bool? linearSampling = null,
+            IEnumerable<float> arguments = null, TransformFunc transform = null, int? sizeIndex = null, 
+            TextureFormat? format = null, IEnumerable<bool> perTextureLinearSampling = null)
         {
             return new ShaderFilterSettings<T>(Shader)
             {
@@ -57,46 +62,20 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 LinearSampling = linearSampling ?? LinearSampling,
                 Format = format ?? Format,
                 SizeIndex = sizeIndex ?? SizeIndex,
-                Args = arguments ?? Args,
-                PerTextureLinearSampling = perTextureLinearSampling ?? PerTextureLinearSampling
+                Args = arguments != null ? arguments.ToArray() : Args,
+                PerTextureLinearSampling = perTextureLinearSampling != null ? perTextureLinearSampling.ToArray() : PerTextureLinearSampling
             };
         }
     }
 
-    public static class ShaderFilterHelper
-    {
-        public static ShaderFilterSettings<IShader> Configure(this IShader shader, bool? linearSampling = null,
-            float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null,
-            TextureFormat? format = null, bool[] perTextureLinearSampling = null)
-        {
-            return new ShaderFilterSettings<IShader>(shader).Configure(linearSampling, arguments, transform, sizeIndex,
-                format, perTextureLinearSampling);
-        }
+    public abstract class GenericShaderFilter<T> : TextureFilter where T : IShaderBase
 
-        public static ShaderFilterSettings<IShader11> Configure(this IShader11 shader, bool? linearSampling = null,
-            float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null,
-            TextureFormat? format = null, bool[] perTextureLinearSampling = null)
-        {
-            return new ShaderFilterSettings<IShader11>(shader).Configure(linearSampling, arguments, transform, sizeIndex,
-                format, perTextureLinearSampling);
-        }
-
-        public static ShaderFilterSettings<IKernel> Configure(this IKernel kernel, bool? linearSampling = null,
-            float[] arguments = null, TransformFunc transform = null, int? sizeIndex = null,
-            TextureFormat? format = null, bool[] perTextureLinearSampling = null)
-        {
-            return new ShaderFilterSettings<IKernel>(kernel).Configure(linearSampling, arguments, transform, sizeIndex,
-                format, perTextureLinearSampling);
-        }
-    }
-
-    public abstract class GenericShaderFilter<T> : TextureFilter where T : class
     {
         protected GenericShaderFilter(T shader, params IBaseTextureFilter[] inputFilters)
             : this((ShaderFilterSettings<T>) shader, inputFilters)
         { }
 
-        protected GenericShaderFilter(ShaderFilterSettings<T> settings, params IBaseTextureFilter[] inputFilters)
+        protected GenericShaderFilter(IShaderFilterSettings<T> settings, params IBaseTextureFilter[] inputFilters)
             : base(inputFilters)
         {
             Shader = settings.Shader;
@@ -147,7 +126,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public class ShaderFilter : GenericShaderFilter<IShader>
     {
-        public ShaderFilter(ShaderFilterSettings<IShader> settings, params IBaseTextureFilter[] inputFilters)
+        public ShaderFilter(IShaderFilterSettings<IShader> settings, params IBaseTextureFilter[] inputFilters)
             : base(settings, inputFilters)
         {
         }
@@ -204,7 +183,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
     {
         private readonly List<IDisposable> m_Buffers = new List<IDisposable>();
 
-        public Shader11Filter(ShaderFilterSettings<IShader11> settings, params IBaseTextureFilter[] inputFilters)
+        public Shader11Filter(IShaderFilterSettings<IShader11> settings, params IBaseTextureFilter[] inputFilters)
             : base(settings, inputFilters)
         {
         }
@@ -260,7 +239,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public class DirectComputeFilter : Shader11Filter
     {
-        public DirectComputeFilter(ShaderFilterSettings<IShader11> settings, int threadGroupX, int threadGroupY,
+        public DirectComputeFilter(IShaderFilterSettings<IShader11> settings, int threadGroupX, int threadGroupY,
             int threadGroupZ, params IBaseTextureFilter[] inputFilters)
             : base(settings, inputFilters)
         {
@@ -290,7 +269,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public class ClKernelFilter : GenericShaderFilter<IKernel>
     {
-        public ClKernelFilter(ShaderFilterSettings<IKernel> settings, int[] globalWorkSizes, params IBaseTextureFilter[] inputFilters)
+        public ClKernelFilter(IShaderFilterSettings<IKernel> settings, int[] globalWorkSizes, params IBaseTextureFilter[] inputFilters)
             : base(settings, inputFilters)
         {
             GlobalWorkSizes = globalWorkSizes;
@@ -304,7 +283,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             LocalWorkSizes = null;
         }
 
-        public ClKernelFilter(ShaderFilterSettings<IKernel> settings, int[] globalWorkSizes, int[] localWorkSizes, params IBaseTextureFilter[] inputFilters)
+        public ClKernelFilter(IShaderFilterSettings<IKernel> settings, int[] globalWorkSizes, int[] localWorkSizes, params IBaseTextureFilter[] inputFilters)
             : base(settings, inputFilters)
         {
             GlobalWorkSizes = globalWorkSizes;

@@ -20,7 +20,7 @@ using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 using Size = System.Drawing.Size;
 
-namespace Mpdn.Extensions.Framework.RenderChain
+namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 {
     public class SourceTextureOutput<TTexture> : FilterOutput, ITextureOutput<TTexture>
         where TTexture : class, IBaseTexture
@@ -100,7 +100,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
     }
 
-    public class ManagedTexture<TTexture> : IDisposable where TTexture : class, IBaseTexture
+    public class ManagedTexture<TTexture> : IManagedTexture<TTexture>
+    where TTexture : class, IBaseTexture
     {
         private TTexture m_Texture;
         private int m_Leases;
@@ -130,7 +131,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Discard();
         }
 
-        public Lease GetLease()
+        public ITextureOutput<TTexture> GetLease()
         {
             if (!Valid)
                 throw new InvalidOperationException("Cannot renew lease on a texture that is no longer valid");
@@ -336,19 +337,5 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
 
         #endregion
-    }
-
-    public static class SharedTextureHelpers
-    {
-        public static ManagedTexture<TTexture> GetManaged<TTexture>(this TTexture texture) where TTexture : class, IBaseTexture
-        {
-            return new ManagedTexture<TTexture>(texture);
-        }
-
-        public static TextureSourceFilter<TTexture> ToFilter<TTexture>(this ManagedTexture<TTexture> texture)
-            where TTexture : class, IBaseTexture
-        {
-            return new TextureSourceFilter<TTexture>(texture.GetLease());
-        }
     }
 }

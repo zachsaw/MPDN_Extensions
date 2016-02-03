@@ -19,7 +19,6 @@ using System.Drawing;
 using System.Linq;
 using Mpdn.Extensions.CustomLinearScalers.Functions;
 using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -32,7 +31,7 @@ namespace Mpdn.Extensions.RenderScripts
         {
             private const int BASE_DATA_POINTS = 8;
 
-            private ManagedTexture<ISourceTexture>[] m_Weights;
+            private IManagedTexture<ISourceTexture>[] m_Weights;
             private ICustomLinearScaler m_Scaler;
 
             #region Settings
@@ -104,10 +103,10 @@ namespace Mpdn.Extensions.RenderScripts
                 return Math.Log(dest/(double)source, 2);
             }
 
-            protected ITextureFilter GetEwaFilter(ShaderFilterSettings<IShader> shader, ITextureFilter[] inputs)
+            protected ITextureFilter GetEwaFilter(IShaderFilterSettings<IShader> shader, ITextureFilter[] inputs)
             {
-                var filters = m_Weights.Select(w => (IFilter<ITextureOutput<IBaseTexture>>) w.ToFilter());
-                return new ShaderFilter(shader, inputs.Concat(filters).ToArray());
+                var filters = m_Weights.Select(w => (ITextureFilter<IBaseTexture>)w.ToFilter());
+                return shader.ApplyTo(inputs.Concat(filters));
             }
 
             private static double GetDistance(double point1, double point2)
@@ -124,7 +123,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var tapCount = TapCount.ToInt();
                 int lobes = tapCount / 2;
-                m_Weights = new ManagedTexture<ISourceTexture>[lobes];
+                m_Weights = new IManagedTexture<ISourceTexture>[lobes];
                 var dataPointsX = GetDataPointCount(scaleFactorX);
                 var dataPointsY = GetDataPointCount(scaleFactorY);
                 var channels = lobes == 2 ? 2 : 4;

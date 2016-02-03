@@ -25,7 +25,7 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Lut3D : RenderChain
         {
-            private ManagedTexture<ISourceTexture3D> m_Texture3D;
+            private IManagedTexture<ISourceTexture3D> m_Texture3D;
 
             protected override string ShaderPath
             {
@@ -37,7 +37,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Create3DTexture();
 
                 var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling: true);
-                return new ShaderFilter(shader, sourceFilter, m_Texture3D.ToFilter());
+                return shader.ApplyTo(sourceFilter, m_Texture3D.ToFilter());
             }
 
             private void Create3DTexture()

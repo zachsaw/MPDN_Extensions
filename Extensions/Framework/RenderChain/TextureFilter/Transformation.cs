@@ -16,14 +16,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 using SharpDX;
 
-namespace Mpdn.Extensions.Framework.RenderChain
+namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 {
     public abstract class BasicFilter : TextureFilter
     {
@@ -136,53 +135,47 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         private static IShader GetShader()
         {
-            var asmPath = typeof (IRenderScript).Assembly.Location;
-            var shaderDataFilePath =
-                Path.Combine(PathHelper.GetDirectoryName(asmPath),
-                    "Extensions", "RenderScripts", "Common");
+            var shaderDataFilePath = Path.Combine(ShaderCache.ShaderPathRoot, "Common");
             return ShaderCache.CompileShader(Path.Combine(shaderDataFilePath, "MergeChromaYZFromSource.hlsl"));
         }
     }
 
-    public class ResizeFilter : TextureFilter, IResizeableFilter
+    public class ResizeFilter : TextureFilter, IResizeableFilter, IOffsetFilter
     {
         private TextureSize m_OutputSize;
         private readonly TextureChannels m_Channels;
         private readonly Vector2 m_Offset;
+        private readonly TextureFormat? m_OutputFormat;
 
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
         private IScaler m_Convolver;
         private bool m_Tagged;
 
-        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, 
-            IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null)
-            : this(inputFilter, inputFilter.Output.Size, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver)
+        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+            : this(inputFilter, inputFilter.Output.Size, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver, outputFormat)
         { }
 
-        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize,
-            IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null)
-            : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver)
+        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+            : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver, outputFormat)
         { }
 
-        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, 
-            IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null)
-            : this(inputFilter, outputSize, channels, Vector2.Zero, upscaler, downscaler, convolver)
+        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+            : this(inputFilter, outputSize, channels, Vector2.Zero, upscaler, downscaler, convolver, outputFormat)
         { }
 
-        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, Vector2 offset, 
-            IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null)
-            : this(inputFilter, outputSize, TextureChannels.All, offset, upscaler, downscaler, convolver)
+        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+            : this(inputFilter, outputSize, TextureChannels.All, offset, upscaler, downscaler, convolver, outputFormat)
         { }
 
-        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, 
-            IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null)
+        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
             : base(inputFilter)
         {
             m_OutputSize = outputSize;
             m_Channels = channels;
             m_Offset = offset;
 
+            m_OutputFormat = outputFormat;
             m_Upscaler = upscaler ?? Renderer.LumaUpscaler;
             m_Downscaler = downscaler ?? Renderer.LumaDownscaler;
             m_Convolver = convolver;
@@ -233,7 +226,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override TextureFormat OutputFormat
         {
-            get { return InputFilter.Output.Format; }
+            get { return m_OutputFormat ?? InputFilter.Output.Format; }
         }
 
         protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
@@ -263,95 +256,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         private static IShader GetShader(bool mergedUv)
         {
-            var asmPath = typeof(IRenderScript).Assembly.Location;
-            var shaderDataFilePath =
-                Path.Combine(PathHelper.GetDirectoryName(asmPath),
-                    "Extensions", "RenderScripts", "Common");
+            var shaderDataFilePath = Path.Combine(ShaderCache.ShaderPathRoot, "Common");
             var shaderFile = mergedUv ? "MergeY_UV.hlsl" : "MergeY_U_V.hlsl";
             return ShaderCache.CompileShader(Path.Combine(shaderDataFilePath, shaderFile));
         }
-    }
-
-    public static class ConversionHelper
-    {
-        public static ITextureFilter ConvertToRgb(this ITextureFilter filter)
-        {
-            return new RgbFilter(filter);
-        }
-
-        public static ITextureFilter ConvertToYuv(this ITextureFilter filter)
-        {
-            return new YuvFilter(filter);
-        }
-
-        public static IResizeableFilter Transform(this IResizeableFilter filter, Func<ITextureFilter, ITextureFilter> transformation)
-        {
-            return new TransformedResizeableFilter(transformation, filter);
-        }
-
-        public static ITextureFilter AddTaggedResizer(this ITextureFilter<ITexture2D> filter)
-        {
-            return filter.SetSize(filter.Output.Size, true);
-        }
-
-        public static ITextureFilter SetSize(this ITextureFilter<ITexture2D> filter, TextureSize size, bool tagged = false)
-        {
-            var resizeable = (filter as IResizeableFilter) ?? new ResizeFilter(filter);
-            if (tagged)
-                resizeable.EnableTag();
-            resizeable.SetSize(size);
-            return resizeable;
-        }
-
-        #region Auxilary class(es)
-
-        private sealed class TransformedResizeableFilter : TextureFilter, IResizeableFilter
-        {
-            private readonly IResizeableFilter m_InputFilter;
-            private readonly Func<ITextureFilter, ITextureFilter> m_Transformation;
-
-            public TransformedResizeableFilter(Func<ITextureFilter, ITextureFilter> transformation, IResizeableFilter inputFilter)
-            {
-                m_InputFilter = inputFilter;
-                m_Transformation = transformation;
-            }
-
-            protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
-            {
-                var result = m_Transformation(m_InputFilter);
-
-                if (m_InputFilter.Output.Size != result.Output.Size)
-                    throw new InvalidOperationException("Transformation is not allowed to change the size.");
-               
-                return m_Transformation(m_InputFilter);
-            }
-
-            public void EnableTag() 
-            {
-                m_InputFilter.EnableTag();
-            }
-
-            public void SetSize(TextureSize outputSize)
-            {
-                m_InputFilter.SetSize(outputSize);
-            }
-
-            protected override TextureSize OutputSize
-            {
-                get { return m_InputFilter.Output.Size; }
-            }
-
-            protected override TextureFormat OutputFormat
-            {
-                get { return m_InputFilter.Output.Format; }
-            }
-
-            protected override void Render(IList<ITextureOutput<IBaseTexture>> textureOutputs)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        #endregion
     }
 }

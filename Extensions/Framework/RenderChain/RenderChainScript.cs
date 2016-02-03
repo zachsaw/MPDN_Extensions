@@ -17,6 +17,7 @@
 using System;
 using System.Diagnostics;
 using Mpdn.Extensions.Framework.Chain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
@@ -59,7 +60,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return m_SourceFilter;
 
             if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
-                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), chromaScaler: new InternalChromaScaler(m_SourceFilter));
+                return new InternalChromaScaler(m_SourceFilter).MakeChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
 
             return m_SourceFilter;
         }

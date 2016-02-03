@@ -140,6 +140,7 @@
     <Compile Include="Extensions\PlayerExtensions\DvdSourceProvider.cs" />
     <Compile Include="Extensions\PlayerExtensions\DynamicDirectShowFilter.cs" />
     <Compile Include="Extensions\PlayerExtensions\RarFileSourceProvider.cs" />
+    <Compile Include="Extensions\PlayerExtensions\YoutubeDl.cs" />
     <Compile Include="Extensions\PlayerExtensions\YouTubeSourceProvider.cs" />
     <Compile Include="Extensions\PlayerExtensions\BitmapHelper.cs" />
     <Compile Include="Extensions\PlayerExtensions\DisplayChanger.ConfigDialog.cs">
@@ -360,6 +361,7 @@
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptGroup.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.EwaScaler.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.SSimDownscaling.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ChromaScaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.EwaScaler.ConfigDialog.cs">
       <SubType>Form</SubType>
@@ -504,6 +506,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Extensions\RenderScripts\EwaScaler\EwaScaler.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Calc.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Convolver.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarI.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarII.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\CalcR.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\SinglePassConvolver.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Upscaler.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Downscaler.hlsl" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

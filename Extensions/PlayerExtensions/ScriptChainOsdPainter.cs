@@ -25,6 +25,8 @@ using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
+    using VideoSourceFilter = Framework.RenderChain.TextureFilter.VideoSourceFilter;
+
     public class ScriptChainOsdPainter : PlayerExtension<ScriptChainOsdPainterSettings, ScriptChainOsdPainterConfigDialog>
     {
         private const int TEXT_HEIGHT = 15;

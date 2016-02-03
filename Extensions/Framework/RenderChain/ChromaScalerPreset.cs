@@ -1,5 +1,6 @@
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
 using SharpDX;
 
@@ -9,9 +10,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
     {
         public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
         {
-            var chroma = new ChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
-
-            return chroma + Chain;
+            return new CompositionFilter(lumaInput, chromaInput, null, targetSize, chromaOffset) + Chain;
         }
     }
 

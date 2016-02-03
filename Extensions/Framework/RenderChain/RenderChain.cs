@@ -69,11 +69,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected string ShaderDataFilePath
         {
-            get
-            {
-                var asmPath = typeof (IRenderScript).Assembly.Location;
-                return Path.Combine(PathHelper.GetDirectoryName(asmPath), "Extensions", "RenderScripts", ShaderPath);
-            }
+            get { return Path.Combine(ShaderCache.ShaderPathRoot, ShaderPath); }
         }
 
         protected IShader CompileShader(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)

@@ -29,6 +29,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
     {
         private static bool s_Loaded;
 
+        public static string ShaderPathRoot
+        {
+            get
+            {
+                var asmPath = typeof (IRenderScript).Assembly.Location;
+#if DEBUG
+                return Path.Combine(PathHelper.GetDirectoryName(asmPath), "../", "Extensions", "RenderScripts");
+#else
+                return Path.Combine(PathHelper.GetDirectoryName(asmPath), "Extensions", "RenderScripts");
+#endif
+            }
+        }
+
         private static class Cache<T> where T : class, IShaderBase
         {
             private static readonly Dictionary<string, ShaderWithDateTime> s_LoadedShaders =
@@ -210,16 +223,14 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return filename;
 
             if (!filename.StartsWith(rootPath))
-                throw new InvalidOperationException("No external shader files allowed");
+                return filename;
 
             return filename.Remove(0, rootPath.Length + 1);
         }
 
         private static string GetRelative(string shaderFileName)
         {
-            var asmPath = typeof (IRenderScript).Assembly.Location;
-            var basePath = Path.Combine(PathHelper.GetDirectoryName(asmPath), "Extensions", "RenderScripts");
-            return GetRelativePath(basePath, shaderFileName);
+            return GetRelativePath(ShaderPathRoot, Path.GetFullPath(shaderFileName));
         }
 
         public static IShader CompileShader(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)

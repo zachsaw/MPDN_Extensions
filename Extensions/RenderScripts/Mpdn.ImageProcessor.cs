@@ -73,7 +73,9 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 return ShaderFileNames.Aggregate(input,
                     (current, filename) =>
-                        new ShaderFilter(CompileShader(filename).Configure(format: GetTextureFormat()), current));
+                        CompileShader(filename)
+                            .Configure(format: GetTextureFormat())
+                            .ApplyTo(current));
             }
 
             private TextureFormat? GetTextureFormat()

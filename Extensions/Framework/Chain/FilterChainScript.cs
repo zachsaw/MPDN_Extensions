@@ -90,6 +90,7 @@ namespace Mpdn.Extensions.Framework.Chain
             {
                 var message = ErrorMessage(e);
                 Trace.WriteLine(message);
+                Status = message;
                 return false;
             }
             finally
