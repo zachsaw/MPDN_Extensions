@@ -467,6 +467,14 @@
     <None Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
     <None Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\Calc.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\CalcR.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarI.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarII.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Convolver.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Downscaler.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Upscaler.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\SinglePassConvolver.hlsl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
     <None Include="Extensions\RenderScripts\SuperRes\Diff.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyChroma.hlsl" />
