@@ -219,11 +219,9 @@ float4 main_fragment(in out_vertex VAR, uniform sampler2D s0 : TEXUNIT0, uniform
 #endif
 
 	/* Anti-ringing code. */
-	float3 min_sample = min4(  E,   F,   H,   I);
-	float3 max_sample = max4(  E,   F,   H,   I);
-	float3 aux = color;
+	float3 min_sample = min4( E, F, H, I ) + lerp((P2-H)*(F-P1), (P0-E)*(I-P3), step(0.0, d_edge));
+	float3 max_sample = max4( E, F, H, I ) - lerp((P2-H)*(F-P1), (P0-E)*(I-P3), step(0.0, d_edge));
 	color = clamp(color, min_sample, max_sample);
-	color = lerp(aux, color, 1-2.0*abs(edge_strength-0.5));
 
 	return float4(color, 1.0);
 }
