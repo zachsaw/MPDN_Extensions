@@ -1,32 +1,24 @@
-// This file is a part of MPDN Extensions.
-// https://github.com/zachsaw/MPDN_Extensions
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3.0 of the License, or (at your option) any later version.
-// 
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library.
-
 // -- Misc --
-sampler s0 : register(s0);
-sampler s1 : register(s1);
-float4 p0 :  register(c0);
-float2 p1 :  register(c1);
+sampler sMean:	register(s1);
+sampler sH:	register(s2);
 
-#define width  (p0[0])
-#define height (p0[1])
+#define AverageFormat float2x4
 
-// -- Main code --
-float4 main(float2 tex : TEXCOORD0) : COLOR {
-    float4 Sh = tex2D(s0, tex);
-    float4 Sl = tex2D(s1, tex);
+// -- Define horizontal convolver --
+#define EntryPoint ScaleH
+#define sqr(x)	((x)*(x))
+#define Get(pos) float2x4(sqr(GetFrom(s0, pos) - mean), GetFrom(sH, pos))
+#define axis 0
 
-	return (Sl == 0) ? 0 : sqrt(1 + Sh / Sl);
-}
+#define ExtraArguments float4 mean
+#include "./Scalers/Convolver.hlsl"
+#undef ExtraArguments
+
+// -- Define vertical convolver --
+#define OutputFormat 		float4
+#define EntryPoint 			main
+#define Initialization		float4 mean = tex2D(sMean, tex)
+#define Get(pos) 			ScaleH(pos, mean)
+#define Postprocessing(S)	((S[0] == 0) ? 0 : sqrt(1 + S[1] / S[0]))
+#define axis 1
+#include "./Scalers/Convolver.hlsl"

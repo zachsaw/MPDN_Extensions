@@ -21,4 +21,5 @@ sampler sMean:	register(s1);
 #define Initialization	float4 mean = tex2D(sMean, tex)
 #define sqr(x)			((x)*(x))
 #define Get(pos)		(sqr(GetFrom(s0, pos) - mean))
-#define axis 0
+
+#include "./Scalers/Downscaler.hlsl"

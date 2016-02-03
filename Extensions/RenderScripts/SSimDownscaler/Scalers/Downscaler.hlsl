@@ -15,55 +15,74 @@
 // License along with this library.
 
 // -- Misc --
-sampler s0:	register(s0);
-float4 p0 : register(c0);
-float2 p1 : register(c1);
-float4 size0 : register(c2);
+#ifndef Initialized
+	sampler s0:	register(s0);
+	float4 p0 : register(c0);
+	float2 p1 : register(c1);
+	float4 size0 : register(c2);
 
-#define width  (p0[0])
-#define height (p0[1])
+	#define Initialized 1
+#endif
 
 #define dxdy (p1.xy)
 #define ddxddy (size0.zw)
 
-// -- Input processing --
-#define GetFrom(s, pos) tex2Dlod(s, float4(pos, 0,0))
-
 // -- Definitions --
-#define factor ((ddxddy/dxdy)[axis])
-
+#define factor ((ddxddy*p0.xy)[axis])
+#define GetFrom(s, pos) (tex2D(s, pos, 0, 0))
+	
 // -- Handles --
 #ifndef Get
 	#define Get(pos)    (GetFrom(s0, pos))
 #endif
+
 #ifndef axis
 	#define axis 0
 #endif
+
 #ifndef Initialization
 	#define Initialization
 #endif
+
 #ifndef Postprocessing
 	#define Postprocessing(x) x
 #endif
+
 #ifndef Kernel
 	#define Kernel(x) saturate(0.5 + (0.5 - abs(x)) / factor)
 	#define taps (1 + factor)
 #endif
 
+#ifndef EntryPoint
+	#define EntryPoint main
+#endif
+
+#ifndef AverageFormat
+	#define AverageFormat float4
+#endif
+
+#ifndef OutputFormat
+	#define OutputFormat AverageFormat
+#endif
+
 // -- Main code --
-float4 main(float2 tex : TEXCOORD0) : COLOR{
+OutputFormat EntryPoint(float2 tex : TEXCOORD0
+#ifdef ExtraArguments
+, ExtraArguments
+#endif
+) : COLOR{
     // Calculate bounds
-	int low  = ceil ((tex - 0.5*taps*dxdy) * size0.xy - 0.5)[axis];
-	int high = floor((tex + 0.5*taps*dxdy) * size0.xy - 0.5)[axis];
+	int low  = floor((tex - 0.5*taps*dxdy) * size0.xy + 0.5)[axis];
+	int high = floor((tex + 0.5*taps*dxdy) * size0.xy + 0.5)[axis];
 
 	float W = 0;
-	float4 avg = 0;
+	AverageFormat avg = 0;
 	float2 pos = tex;
     Initialization;
 
-	[loop] for (int k = low; k <= high; k++) {
-		pos[axis] = ddxddy[axis] * (k + 0.5);
-		float offset = (tex[axis] - pos[axis])*p0[axis];
+	[loop] for (int k = 0; k < high - low; k++) {
+		pos[axis] = ddxddy[axis] * (k + low + 0.5);
+		float offset = (pos[axis] - tex[axis])*p0[axis];
 		float w = Kernel(offset);
 		
 		avg += w*Get(pos);

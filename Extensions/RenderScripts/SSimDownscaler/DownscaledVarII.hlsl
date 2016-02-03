@@ -14,5 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-#include "./Var_H.hlsl"
-#include "./Downscaler.hlsl"
+// -- Misc --
+sampler sHMean:	register(s1);
+sampler sMean:	register(s2);
+
+// -- Definitions --
+#define Initialization	float4 mean = GetFrom(sMean, tex)
+#define sqr(x)			((x)*(x))
+#define Get(pos)		(GetFrom(s0, pos) + sqr(GetFrom(sHMean, pos) - mean))
+
+#include "./Scalers/Downscaler.hlsl"
