@@ -22,11 +22,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public interface IResizeableFilter : ITextureFilter, ITaggableFilter<ITextureOutput<ITexture2D>>
     {
-        void SetSize(TextureSize outputSize);
-    }
-
-    public interface IQuasiResizeableFilter : ITextureFilter, ITaggableFilter<ITextureOutput<ITexture2D>>
-    {
         ITextureFilter SetSize(TextureSize outputSize);
     }
 
@@ -35,7 +30,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         void ForceOffsetCorrection();
     }
 
-    public interface ICompositionFilter : IQuasiResizeableFilter
+    public interface ICompositionFilter : IResizeableFilter
     {
         ITextureFilter Luma { get; }
         ITextureFilter Chroma { get; }
@@ -91,6 +86,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public static ITextureFilter ConvertToYuv(this ITextureFilter filter)
         {
+            var sourceFilter = filter as VideoSourceFilter;
+            if (sourceFilter != null)
+                return sourceFilter.GetYuv();
+
             return new YuvFilter(filter);
         }
 
@@ -119,8 +118,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             var resizeable = (filter as IResizeableFilter) ?? new ResizeFilter(filter);
             if (tagged)
                 resizeable.EnableTag();
-            resizeable.SetSize(size);
-            return resizeable;
+            return resizeable.SetSize(size);
         }
 
         #region Auxilary class(es)
@@ -131,6 +129,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             private readonly Func<ITextureFilter, ITextureFilter> m_Transformation;
 
             public TransformedResizeableFilter(Func<ITextureFilter, ITextureFilter> transformation, IResizeableFilter inputFilter)
+                : base(inputFilter)
             {
                 m_InputFilter = inputFilter;
                 m_Transformation = transformation;
@@ -151,9 +150,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 m_InputFilter.EnableTag();
             }
 
-            public void SetSize(TextureSize outputSize)
+            public ITextureFilter SetSize(TextureSize outputSize)
             {
-                m_InputFilter.SetSize(outputSize);
+                return new TransformedResizeableFilter(m_Transformation, m_InputFilter);
             }
 
             protected override TextureSize OutputSize

@@ -78,6 +78,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             TargetSize = targetSize ?? Luma.Output.Size;
 
             Result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset) ?? fallback;
+            AddTag(Result.Tag);
         }
 
         public ITextureFilter SetSize(TextureSize outputSize)

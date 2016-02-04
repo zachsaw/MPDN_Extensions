@@ -25,7 +25,7 @@ using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
-    using VideoSourceFilter = Framework.RenderChain.TextureFilter.VideoSourceFilter;
+    using TrueSourceFilter = Framework.RenderChain.TextureFilter.TrueSourceFilter;
 
     public class ScriptChainOsdPainter : PlayerExtension<ScriptChainOsdPainterSettings, ScriptChainOsdPainterConfigDialog>
     {
@@ -158,7 +158,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static string GetInternalScalerDesc()
         {
-            var sourceFilter = new VideoSourceFilter();
+            var sourceFilter = new TrueSourceFilter(null);
             sourceFilter.SetSize(Renderer.TargetSize);
             sourceFilter.Initialize();
             return sourceFilter.Status();

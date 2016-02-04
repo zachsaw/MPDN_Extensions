@@ -24,7 +24,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class RenderChainScript : FilterChainScript<ITextureFilter, ITextureOutput<ITexture2D>>, IRenderScript
     {
-        private VideoSourceFilter m_SourceFilter;
+        private TrueSourceFilter m_SourceFilter;
 
         public RenderChainScript(Chain<ITextureFilter> chain)
             : base(chain) 
@@ -54,15 +54,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override ITextureFilter MakeInitialFilter()
         {
-            m_SourceFilter = new VideoSourceFilter();
+            m_SourceFilter = new TrueSourceFilter(this);
 
-            if (Renderer.InputFormat.IsRgb())
-                return m_SourceFilter;
-
-            if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
+            if (Renderer.InputFormat.IsYuv() 
+                && (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height))
                 return new InternalChromaScaler(m_SourceFilter).MakeChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
 
-            return m_SourceFilter;
+            return new VideoSourceFilter(m_SourceFilter);
         }
 
         protected override ITextureFilter ModifyOutput(ITextureFilter output)
