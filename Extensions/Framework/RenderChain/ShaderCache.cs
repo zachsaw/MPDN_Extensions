@@ -217,7 +217,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Cache<IShader11>.Load(Shader11CachePath);
         }
 
-        private static string GetRelativePath(string rootPath, string filename)
+        public static string GetRelativePath(string rootPath, string filename)
         {
             if (!Path.IsPathRooted(filename))
                 return filename;
