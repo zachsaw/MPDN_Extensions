@@ -94,7 +94,7 @@ namespace Mpdn.Extensions.RenderScripts
                     var diff = Diff.ApplyTo(lores, compositionFilter.Chroma);
 
                     SuperRes = SuperRes.Configure(
-                        arguments: (new[] { Strength, (float)(Softness * Math.Pow(0.5, i - 1)) }).Concat(configArgs)
+                        arguments: (new[] { Strength, (float)(Softness * Math.Pow(0.5, i - 1)) }).Concat(configArgs).ToArray()
                     );
 
                     // Update result

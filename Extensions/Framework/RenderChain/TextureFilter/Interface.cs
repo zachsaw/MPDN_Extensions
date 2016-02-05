@@ -40,20 +40,21 @@ namespace Mpdn.Extensions.Framework.RenderChain
         ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null);
     }
 
-    public interface IShaderFilterSettings<out T>
+    public interface IShaderFilterSettings<T>
         where T : IShaderBase
     {
-        T Shader { get; }
-        bool LinearSampling { get; }
-        bool[] PerTextureLinearSampling { get; }
-        TransformFunc Transform { get; }
-        TextureFormat Format { get; }
-        int SizeIndex { get; }
-        float[] Args { get; }
+        T Shader { get; set; }
+        bool LinearSampling { get; set; }
+        bool[] PerTextureLinearSampling { get; set; }
+        TransformFunc Transform { get; set; }
+        TextureFormat Format { get; set; }
+        int SizeIndex { get; set; }
+        ArgumentList Arguments { get; set; }
+        ArgumentList.Entry this[string identifier] { get; set; }
 
         IShaderFilterSettings<T> Configure(
             bool? linearSampling = null,
-            IEnumerable<float> arguments = null,
+            ArgumentList arguments = null,
             TransformFunc transform = null,
             int? sizeIndex = null,
             TextureFormat? format = null,
@@ -177,7 +178,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public static class ShaderFilterHelper
     {
         public static IShaderFilterSettings<T> Configure<T>(this T shader, bool? linearSampling = null,
-            IEnumerable<float> arguments = null, TransformFunc transform = null, int? sizeIndex = null,
+            ArgumentList arguments = null, TransformFunc transform = null, int? sizeIndex = null,
             TextureFormat? format = null, IEnumerable<bool> perTextureLinearSampling = null)
             where T : IShaderBase
         {
@@ -264,7 +265,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 .Rebuild(scaler)
                 .Tagged(new ChromaScalerTag(compositionFilter.Chroma, scaler.Status));
         }
-
     }
 
     public static class MergeHelper
