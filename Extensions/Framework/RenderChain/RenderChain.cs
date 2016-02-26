@@ -91,6 +91,21 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return ShaderCache.CompileClKernel(Path.Combine(ShaderDataFilePath, sourceFileName), entryPoint, options);
         }
 
+        protected IShader CompileShaderFromString(string code, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
+        {
+            return Renderer.CompileShaderFromString(code, entryPoint, profile, macroDefinitions);
+        }
+
+        protected IShader11 CompileShader11FromString(string code, string profile, string entryPoint = "main", string macroDefinitions = null)
+        {
+            return Renderer.CompileShader11FromString(code, entryPoint, profile, macroDefinitions);
+        }
+
+        protected IKernel CompileClKernelFromString(string code, string entryPoint, string options = null)
+        {
+            return Renderer.CompileClKernelFromString(code, entryPoint, options);
+        }
+
         protected IShader LoadShader(string shaderFileName)
         {
             return ShaderCache.LoadShader(Path.Combine(ShaderDataFilePath, shaderFileName));
