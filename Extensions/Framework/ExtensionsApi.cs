@@ -400,6 +400,16 @@ namespace Mpdn.Extensions.Framework
             return PlayerControl.CreateText(font, size, style);
         }
 
+        public static void RegisterMediaFileExtension(string extension, params string[] extensions)
+        {
+            PlayerControl.RegisterMediaFileExtensions((new[] {extension}.Concat(extensions)));
+        }
+
+        public static void UnregisterMediaFileExtension(string extension, params string[] extensions)
+        {
+            PlayerControl.UnregisterMediaFileExtensions((new[] {extension}.Concat(extensions)));
+        }
+
         public static void ClearScreen()
         {
             PlayerControl.ClearScreen();
