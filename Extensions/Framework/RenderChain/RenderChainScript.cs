@@ -35,21 +35,24 @@ namespace Mpdn.Extensions.Framework.RenderChain
             get { return m_SourceFilter == null ? null : m_SourceFilter.Descriptor; }
         }
 
-        protected override void StartRendering()
-        {
-            if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
-                TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
-        }
-
         protected override void OutputResult(ITextureOutput<ITexture2D> result)
         {
             if (Renderer.OutputRenderTarget != result.Texture)
                 Scale(Renderer.OutputRenderTarget, result.Texture);
         }
 
-        protected override void FinalizeRendering()
+        public override bool Execute()
         {
-            TexturePool.FlushTextures();
+            try
+            {
+                if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
+                    TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
+                return base.Execute();
+            }
+            finally
+            {
+                TexturePool.FlushTextures();
+            }
         }
 
         protected override ITextureFilter MakeInitialFilter()
@@ -63,9 +66,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return new VideoSourceFilter(m_SourceFilter);
         }
 
-        protected override ITextureFilter ModifyOutput(ITextureFilter output)
+        protected override ITextureFilter FinalizeOutput(ITextureFilter output)
         {
-            return output.SetSize(Renderer.TargetSize);
+            return output.SetSize(Renderer.TargetSize, tagged: true);
         }
 
         protected override ITextureFilter HandleError(Exception e)

@@ -22,7 +22,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
 {
     public class AudioSource : BaseSourceFilter<IAudioOutput>, IAudioFilter
     {
-        private IAudio m_Audio;
+        private readonly IAudio m_Audio;
 
         public AudioSource(IAudio audio)
         {

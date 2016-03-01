@@ -24,15 +24,11 @@ namespace Mpdn.Extensions.Framework.Chain
         where TFilter : IFilter<TOutput>
         where TOutput : class, IFilterOutput
     {
-        protected virtual void StartRendering() { }
-
         protected abstract void OutputResult(TOutput result);
-
-        protected virtual void FinalizeRendering() { }
 
         protected abstract TFilter MakeInitialFilter();
 
-        protected virtual TFilter ModifyOutput(TFilter output) { return output; }
+        protected virtual TFilter FinalizeOutput(TFilter output) { return output; }
 
         protected abstract TFilter HandleError(Exception e);
 
@@ -74,11 +70,10 @@ namespace Mpdn.Extensions.Framework.Chain
             Status = m_Tag != null ? m_Tag.CreateString() : "Status Invalid";
         }
 
-        public bool Execute()
+        public virtual bool Execute()
         {
             try
             {
-                StartRendering();
                 m_Filter.Render();
                 OutputResult(m_Filter.Output);
 
@@ -92,10 +87,6 @@ namespace Mpdn.Extensions.Framework.Chain
                 Trace.WriteLine(message);
                 Status = message;
                 return false;
-            }
-            finally
-            {
-                FinalizeRendering();
             }
         }
 
@@ -112,7 +103,7 @@ namespace Mpdn.Extensions.Framework.Chain
 
                 return m_Chain
                     .Process(input)
-                    .Apply(ModifyOutput)
+                    .Apply(FinalizeOutput)
                     .GetTag(out m_Tag)
                     .Compile()
                     .InitializeFilter();
