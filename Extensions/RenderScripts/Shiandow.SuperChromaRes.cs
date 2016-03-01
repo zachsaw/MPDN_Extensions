@@ -34,6 +34,7 @@ namespace Mpdn.Extensions.RenderScripts
             public float Strength { get; set; }
             public float Softness { get; set; }
             public bool Prescaler { get; set; }
+            public bool LegacyDownscaling { get; set; }
 
             #endregion
 
@@ -44,11 +45,29 @@ namespace Mpdn.Extensions.RenderScripts
                 Strength = 1.0f;
                 Softness = 0.0f;
                 Prescaler = true;
+
+                LegacyDownscaling = false;
             }
 
             protected override string ShaderPath
             {
                 get { return @"SuperRes\SuperChromaRes"; }
+            }
+
+            private ITextureFilter DownscaleAndDiff(ITextureFilter input, ITextureFilter original, TextureSize targetSize, Vector2 adjointOffset)
+            {
+                var HDownscaler = CompileShader("ChromaDownscaler.hlsl", macroDefinitions: "axis = 0;").Configure(
+                        transform: s => new TextureSize(targetSize.Width, s.Height),
+                        arguments: new ArgumentList { adjointOffset });
+                var VDownscaleAndDiff = CompileShader("DownscaleAndDiff.hlsl", macroDefinitions: "axis = 1;").Configure(
+                        transform: s => new TextureSize(s.Width, targetSize.Height),
+                        arguments: new ArgumentList { adjointOffset },
+                        format: TextureFormat.Float16);
+
+                var hMean = HDownscaler.ApplyTo(input);
+                var diff = VDownscaleAndDiff.ApplyTo(hMean, original);
+
+                return diff;
             }
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)
@@ -81,7 +100,8 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var Diff = CompileShader("Diff.hlsl", macroDefinitions: diffMacros)
                     .Configure(arguments: configArgs, format: TextureFormat.Float16);
-                var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: superResMacros).Configure();
+                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: superResMacros)
+                    .Configure(arguments: (new[] { Strength, Softness }).Concat(configArgs).ToArray());
 
                 if (Passes == 0 || Strength == 0.0f) return input;
 
@@ -89,13 +109,15 @@ namespace Mpdn.Extensions.RenderScripts
 
                 for (int i = 1; i <= Passes; i++)
                 {
-                    // Compare to chroma
-                    var lores = hiRes.Resize(chromaSize, TextureChannels.ChromaOnly, adjointOffset, null, downscaler);
-                    var diff = Diff.ApplyTo(lores, compositionFilter.Chroma);
-
-                    SuperRes = SuperRes.Configure(
-                        arguments: (new[] { Strength, (float)(Softness * Math.Pow(0.5, i - 1)) }).Concat(configArgs).ToArray()
-                    );
+                    // Downscale and Subtract
+                    ITextureFilter diff;
+                    if (LegacyDownscaling)
+                    {
+                        var lores = hiRes.Resize(chromaSize, TextureChannels.ChromaOnly, adjointOffset, null, downscaler);
+                        diff = Diff.ApplyTo(lores, compositionFilter.Chroma);
+                    }
+                    else
+                    { diff = DownscaleAndDiff(hiRes, compositionFilter.Chroma, chromaSize, adjointOffset); }
 
                     // Update result
                     hiRes = SuperRes.ApplyTo(hiRes, diff);
