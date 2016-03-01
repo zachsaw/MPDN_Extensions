@@ -28,9 +28,9 @@ namespace Mpdn.Extensions.RenderScripts
         {
             private void DownscaleAndCalcVar(ITextureFilter input, TextureSize targetSize, out ITextureFilter mean, out ITextureFilter var)
             {
-                var HDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
+                var HDownscaler = CompileShader("SoftDownscaler.hlsl", macroDefinitions: "axis = 0;")
                     .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
-                var VDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 1;")
+                var VDownscaler = CompileShader("SoftDownscaler.hlsl", macroDefinitions: "axis = 1;")
                     .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.Output.Format);
                 var HVar = CompileShader("DownscaledVarI.hlsl", macroDefinitions: "axis = 0;")
                     .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
@@ -66,7 +66,7 @@ namespace Mpdn.Extensions.RenderScripts
                 DownscaleAndCalcVar(H, targetSize, out L, out Sh);
                 ConvolveAndCalcR(L, Sh, out M, out R);
 
-                return Calc.ApplyTo(R, M, L);
+                return Calc.ApplyTo(L, M, R);
             }
         }
         
