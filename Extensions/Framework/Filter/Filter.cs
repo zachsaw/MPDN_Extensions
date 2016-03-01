@@ -183,14 +183,14 @@ namespace Mpdn.Extensions.Framework.Filter
                 filter.Render();
             }
 
-            var inputTextures =
+            var inputs =
                 InputFilters
                     .Select(f => f.Output)
                     .ToList();
 
             Output.Allocate();
 
-            Render(inputTextures);
+            Render(inputs);
 
             foreach (var filter in InputFilters.Where(filter => filter.LastDependentIndex <= m_FilterIndex))
             {

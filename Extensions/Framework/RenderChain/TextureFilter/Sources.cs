@@ -239,7 +239,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ITextureFilter GetYuv()
         {
-            return new VideoSourceFilter(m_TrueSource, m_OutputSize, m_WantYuv).Tagged(Tag);
+            return new VideoSourceFilter(m_TrueSource, m_OutputSize, true).Tagged(Tag);
         }
 
         public VideoSourceFilter(TrueSourceFilter trueSource, TextureSize? outputSize = null, bool? wantYuv = null)
@@ -278,7 +278,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ITextureFilter SetSize(TextureSize outputSize)
         {
-            return new VideoSourceFilter(m_TrueSource, m_OutputSize, m_WantYuv).Tagged(Tag);
+            return new VideoSourceFilter(m_TrueSource, outputSize, m_WantYuv).Tagged(Tag);
         }
     }
 
@@ -318,7 +318,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             {
                 return new ScriptInterfaceDescriptor
                 {
-                    WantYuv = WantYuv,
+                    WantYuv = WantYuv && Renderer.InputFormat.IsYuv(),
                     Prescale = LastDependentIndex > 0,
                     PrescaleSize = (Size)OutputSize
                 };

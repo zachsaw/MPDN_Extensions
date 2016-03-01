@@ -52,7 +52,7 @@ namespace Mpdn.Extensions.Framework.Chain
         [YAXDontSerialize]
         public Preset<T, TScript> SelectedOption
         {
-            get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) : null; }
+            get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) ?? Options.LastOrDefault() : null; }
         }
 
         [YAXDontSerialize]
@@ -123,7 +123,7 @@ namespace Mpdn.Extensions.Framework.Chain
 
             Player.OsdText.Show(Name + ": " + SelectedOption.Name);
                 
-            // Refresh everything until a better method can be found
+            // Refresh everything (TODO: only refresh relevant scripts)
             Extension.RefreshRenderScript();
         }
 
