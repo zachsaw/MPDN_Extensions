@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework.Filter;
@@ -72,6 +73,151 @@ namespace Mpdn.Extensions.Framework.RenderChain
     public interface IChromaScaler
     {
         ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset);
+    }
+
+    #endregion
+
+    #region Classes
+
+    public class ArgumentList : IEnumerable<KeyValuePair<string, ArgumentList.Entry>>
+    {
+        private readonly IDictionary<string, Entry> m_Arguments;
+
+        public ArgumentList()
+            : this(new Dictionary<string, Entry>())
+        { }
+
+        public ArgumentList(IDictionary<string, Entry> arguments)
+        {
+            m_Arguments = arguments;
+        }
+
+        #region Implementation 
+
+        // Allow shader arguments to be accessed individually
+        public Entry this[string identifier]
+        {
+            get { return m_Arguments[identifier]; }
+            set { m_Arguments[identifier] = value; }
+        }
+
+        public ArgumentList Merge(ArgumentList other)
+        {
+            var dict = new Dictionary<String, Entry>(m_Arguments);
+            foreach (var pair in other)
+                dict[pair.Key] = pair.Value;
+
+            return new ArgumentList(dict);
+        }
+
+        public IEnumerator<KeyValuePair<string, Entry>> GetEnumerator()
+        {
+            return m_Arguments.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private int m_NKeys = 0;
+
+        private string NextKey()
+        {
+            return string.Format("args{0}", m_NKeys++);
+        }
+
+        #endregion
+
+        #region Operators
+
+        public void Add(Entry entry)
+        {
+            m_Arguments.Add(NextKey(), entry);
+        }
+
+        public static implicit operator ArgumentList(Dictionary<string, Entry> arguments)
+        {
+            return new ArgumentList(arguments);
+        }
+
+        public static implicit operator ArgumentList(Dictionary<string, Vector4> arguments)
+        {
+            return arguments.ToDictionary(x => x.Key, x => (Entry)x.Value);
+        }
+
+        public static implicit operator ArgumentList(Dictionary<string, Vector3> arguments)
+        {
+            return arguments.ToDictionary(x => x.Key, x => (Entry)x.Value);
+        }
+
+        public static implicit operator ArgumentList(Dictionary<string, Vector2> arguments)
+        {
+            return arguments.ToDictionary(x => x.Key, x => (Entry)x.Value);
+        }
+
+        public static implicit operator ArgumentList(Dictionary<string, float> arguments)
+        {
+            return arguments.ToDictionary(x => x.Key, x => (Entry)x.Value);
+        }
+
+        public static implicit operator ArgumentList(float[] arguments)
+        {
+            var list = new ArgumentList();
+            for (var i = 0; 4 * i < arguments.Length; i++)
+                list.Add(new Vector4(
+                    arguments.ElementAtOrDefault(4 * i),
+                    arguments.ElementAtOrDefault(4 * i + 1),
+                    arguments.ElementAtOrDefault(4 * i + 2),
+                    arguments.ElementAtOrDefault(4 * i + 3)));
+
+            return list;
+        }
+
+        #endregion
+
+        #region Auxilary Types
+
+        public struct Entry
+        {
+            private readonly Vector4 m_Value;
+
+            private Entry(Vector4 value)
+            {
+                m_Value = value;
+            }
+
+            #region Operators
+
+            public static implicit operator Vector4(Entry argument)
+            {
+                return argument.m_Value;
+            }
+
+            public static implicit operator Entry(Vector4 argument)
+            {
+                return new Entry(argument);
+            }
+
+            public static implicit operator Entry(Vector3 argument)
+            {
+                return new Vector4(argument, 0.0f);
+            }
+
+            public static implicit operator Entry(Vector2 argument)
+            {
+                return new Vector4(argument, 0.0f, 0.0f);
+            }
+
+            public static implicit operator Entry(float argument)
+            {
+                return new Vector4(argument);
+            }
+
+            #endregion
+        }
+
+        #endregion
     }
 
     #endregion
