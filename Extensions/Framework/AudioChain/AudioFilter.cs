@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         protected override IAudioOutput DefineOutput()
         {
-            return new AudioOutput(() => OutputFormat, () => Pin.Output.Sample);
+            return new AudioOutput(OutputFormat, Pin.Output.Sample);
         }
 
         protected virtual WaveFormatExtensible OutputFormat
@@ -327,29 +327,29 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
     public class AudioOutput : FilterOutput, IAudioOutput
     {
-        private readonly Func<WaveFormatExtensible> m_FormatFunc;
-        private readonly Func<IMediaSample> m_MediaFunc;
+        private readonly WaveFormatExtensible m_Format;
+        private readonly IMediaSample m_MediaSample;
         private IMediaSample m_Sample;
 
-        public AudioOutput(Func<WaveFormatExtensible> formatFunc, Func<IMediaSample> mediaFunc)
+        public AudioOutput(WaveFormatExtensible format, IMediaSample mediaSample)
         {
-            m_MediaFunc = mediaFunc;
-            m_FormatFunc = formatFunc;
+            m_MediaSample = mediaSample;
+            m_Format = format;
         }
 
         public WaveFormatExtensible Format
         {
-            get { return m_FormatFunc(); }
+            get { return m_Format; }
         }
 
         public IMediaSample Sample
         {
-            get { return m_Sample ?? m_MediaFunc(); }
+            get { return m_Sample; }
         }
 
         public override void Allocate()
         {
-            m_Sample = new MediaSample(Sample);
+            m_Sample = new MediaSample(m_MediaSample, false);
         }
 
         public override void Deallocate()
@@ -374,7 +374,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         private bool m_Disposed;
 
-        public MediaSample(IMediaSample sample)
+        public MediaSample(IMediaSample sample, bool copySamples = false)
         {
             m_Size = sample.GetSize();
             m_ActualDataLength = sample.GetActualDataLength();
@@ -384,6 +384,11 @@ namespace Mpdn.Extensions.Framework.AudioChain
             sample.GetTime(out m_TimeStart, out m_TimeEnd);
             sample.GetMediaTime(out m_MediaTimeStart, out m_MediaTimeEnd);
             m_Buffer = Marshal.AllocCoTaskMem(m_Size);
+            if (!copySamples)
+                return;
+            IntPtr src;
+            sample.GetPointer(out src);
+            AudioHelpers.CopyMemory(m_Buffer, src, m_Size);
         }
 
         public int GetPointer(out IntPtr ppBuffer)

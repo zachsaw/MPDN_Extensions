@@ -101,7 +101,7 @@ namespace Mpdn.Extensions.Framework.Filter
     {
         protected override TFilter MakeFilter()
         {
-            return  new TFilter();
+            return new TFilter();
         }
     }
 }

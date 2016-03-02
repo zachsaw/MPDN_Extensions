@@ -15,23 +15,38 @@
 // License along with this library.
 
 using System;
+using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public class AudioSource : BaseSourceFilter<IAudioOutput>, IAudioFilter
+    public class SourceAudioOutput : FilterOutput, IAudioOutput
     {
         private readonly IAudio m_Audio;
 
-        public AudioSource(IAudio audio)
+        public SourceAudioOutput(IAudio audio)
         {
             m_Audio = audio;
         }
 
-        protected override IAudioOutput DefineOutput()
+        public WaveFormatExtensible Format
         {
-            return new AudioOutput(() => m_Audio.InputFormat, () => m_Audio.Input);
+            get { return m_Audio.InputFormat; }
         }
+
+        public IMediaSample Sample
+        {
+            get { return m_Audio.Input; }
+        }
+
+        public override void Allocate() { }
+
+        public override void Deallocate() { }
+    }
+
+    public class AudioSource : SourceFilter<IAudioOutput>, IAudioFilter
+    {
+        public AudioSource(IAudio audio) : base(new SourceAudioOutput(audio)) { }
     }
 }
