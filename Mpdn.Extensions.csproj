@@ -427,6 +427,8 @@
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\PlayerExtensions\Subtitles\OpenSubtitles.LanguageHandler.cs" />
+    <None Include="Extensions\RenderScripts\Bilateral\LumaDownscalerI.hlsl" />
+    <None Include="Extensions\RenderScripts\Bilateral\LumaDownscalerII.hlsl" />
     <None Include="Extensions\RenderScripts\ChromaScaler\Chroma.hlsl" />
     <None Include="Extensions\RenderScripts\Common\ColourProcessing.hlsl" />
     <None Include="Extensions\RenderScripts\Common\GammaToLab.hlsl" />
