@@ -23,7 +23,7 @@ using SharpDX;
 using Color = System.Drawing.Color;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace Mpdn.Extensions.Framework.RenderChain
+namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 {
     public class TextFilter : TextureSourceFilter<ITexture2D>, ITextureFilter
     {

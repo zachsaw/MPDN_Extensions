@@ -17,6 +17,7 @@
 
 using System;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts

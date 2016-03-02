@@ -22,6 +22,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
 using Mpdn.Extensions.Framework.Controls;
+using Mpdn.Extensions.Framework.RenderChain;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -111,7 +112,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 foreach (var fileName in fileNames)
                 {
-                    listBox.Items.Add(GetRelativePath(m_ShaderPath, fileName));
+                    listBox.Items.Add(ShaderCache.GetRelativePath(m_ShaderPath, fileName));
                 }
             }
 
@@ -161,17 +162,6 @@ namespace Mpdn.Extensions.RenderScripts
                     return;
 
                 EditSelectedFile();
-            }
-
-            private static string GetRelativePath(string rootPath, string filename)
-            {
-                if (!Path.IsPathRooted(filename))
-                    return filename;
-
-                if (!filename.StartsWith(rootPath))
-                    throw new InvalidOperationException("Unable to include an external shader file");
-
-                return filename.Remove(0, rootPath.Length + 1);
             }
 
             private enum Direction

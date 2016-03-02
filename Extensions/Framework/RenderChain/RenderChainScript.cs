@@ -17,13 +17,14 @@
 using System;
 using System.Diagnostics;
 using Mpdn.Extensions.Framework.Chain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class RenderChainScript : FilterChainScript<ITextureFilter, ITextureOutput<ITexture2D>>, IRenderScript
     {
-        private VideoSourceFilter m_SourceFilter;
+        private TrueSourceFilter m_SourceFilter;
 
         public RenderChainScript(Chain<ITextureFilter> chain)
             : base(chain) 
@@ -34,39 +35,40 @@ namespace Mpdn.Extensions.Framework.RenderChain
             get { return m_SourceFilter == null ? null : m_SourceFilter.Descriptor; }
         }
 
-        protected override void StartRendering()
-        {
-            if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
-                TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
-        }
-
         protected override void OutputResult(ITextureOutput<ITexture2D> result)
         {
             if (Renderer.OutputRenderTarget != result.Texture)
                 Scale(Renderer.OutputRenderTarget, result.Texture);
         }
 
-        protected override void FinalizeRendering()
+        public override bool Execute()
         {
-            TexturePool.FlushTextures();
+            try
+            {
+                if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
+                    TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
+                return base.Execute();
+            }
+            finally
+            {
+                TexturePool.FlushTextures();
+            }
         }
 
         protected override ITextureFilter MakeInitialFilter()
         {
-            m_SourceFilter = new VideoSourceFilter();
+            m_SourceFilter = new TrueSourceFilter(this);
 
-            if (Renderer.InputFormat.IsRgb())
-                return m_SourceFilter;
+            if (Renderer.InputFormat.IsYuv() 
+                && (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height))
+                return new InternalChromaScaler(m_SourceFilter).MakeChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
 
-            if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
-                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), chromaScaler: new InternalChromaScaler(m_SourceFilter));
-
-            return m_SourceFilter;
+            return new VideoSourceFilter(m_SourceFilter);
         }
 
-        protected override ITextureFilter ModifyOutput(ITextureFilter output)
+        protected override ITextureFilter FinalizeOutput(ITextureFilter output)
         {
-            return output.SetSize(Renderer.TargetSize);
+            return output.SetSize(Renderer.TargetSize, tagged: true);
         }
 
         protected override ITextureFilter HandleError(Exception e)

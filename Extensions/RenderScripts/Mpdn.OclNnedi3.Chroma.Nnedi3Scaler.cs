@@ -119,20 +119,20 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var localWorkSizes = new[] { 8, 8 };
                 var nnedi3Uh = new NNedi3HKernelFilter(shaderUh, m_Buffer1, neuronCount1,
-                    new TextureSize(chromaInput.Output.Size.Width, chromaInput.Output.Size.Height),
+                    new TextureSize(chromaSize.Width, chromaSize.Height),
                     localWorkSizes, chromaInput);
                 var nnedi3Uv = new NNedi3VKernelFilter(shaderUv, m_Buffer2, neuronCount2, differentWeights,
                     new TextureSize(nnedi3Uh.Output.Size.Width, nnedi3Uh.Output.Size.Height),
                     localWorkSizes, nnedi3Uh);
 
                 var nnedi3Vh = new NNedi3HKernelFilter(shaderVh, m_Buffer1, neuronCount1,
-                    new TextureSize(chromaInput.Output.Size.Width, chromaInput.Output.Size.Height),
+                    new TextureSize(chromaSize.Width, chromaSize.Height),
                     localWorkSizes, chromaInput);
                 var nnedi3Vv = new NNedi3VKernelFilter(shaderVv, m_Buffer2, neuronCount2, differentWeights,
                     new TextureSize(nnedi3Vh.Output.Size.Width, nnedi3Vh.Output.Size.Height),
                     localWorkSizes, nnedi3Vh);
 
-                return new MergeFilter(lumaInput, nnedi3Uv, nnedi3Vv).ConvertToRgb();
+                return lumaInput.MergeWith(nnedi3Uv, nnedi3Vv).ConvertToRgb();
             }
         }
 

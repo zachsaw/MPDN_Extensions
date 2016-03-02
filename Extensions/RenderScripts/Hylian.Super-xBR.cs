@@ -57,13 +57,14 @@ namespace Mpdn.Extensions.RenderScripts
                 if (Renderer.TargetSize.Width  <= input.Output.Size.Width 
                  && Renderer.TargetSize.Height <= input.Output.Size.Height)
                     return input;
-                
-                ITextureFilter xbr = new ShaderFilter(pass0, input);
-                xbr = new ShaderFilter(pass1, xbr);
+
+                ITextureFilter xbr = input
+                    .Apply(pass0)
+                    .Apply(pass1);
 
                 return ThirdPass
-                    ? (ITextureFilter) new ShaderFilter(pass2, xbr)
-                    : new ResizeFilter(xbr, xbr.Output.Size, new Vector2(0.5f, 0.5f));
+                    ? (ITextureFilter) xbr.Apply(pass2)
+                    : xbr.Resize(xbr.Output.Size, offset: new Vector2(0.5f, 0.5f));
             }
 
             protected override string ShaderPath

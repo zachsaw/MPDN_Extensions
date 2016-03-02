@@ -34,6 +34,7 @@ namespace Mpdn.Extensions.RenderScripts
             public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
+                var chromaSize = chromaInput.Output.Size;
 
                 var crossBilateral = CompileShader("CrossBilateral.hlsl")
                     .Configure(
@@ -42,13 +43,12 @@ namespace Mpdn.Extensions.RenderScripts
                     );
 
                 // Fall back to default when downscaling is needed
-                var chromaSize = chromaInput.Output.Size;
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
                     return null;
 
                 var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
 
-                return new ShaderFilter(crossBilateral, resizedLuma, chromaInput).ConvertToRgb();
+                return crossBilateral.ApplyTo(resizedLuma, chromaInput).ConvertToRgb();
             }
         }
         

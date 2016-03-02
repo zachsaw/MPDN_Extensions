@@ -29,7 +29,8 @@ namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn
     {
-        public class DynamicRangeCompressorFilter : AudioFilter { 
+        public class DynamicRangeCompressorFilter : AudioFilter
+        {
             // DC offset to prevent denormal
             protected const float DC_OFFSET = 1.0e-25f;
 
@@ -37,23 +38,25 @@ namespace Mpdn.Extensions.AudioScripts
 
             private float[] m_DevOverdBs;
 
-            private readonly float ThresholddB;
-            private readonly float Ratio;
-            private readonly float MakeupGaindB;
+            private readonly float m_ThresholddB;
+            private readonly float m_Ratio;
+            private readonly float m_MakeupGaindB;
             private readonly int m_AttackMs;
             private readonly int m_ReleaseMs;
 
             private EnvelopeDetector m_Attack;
             private EnvelopeDetector m_Release;
+
             private int m_SampleCount;
 
-            public DynamicRangeCompressorFilter(float thresholddB, float ratio, float makeupGaindB, int attackMs, int releaseMs)
+            public DynamicRangeCompressorFilter(float thresholddB, float ratio, float makeupGaindB, int attackMs,
+                int releaseMs)
             {
+                m_ThresholddB = thresholddB;
+                m_Ratio = ratio;
+                m_MakeupGaindB = makeupGaindB;
                 m_AttackMs = attackMs;
                 m_ReleaseMs = releaseMs;
-                ThresholddB = thresholddB;
-                Ratio = ratio;
-                MakeupGaindB = makeupGaindB;
             }
 
             protected override void OnLoadAudioKernel()
@@ -69,17 +72,17 @@ namespace Mpdn.Extensions.AudioScripts
 
             protected override void Process(float[,] samples, short channels, int sampleCount)
             {
-                Initialize();
-
-                Compress(samples, sampleCount, ThresholddB, Ratio, MakeupGaindB);
+                UpdateEnvelopeDetectors();
+                Compress(samples, sampleCount, m_ThresholddB, m_Ratio, m_MakeupGaindB);
             }
 
-            protected override void Initialize()
+            private void UpdateEnvelopeDetectors()
             {
+                if (m_Attack != null && m_Release != null) return;
+
                 var sampleRate = Input.Format.nSamplesPerSec;
                 m_Attack = new EnvelopeDetector(m_AttackMs, sampleRate);
                 m_Release = new EnvelopeDetector(m_ReleaseMs, sampleRate);
-                m_EnvdB = DC_OFFSET;
             }
 
             private void Compress(float[,] samples, int sampleCount, float thresholddB, float ratio, float makeupGaindB)

@@ -105,7 +105,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
 
-                return new ShaderFilter(chromaShader, resizedLuma, chromaInput).ConvertToRgb();
+                return chromaShader.ApplyTo(resizedLuma, chromaInput).ConvertToRgb();
             }
         }
 

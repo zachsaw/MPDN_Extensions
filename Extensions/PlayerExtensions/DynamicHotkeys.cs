@@ -13,40 +13,52 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
     public class DynamicHotkeys : PlayerExtension
     {
-        private static IList<Verb> s_Verbs = new List<Verb>();
+        private IDictionary<Keys, Action> m_Actions = new Dictionary<Keys, Action>();
 
         public override void Initialize()
         {
             base.Initialize();
             HotkeyRegister.HotkeysChanged += OnHotkeysChanged;
+            Player.KeyDown += PlayerKeyDown;
         }
 
         public override void Destroy()
         {
+            Player.KeyDown -= PlayerKeyDown;
             HotkeyRegister.HotkeysChanged -= OnHotkeysChanged;
             base.Destroy();
         }
 
-        public void OnHotkeysChanged(object sender, EventArgs e)
+        private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
         {
-            s_Verbs = HotkeyRegister.Hotkeys.Select(
-                (hotkey, i) => new Verb(Category.Window, "Dynamic Hotkey " + i.ToString(), "", hotkey.Keys.ToString(), "", hotkey.Action)).ToList();
-            LoadVerbs();
+            Action action;
+            if (m_Actions.TryGetValue(e.InputArgs.KeyData, out action))
+            {
+                action();
+                e.Handled = true;
+            }
         }
 
-        // TODO implement Verb hotkeys using HotkeyRegister instead of the other way around.
-        public override IList<Verb> Verbs { get { return s_Verbs; } }
+        public void OnHotkeysChanged(object sender, EventArgs e)
+        {
+            m_Actions = HotkeyRegister.Hotkeys
+                .GroupBy(hotkey => hotkey.Keys)
+                .Select(group => group.First())
+                .ToDictionary(
+                    hotkey => hotkey.Keys, 
+                    hotkey => hotkey.Action);
+        }
 
         public override ExtensionUiDescriptor Descriptor
         {

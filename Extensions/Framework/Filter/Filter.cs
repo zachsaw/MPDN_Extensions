@@ -127,10 +127,7 @@ namespace Mpdn.Extensions.Framework.Filter
                 f.Initialize(LastDependentIndex);
                 LastDependentIndex = f.LastDependentIndex;
             }
-
-            // Fix output
-            m_Output = Output;
-            
+          
             Initialize();
 
             m_FilterIndex = LastDependentIndex;
@@ -179,20 +176,21 @@ namespace Mpdn.Extensions.Framework.Filter
                 return;
 
             m_Updated = true;
+            m_Output = Output;
 
             foreach (var filter in InputFilters)
             {
                 filter.Render();
             }
 
-            var inputTextures =
+            var inputs =
                 InputFilters
                     .Select(f => f.Output)
                     .ToList();
 
             Output.Allocate();
 
-            Render(inputTextures);
+            Render(inputs);
 
             foreach (var filter in InputFilters.Where(filter => filter.LastDependentIndex <= m_FilterIndex))
             {
@@ -205,6 +203,7 @@ namespace Mpdn.Extensions.Framework.Filter
             m_Updated = false;
 
             Output.Deallocate();
+            m_Output = null;
         }
 
         #endregion

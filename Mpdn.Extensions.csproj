@@ -403,6 +403,7 @@
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Chroma.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Bilateral.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.SSimDownscaling.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperChromaRes.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -466,6 +467,14 @@
     <None Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
     <None Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\Calc.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\CalcR.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarI.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarII.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Convolver.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Downscaler.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Upscaler.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\SinglePassConvolver.hlsl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
     <None Include="Extensions\RenderScripts\SuperRes\Diff.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyChroma.hlsl" />
@@ -495,6 +504,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Extensions\RenderScripts\EwaScaler\EwaScaler.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Calc.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Convolver.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarI.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarII.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\CalcR.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\SinglePassConvolver.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Upscaler.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Downscaler.hlsl" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

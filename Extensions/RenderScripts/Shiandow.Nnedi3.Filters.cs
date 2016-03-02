@@ -15,10 +15,10 @@
 // License along with this library.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -178,11 +178,8 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            protected override void LoadInputs(IList<IBaseTexture> inputs)
+            protected override void LoadCustomConstants()
             {
-                base.LoadInputs(inputs);
-
-                LoadSizeConstants(inputs, 0);
                 UploadWeights();
             }
         }

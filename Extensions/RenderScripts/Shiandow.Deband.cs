@@ -33,7 +33,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 maxbitdepth = 8;
                 power = 0.5f;
-                grain = true;
+                grain = false;
             }
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)
@@ -51,10 +51,6 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var Deband = CompileShader("Deband.hlsl", macroDefinitions: !grain ? "SkipDithering=1" : "")
                     .Configure(arguments: consts, perTextureLinearSampling: new[] { true, false });
-                /*var Subtract = CompileShader("Subtract.hlsl")
-                    .Configure(perTextureLinearSampling: new[] { false, true }, format: TextureFormat.Float16);
-                var SubtractLimited = CompileShader("SubtractLimited.hlsl")
-                    .Configure(perTextureLinearSampling: new[] { false, true }, arguments: Consts);*/
 
                 ITextureFilter yuv = input.ConvertToYuv();
                 var inputsize = yuv.Output.Size;
@@ -70,7 +66,7 @@ namespace Mpdn.Extensions.RenderScripts
                     if (size.Width == 0 || size.Height == 0) continue;
                     if (i == 0) size = inputsize;
 
-                    deband = new ShaderFilter(Deband.Configure(transform: s => size), yuv, deband);
+                    deband = Deband.Configure(transform: s => size).ApplyTo(yuv, deband);
                 }
 
                 return deband.ConvertToRgb();

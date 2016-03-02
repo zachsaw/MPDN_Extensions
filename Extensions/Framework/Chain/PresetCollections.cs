@@ -52,7 +52,7 @@ namespace Mpdn.Extensions.Framework.Chain
         [YAXDontSerialize]
         public Preset<T, TScript> SelectedOption
         {
-            get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) : null; }
+            get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) ?? Options.LastOrDefault() : null; }
         }
 
         [YAXDontSerialize]
@@ -116,18 +116,15 @@ namespace Mpdn.Extensions.Framework.Chain
         private void IncrementSelection()
         {
             if (Options.Count > 0)
-            {
                 SelectedIndex = (SelectedIndex + 1) % Options.Count;
-                
-            }
 
-            if (SelectedOption != null)
-            {
-                Player.OsdText.Show(Name + ": " + SelectedOption.Name);
+            if (SelectedOption == null)
+                return;
+
+            Player.OsdText.Show(Name + ": " + SelectedOption.Name);
                 
-                // Refresh everything until a better method can be found
-                Extension.RefreshRenderScript();
-            }
+            // Refresh everything (TODO: only refresh relevant scripts)
+            Extension.RefreshRenderScript();
         }
 
         #endregion

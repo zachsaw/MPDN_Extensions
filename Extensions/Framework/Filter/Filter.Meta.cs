@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mpdn.Extensions.Framework.AudioChain;
 using Mpdn.Extensions.Framework.Chain;
 
 namespace Mpdn.Extensions.Framework.Filter
@@ -102,7 +101,7 @@ namespace Mpdn.Extensions.Framework.Filter
     {
         protected override TFilter MakeFilter()
         {
-            return  new TFilter();
+            return new TFilter();
         }
     }
 }

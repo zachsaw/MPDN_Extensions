@@ -38,7 +38,7 @@ namespace Mpdn.Extensions.RenderScripts
                 // apply our blue tint
                 var blueTint = CompileShader("BlueTintSm3.hlsl")
                     .Configure(linearSampling: false, arguments: new[] {0.25f, 0.5f, 0.75f});
-                return new ShaderFilter(blueTint, sourceFilter);
+                return sourceFilter.Apply(blueTint);
             }
         }
 

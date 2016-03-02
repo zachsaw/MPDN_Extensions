@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -56,7 +57,7 @@ namespace Mpdn.Extensions.RenderScripts
             private readonly TextureSize m_TextureSize;
             private IDisposable m_Buffer;
 
-            public NNedi3HKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, TextureSize textureSize, int[] localWorkSizes,
+            public NNedi3HKernelFilter(IShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, TextureSize textureSize, int[] localWorkSizes,
                 ITextureFilter<IBaseTexture> inputFilter)
                 : base(settings, GlobalWorkSizesHelper.Get(textureSize.Height, textureSize.Width, localWorkSizes), localWorkSizes, inputFilter)
             {
@@ -91,7 +92,7 @@ namespace Mpdn.Extensions.RenderScripts
             private readonly TextureSize m_TextureSize;
             private IDisposable m_Buffer;
 
-            public NNedi3VKernelFilter(ShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, bool reloadWeights, TextureSize textureSize, int[] localWorkSizes,
+            public NNedi3VKernelFilter(IShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, bool reloadWeights, TextureSize textureSize, int[] localWorkSizes,
                 ITextureFilter<IBaseTexture> inputFilter)
                 : base(settings, GlobalWorkSizesHelper.Get(textureSize.Width, textureSize.Height, localWorkSizes), localWorkSizes, inputFilter)
             {
@@ -222,7 +223,7 @@ namespace Mpdn.Extensions.RenderScripts
                     new TextureSize(nnedi3H.Output.Size.Width, nnedi3H.Output.Size.Height), 
                     localWorkSizes, nnedi3H);
 
-                var result = ChromaScaler.CreateChromaFilter(nnedi3V, yuv, new Vector2(-0.25f, -0.25f));
+                var result = ChromaScaler.MakeChromaFilter(nnedi3V, yuv, chromaOffset: new Vector2(-0.25f, -0.25f));
 
                 return new ResizeFilter(result, result.Output.Size, new Vector2(0.5f, 0.5f),
                     Renderer.LumaUpscaler, Renderer.LumaDownscaler);

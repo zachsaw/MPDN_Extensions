@@ -66,13 +66,12 @@ namespace Mpdn.Extensions.RenderScripts
                 if (!UseNedi(input))
                     return input;
 
-                var nedi1 = new ShaderFilter(nedi1Shader, input);
-                var nediH = new ShaderFilter(nediHInterleaveShader, input, nedi1);
-                var nedi2 = new ShaderFilter(nedi2Shader, nediH);
-                var nediV = new ShaderFilter(nediVInterleaveShader, nediH, nedi2);
+                var nedi1 = nedi1Shader.ApplyTo(input);
+                var nediH = nediHInterleaveShader.ApplyTo(input, nedi1);
+                var nedi2 = nedi2Shader.ApplyTo(nediH);
+                var nediV = nediVInterleaveShader.ApplyTo(nediH, nedi2);
 
-                return new ResizeFilter(nediV, nediV.Output.Size, new Vector2(0.5f, 0.5f),
-                    Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
+                return nediV.Convolve(ForceCentered ? Renderer.LumaUpscaler : null, offset: new Vector2(0.5f, 0.5f));
             }
         }
 

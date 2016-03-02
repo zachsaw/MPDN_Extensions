@@ -20,7 +20,7 @@ using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 using Size = System.Drawing.Size;
 
-namespace Mpdn.Extensions.Framework.RenderChain
+namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 {
     public class SourceTextureOutput<TTexture> : FilterOutput, ITextureOutput<TTexture>
         where TTexture : class, IBaseTexture
@@ -100,7 +100,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
     }
 
-    public class ManagedTexture<TTexture> : IDisposable where TTexture : class, IBaseTexture
+    public class ManagedTexture<TTexture> : IManagedTexture<TTexture>
+    where TTexture : class, IBaseTexture
     {
         private TTexture m_Texture;
         private int m_Leases;
@@ -130,7 +131,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Discard();
         }
 
-        public Lease GetLease()
+        public ITextureOutput<TTexture> GetLease()
         {
             if (!Valid)
                 throw new InvalidOperationException("Cannot renew lease on a texture that is no longer valid");
@@ -232,123 +233,101 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public sealed class VideoSourceFilter : TextureFilter, IResizeableFilter
     {
+        private readonly TextureSize m_OutputSize;
+        private readonly bool m_WantYuv;
         private readonly TrueSourceFilter m_TrueSource;
 
-        public VideoSourceFilter() 
-            : base(new RgbFilter(new TrueSourceFilter()))
+        public ITextureFilter GetYuv()
         {
-            var rgbSource = (RgbFilter) InputFilters[0];
-            m_TrueSource = (TrueSourceFilter) rgbSource.InputFilters[0];
+            return new VideoSourceFilter(m_TrueSource, m_OutputSize, true).Tagged(Tag);
         }
 
-        public void SetSize(TextureSize targetSize)
+        public VideoSourceFilter(TrueSourceFilter trueSource, TextureSize? outputSize = null, bool? wantYuv = null)
+            : base(trueSource)
         {
-            m_TrueSource.OutputSize = targetSize;
+            m_TrueSource = trueSource;
+            m_OutputSize = outputSize ?? trueSource.OutputSize;
+            m_WantYuv = wantYuv ?? trueSource.WantYuv;
+
+            if (m_WantYuv) m_TrueSource.WantYuv = true;
+            m_TrueSource.OutputSize = m_OutputSize;
         }
 
-        public void EnableTag()
+        protected override TextureSize OutputSize { get { return m_OutputSize; } }
+
+        protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
-            m_AddTag = true;
+            ITextureFilter result = m_TrueSource.Resize(OutputSize);
+
+            if (m_TrueSource.WantYuv && !m_WantYuv)
+                result = result.ConvertToRgb();
+
+            if (!m_TrueSource.WantYuv && m_WantYuv)
+                result = result.ConvertToYuv();
+
+            return result.Compile();
         }
 
-        public ScriptInterfaceDescriptor Descriptor
+        protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
         {
-            get { return m_TrueSource.Descriptor; }
+            throw new NotImplementedException();
         }
+
+        public void EnableTag() // No effect
+        { }
+
+        public ITextureFilter SetSize(TextureSize outputSize)
+        {
+            return new VideoSourceFilter(m_TrueSource, outputSize, m_WantYuv).Tagged(Tag);
+        }
+    }
+
+    public sealed class TrueSourceFilter : BaseSourceFilter<ITextureOutput<ITexture2D>>, ITextureFilter
+    {
+        private TextureSize? m_OutputSize;
+        public bool WantYuv { get; set; }
+
+        public TrueSourceFilter(IRenderScript script) // Argument doesn't technically do anything, just prevents the creation of a TrueSourceFilter not coupled to an IRenderScript's Descriptor
+        { }
 
         public string Status()
         {
             var chromaConvolver = Renderer.ChromaOffset.IsZero ? null : Renderer.ChromaUpscaler;
-            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, Output.Size, Renderer.ChromaUpscaler,
-                Renderer.ChromaDownscaler, chromaConvolver)
+            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, chromaConvolver)
                 .PrependToStatus("Chroma: ");
-            var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, Output.Size, Renderer.LumaUpscaler,
-                Renderer.LumaDownscaler)
+            var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler)
                 .PrependToStatus("Luma: ");
 
             return chromastatus.AppendStatus(lumastatus);
         }
 
-        #region IFilter Implementation
-
-        private bool m_AddTag;
-
-        protected override TextureSize OutputSize
+        public TextureSize OutputSize // Can only be set once
         {
-            get { return m_TrueSource.OutputSize; }
-        }
-
-        protected override void Render(IList<ITextureOutput<IBaseTexture>> textureOutputs)
-        {
-            throw new NotImplementedException();
+            get { return m_OutputSize ?? Renderer.VideoSize; }
+            set { m_OutputSize = value; }
         }
 
         protected override void Initialize()
         {
-            if (m_AddTag)
-            {
-                AddTag(Status());
-                m_AddTag = false; // Only add tag once.
-            }
+            AddTag(Status());
         }
 
-        protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
+        public ScriptInterfaceDescriptor Descriptor
         {
-            return m_TrueSource.WantYuv ? (IFilter<ITextureOutput<ITexture2D>>)m_TrueSource.RgbSource : m_TrueSource; ;
-        }
-
-        #endregion
-
-        #region Auxilary Classes
-
-        public sealed class TrueSourceFilter : BaseSourceFilter<ITextureOutput<ITexture2D>>, ITextureFilter
-        {
-            public bool WantYuv { get; private set; }
-            public RgbFilter RgbSource { get; private set; }
-
-            public TextureSize OutputSize;
-
-            public ITextureFilter GetYuv()
+            get
             {
-                WantYuv = true;
-                RgbSource = new RgbFilter(this);
-                return this;
-            }
-
-            public ScriptInterfaceDescriptor Descriptor
-            {
-                get
+                return new ScriptInterfaceDescriptor
                 {
-                    return new ScriptInterfaceDescriptor
-                    {
-                        WantYuv = WantYuv,
-                        Prescale = LastDependentIndex > 0 || (WantYuv && RgbSource.LastDependentIndex > 0),
-                        PrescaleSize = (Size)OutputSize
-                    };
-                }
-            }
-
-            protected override ITextureOutput<ITexture2D> DefineOutput()
-            {
-                OutputSize = Renderer.VideoSize;
-                return new DeferredTextureOutput<ITexture2D>(() => Renderer.InputRenderTarget, () => OutputSize);
+                    WantYuv = WantYuv && Renderer.InputFormat.IsYuv(),
+                    Prescale = LastDependentIndex > 0,
+                    PrescaleSize = (Size)OutputSize
+                };
             }
         }
 
-        #endregion
-    }
-
-    public static class SharedTextureHelpers
-    {
-        public static ManagedTexture<TTexture> GetManaged<TTexture>(this TTexture texture) where TTexture : class, IBaseTexture
+        protected override ITextureOutput<ITexture2D> DefineOutput()
         {
-            return new ManagedTexture<TTexture>(texture);
-        }
-
-        public static TextureSourceFilter<TTexture> ToFilter<TTexture>(this ManagedTexture<TTexture> texture)
-            where TTexture : class, IBaseTexture
-        {
-            return new TextureSourceFilter<TTexture>(texture.GetLease());
+            return new DeferredTextureOutput<ITexture2D>(() => Renderer.InputRenderTarget, () => OutputSize);
         }
     }
 }

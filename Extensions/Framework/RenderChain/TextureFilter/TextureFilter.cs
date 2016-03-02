@@ -17,7 +17,7 @@
 using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 
-namespace Mpdn.Extensions.Framework.RenderChain
+namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 {
     using IBaseTextureFilter = IFilter<ITextureOutput<IBaseTexture>>;
 
@@ -48,18 +48,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Texture = null;
         }
     };
-
-    public interface ITextureFilter<out TTexture> : IFilter<ITextureOutput<TTexture>> 
-        where TTexture : class, IBaseTexture
-    { }
-
-    public interface ITextureFilter : ITextureFilter<ITexture2D>
-    { }
-
-    public interface IResizeableFilter : ITextureFilter, ITaggableFilter<ITextureOutput<ITexture2D>>
-    {
-        void SetSize(TextureSize outputSize);
-    }
 
     public abstract class TextureFilter : Filter<ITextureOutput<IBaseTexture>, ITextureOutput<ITexture2D>>, ITextureFilter
     {
