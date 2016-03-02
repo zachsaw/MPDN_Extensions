@@ -72,7 +72,8 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             if (inputs.Count != 1)
                 throw new ArgumentException("Incorrect number of inputs.");
-            Process(inputs.First(), Output);
+            if (!Process(inputs.First(), Output))
+                throw new Exception("Audio processing failed.");
         }
 
         private bool Process(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
