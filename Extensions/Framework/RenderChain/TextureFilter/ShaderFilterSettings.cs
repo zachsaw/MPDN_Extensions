@@ -15,15 +15,13 @@
 // License along with this library.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.RenderScript;
-using SharpDX;
 
 namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 {
-    public struct ShaderFilterSettings<T> : IShaderFilterSettings<T>
+    public class ShaderFilterSettings<T> : IShaderFilterSettings<T>
         where T : IShaderBase
     {
         public T Shader { get; set; }
