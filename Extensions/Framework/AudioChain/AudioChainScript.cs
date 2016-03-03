@@ -29,8 +29,6 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         public void Update(IAudio audio)
         {
-            m_Audio = audio;
-
             if (!AudioProc.Initialize())
             {
                 // Note: Using GuiThread.DoAsync ensures the warning gets displayed after the current media filename
@@ -40,8 +38,8 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 return;
             }
 
-            if (m_Audio != null)
-                Update();
+            m_Audio = audio;
+            Update();
         }
 
         protected override void OutputResult(IAudioOutput result)
