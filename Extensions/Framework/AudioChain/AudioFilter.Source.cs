@@ -35,6 +35,11 @@ namespace Mpdn.Extensions.Framework.AudioChain
             get { return m_Audio.InputFormat; }
         }
 
+        public IMediaSample MediaSample
+        {
+            get { return m_Audio.Input; }
+        }
+
         public IMediaSample Sample
         {
             get { return m_Audio.Input; }
