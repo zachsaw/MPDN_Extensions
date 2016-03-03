@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         protected override IAudioOutput DefineOutput()
         {
-            return new AudioOutput(OutputFormat, Pin.Output.Sample);
+            return new AudioOutput(OutputFormat, Pin.Output.MediaSample);
         }
 
         protected virtual WaveFormatExtensible OutputFormat
@@ -73,7 +73,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
             if (inputs.Count != 1)
                 throw new ArgumentException("Incorrect number of inputs.");
             if (!Process(inputs.First(), Output))
-                throw new Exception("Audio processing failed.");
+                AudioHelpers.CopySample(inputs.First().Sample, Output.Sample, true);
         }
 
         private bool Process(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
@@ -323,25 +323,26 @@ namespace Mpdn.Extensions.Framework.AudioChain
     public interface IAudioOutput : IFilterOutput
     {
         WaveFormatExtensible Format { get; }
+        IMediaSample MediaSample { get; }
         IMediaSample Sample { get; }
     }
 
     public class AudioOutput : FilterOutput, IAudioOutput
     {
-        private readonly WaveFormatExtensible m_Format;
-        private readonly IMediaSample m_MediaSample;
         private IMediaSample m_Sample;
 
         public AudioOutput(WaveFormatExtensible format, IMediaSample mediaSample)
         {
-            m_MediaSample = mediaSample;
-            m_Format = format;
+            if (format == null) throw new ArgumentNullException("format");
+            if (mediaSample == null) throw new ArgumentNullException("mediaSample");
+
+            MediaSample = mediaSample;
+            Format = format;
         }
 
-        public WaveFormatExtensible Format
-        {
-            get { return m_Format; }
-        }
+        public WaveFormatExtensible Format { get; private set; }
+
+        public IMediaSample MediaSample { get; private set; }
 
         public IMediaSample Sample
         {
@@ -350,7 +351,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         public override void Allocate()
         {
-            m_Sample = new MediaSample(m_MediaSample, false);
+            m_Sample = new MediaSample(MediaSample);
         }
 
         public override void Deallocate()
@@ -375,7 +376,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         private bool m_Disposed;
 
-        public MediaSample(IMediaSample sample, bool copySamples = false)
+        public MediaSample(IMediaSample sample)
         {
             m_Size = sample.GetSize();
             m_ActualDataLength = sample.GetActualDataLength();
@@ -385,11 +386,6 @@ namespace Mpdn.Extensions.Framework.AudioChain
             sample.GetTime(out m_TimeStart, out m_TimeEnd);
             sample.GetMediaTime(out m_MediaTimeStart, out m_MediaTimeEnd);
             m_Buffer = Marshal.AllocCoTaskMem(m_Size);
-            if (!copySamples)
-                return;
-            IntPtr src;
-            sample.GetPointer(out src);
-            AudioHelpers.CopyMemory(m_Buffer, src, m_Size);
         }
 
         public int GetPointer(out IntPtr ppBuffer)

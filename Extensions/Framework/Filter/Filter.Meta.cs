@@ -58,7 +58,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
             protected override void Render(IList<IFilterOutput> inputs)
             {
-                throw new InvalidOperationException("Unconnected Pin.");
+                throw new InvalidOperationException("Uncompiled filter.");
             }
 
             protected override TOutput DefineOutput()
@@ -71,7 +71,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
             protected override IFilter<TOutput> Optimize()
             {
-                return m_PinInput;
+                return m_PinInput.Compile();
             }
         }
     }
