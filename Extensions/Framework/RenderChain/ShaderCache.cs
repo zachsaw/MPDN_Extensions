@@ -35,7 +35,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             {
                 var asmPath = typeof (IRenderScript).Assembly.Location;
 #if DEBUG
-                return Path.Combine(PathHelper.GetDirectoryName(asmPath), "..\\", "Extensions", "RenderScripts");
+                return Path.GetFullPath(Path.Combine(PathHelper.GetDirectoryName(asmPath), "..\\", "Extensions", "RenderScripts"));
 #else
                 return Path.Combine(PathHelper.GetDirectoryName(asmPath), "Extensions", "RenderScripts");
 #endif
