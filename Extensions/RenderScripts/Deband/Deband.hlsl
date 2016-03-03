@@ -89,15 +89,14 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 
 	// Merge with high res values
 	float3 str = varX/(varX + varY);
-	c0.rgb += str*(avg - c0);
+	c0.rgb = lerp(c0, avg, str);
 
 	// Dithering
 #ifndef SkipDithering
-	[branch] if (all(p0.xy == size0.xy))  {
-		float x = tempNoise(tex, p0[2]/4);
-		x = x*sqrt(12);
-		float3 p = frac(c0*acuity);
-		c0.rgb += x*varX*rsqrt(0.5*(varX + varY))/acuity;
+	[branch] if (all(p0.xy == size0.xy)) {
+		float noise = tempNoise(tex, p0[2]/4);
+		noise = noise * sqrt(12) / acuity;
+		c0.rgb += noise * sqrt(varX*str);
 	}
 #endif
 

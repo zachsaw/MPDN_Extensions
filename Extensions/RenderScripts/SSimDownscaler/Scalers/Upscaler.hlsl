@@ -40,12 +40,16 @@
 	#define axis 0
 #endif
 
+#ifndef offset
+	#define offset float2(0,0)
+#endif
+
 #ifndef Initialization
 	#define Initialization
 #endif
 
-#ifndef Postprocessing
-	#define Postprocessing(x) x
+#ifndef PostProcessing
+	#define PostProcessing(x) x
 #endif
 
 #ifndef Kernel
@@ -63,18 +67,18 @@
 #endif
 
 #ifndef OutputFormat
-	#define OutputFormat AverageFormat
+	#define OutputFormat float4
 #endif
 
 // -- Main code --
-OutputFormat (float2 tex : TEXCOORD0
+OutputFormat EntryPoint(float2 tex : TEXCOORD0
 #ifdef ExtraArguments
 , ExtraArguments
 #endif
 ) : COLOR{
     // Calculate bounds
-	int low  = floor(tex * size0.xy - 0.5*taps + 0.5)[axis];
-	int high = floor(tex * size0.xy + 0.5*taps + 0.5)[axis];
+	int low  = floor(tex * size0.xy - 0.5*taps - offset + 0.5)[axis];
+	int high = floor(tex * size0.xy + 0.5*taps - offset + 0.5)[axis];
 
 	float W = 0;
 	AverageFormat avg = 0;
@@ -89,13 +93,13 @@ OutputFormat (float2 tex : TEXCOORD0
     #endif
     for (int k = 0; k < maxtaps; k++) {
 		pos[axis] = ddxddy[axis] * (k + low + 0.5);
-		float offset = (pos[axis] - tex[axis])*size0[axis];
-		float w = Kernel(offset);
+		float rel = (pos[axis] - tex[axis])*size0[axis] + offset[axis];
+		float w = Kernel(rel);
 		
-		avg += w*Get(pos);
+		avg += w*(Get(pos));
 		W += w;
 	}
 	avg /= W;
 	
-	return Postprocessing(avg);
+	return PostProcessing(avg);
 }

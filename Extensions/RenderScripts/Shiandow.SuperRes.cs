@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.RenderScripts.Mpdn.EwaScaler;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
 
@@ -52,6 +53,17 @@ namespace Mpdn.Extensions.RenderScripts
 
                 LegacyDownscaling = false;
 
+                var EWASincJinc = new EwaScalerScaler
+                {
+                    Settings = new EwaScaler
+                    {
+                        Scaler = new EwaScaler.JincScaler(),
+                        TapCount = ScalerTaps.Six,
+                        AntiRingingEnabled = true,
+                        AntiRingingStrength = 1.0f, // No need to hold back, SuperRes should lessen possible artefacts
+                    }
+                }.ToPreset("EWA Sinc-Jinc");
+
                 var fastSuperXbrUi = new Hylian.SuperXbr.SuperXbrUi
                 {
                     Settings = new Hylian.SuperXbr.SuperXbr
@@ -63,7 +75,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 PrescalerGroup = new RenderScriptGroup
                 {
-                    Options = (new[] {fastSuperXbrUi})
+                    Options = (new[] { EWASincJinc, fastSuperXbrUi})
                         .Concat(
                             new List<IRenderChainUi>
                             {
@@ -75,6 +87,8 @@ namespace Mpdn.Extensions.RenderScripts
                         .ToList(),
                     SelectedIndex = 0
                 };
+
+                PrescalerGroup.Name = "SuperRes Prescaler";
             }
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)
@@ -116,9 +130,9 @@ namespace Mpdn.Extensions.RenderScripts
                 var Diff = CompileShader("Diff.hlsl")
                     .Configure(format: TextureFormat.Float16);
 
-                var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions)
+                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: macroDefinitions)
                     .Configure(arguments: new[] { Strength, Softness });
-                var FinalSuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions + "FinalPass = 1;")
+                var FinalSuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: macroDefinitions + "FinalPass = 1;")
                     .Configure(arguments: new[] { Strength });
 
                 var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
@@ -156,10 +170,6 @@ namespace Mpdn.Extensions.RenderScripts
                     }
                     else
                     {   diff = DownscaleAndDiff(result, original, inputSize); }
-
-                    /*SuperRes = (i != Passes ? SuperRes : FinalSuperRes).Configure(
-                        arguments: new[] { Strength, (float)(Softness * Math.Pow(0.5, i-1))}
-                    );*/
 
                     // Update result
                     result = (i != Passes ? SuperRes : FinalSuperRes).ApplyTo(result, diff);
