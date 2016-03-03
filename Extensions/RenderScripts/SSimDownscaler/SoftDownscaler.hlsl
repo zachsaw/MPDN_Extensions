@@ -5,7 +5,7 @@
 // #define Kernel(x) 1 - abs(x)
 // #define Kernel(x) MN(0.2620, 0.3690, abs(x))
 // #define Kernel(x) MN(-1,0, abs(x))	
-// #define Kernel(x) exp(-2*x*x) // Gaussian
+#define Kernel(x) exp(-2*x*x) // Gaussian
 // #define Kernel(x) cos(0.5*pi*x) // Hann
 // #define Kernel(x) exp(-abs(x)*2) // Poisson
 // #define Kernel(x) (sin(pi*x)/(pi*x)) // Lanczos
