@@ -16,133 +16,118 @@
 // 
 // -- Main parameters --
 #define strength (args0[0])
-#define sharpness (args0[1])
-#define anti_aliasing (args0[2])
-#define anti_ringing (args0[3])
-#define softness (args1[0])
+#define softness (args0[1])
 
 // -- Edge detection options -- 
-#define acuity 6.0
-#define radius 0.75
+#define acuity 100.0
+#define radius 0.5
+#define power 0.5
 
 // -- Misc --
 sampler s0 	  : register(s0);
 sampler sDiff : register(s1);
-sampler sUV	  : register(s2);
 
 float4 p0	  : register(c0);
 float2 p1	  : register(c1);
-float4 size2  : register(c2);
+float4 size1  : register(c2);
 float4 args0  : register(c3);
 float4 args1  : register(c4);
-float4 args2  : register(c5);
 
+// -- Skip threshold --
+#define threshold 1
+#define skip (1==0)//(c0.a < threshold/255.0);
+
+// -- Size handling --
 #define width  (p0[0])
 #define height (p0[1])
-#define chromaSize size2
+#define chromaSize size1
 
 #define dxdy (p1.xy)
 #define ddxddy (chromaSize.zw)
-#define offset (args2.xy)
+#define chromaOffset (args1.xy)
 
+// -- Window Size --
+#define taps 3
+#define even (taps - 2 * (taps / 2) == 0)
+#define minX (1-ceil(taps/2.0))
+#define maxX (floor(taps/2.0))
+
+// -- Convenience --
 #define sqr(x) dot(x,x)
-#define spread (exp(-1/(2.0*radius*radius)))
-#define h 1.2
-
-#define max3(c) (max(c[0],max(c[1],c[2])))
-#define min3(c) (min(c[0],min(c[1],c[2])))
+#define factor (ddxddy/dxdy)
+#define Kernel(x) saturate((taps*0.5 - abs(x)) * factor)
 
 // -- Colour space Processing --
+#define Kb args0[2]
+#define Kr args0[3]
 #include "../../Common/ColourProcessing.hlsl"
-#define Kb args1[1] //redefinition
-#define Kr args1[2] //redefinition
 
 // -- Input processing --
 //Current high res value
-#define Get(x,y)  	(tex2D(s0,tex+dxdy*int2(x,y)).xyz)
-//Difference between downsampled result and original
-#define Diff(x,y)	(tex2D(sDiff,tex + ddxddy*(int2(x,y) - offset)).xyz)
-//Original YUV
-#define Original(x,y)	(mul(RGBtoYUV, tex2D(sUV,ddxddy*(pos + int2(x,y) + 0.5)).rgb).yz)
+#define Get(x,y)    (tex2Dlod(s0,   float4(tex + dxdy*int2(x,y),        0,0)).xyz)
+#define GetY(x,y)   (tex2Dlod(sDiff,float4(ddxddy*(pos+int2(x,y)+0.5),  0,0)).a)
+//Downsampled result
+#define Diff(x,y)   (tex2Dlod(sDiff,float4(ddxddy*(pos+int2(x,y)+0.5),  0,0)))
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
-	float4 c0 = tex2D(s0, tex);
-	float3 stab = 0;
-	float Lum = dot(RGBtoYUV[0], c0.rgb);
+    float4 c0 = tex2D(s0, tex);
+    float4 Original = c0;
 
-	float3 Ix = (Get(1, 0) - Get(-1, 0)) / (2.0*h);
-	float3 Iy = (Get(0, 1) - Get(0, -1)) / (2.0*h);
-	float3 Ixx = (Get(1, 0) - 2 * Get(0, 0) + Get(-1, 0)) / (h*h);
-	float3 Iyy = (Get(0, 1) - 2 * Get(0, 0) + Get(0, -1)) / (h*h);
-	float3 Ixy = (Get(1, 1) - Get(1, -1) - Get(-1, 1) + Get(-1, -1)) / (4.0*h*h);
-	//	Ixy = (Get(1,1) - Get(1,0) - Get(0,1) + 2*Get(0,0) - Get(-1,0) - Get(0,-1) + Get(-1,-1))/(2.0*h*h);
+    // Calculate position
+    float2 pos = tex * chromaSize.xy - chromaOffset - 0.5;
+    float2 offset = pos - round(pos);
+    pos -= offset;
 
-#ifndef SkipAntiAliasing
-	// Mean curvature flow
-	float3 N = rsqrt(Ix*Ix + Iy*Iy);
-	Ix *= N; Iy *= N;
-	stab -= anti_aliasing*(Ix*Ix*Iyy - 2*Ix*Iy*Ixy + Iy*Iy*Ixx);
-#endif
+    // Calculate faithfulness force
+    float weightSum = 0;
+    float4 diff = 0;
+    float3 soft = 0;
 
-#ifndef SkipSharpening
-	// Inverse heat equation
-	stab += sharpness*0.5*(Ixx + Iyy);
-#endif
+    for (int X = minX; X <= maxX; X++)
+    for (int Y = minX; Y <= maxX; Y++)
+    {
+        float dI2 = sqr(acuity*(Luma(c0.rgb) - GetY(X,Y)));
+        float dXY2 = sqr((float2(X,Y) - offset)/radius);
+        // float weight = pow(rsqrt(dXY2 + dI2),3);
+        // float weight = exp(-0.5 * (dXY2) ) * pow(1 + dI2 / power, -power);
+        float2 kernel = Kernel(float2(X,Y) - offset);
+        float weight = kernel.x * kernel.y * pow(1 + dI2/power, - power);
 
+        diff += weight*Diff(X,Y);
+        weightSum += weight;
+    }
+    diff /= weightSum;
+
+    [branch] if (!skip) {
+        // Apply force
+        c0.yz -= strength * diff.yz;
+
+        // Skip processing if diff is too small
+        c0.a = length(diff.yz);
+    }
+
+#define SkipSoftening 1
 #ifndef SkipSoftening
-	// Softening
-	float W = 1;
-	float3 soft = 0;
-	float3 D[8] = {	{Get(0,0) - Get(0,1), Get(0,0) - Get(1, 0), Get(0,0) - Get(0 ,-1), Get(0,0) - Get(-1,0)},
-				 	{Get(0,0) - Get(1,1), Get(0,0) - Get(1,-1), Get(0,0) - Get(-1,-1), Get(0,0) - Get(-1,1)} };
-	[unroll] for( int k = 0; k < 8; k++)
-	{
-		float3 d = D[k];
-		float x2 = sqr(acuity*d);
-		float w = pow(spread, k < 4 ? 1.0 : 2.0)*exp(-x2);
-		soft += w*d;
-		W += w;
-	}
-	stab += 4 * softness * soft / (1 + 4*spread*(1+spread));
+    weightSum=0;
+    #define softAcuity 6.0
+
+    for (int X = -1; X <= 1; X++)
+    for (int Y = -1; Y <= 1; Y++)
+    if (X != 0 || Y != 0) {
+        float3 dI = Get(X,Y) - Original;
+        float dI2 = sqr(softAcuity*mul(YUVtoRGB, dI));
+        float dXY2 = sqr(float2(X,Y)/radius);
+        float weight = pow(rsqrt(dXY2 + dI2),3); // Fundamental solution to the 5d Laplace equation
+
+        soft += weight * dI;
+        weightSum += weight;
+    }
+    soft /= weightSum;
+
+    [branch] if (!skip)
+        c0.yz += softness * soft.yz;
 #endif
-
-	// Calculate faithfulness force
-	float3 diff = Diff(0, 0);
-
-	// Apply forces
-	c0.rgb -= strength*(diff + stab);
-
-#ifndef SkipAntiRinging
-	//Calculate position
-	int2 pos = floor(tex * chromaSize.xy - offset - 0.5);
-
-	c0.xyz = mul(RGBtoYUV, c0.rgb);
-
-	// Find extrema
-	float2 Min = min(min(Original(0, 0), Original(1, 0)),
-					 min(Original(0, 1), Original(1, 1)));
-	float2 Max = max(max(Original(0, 0), Original(1, 0)),
-					 max(Original(0, 1), Original(1, 1)));
-
-	// Apply anti-ringing
-	float2 AR = c0.yz  - clamp(c0.yz, Min, Max);
-	c0.yz -= AR*smoothstep(0, (Max - Min) / anti_ringing - (Max - Min) + pow(2, -16), abs(AR));
-
-	// Restore Luma
-	c0.x = Lum;
-
-	c0.rgb = mul(YUVtoRGB, c0.xyz);
-#else
-	// Restore Luma
-	c0.rgb += Lum - dot(RGBtoYUV[0], c0.rgb);
-#endif
-
-	// Limit chroma
-	float3 Y = RGBtoYUV[0];
-	float4 S = saturate(c0);
-	float3 X = dot(Y,c0 - S)*(c0 - S).rgb > 0 ? 0 : Y;
-	c0.rgb = S + X*dot(Y,c0 - S)/dot(Y,X);
-
-	return c0;
+    
+    return c0;
 }

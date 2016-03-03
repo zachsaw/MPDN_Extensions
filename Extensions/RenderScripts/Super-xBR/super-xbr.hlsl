@@ -34,24 +34,33 @@
 
 */
 
-#if Pass == 1
-	#define wp1  2.0
-	#define wp2  0.0
-	#define wp3  0.0
-	#define wp4  0.0
-	#define wp5  0.0
-	#define wp6  0.0
+#if Pass == 0
+	#define wp1   1.0
+	#define wp2   0.0
+	#define wp3   0.0
+	#define wp4   2.0
+	#define wp5  -1.0
+	#define wp6   0.0
+#elif Pass == 1
+	#define wp1   1.0
+	#define wp2   0.0
+	#define wp3   0.0
+	#define wp4   4.0
+	#define wp5   0.0
+	#define wp6   0.0
+#else
+	#define wp1   1.0
+	#define wp2   0.0
+	#define wp3   0.0
+	#define wp4   0.0
+	#define wp5  -1.0
+	#define wp6   0.0
+#endif
 
+#if Pass == 1
 	#define weight1 (XBR_WEIGHT*1.75068/10.0)
 	#define weight2 (XBR_WEIGHT*1.29633/10.0/2.0)
 #else
-	#define wp1  2.0
-	#define wp2  1.0
-	#define wp3 -1.0
-	#define wp4  4.0
-	#define wp5 -1.0
-	#define wp6  1.0
-
 	#define weight1 (XBR_WEIGHT*1.29633/10.0)
 	#define weight2 (XBR_WEIGHT*1.75068/10.0/2.0)
 #endif

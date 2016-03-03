@@ -13,18 +13,13 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-
+// 
 // -- Misc --
-sampler sHMean:	register(s1);
-sampler sMean:	register(s2);
+float4 args0 : register(c3);
 
-// -- Definitions --
-#define Initialization	float4 mean = GetFrom(sMean, tex);
-#define sqr(x)			((x)*(x))
-#define Get(pos)		GetFrom(s0, pos) + sqr(GetFrom(sHMean, pos) - mean)
+#define offset args0.xy
 
-#define pi acos(-1)
-// #define Kernel(x) exp(-2*x*x) // Gaussian
-#define taps 2
-
-#include "./Scalers/Downscaler.hlsl"
+// -- Downscaling --
+#define AverageFormat	float
+#define Get(pos)		(GetFrom(s0, pos).x)
+#include "../SSimDownscaler/Scalers/Downscaler.hlsl"

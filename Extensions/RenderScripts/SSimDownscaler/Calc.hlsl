@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-sampler sR:	register(s0);
+sampler sL:	register(s0);
 sampler sM:	register(s1);
-sampler sL:	register(s2);
+sampler sR:	register(s2);
 float4 p0 : register(c0);
 float2 p1 : register(c1);
 float4 size0 : register(c2);
@@ -28,7 +28,7 @@ float4 size0 : register(c2);
 
 // -- Define horizontal convolver --
 #define EntryPoint ScaleH
-#define Get(pos) lerp(GetM(pos), L, GetR(pos))
+#define Get(pos) float4(lerp(GetM(pos), L, GetR(pos)).xyz, dot(GetR(pos).xyz, GetR(pos).xyz))
 #define axis 0
 #include "./Scalers/Convolver.hlsl"
 
@@ -38,9 +38,12 @@ float4 size0 : register(c2);
 #define axis 1
 #include "./Scalers/Convolver.hlsl"
 
+#define strength 0.5
 // -- Main code --
 float4 main(float2 tex : TEXCOORD0) : COLOR {
     float4 L = tex2D(sL, tex);
 
-	return Calc(tex, L);
+    float4 result = Calc(tex, L);
+
+	return lerp(L, result, strength/(strength + (1 - strength) * result.a/200));
 }
