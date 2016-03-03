@@ -17,40 +17,64 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mpdn.RenderScript;
-using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.Extensions.Framework.RenderChain
+namespace Mpdn.Extensions.Framework.Filter
 {
-    public interface IFilter<out TTexture> : IDisposable
-        where TTexture : class, IBaseTexture
+    using IBaseFilter = IFilter<IFilterOutput>;
+
+    public interface IFilter<out TOutput> : IDisposable
+        where TOutput : class, IFilterOutput
     {
-        TTexture OutputTexture { get; }
-        TextureSize OutputSize { get; }
-        TextureFormat OutputFormat { get; }
+        TOutput Output { get; }
+
         int LastDependentIndex { get; }
         void Render();
         void Reset();
         void Initialize(int time = 1);
-        IFilter<TTexture> Compile();
+        IFilter<TOutput> Compile();
 
         void AddTag(FilterTag newTag);
         FilterTag Tag { get; }
     }
 
-    public interface IFilter : IFilter<ITexture2D>
+    public interface IFilterOutput : IDisposable
     {
+        void Allocate();
+        void Deallocate();
     }
 
-    public interface IResizeableFilter : IFilter
+    public abstract class FilterOutput : IFilterOutput
     {
-        void SetSize(TextureSize outputSize);
-        void EnableTag();
+        public abstract void Allocate();
+
+        public abstract void Deallocate();
+
+        #region Resource Management
+
+        ~FilterOutput()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            Deallocate();
+        }
+
+        #endregion
     }
 
-    public abstract class Filter : IFilter
+    public abstract class Filter<TInput, TOutput> : IFilter<TOutput>
+        where TOutput : class, IFilterOutput
+        where TInput : class, IFilterOutput
     {
-        protected Filter(params IBaseFilter[] inputFilters)
+        protected Filter(params IFilter<TInput>[] inputFilters)
         {
             if (inputFilters == null || inputFilters.Any(f => f == null))
             {
@@ -67,30 +91,28 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 Tag.AddInput(filter);
         }
 
-        protected abstract void Render(IList<IBaseTexture> inputs);
+        protected abstract void Render(IList<TInput> inputs);
 
-        public abstract TextureSize OutputSize { get; }
+        protected abstract TOutput DefineOutput();
 
         #region IFilter Implementation
 
-        private IBaseFilter[] m_OriginalInputFilters;
+        private IFilter<TInput>[] m_OriginalInputFilters;
 
         private bool m_Updated;
         private bool m_Initialized;
         private int m_FilterIndex;
-        private IFilter<ITexture2D> m_CompilationResult;
 
-        protected ITargetTexture OutputTarget { get; private set; }
+        private IFilter<TOutput> m_CompilationResult;
+        private TOutput m_Output;
 
-        public IBaseFilter[] InputFilters { get; private set; }
+        public IFilter<TInput>[] InputFilters { get; private set; }
 
-        public ITexture2D OutputTexture { get { return OutputTarget; } }
-
-        public virtual TextureFormat OutputFormat
+        public TOutput Output
         {
-            get { return Renderer.RenderQuality.GetTextureFormat(); }
+            get { return m_Output ?? DefineOutput(); }
         }
-        
+
         public int LastDependentIndex { get; private set; }
 
         public void Initialize(int time = 1)
@@ -105,6 +127,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 f.Initialize(LastDependentIndex);
                 LastDependentIndex = f.LastDependentIndex;
             }
+          
+            Initialize();
 
             m_FilterIndex = LastDependentIndex;
 
@@ -117,7 +141,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Initialized = true;
         }
 
-        public IFilter<ITexture2D> Compile()
+        // Called if the filter is actually used, but before it is used.
+        protected virtual void Initialize() { }
+
+        public IFilter<TOutput> Compile()
         {
             if (m_CompilationResult != null)
                 return m_CompilationResult;
@@ -138,7 +165,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Tag = Tag.Append(newTag);
         }
 
-        protected virtual IFilter<ITexture2D> Optimize()
+        protected virtual IFilter<TOutput> Optimize()
         {
             return this;
         }
@@ -149,40 +176,34 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return;
 
             m_Updated = true;
+            m_Output = Output;
 
             foreach (var filter in InputFilters)
             {
                 filter.Render();
             }
 
-            var inputTextures =
+            var inputs =
                 InputFilters
-                    .Select(f => f.OutputTexture)
+                    .Select(f => f.Output)
                     .ToList();
 
-            OutputTarget = TexturePool.GetTexture(OutputSize, OutputFormat);
+            Output.Allocate();
 
-            Render(inputTextures);
+            Render(inputs);
 
-            foreach (var filter in InputFilters)
+            foreach (var filter in InputFilters.Where(filter => filter.LastDependentIndex <= m_FilterIndex))
             {
-                if (filter.LastDependentIndex <= m_FilterIndex)
-                {
-                    filter.Reset();
-                }
+                filter.Reset();
             }
         }
 
-        public void Reset()
+        public virtual void Reset()
         {
             m_Updated = false;
 
-            if (OutputTarget != null)
-            {
-                TexturePool.PutTexture(OutputTarget);
-            }
-
-            OutputTarget = null;
+            Output.Deallocate();
+            m_Output = null;
         }
 
         #endregion
@@ -202,8 +223,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected virtual void Dispose(bool disposing)
         {
+            if (!disposing)
+                return;
+
             DisposeHelper.DisposeElements(ref m_OriginalInputFilters);
             DisposeHelper.DisposeElements(InputFilters);
+            DisposeHelper.Dispose(m_Output);
             InputFilters = null;
         }
 
@@ -234,11 +259,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return filter;
         }
 
-        public static TFilter MakeTagged<TFilter>(this TFilter filter)
-            where TFilter : IResizeableFilter
+        public static TOther Apply<TFilter, TOther>(this TFilter filter, Func<TFilter, TOther> map)
+            where TFilter : IBaseFilter
+            where TOther : IBaseFilter
         {
-            filter.EnableTag();
-            return filter;
+            return map(filter);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// This file is a part of MPDN Extensions.
+// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -13,14 +13,15 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
+// 
+// -- Misc --
+sampler sUV : register(s1);
+float4 args0 : register(c3);
 
-using Mpdn.Extensions.Framework.Controls;
-using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.RenderScript;
+#define offset args0.xy
 
-namespace Mpdn.Extensions.RenderScripts
-{
-    public class RenderScriptChainList : ChainList<IFilter, IRenderScript>
-    {
-    }
-}
+// -- Downscaling --
+#define AverageFormat	float
+#define Get(pos)		(GetFrom(s0, pos).x)
+#define PostProcessing(y)	(float4(y, GetFrom(sUV,tex).yzw))
+#include "../SSimDownscaler/Scalers/Downscaler.hlsl"

@@ -26,29 +26,50 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Bilateral : RenderChain, IChromaScaler
         {
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 return this.MakeChromaFilter(input);
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            private ITextureFilter DownscaleLuma(ITextureFilter luma, ITextureFilter chroma, TextureSize targetSize, Vector2 adjointOffset)
+            {
+                var HDownscaler = CompileShader("LumaDownscalerI.hlsl", macroDefinitions: "axis = 0;").Configure(
+                        transform: s => new TextureSize(targetSize.Width, s.Height),
+                        arguments: new ArgumentList { adjointOffset },
+                        format: TextureFormat.Unorm16_R);
+                var VDownscaler = CompileShader("LumaDownscalerII.hlsl", macroDefinitions: "axis = 1;").Configure(
+                        transform: s => new TextureSize(s.Width, targetSize.Height),
+                        arguments: new ArgumentList { adjointOffset },
+                        format: TextureFormat.Float16);
+
+                var Y = HDownscaler.ApplyTo(luma);
+                var YUV = VDownscaler.ApplyTo(Y, chroma);
+
+                return YUV;
+            }
+
+            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
+                var chromaSize = chromaInput.Output.Size;
+                var lumaSize = lumaInput.Output.Size;
+
+                Vector2 adjointOffset = -chromaOffset * lumaSize / chromaSize;
 
                 var crossBilateral = CompileShader("CrossBilateral.hlsl")
                     .Configure(
                         arguments: new[] { chromaOffset.X, chromaOffset.Y, yuvConsts[0], yuvConsts[1] },
-                        perTextureLinearSampling: new[] { true, false }
+                        perTextureLinearSampling: new[] { false, false }
                     );
 
                 // Fall back to default when downscaling is needed
-                var chromaSize = chromaInput.OutputSize;
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
                     return null;
 
                 var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
+                var lowresYUV = DownscaleLuma(lumaInput, chromaInput, chromaSize, adjointOffset);
 
-                return new ShaderFilter(crossBilateral, resizedLuma, chromaInput).ConvertToRgb();
+                return crossBilateral.ApplyTo(resizedLuma, lowresYUV).ConvertToRgb();
             }
         }
         

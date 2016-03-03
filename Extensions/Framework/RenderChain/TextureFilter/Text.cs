@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
@@ -24,25 +23,18 @@ using SharpDX;
 using Color = System.Drawing.Color;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace Mpdn.Extensions.Framework.RenderChain
+namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 {
-    public class TextFilter : TextureSourceFilter<ISourceTexture>
+    public class TextFilter : TextureSourceFilter<ITexture2D>, ITextureFilter
     {
         private Font m_Font;
+        private readonly ISourceTexture m_SourceTexture;
 
         public TextFilter(string text)
-            : base(Renderer.CreateTexture(Renderer.TargetSize))
+            : base(Renderer.CreateTexture(Renderer.TargetSize), true)
         {
-            ManageTexture = true;
+            m_SourceTexture = (ISourceTexture)Output.Texture;
             DrawText(text);
-        }
-
-        public override void Reset()
-        {
-        }
-
-        public override void Render()
-        {
         }
 
         #region Text rendering
@@ -57,7 +49,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         private void DrawText(string text)
         {
-            var size = OutputSize;
+            var size = Output.Size;
             var width = size.Width;
             var height = size.Height;
             using (var bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb))
@@ -99,7 +91,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                         tex[j, (i + 0)] = *ptr++ / 255.0f; // r
                     }
                 }
-                Renderer.UpdateTexture(Texture, tex);
+                Renderer.UpdateTexture(m_SourceTexture, tex);
             }
             finally
             {

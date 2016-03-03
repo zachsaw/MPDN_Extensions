@@ -14,12 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 // 
-// -- Misc --
 sampler s0 : register(s0);
-sampler sU : register(s1);
-sampler sV : register(s2);
-float4 p0 :  register(c0);
-float2 p1 :  register(c1);
+float4  p0 : register(c0);
+float2  p1 : register(c1);
 
 #define width  (p0[0])
 #define height (p0[1])
@@ -27,11 +24,15 @@ float2 p1 :  register(c1);
 #define px (p1[0])
 #define py (p1[1])
 
-// -- Main code --
-float4 main(float2 tex : TEXCOORD0) : COLOR{
-    float y = tex2D(s0, tex)[0];
-    float u = tex2D(sU, tex)[0];
-    float v = tex2D(sV, tex)[0];
+// Change the following (target_gamma) to match your display's gamma correction
+#define target_gamma 2.4
 
-    return float4(y, u, v, 1);
+// Do not change the following (base_gamma) value
+#define base_gamma 2.2
+
+float4 main(float2 tex : TEXCOORD0) : COLOR 
+{
+    float4 c0 = tex2D(s0, tex);
+    c0.rgb = pow(saturate(c0.rgb), 1.0/(1.0+(target_gamma-base_gamma)/base_gamma));
+    return c0;
 }

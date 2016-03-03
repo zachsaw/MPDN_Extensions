@@ -25,6 +25,8 @@ using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
+    using TrueSourceFilter = Framework.RenderChain.TextureFilter.TrueSourceFilter;
+
     public class ScriptChainOsdPainter : PlayerExtension<ScriptChainOsdPainterSettings, ScriptChainOsdPainterConfigDialog>
     {
         private const int TEXT_HEIGHT = 15;
@@ -78,7 +80,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void OnPlayerLoaded(object sender, EventArgs eventArgs)
         {
-            DynamicHotkeys.RegisterHotkey(Guid.NewGuid(), "Ctrl+K", () =>
+            HotkeyRegister.RegisterHotkey(Guid.NewGuid(), "Ctrl+K", () =>
             {
                 Settings.ShowOsd = !Settings.ShowOsd;
 
@@ -156,7 +158,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static string GetInternalScalerDesc()
         {
-            var sourceFilter = new SourceFilter();
+            var sourceFilter = new TrueSourceFilter(null);
             sourceFilter.SetSize(Renderer.TargetSize);
             sourceFilter.Initialize();
             return sourceFilter.Status();

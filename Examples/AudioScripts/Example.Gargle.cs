@@ -22,7 +22,7 @@ namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Gargle : AudioChain
+        public class Gargle : AudioFilter
         {
             private const int GARGLE_RATE = 5;
             private const int SHAPE = 0; // 0=Triangle, 1=Sqaure
@@ -81,7 +81,7 @@ namespace Mpdn.Examples.AudioScripts
             }
         }
 
-        public class GargleUi : AudioChainUi<Gargle>
+        public class GargleUi : AudioChainUi<StaticAudioChain<Gargle>>
         {
             public override ExtensionUiDescriptor Descriptor
             {

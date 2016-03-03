@@ -1,4 +1,4 @@
-﻿// This file is a part of MPDN Extensions.
+// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -13,14 +13,14 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
+// 
+// -- Misc --
+float4 args0 : register(c3);
 
-using Mpdn.AudioScript;
-using Mpdn.Extensions.Framework.AudioChain;
-using Mpdn.Extensions.Framework.Controls;
+#define offset args0.xy
 
-namespace Mpdn.Extensions.AudioScripts
-{
-    public class AudioScriptChainList : ChainList<Audio, IAudioScript>
-    {
-    }
-}
+// -- Downscaling --
+#define AverageFormat	float2
+#define Get(pos)		(GetFrom(s0, pos).yz)
+#define PostProcessing(x)	(float4(0,x,1))
+#include "../../SSimDownscaler/Scalers/Downscaler.hlsl"

@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return typeof (NNedi3).Name; }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 return this.MakeChromaFilter(input);
             }
@@ -71,7 +71,7 @@ namespace Mpdn.Extensions.RenderScripts
                     Structured ? "_S" : string.Empty, u ? "u" : "v");
             }
 
-            public IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
             {
                 if (!Renderer.IsDx11Avail)
                 {
@@ -79,8 +79,8 @@ namespace Mpdn.Extensions.RenderScripts
                     return null; // DX11 is not available; fallback
                 }
 
-                var lumaSize = lumaInput.OutputSize;
-                var chromaSize = chromaInput.OutputSize;
+                var lumaSize = lumaInput.Output.Size;
+                var chromaSize = chromaInput.Output.Size;
 
                 if (lumaSize.Width != 2*chromaSize.Width || lumaSize.Height != 2*chromaSize.Height)
                     return null; // Chroma shouldn't be doubled; fallback
@@ -95,16 +95,16 @@ namespace Mpdn.Extensions.RenderScripts
                 var interleaveV = CompileShader("Interleave.hlsl", macroDefinitions: "CHROMA_V=1").Configure(transform: transform);
 
                 var uFilter1 = NNedi3Helpers.CreateFilter(shaderUPass1, chromaInput, Neurons1, Structured);
-                var resultU = new ShaderFilter(interleaveU, chromaInput, uFilter1);
+                var resultU = interleaveU.ApplyTo(chromaInput, uFilter1);
                 var uFilter2 = NNedi3Helpers.CreateFilter(shaderUPass2, resultU, Neurons2, Structured);
-                var u = new ShaderFilter(interleaveU, resultU, uFilter2);
+                var u = interleaveU.ApplyTo(resultU, uFilter2);
 
                 var vFilter1 = NNedi3Helpers.CreateFilter(shaderVPass1, chromaInput, Neurons1, Structured);
-                var resultV = new ShaderFilter(interleaveV, chromaInput, vFilter1);
+                var resultV = interleaveV.ApplyTo(chromaInput, vFilter1);
                 var vFilter2 = NNedi3Helpers.CreateFilter(shaderVPass2, resultV, Neurons2, Structured);
-                var v = new ShaderFilter(interleaveV, resultV, vFilter2);
+                var v = interleaveV.ApplyTo(resultV, vFilter2);
 
-                return new MergeFilter(lumaInput, u, v).ConvertToRgb();
+                return lumaInput.MergeWith(u, v).ConvertToRgb();
             }
         }
 

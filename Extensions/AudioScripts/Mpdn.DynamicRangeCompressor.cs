@@ -29,35 +29,35 @@ namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn
     {
-        public class DynamicRangeCompressor : AudioChain
+        public class DynamicRangeCompressorFilter : AudioFilter
         {
-            public float ThresholddB { get; set; }
-            public float Ratio { get; set; }
-            public float MakeupGaindB { get; set; }
-            public int AttackMs { get; set; }
-            public int ReleaseMs { get; set; }
-
-            public DynamicRangeCompressor()
-            {
-                ThresholddB = -15;
-                Ratio = 3;
-                MakeupGaindB = 3;
-                AttackMs = 200; // 0.2s
-                ReleaseMs = 1000; // 1s
-            }
-
             // DC offset to prevent denormal
             protected const float DC_OFFSET = 1.0e-25f;
 
             private float m_EnvdB = DC_OFFSET;
-            private EnvelopeDetector m_Attack;
-            private EnvelopeDetector m_Release;
-            private int m_SampleRate;
-            private int m_AttackMs;
-            private int m_ReleaseMs;
-            private int m_SampleCount;
 
             private float[] m_DevOverdBs;
+
+            private readonly float m_ThresholddB;
+            private readonly float m_Ratio;
+            private readonly float m_MakeupGaindB;
+            private readonly int m_AttackMs;
+            private readonly int m_ReleaseMs;
+
+            private EnvelopeDetector m_Attack;
+            private EnvelopeDetector m_Release;
+
+            private int m_SampleCount;
+
+            public DynamicRangeCompressorFilter(float thresholddB, float ratio, float makeupGaindB, int attackMs,
+                int releaseMs)
+            {
+                m_ThresholddB = thresholddB;
+                m_Ratio = ratio;
+                m_MakeupGaindB = makeupGaindB;
+                m_AttackMs = attackMs;
+                m_ReleaseMs = releaseMs;
+            }
 
             protected override void OnLoadAudioKernel()
             {
@@ -72,18 +72,17 @@ namespace Mpdn.Extensions.AudioScripts
 
             protected override void Process(float[,] samples, short channels, int sampleCount)
             {
-                var sampleRate = Input.Format.nSamplesPerSec;
-                if (m_SampleRate != sampleRate || m_AttackMs != AttackMs || m_ReleaseMs != ReleaseMs)
-                {
-                    m_Attack = new EnvelopeDetector(AttackMs, sampleRate);
-                    m_Release = new EnvelopeDetector(ReleaseMs, sampleRate);
-                    m_SampleRate = sampleRate;
-                    m_AttackMs = AttackMs;
-                    m_ReleaseMs = ReleaseMs;
-                    m_EnvdB = DC_OFFSET;
-                }
+                UpdateEnvelopeDetectors();
+                Compress(samples, sampleCount, m_ThresholddB, m_Ratio, m_MakeupGaindB);
+            }
 
-                Compress(samples, sampleCount, ThresholddB, Ratio, MakeupGaindB);
+            private void UpdateEnvelopeDetectors()
+            {
+                if (m_Attack != null && m_Release != null) return;
+
+                var sampleRate = Input.Format.nSamplesPerSec;
+                m_Attack = new EnvelopeDetector(m_AttackMs, sampleRate);
+                m_Release = new EnvelopeDetector(m_ReleaseMs, sampleRate);
             }
 
             private void Compress(float[,] samples, int sampleCount, float thresholddB, float ratio, float makeupGaindB)
@@ -139,6 +138,29 @@ namespace Mpdn.Extensions.AudioScripts
                 DisposeGpuResources();
                 m_DevOverdBs = Gpu.Allocate<float>(sampleCount);
                 m_SampleCount = sampleCount;
+            }
+        }
+
+        public class DynamicRangeCompressor : AudioChain<DynamicRangeCompressorFilter>
+        {
+            public float ThresholddB { get; set; }
+            public float Ratio { get; set; }
+            public float MakeupGaindB { get; set; }
+            public int AttackMs { get; set; }
+            public int ReleaseMs { get; set; }
+
+            public DynamicRangeCompressor()
+            {
+                ThresholddB = -15;
+                Ratio = 3;
+                MakeupGaindB = 3;
+                AttackMs = 200; // 0.2s
+                ReleaseMs = 1000; // 1s
+            }
+
+            protected override DynamicRangeCompressorFilter MakeFilter()
+            {
+                return new DynamicRangeCompressorFilter(ThresholddB, Ratio, MakeupGaindB, AttackMs, ReleaseMs);
             }
         }
 

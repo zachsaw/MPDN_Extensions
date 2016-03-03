@@ -17,90 +17,65 @@
 using System;
 using System.Diagnostics;
 using Mpdn.Extensions.Framework.Chain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public class RenderChainScript : IRenderScript, IDisposable
+    public class RenderChainScript : FilterChainScript<ITextureFilter, ITextureOutput<ITexture2D>>, IRenderScript
     {
-        private SourceFilter m_SourceFilter;
-        private IFilter<ITexture2D> m_Filter;
-        private FilterTag m_Tag;
+        private TrueSourceFilter m_SourceFilter;
 
-        protected readonly Chain<IFilter> Chain;
-
-        public RenderChainScript(Chain<IFilter> chain)
-        {
-            Chain = chain;
-            Chain.Initialize();
-            Status = string.Empty;
-        }
+        public RenderChainScript(Chain<ITextureFilter> chain)
+            : base(chain) 
+        { }
 
         public ScriptInterfaceDescriptor Descriptor
         {
             get { return m_SourceFilter == null ? null : m_SourceFilter.Descriptor; }
         }
 
-        public string Status { get; private set; }
-
-        public void Update()
+        protected override void OutputResult(ITextureOutput<ITexture2D> result)
         {
-            var oldFilter = m_Filter;
-            try
-            {
-                DisposeHelper.Dispose(ref m_SourceFilter);
-
-                m_Filter = CreateOutputFilter();
-
-                UpdateStatus();
-            }
-            finally
-            {
-                DisposeHelper.Dispose(ref oldFilter);
-            }
+            if (Renderer.OutputRenderTarget != result.Texture)
+                Scale(Renderer.OutputRenderTarget, result.Texture);
         }
 
-        private void UpdateStatus()
-        {
-            Status = m_Tag != null ? m_Tag.CreateString() : "Status Invalid";
-        }
-
-        public bool Execute()
+        public override bool Execute()
         {
             try
             {
                 if (Renderer.InputRenderTarget != Renderer.OutputRenderTarget)
                     TexturePool.PutTempTexture(Renderer.OutputRenderTarget);
-
-                m_Filter.Render();
-
-                if (Renderer.OutputRenderTarget != m_Filter.OutputTexture)
-                    Scale(Renderer.OutputRenderTarget, m_Filter.OutputTexture);
-
-                m_Filter.Reset();
-                TexturePool.FlushTextures();
-
-                return true;
+                return base.Execute();
             }
-            catch (Exception e)
+            finally
             {
-                var message = ErrorMessage(e);
-                Trace.WriteLine(message);
-                return false;
+                TexturePool.FlushTextures();
             }
         }
 
-        private IResizeableFilter MakeInitialFilter()
+        protected override ITextureFilter MakeInitialFilter()
         {
-            m_SourceFilter = new SourceFilter();
+            m_SourceFilter = new TrueSourceFilter(this);
 
-            if (Renderer.InputFormat.IsRgb())
-                return m_SourceFilter;
+            if (Renderer.InputFormat.IsYuv() 
+                && (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height))
+                return new InternalChromaScaler(m_SourceFilter).MakeChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
 
-            if (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height)
-                return new ChromaFilter(new YSourceFilter(), new ChromaSourceFilter(), chromaScaler: new InternalChromaScaler(m_SourceFilter));
+            return new VideoSourceFilter(m_SourceFilter);
+        }
 
-            return m_SourceFilter;
+        protected override ITextureFilter FinalizeOutput(ITextureFilter output)
+        {
+            return output.SetSize(Renderer.TargetSize, tagged: true);
+        }
+
+        protected override ITextureFilter HandleError(Exception e)
+        {
+            var message = ErrorMessage(e);
+            Trace.WriteLine(message);
+            return new TextFilter(message);
         }
 
         private static void Scale(ITargetTexture output, ITexture2D input)
@@ -108,72 +83,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Renderer.Scale(output, input, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
         }
 
-        #region Error Handling
-
-        public IFilter<ITexture2D> CreateOutputFilter()
-        {
-            try
-            {
-                var input = MakeInitialFilter()
-                    .MakeTagged();
-
-                return Chain
-                    .Process(input)
-                    .SetSize(Renderer.TargetSize)
-                    .GetTag(out m_Tag)
-                    .Compile()
-                    .InitializeFilter();
-            }
-            catch (Exception ex)
-            {
-                return DisplayError(ex);
-            }
-        }
-
-        private TextFilter DisplayError(Exception e)
-        {
-            var message = ErrorMessage(e);
-            Trace.WriteLine(message);
-            return new TextFilter(message);
-        }
-
-        protected static Exception InnerMostException(Exception e)
-        {
-            while (e.InnerException != null)
-            {
-                e = e.InnerException;
-            }
-
-            return e;
-        }
-
-        private string ErrorMessage(Exception e)
-        {
-            var ex = InnerMostException(e);
-            return string.Format("Error in {0}:\r\n\r\n{1}\r\n\r\n~\r\nStack Trace:\r\n{2}",
-                    GetType().Name, ex.Message, ex.StackTrace);
-        }
-
-        #endregion
-
         #region Resource Management
 
-        ~RenderChainScript()
+        protected override void Dispose(bool disposing)
         {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            Chain.Reset();
-
-            DisposeHelper.Dispose(m_Filter);
+            base.Dispose(disposing);
             DisposeHelper.Dispose(ref m_SourceFilter);
         }
 

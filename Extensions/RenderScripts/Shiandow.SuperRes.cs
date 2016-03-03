@@ -18,13 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework;
-using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.RenderScripts.Hylian.SuperXbr;
-using Mpdn.Extensions.RenderScripts.Mpdn.OclNNedi3;
-using Mpdn.Extensions.RenderScripts.Mpdn.ScriptGroup;
-using Mpdn.Extensions.RenderScripts.Shiandow.Nedi;
-using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3;
+using Mpdn.Extensions.RenderScripts.Mpdn.EwaScaler;
 using Mpdn.RenderScript;
 using Mpdn.RenderScript.Scaler;
 
@@ -36,19 +31,17 @@ namespace Mpdn.Extensions.RenderScripts
         {
             #region Settings
 
-            public ScriptGroup PrescalerGroup { get; set; }
+            public RenderScriptGroup PrescalerGroup { get; set; }
 
             public int Passes { get; set; }
             public float Strength { get; set; }
             public float Softness { get; set; }
 
-            public bool HQdownscaling { get; set; }
+            public bool LegacyDownscaling { get; set; }
 
             #endregion
 
             public Func<TextureSize> TargetSize; // Not saved
-            private readonly IScaler m_Downscaler;
-            private readonly IScaler m_Upscaler;
 
             public SuperRes()
             {
@@ -58,65 +51,89 @@ namespace Mpdn.Extensions.RenderScripts
                 Strength = 1.0f;
                 Softness = 0.0f;
 
-                HQdownscaling = true;
+                LegacyDownscaling = false;
 
-                PrescalerGroup = new ScriptGroup
+                var EWASincJinc = new EwaScalerScaler
                 {
-                    Options = new List<IRenderChainUi>
+                    Settings = new EwaScaler
                     {
-                        new SuperXbrUi(),
-                        new NediScaler(),
-                        new NNedi3Scaler(),
-                        new OclNNedi3Scaler()
+                        Scaler = new EwaScaler.JincScaler(),
+                        TapCount = ScalerTaps.Six,
+                        AntiRingingEnabled = true,
+                        AntiRingingStrength = 1.0f, // No need to hold back, SuperRes should lessen possible artefacts
                     }
-                        .Select(x => x.ToPreset())
-                        .ToList()
+                }.ToPreset("EWA Sinc-Jinc");
+
+                var fastSuperXbrUi = new Hylian.SuperXbr.SuperXbrUi
+                {
+                    Settings = new Hylian.SuperXbr.SuperXbr
+                    {
+                        FastMethod = true,
+                        ThirdPass = false
+                    }
+                }.ToPreset("Super-xBR (Fast)");
+
+                PrescalerGroup = new RenderScriptGroup
+                {
+                    Options = (new[] { EWASincJinc, fastSuperXbrUi})
+                        .Concat(
+                            new List<IRenderChainUi>
+                            {
+                                new Hylian.SuperXbr.SuperXbrUi(),
+                                new Nedi.NediScaler(),
+                                new NNedi3.NNedi3Scaler(),
+                                new Mpdn.OclNNedi3.OclNNedi3Scaler()
+                            }.Select(x => x.ToPreset()))
+                        .ToList(),
+                    SelectedIndex = 0
                 };
 
-                PrescalerGroup.SelectedIndex = 0;
-
-                m_Upscaler = new Jinc(ScalerTaps.Four, false); // Deprecated
-                m_Downscaler = HQdownscaling ? (IScaler) new Bicubic(0.75f, false) : new Bilinear();
+                PrescalerGroup.Name = "SuperRes Prescaler";
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 var option = PrescalerGroup.SelectedOption;
                 return option == null ? input : CreateFilter(input, input + option);
             }
 
-            private bool IsIntegral(double x)
+            private ITextureFilter DownscaleAndDiff(ITextureFilter input, ITextureFilter original, TextureSize targetSize)
             {
-                return Math.Abs(x - Math.Truncate(x)) < 0.005;
+                var HDownscaler = CompileShader("../SSimDownscaler/Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
+                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height));
+                var VDonwscaleAndDiff = CompileShader("./DownscaleAndDiff.hlsl", macroDefinitions: "axis = 1;")
+                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height))
+                    .Configure(format: TextureFormat.Float16);
+
+                var hMean = HDownscaler.ApplyTo(input);
+                var diff = VDonwscaleAndDiff.ApplyTo(hMean, original);
+
+                return diff;
             }
 
-            public IFilter CreateFilter(IFilter original, IFilter initial)
+            public ITextureFilter CreateFilter(ITextureFilter original, ITextureFilter initial)
             {
-                IFilter result;
+                ITextureFilter result;
+                var HQDownscaler = (IScaler)new Bicubic(0.75f, false);
 
                 // Calculate Sizes
-                var inputSize = original.OutputSize;
+                var inputSize = original.Output.Size;
                 var targetSize = TargetSize();
 
                 string macroDefinitions = "";
-                if (IsIntegral(Strength))
-                    macroDefinitions += string.Format("strength = {0};", Strength);
-                if (IsIntegral(Softness))
-                    macroDefinitions += string.Format("softness = {0};", Softness);
+                if (Softness == 0.0f)
+                    macroDefinitions += "SkipSoftening = 1;";
+                if (Strength == 0.0f)
+                    return initial;
 
                 // Compile Shaders
                 var Diff = CompileShader("Diff.hlsl")
                     .Configure(format: TextureFormat.Float16);
 
-                var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions)
-                    .Configure(
-                        arguments: new[] { Strength, Softness }
-                    );
-
-                var FinalSuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: macroDefinitions + "FinalPass = 1;")
-                    .Configure(
-                        arguments: new[] { Strength, Softness }
-                    );
+                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: macroDefinitions)
+                    .Configure(arguments: new[] { Strength, Softness });
+                var FinalSuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: macroDefinitions + "FinalPass = 1;")
+                    .Configure(arguments: new[] { Strength });
 
                 var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
                 var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
@@ -133,48 +150,32 @@ namespace Mpdn.Extensions.RenderScripts
                 if (initial != original)
                 {
                     // Always correct offset (if any)
-                    var filter = initial as ResizeFilter;
+                    var filter = initial as IOffsetFilter;
                     if (filter != null)
                         filter.ForceOffsetCorrection();
 
-                    result = new ShaderFilter(GammaToLinear, initial.SetSize(targetSize));
+                    result = initial.SetSize(targetSize).Apply(GammaToLinear);
                 }
                 else
-                {
-                    result = new ResizeFilter(new ShaderFilter(GammaToLinear, original), targetSize);
-                }
+                    result = original.Apply(GammaToLinear).Resize(targetSize);
 
                 for (int i = 1; i <= Passes; i++)
                 {
                     // Downscale and Subtract
-                    var loRes = new ResizeFilter(result, inputSize, m_Upscaler, m_Downscaler);
-                    var diff = new ShaderFilter(Diff, loRes, original);
+                    ITextureFilter diff;
+                    if (LegacyDownscaling)
+                    {
+                        var loRes = result.Resize(inputSize, downscaler: HQDownscaler);
+                        diff = Diff.ApplyTo(loRes, original);
+                    }
+                    else
+                    {   diff = DownscaleAndDiff(result, original, inputSize); }
 
                     // Update result
-                    result = new ShaderFilter(i != Passes ? SuperRes : FinalSuperRes, result, diff);
+                    result = (i != Passes ? SuperRes : FinalSuperRes).ApplyTo(result, diff);
                 }
 
                 return result;
-            }
-
-            private TextureSize CalculateSize(TextureSize sizeA, TextureSize sizeB, int k, int passes) // Deprecated
-            {            
-                double w, h;
-                var maxScale = 2.25;
-                var minScale = Math.Sqrt(maxScale);
-                
-                int minW = sizeA.Width; int minH = sizeA.Height;
-                int maxW = sizeB.Width; int maxH = sizeB.Height;
-
-                int maxSteps = (int)Math.Floor  (Math.Log(maxH * maxW / (double)(minH * minW)) / (2 * Math.Log(minScale)));
-                int minSteps = (int)Math.Ceiling(Math.Log(maxH * maxW / (double)(minH * minW)) / (2 * Math.Log(maxScale)));
-                int steps = Math.Max(Math.Max(1,minSteps), Math.Min(maxSteps, passes - (k - 1)));
-                
-                w = minW * Math.Pow(maxW / (double)minW, Math.Min(k, steps) / (double)steps);
-                h = minW * Math.Pow(maxH / (double)minH, Math.Min(k, steps) / (double)steps);
-
-                return new TextureSize(Math.Max(minW, Math.Min(maxW, (int)Math.Round(w))),
-                                       Math.Max(minH, Math.Min(maxH, (int)Math.Round(h))));
             }
         }
 

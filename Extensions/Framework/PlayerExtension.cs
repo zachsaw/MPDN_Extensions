@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework.Config;
 
@@ -30,11 +28,14 @@ namespace Mpdn.Extensions.Framework
         where TSettings : class, new()
     { }
 
-    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<IPlayerExtension, TSettings, TDialog>, IPlayerExtension
+    public abstract class PlayerExtension<TSettings, TDialog> : ExtensionUi<IPlayerExtension, TSettings, TDialog>,
+        IPlayerExtension
         where TSettings : class, new()
         where TDialog : ScriptConfigDialog<TSettings>, new()
     {
         #region Implementation
+
+        private readonly Guid m_HotkeyGuid = Guid.NewGuid();
 
         public virtual IList<Verb> Verbs
         {
@@ -44,119 +45,18 @@ namespace Mpdn.Extensions.Framework
         public override void Initialize()
         {
             base.Initialize();
-
-            Player.KeyDown += PlayerKeyDown;
             LoadVerbs();
         }
 
-        public override void Destroy()
-        {
-            Player.KeyDown -= PlayerKeyDown;
-
-            base.Destroy();
-        }
-
-        private readonly IDictionary<Keys, Action> m_Actions = new Dictionary<Keys, Action>();
-
         protected void LoadVerbs()
         {
-            m_Actions.Clear();
+            HotkeyRegister.DeregisterHotkey(m_HotkeyGuid);
             foreach (var verb in Verbs)
-            {
-                var shortcut = DecodeKeyString(verb.ShortcutDisplayStr);
-                if (shortcut == Keys.None)
-                    continue;
-
-                m_Actions.Remove(shortcut); // Prevent duplicates FIFO.
-                m_Actions.Add(shortcut, verb.Action);
-            }
-        }
-
-        private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
-        {
-            Action action;
-            if (m_Actions.TryGetValue(e.InputArgs.KeyData, out action))
-            {
-                action();
-            }
-        }
-
-        protected static bool TryDecodeKeyString(string keyString, out Keys keys)
-        {
-            keys = Keys.None;
-            if (string.IsNullOrWhiteSpace(keyString))
-                return false;
-
-            keyString = keyString.ToLower().Trim();
-            var keyWords = Regex.Split(keyString, @"\W+");
-            var specialKeys = AddSpecialKeys(keyString);
-            keyString = string.Join(", ",
-                keyWords.Concat(specialKeys).Where(k => !string.IsNullOrWhiteSpace(k)).Select(DecodeKeyWord).ToArray());
-
-            return (Enum.TryParse(keyString, true, out keys));
-        }
-
-        private static IEnumerable<string> AddSpecialKeys(string keyString)
-        {
-            var specialKeys = new List<string>();
-            if (keyString.Length >= 1)
-            {
-                var lastChar = keyString[keyString.Length - 1];
-                switch (lastChar)
-                {
-                    case '+':
-                    case '-':
-                        specialKeys.Add(new string(lastChar, 1));
-                        break;
-                }
-            }
-            return specialKeys;
-        }
-
-        private static Keys DecodeKeyString(string keyString)
-        {
-            Keys keys;
-            return TryDecodeKeyString(keyString, out keys) ? keys : Keys.None;
-        }
-
-        private static string DecodeKeyWord(string keyWord)
-        {
-            switch (keyWord)
-            {
-                case "ctrl":
-                    return "Control";
-                case "0":
-                    return "D0";
-                case "1":
-                    return "D1";
-                case "2":
-                    return "D2";
-                case "3":
-                    return "D3";
-                case "4":
-                    return "D4";
-                case "5":
-                    return "D5";
-                case "6":
-                    return "D6";
-                case "7":
-                    return "D7";
-                case "8":
-                    return "D8";
-                case "9":
-                    return "D9";
-                case "+":
-                    return "Add";
-                case "-":
-                    return "Subtract";
-                default:
-                    return keyWord;
-            }
+                HotkeyRegister.RegisterHotkey(m_HotkeyGuid, verb.ShortcutDisplayStr, verb.Action);
         }
 
         #endregion
     }
-
 
     public class AboutExtensions : PlayerExtension
     {

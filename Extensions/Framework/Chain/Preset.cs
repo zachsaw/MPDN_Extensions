@@ -16,7 +16,6 @@
 // 
 
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 using YAXLib;
 
@@ -133,18 +132,6 @@ namespace Mpdn.Extensions.Framework.Chain
             if (Script != null) Script.Initialize();
         }
 
-        public override void Initialize()
-        {
-            if (Script != null) Chain.Initialize();
-            base.Initialize();
-        }
-
-        public override void Reset()
-        {
-            if (Script != null) Chain.Reset();
-            base.Reset();
-        }
-
         public void Destroy()
         {
             if (Script != null) Script.Destroy();
@@ -167,29 +154,6 @@ namespace Mpdn.Extensions.Framework.Chain
         {
             var script = new S();
             return new Preset<T, TScript> { Name = (name ?? script.Descriptor.Name), Script = script };
-        }
-    }
-
-    public class PresetCollection< T, TScript> : Chain<T>, INameable
-        where TScript : class, IScript
-    {
-        #region Settings
-
-        public List<Preset<T, TScript>> Options { get; set; }
-
-        [YAXDontSerialize]
-        public string Name { protected get; set; }
-
-        #endregion
-
-        public PresetCollection()
-        {
-            Options = new List<Preset<T, TScript>>();
-        }
-
-        public override T Process(T input)
-        {
-            throw new NotImplementedException();
         }
     }
 }

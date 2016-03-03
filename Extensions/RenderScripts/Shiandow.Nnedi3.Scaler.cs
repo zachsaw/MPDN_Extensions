@@ -57,11 +57,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private IChromaScaler ChromaScaler
             {
-                get
-                {
-                    return ChromaScalers.FirstOrDefault(s => s.Script.Descriptor.Guid == ChromaScalerGuid) ??
-                           (IChromaScaler) new DefaultChromaScaler();
-                }
+                get { return ChromaScalers.FirstOrDefault(s => s.Script.Descriptor.Guid == ChromaScalerGuid); }
             }
 
             public override string Status
@@ -73,7 +69,7 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 if (!Renderer.IsDx11Avail)
                 {
@@ -87,20 +83,20 @@ namespace Mpdn.Extensions.RenderScripts
                 var shaderPass2 = LoadShader11(GetShaderFileName(Neurons2));
                 var interleave = CompileShader("Interleave.hlsl").Configure(transform: transform);
 
-                var sourceSize = input.OutputSize;
+                var sourceSize = input.Output.Size;
                 if (!IsUpscalingFrom(sourceSize))
                     return input;
 
                 var yuv = input.ConvertToYuv();
 
                 m_Filter1 = NNedi3Helpers.CreateFilter(shaderPass1, yuv, Neurons1, Structured);
-                var resultY = new ShaderFilter(interleave, yuv, m_Filter1);
+                var resultY = interleave.ApplyTo(yuv, m_Filter1);
                 m_Filter2 = NNedi3Helpers.CreateFilter(shaderPass2, resultY, Neurons2, Structured);
-                var luma = new ShaderFilter(interleave, resultY, m_Filter2);
+                var luma = interleave.ApplyTo(resultY, m_Filter2);
 
-                var result = new ChromaFilter(luma, yuv, chromaScaler: ChromaScaler, chromaOffset: new Vector2(-0.25f, -0.25f));
+                var result = ChromaScaler.MakeChromaFilter(luma, yuv, chromaOffset: new Vector2(-0.25f, -0.25f));
 
-                return new ResizeFilter(result, result.OutputSize, new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+                return result.Convolve(null, offset: new Vector2(0.5f, 0.5f));
             }
 
             private string GetShaderFileName(NNedi3Neurons neurons)

@@ -153,10 +153,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public static void FlushTextures()
         {
-            foreach (var texture in s_OldTextures)
-            {
-                DisposeHelper.Dispose(texture);
-            }
+            DisposeHelper.DisposeElements(s_OldTextures);
 
             foreach (var texture in s_TempTextures)
             {

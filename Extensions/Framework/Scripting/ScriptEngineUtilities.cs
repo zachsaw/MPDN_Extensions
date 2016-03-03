@@ -221,14 +221,14 @@ namespace Mpdn.Extensions.Framework.Scripting
 
         public class FilterClip : Clip
         {
-            public IFilter Filter { get; private set; }
+            public ITextureFilter Filter { get; private set; }
 
             public override Size InputSize
             {
-                get { return (Size)Filter.OutputSize; }
+                get { return (Size)Filter.Output.Size; }
             }
 
-            public FilterClip(IFilter input)
+            public FilterClip(ITextureFilter input)
             {
                 Filter = input;
             }

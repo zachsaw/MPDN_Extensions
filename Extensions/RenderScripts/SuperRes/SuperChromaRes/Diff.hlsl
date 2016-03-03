@@ -31,8 +31,8 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
     float4 c0 = tex2D(s0, tex);
 	float2 uv = tex2D(sUV, tex).yz;
 
-    c0.rgb = Gamma(c0.rgb);
-	c0.xyz = ConvertToYUV(c0.rgb);
+    //c0.rgb = Gamma(c0.rgb);
+	//c0.xyz = ConvertToYUV(c0.rgb);
 
     float2 diff = c0.yz - uv;
 

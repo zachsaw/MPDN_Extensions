@@ -17,8 +17,6 @@
 // See also: Perceptually Based Downscaling of Images, by Oztireli, A. Cengiz and Gross, Markus, 10.1145/2766891, https://graphics.ethz.ch/~cengizo/Files/Sig15PerceptualDownscaling.pdf
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 
@@ -26,67 +24,18 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SSimDownscaling
     {
-        public static class ShaderFilterHelper
-        {
-            public static IFilter ApplyTo<T>(this ShaderFilterSettings<T> settings, params IFilter<IBaseTexture>[] inputFilters)
-                where T : IShaderBase
-            {
-                if (settings is ShaderFilterSettings<IShader>)
-                    return new ShaderFilter(settings as ShaderFilterSettings<IShader>, inputFilters);
-                if (settings is ShaderFilterSettings<IShader11>)
-                    return new Shader11Filter(settings as ShaderFilterSettings<IShader11>, inputFilters);
-
-                throw new ArgumentException("Unsupported Shader type.");
-            }
-
-            public static IFilter ApplyTo<T>(this ShaderFilterSettings<T> settings, IEnumerable<IFilter<IBaseTexture>> inputFilters)
-                where T : IShaderBase
-            {
-                return settings.ApplyTo(inputFilters.ToArray());
-            }
-
-            public static IFilter Apply<T>(this IFilter filter, ShaderFilterSettings<T> settings)
-                where T : IShaderBase
-            {
-                return settings.ApplyTo(filter);
-            }
-
-            public static IFilter ApplyTo<T>(this T shader, params IFilter<IBaseTexture>[] inputFilters)
-                where T : IShaderBase
-            {
-                if (shader is IShader)
-                    return new ShaderFilter((IShader)shader, inputFilters);
-                if (shader is IShader11)
-                    return new Shader11Filter((IShader11)shader, inputFilters);
-
-                throw new ArgumentException("Unsupported Shader type.");
-            }
-
-            public static IFilter ApplyTo<T>(this T shader, IEnumerable<IFilter<IBaseTexture>> inputFilters)
-                where T : IShaderBase
-            {
-                return shader.ApplyTo(inputFilters.ToArray());
-            }
-
-            public static IFilter Apply<T>(this IFilter filter, T shader)
-                where T : IShaderBase
-            {
-                return shader.ApplyTo(filter);
-            }
-        }
-
         public class SSimDownscaler : RenderChain
         {
-            private void DownscaleAndCalcVar(IFilter input, TextureSize targetSize, out IFilter mean, out IFilter var)
+            private void DownscaleAndCalcVar(ITextureFilter input, TextureSize targetSize, out ITextureFilter mean, out ITextureFilter var)
             {
-                var HDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
-                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.OutputFormat);
-                var VDownscaler = CompileShader("Scalers/Downscaler.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.OutputFormat);
+                var HDownscaler = CompileShader("SoftDownscaler.hlsl", macroDefinitions: "axis = 0;")
+                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
+                var VDownscaler = CompileShader("SoftDownscaler.hlsl", macroDefinitions: "axis = 1;")
+                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.Output.Format);
                 var HVar = CompileShader("DownscaledVarI.hlsl", macroDefinitions: "axis = 0;")
-                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.OutputFormat);
+                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
                 var VVar = CompileShader("DownscaledVarII.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.OutputFormat);
+                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.Output.Format);
 
                 var hMean = HDownscaler.ApplyTo(input);
                 mean = VDownscaler.ApplyTo(hMean);
@@ -95,18 +44,18 @@ namespace Mpdn.Extensions.RenderScripts
                 var = VVar.ApplyTo(hVariance, hMean, mean);
             }
 
-            private void ConvolveAndCalcR(IFilter input, IFilter sh, out IFilter mean, out IFilter r)
+            private void ConvolveAndCalcR(ITextureFilter input, ITextureFilter sh, out ITextureFilter mean, out ITextureFilter r)
             {
-                var Convolver = CompileShader("SinglePassConvolver.hlsl").Configure(format: input.OutputFormat);
+                var Convolver = CompileShader("SinglePassConvolver.hlsl").Configure(format: input.Output.Format);
                 var CalcR = CompileShader("CalcR.hlsl").Configure(format: TextureFormat.Float16);
 
                 mean = input.Apply(Convolver);
                 r = CalcR.ApplyTo(input, mean, sh);
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
-                IFilter H = input, Sh, L, M, R;
+                ITextureFilter H = input, Sh, L, M, R;
                 var targetSize = Renderer.TargetSize;
 
                 if (!IsDownscalingFrom(input))
@@ -117,10 +66,10 @@ namespace Mpdn.Extensions.RenderScripts
                 DownscaleAndCalcVar(H, targetSize, out L, out Sh);
                 ConvolveAndCalcR(L, Sh, out M, out R);
 
-                return Calc.ApplyTo(R, M, L);
+                return Calc.ApplyTo(L, M, R);
             }
         }
-
+        
         public class SSimDownscalerUi : RenderChainUi<SSimDownscaler>
         {
             protected override string ConfigFileName

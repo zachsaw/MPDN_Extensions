@@ -59,7 +59,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.SoftnessSetter = new System.Windows.Forms.NumericUpDown();
             this.label8 = new System.Windows.Forms.Label();
             this.ModifyButton = new System.Windows.Forms.Button();
-            this.HQBox = new System.Windows.Forms.CheckBox();
+            this.LegacyBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.StrengthSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PassesSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SoftnessSetter)).BeginInit();
@@ -76,7 +76,7 @@ namespace Mpdn.Extensions.RenderScripts
             65536});
             this.StrengthSetter.Location = new System.Drawing.Point(167, 38);
             this.StrengthSetter.Maximum = new decimal(new int[] {
-            1,
+            2,
             0,
             0,
             0});
@@ -230,15 +230,15 @@ namespace Mpdn.Extensions.RenderScripts
             this.ModifyButton.UseVisualStyleBackColor = true;
             this.ModifyButton.Click += new System.EventHandler(this.ModifyButtonClick);
             // 
-            // HQBox
+            // LegacyBox
             // 
-            this.HQBox.AutoSize = true;
-            this.HQBox.Location = new System.Drawing.Point(15, 144);
-            this.HQBox.Name = "HQBox";
-            this.HQBox.Size = new System.Drawing.Size(126, 17);
-            this.HQBox.TabIndex = 18;
-            this.HQBox.Text = "Use HQ downscaling";
-            this.HQBox.UseVisualStyleBackColor = true;
+            this.LegacyBox.AutoSize = true;
+            this.LegacyBox.Location = new System.Drawing.Point(15, 144);
+            this.LegacyBox.Name = "LegacyBox";
+            this.LegacyBox.Size = new System.Drawing.Size(141, 17);
+            this.LegacyBox.TabIndex = 18;
+            this.LegacyBox.Text = "Use legacy downscaling";
+            this.LegacyBox.UseVisualStyleBackColor = true;
             // 
             // SuperResConfigDialog
             // 
@@ -247,7 +247,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(223, 200);
-            this.Controls.Add(this.HQBox);
+            this.Controls.Add(this.LegacyBox);
             this.Controls.Add(this.ModifyButton);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.SoftnessSetter);
@@ -290,7 +290,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.NumericUpDown SoftnessSetter;
             private System.Windows.Forms.Label label8;
             private System.Windows.Forms.Button ModifyButton;
-            private System.Windows.Forms.CheckBox HQBox;
+            private System.Windows.Forms.CheckBox LegacyBox;
 
         }
     }

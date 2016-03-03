@@ -1,4 +1,4 @@
-// This file is a part of MPDN Extensions.
+﻿// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -16,10 +16,17 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using IBaseFilter = Mpdn.Extensions.Framework.RenderChain.IFilter<Mpdn.IBaseTexture>;
 
-namespace Mpdn.Extensions.Framework.RenderChain
+namespace Mpdn.Extensions.Framework.Filter
 {
+    using IBaseFilter = IFilter<IFilterOutput>;
+
+    public interface ITaggableFilter<out TOutput> : IFilter<TOutput> 
+        where TOutput : class, IFilterOutput
+    {
+        void EnableTag();
+    }
+
     public abstract class FilterTag
     {
         public static readonly FilterTag Bottom = new BottomTag();
@@ -65,6 +72,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             }
             
             SubTags = tags.Distinct().ToList();
+
             return ++m_Index;
         }
 
@@ -145,7 +153,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         private class BottomTag : StringTag
         {
-            public BottomTag() : base("_|_") { }
+            public BottomTag() : base("⊥") { }
 
             public override int Initialize(int count = 1)
             {
@@ -209,61 +217,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public override bool IsEmpty() { return Initialized; }
     }
 
-    public class ChromaScalerTag : StringTag
-    {
-        private readonly IBaseFilter m_ChromaFilter;
-
-        private FilterTag m_ChromaTag;
-
-        public ChromaScalerTag(IBaseFilter chromaFilter, string label)
-            : base(label)
-        {
-            m_ChromaFilter = chromaFilter;
-
-            AddInput(m_ChromaFilter);
-        }
-
-        public override int Initialize(int count = 1)
-        {
-            if (!Initialized)
-            {
-                m_ChromaTag = m_ChromaFilter.Tag;
-            }
-
-            return base.Initialize(count);
-        }
-
-        public override string CreateString(int minIndex = -1)
-        {
-            Initialize();
-
-            var lumaPart = new EmptyTag();
-            var chromaPart = new StringTag(Label);
-
-            foreach (var tag in SubTags)
-                if (tag.ConnectedTo(m_ChromaTag))
-                    chromaPart.AddInputLabel(tag);
-                else
-                    lumaPart.AddInputLabel(tag);
-
-            lumaPart.Initialize();
-            chromaPart.Initialize();
-
-            var luma = lumaPart
-                .CreateString(minIndex)
-                .FlattenStatus()
-                .PrependToStatus("Luma: ");
-
-            var chroma = chromaPart
-                .CreateString(minIndex)
-                .FlattenStatus();
-            if (!chroma.StartsWith("Chroma: "))
-                chroma = chroma.PrependToStatus(luma == "" ? "" : "Chroma: ");
-
-            return chroma.AppendStatus(luma);
-        }
-    }
-
     public static class TagHelper
     {
         public static bool IsNullOrEmpty(this FilterTag tag)
@@ -277,6 +230,16 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 newTag.AddInputLabel(tag);
 
             return newTag ?? tag;
+        }
+
+        public static TFilter MakeTagged<TFilter>(this TFilter filter)
+            where TFilter : IFilter<IFilterOutput>
+        {
+            var taggableFilter = filter as ITaggableFilter<IFilterOutput>;
+            if (taggableFilter != null)
+                taggableFilter.EnableTag();
+
+            return filter;
         }
     }
 }

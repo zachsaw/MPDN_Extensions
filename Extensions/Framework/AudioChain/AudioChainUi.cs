@@ -20,16 +20,16 @@ using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public interface IAudioChainUi : IAudioScriptUi, IChainUi<Audio, IAudioScript> { }
+    public interface IAudioChainUi : IAudioScriptUi, IChainUi<IAudioFilter, IAudioScript> { }
 
     public abstract class AudioChainUi<TChain> : AudioChainUi<TChain, ScriptConfigDialog<TChain>>
-        where TChain : Chain<Audio>, new()
+        where TChain : Chain<IAudioFilter>, new()
     { }
 
     public abstract class AudioChainUi<TChain, TDialog> : 
-            ChainUi<Audio, IAudioScript, TChain, TDialog>, 
+            ChainUi<IAudioFilter, IAudioScript, TChain, TDialog>, 
             IAudioChainUi
-        where TChain : Chain<Audio>, new()
+        where TChain : Chain<IAudioFilter>, new()
         where TDialog : IScriptConfigDialog<TChain>, new()
     {
         protected AudioChainUi()

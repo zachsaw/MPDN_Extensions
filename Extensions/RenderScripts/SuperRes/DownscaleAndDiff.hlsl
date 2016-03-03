@@ -15,23 +15,20 @@
 // License along with this library.
 // 
 // -- Misc --
-//sampler sY : register(s0);
-sampler sU : register(s0);
-sampler sV : register(s1);
-float4 p0 :  register(c0);
-float2 p1 :  register(c1);
+sampler s1 : register(s1);
 
-#define width  (p0[0])
-#define height (p0[1])
+#include "../Common/ColourProcessing.hlsl"
 
-#define px (p1[0])
-#define py (p1[1])
+#define EntryPoint Downscale
+#include "../SSimDownscaler/Scalers/Downscaler.hlsl"
 
 // -- Main code --
-float4 main(float2 tex : TEXCOORD0) : COLOR{
-	//float y = tex2D(sY, tex)[0];
-	float u = tex2D(sU, tex)[0];
-    float v = tex2D(sV, tex)[0];
+float4 main(float2 tex : TEXCOORD0) : COLOR {
+    float4 c0 = Downscale(tex);
+    float4 c1 = tex2D(s1, tex);
 
-    return float4(0, u, v, 1);
+	c0.xyz = Gamma(c0.rgb);
+    float3 diff = c0.xyz - c1.xyz;
+
+    return float4(diff, Luma(c0));
 }

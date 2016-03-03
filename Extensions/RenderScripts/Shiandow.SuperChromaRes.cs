@@ -15,6 +15,7 @@
 // License along with this library.
 
 using System;
+using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
@@ -33,10 +34,9 @@ namespace Mpdn.Extensions.RenderScripts
             public float Strength { get; set; }
             public float Softness { get; set; }
             public bool Prescaler { get; set; }
+            public bool LegacyDownscaling { get; set; }
 
             #endregion
-
-            private readonly IScaler m_Upscaler, m_Downscaler;
 
             public SuperChromaRes()
             {
@@ -46,8 +46,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Softness = 0.0f;
                 Prescaler = true;
 
-                m_Upscaler = new Bilinear();
-                m_Downscaler = new Bilinear();
+                LegacyDownscaling = false;
             }
 
             protected override string ShaderPath
@@ -55,101 +54,81 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return @"SuperRes\SuperChromaRes"; }
             }
 
-            private bool IsIntegral(double x)
+            private ITextureFilter DownscaleAndDiff(ITextureFilter input, ITextureFilter original, TextureSize targetSize, Vector2 adjointOffset)
             {
-                return Math.Abs(x - Math.Truncate(x)) < 0.005;
+                var HDownscaler = CompileShader("ChromaDownscaler.hlsl", macroDefinitions: "axis = 0;").Configure(
+                        transform: s => new TextureSize(targetSize.Width, s.Height),
+                        arguments: new ArgumentList { adjointOffset });
+                var VDownscaleAndDiff = CompileShader("DownscaleAndDiff.hlsl", macroDefinitions: "axis = 1;").Configure(
+                        transform: s => new TextureSize(s.Width, targetSize.Height),
+                        arguments: new ArgumentList { adjointOffset },
+                        format: TextureFormat.Float16);
+
+                var hMean = HDownscaler.ApplyTo(input);
+                var diff = VDownscaleAndDiff.ApplyTo(hMean, original);
+
+                return diff;
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
-                var chromaFilter = input as ChromaFilter;
-                if (chromaFilter == null)
+                var compositionFilter = input as ICompositionFilter;
+                if (compositionFilter == null)
                     return input;
 
-                var bilateral = Prescaler ? new Bilateral.Bilateral() : IdentityChain;
-                input += bilateral;
+                if (Prescaler)
+                    input = compositionFilter + (new Bilateral.Bilateral());
 
-                var chromaScaler = new SuperChromaResScaler((ChromaFilter)input, this);
-                
-                return input + chromaScaler;
-            }
+                var chromaSize = compositionFilter.Chroma.Output.Size;
+                var lumaSize = compositionFilter.Luma.Output.Size;
+                var chromaOffset = compositionFilter.ChromaOffset;
 
-            public virtual IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
-            {
-                var input = new ChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
-                return Process(input);
-            }
+                var downscaler = new Bicubic(0.75f, false);
 
-            private class SuperChromaResScaler: SuperChromaRes
-            {
-                private readonly ChromaFilter m_InitialInput;
+                float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
+                int bitdepth = Renderer.InputFormat.GetBitDepth();
+                bool limited = Renderer.Colorimetric.IsLimitedRange();
 
-                public override string Status { get { return "SuperChromaRes"; } }
+                Vector2 adjointOffset = -chromaOffset * lumaSize / chromaSize;
 
-                public SuperChromaResScaler(ChromaFilter initialInput, SuperChromaRes parent)
+                string superResMacros = "";
+                if (Softness == 0.0f)
+                    superResMacros += "SkipSoftening = 1;";
+                string diffMacros = string.Format("LimitedRange = {0}; range = {1}", limited ? 1 : 0, (1 << bitdepth) - 1);
+
+                var configArgs = yuvConsts.Concat(new[] { chromaOffset.X, chromaOffset.Y }).ToArray();
+
+                var Diff = CompileShader("Diff.hlsl", macroDefinitions: diffMacros)
+                    .Configure(arguments: configArgs, format: TextureFormat.Float16);
+                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: superResMacros)
+                    .Configure(arguments: (new[] { Strength, Softness }).Concat(configArgs).ToArray());
+
+                if (Passes == 0 || Strength == 0.0f) return input;
+
+                var hiRes = input.SetSize(lumaSize).ConvertToYuv();
+
+                for (int i = 1; i <= Passes; i++)
                 {
-                    m_InitialInput = initialInput;
-
-                    Passes = parent.Passes;
-                    Strength = parent.Strength;
-                    Softness = parent.Softness;
-                }
-
-                protected override IFilter CreateFilter(IFilter input)
-                {
-                    return this.MakeChromaFilter(input);
-                }
-
-                public override IFilter CreateChromaFilter(IFilter lumaInput, IFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
-                {
-                    var chromaSize = chromaInput.OutputSize;
-                    var lumaSize = lumaInput.OutputSize;
-
-                    float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
-                    int bitdepth = Renderer.InputFormat.GetBitDepth();
-                    bool limited = Renderer.Colorimetric.IsLimitedRange();
-
-                    Vector2 adjointOffset = -chromaOffset * lumaSize / chromaSize;
-
-                    string superResMacros = "";
-                    if (IsIntegral(Strength))
-                        superResMacros += string.Format("strength = {0};", Strength);
-                    if (IsIntegral(Softness))
-                        superResMacros += string.Format("softness = {0};", Softness);
-
-                    string diffMacros = string.Format("LimitedRange = {0}; range = {1}", limited ? 1 : 0, (1 << bitdepth) - 1);
-
-                    var Diff = CompileShader("Diff.hlsl", macroDefinitions: diffMacros)
-                        .Configure(arguments: yuvConsts, format: TextureFormat.Float16);
-
-                    var SuperRes = CompileShader("SuperResEx.hlsl", macroDefinitions: superResMacros)
-                        .Configure(
-                            arguments: new[] { Strength, Softness, yuvConsts[0], yuvConsts[1], chromaOffset.X, chromaOffset.Y }
-                        );
-
-                    var LinearToGamma = CompileShader("../../Common/LinearToGamma.hlsl");
-                    var GammaToLinear = CompileShader("../../Common/GammaToLinear.hlsl");
-
-                    if (Passes == 0) return m_InitialInput;
-
-                    m_InitialInput.SetSize(lumaSize);
-                    var hiRes = m_InitialInput.ConvertToYuv();
-
-                    for (int i = 1; i <= Passes; i++)
+                    // Downscale and Subtract
+                    ITextureFilter diff;
+                    if (LegacyDownscaling)
                     {
-                        IFilter diff, linear;
-
-                        // Compare to chroma
-                        linear = new ShaderFilter(GammaToLinear, hiRes.ConvertToRgb());
-                        linear = new ResizeFilter(linear, chromaSize, adjointOffset, m_Upscaler, m_Downscaler);
-                        diff = new ShaderFilter(Diff, linear, chromaInput);
-
-                        // Update result
-                        hiRes = new ShaderFilter(SuperRes, hiRes, diff);
+                        var lores = hiRes.Resize(chromaSize, TextureChannels.ChromaOnly, adjointOffset, null, downscaler);
+                        diff = Diff.ApplyTo(lores, compositionFilter.Chroma);
                     }
+                    else
+                    { diff = DownscaleAndDiff(hiRes, compositionFilter.Chroma, chromaSize, adjointOffset); }
 
-                    return hiRes.ConvertToRgb();
+                    // Update result
+                    hiRes = SuperRes.ApplyTo(hiRes, diff);
                 }
+
+                return hiRes.ConvertToRgb();
+            }
+
+            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            {
+                return this.MakeChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
             }
         }
 

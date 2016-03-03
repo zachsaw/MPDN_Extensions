@@ -53,7 +53,7 @@ namespace Mpdn.Extensions.RenderScripts
                 File.WriteAllText(ScriptFileName, Helpers.DefaultScript);
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 var clip = RenderScriptEngine.Exec(input, BuildScript(ScriptFileName), ScriptFileName);
                 if (clip == null)

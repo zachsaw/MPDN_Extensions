@@ -13,33 +13,22 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
+// 
+// -- Misc --
+sampler sUV : register(s1);
+float4 args0 : register(c3);
 
-using Mpdn.Extensions.Framework.Config;
+// -- Downscaling -- 
+#define offset args0.xy
+#define EntryPoint Downscale
+#include "../../SSimDownscaler/Scalers/Downscaler.hlsl"
 
-namespace Mpdn.Extensions.AudioScripts
-{
-    namespace Mpdn.ScriptChain
-    {
-        public partial class ScriptChainDialog : ScriptChainDialogBase
-        {
-            public ScriptChainDialog()
-            {
-                InitializeComponent();
-            }
+// -- Main code --
+float4 main(float2 tex : TEXCOORD0) : COLOR{
+	float4 c0 = Downscale(tex);
+	float2 uv = tex2D(sUV, tex).yz;
 
-            protected override void LoadSettings()
-            {
-                m_ChainList.PresetList = Settings.Options;
-            }
+	float2 diff = c0.yz - uv;
 
-            protected override void SaveSettings()
-            {
-                Settings.Options = m_ChainList.PresetList;
-            }
-        }
-
-        public class ScriptChainDialogBase : ScriptConfigDialog<ScriptChain>
-        {
-        }
-    }
+	return float4(0, diff, c0.x);
 }

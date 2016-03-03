@@ -34,24 +34,33 @@
 
 */
 
-#if Pass == 1
-	#define wp1  2.0
-	#define wp2  0.0
-	#define wp3  0.0
-	#define wp4  0.0
-	#define wp5  0.0
-	#define wp6  0.0
+#if Pass == 0
+	#define wp1   1.0
+	#define wp2   0.0
+	#define wp3   0.0
+	#define wp4   2.0
+	#define wp5  -1.0
+	#define wp6   0.0
+#elif Pass == 1
+	#define wp1   1.0
+	#define wp2   0.0
+	#define wp3   0.0
+	#define wp4   4.0
+	#define wp5   0.0
+	#define wp6   0.0
+#else
+	#define wp1   1.0
+	#define wp2   0.0
+	#define wp3   0.0
+	#define wp4   0.0
+	#define wp5  -1.0
+	#define wp6   0.0
+#endif
 
+#if Pass == 1
 	#define weight1 (XBR_WEIGHT*1.75068/10.0)
 	#define weight2 (XBR_WEIGHT*1.29633/10.0/2.0)
 #else
-	#define wp1  2.0
-	#define wp2  1.0
-	#define wp3 -1.0
-	#define wp4  4.0
-	#define wp5 -1.0
-	#define wp6  1.0
-
 	#define weight1 (XBR_WEIGHT*1.29633/10.0)
 	#define weight2 (XBR_WEIGHT*1.75068/10.0/2.0)
 #endif
@@ -219,11 +228,9 @@ float4 main_fragment(in out_vertex VAR, uniform sampler2D s0 : TEXUNIT0, uniform
 #endif
 
 	/* Anti-ringing code. */
-	float3 min_sample = min4(  E,   F,   H,   I);
-	float3 max_sample = max4(  E,   F,   H,   I);
-	float3 aux = color;
+	float3 min_sample = min4( E, F, H, I ) + lerp((P2-H)*(F-P1), (P0-E)*(I-P3), step(0.0, d_edge));
+	float3 max_sample = max4( E, F, H, I ) - lerp((P2-H)*(F-P1), (P0-E)*(I-P3), step(0.0, d_edge));
 	color = clamp(color, min_sample, max_sample);
-	color = lerp(aux, color, 1-2.0*abs(edge_strength-0.5));
 
 	return float4(color, 1.0);
 }

@@ -25,6 +25,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class RarFileSourceProvider : PlayerExtension
     {
+        private const string RAR_FILE_EXT = ".rar";
+
         private RarFileSourceFilter m_RarFileSourceFilter;
 
         public override ExtensionUiDescriptor Descriptor
@@ -44,6 +46,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             m_RarFileSourceFilter = new RarFileSourceFilter();
 
+            Player.RegisterMediaFileExtension(RAR_FILE_EXT);
             Media.Loading += OnMediaLoading;
         }
 
@@ -51,6 +54,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             DisposeHelper.Dispose(ref m_RarFileSourceFilter);
 
+            Player.UnregisterMediaFileExtension(RAR_FILE_EXT);
             Media.Loading -= OnMediaLoading;
         }
 
@@ -127,7 +131,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (string.IsNullOrWhiteSpace(filename))
                 return false;
 
-            return PathHelper.GetExtension(filename).ToLowerInvariant() == ".rar";
+            return PathHelper.GetExtension(filename).ToLowerInvariant() == RAR_FILE_EXT;
         }
 
         public class RarFileSourceFilter : DynamicDirectShowFilter

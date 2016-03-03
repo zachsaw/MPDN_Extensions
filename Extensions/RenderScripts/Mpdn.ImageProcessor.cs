@@ -69,11 +69,13 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 return ShaderFileNames.Aggregate(input,
                     (current, filename) =>
-                        new ShaderFilter(CompileShader(filename).Configure(format: GetTextureFormat()), current));
+                        CompileShader(filename)
+                            .Configure(format: GetTextureFormat())
+                            .ApplyTo(current));
             }
 
             private TextureFormat? GetTextureFormat()

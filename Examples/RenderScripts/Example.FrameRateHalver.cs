@@ -17,6 +17,7 @@
 
 using System;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -29,7 +30,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 private int m_Counter;
 
-                public FramerateHalvingFilter(IFilter inputFilter)
+                public FramerateHalvingFilter(ITextureFilter inputFilter)
                     : base(inputFilter)
                 {
                 }
@@ -42,7 +43,7 @@ namespace Mpdn.Extensions.RenderScripts
                     // (Note: Renderer.RenderQueue.First().Frame is the frame before the current, while 
                     //        Renderer.RenderQueue.Last().Frame is earliest frame in the queue.
                     //        Renderer.RenderQueue will have no elements to start off with!)
-                    Renderer.Render(OutputTarget, texture, false);
+                    Renderer.Render(Target.Texture, texture, false);
 
                     // Note: To get actual odd/even frame number, you should calculate from 
                     //       Renderer.FrameRateHz and Renderer.FrameTimeStampMicrosec instead of relying on m_Counter
@@ -57,7 +58,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Examples"; }
             }
 
-            protected override IFilter CreateFilter(IFilter sourceFilter)
+            protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
             {
                 // apply the halving filter
                 return new FramerateHalvingFilter(sourceFilter);

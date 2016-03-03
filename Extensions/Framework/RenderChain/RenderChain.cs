@@ -17,23 +17,25 @@
 
 using System.IO;
 using Mpdn.Extensions.Framework.Chain;
+using Mpdn.Extensions.Framework.Chain.Dialogs;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public abstract class RenderChain : Chain<IFilter>
+    public abstract class RenderChain : Chain<ITextureFilter>
     {
         protected RenderChain()
         {
             ShaderCache.Load();
         }
 
-        protected abstract IFilter CreateFilter(IFilter input);
+        protected abstract ITextureFilter CreateFilter(ITextureFilter input);
 
-        public sealed override IFilter Process(IFilter input)
+        public sealed override ITextureFilter Process(ITextureFilter input)
         {
-            IFilter output = CreateFilter(input);
+            ITextureFilter output = CreateFilter(input);
 
             if (output == input)
                 return input;
@@ -67,11 +69,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected string ShaderDataFilePath
         {
-            get
-            {
-                var asmPath = typeof (IRenderScript).Assembly.Location;
-                return Path.Combine(PathHelper.GetDirectoryName(asmPath), "Extensions", "RenderScripts", ShaderPath);
-            }
+            get { return Path.Combine(ShaderCache.ShaderPathRoot, ShaderPath); }
         }
 
         protected IShader CompileShader(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
@@ -87,6 +85,21 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected IKernel CompileClKernel(string sourceFileName, string entryPoint, string options = null)
         {
             return ShaderCache.CompileClKernel(Path.Combine(ShaderDataFilePath, sourceFileName), entryPoint, options);
+        }
+
+        protected IShader CompileShaderFromString(string code, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
+        {
+            return Renderer.CompileShaderFromString(code, entryPoint, profile, macroDefinitions);
+        }
+
+        protected IShader11 CompileShader11FromString(string code, string profile, string entryPoint = "main", string macroDefinitions = null)
+        {
+            return Renderer.CompileShader11FromString(code, entryPoint, profile, macroDefinitions);
+        }
+
+        protected IKernel CompileClKernelFromString(string code, string entryPoint, string options = null)
+        {
+            return Renderer.CompileClKernelFromString(code, entryPoint, options);
         }
 
         protected IShader LoadShader(string shaderFileName)
@@ -119,21 +132,27 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return targetSize.Width > size.Width || targetSize.Height > size.Height;
         }
 
-        public bool IsDownscalingFrom(IFilter chain)
+        public bool IsDownscalingFrom(ITextureFilter chain)
         {
-            return IsDownscalingFrom(chain.OutputSize);
+            return IsDownscalingFrom(chain.Output.Size);
         }
 
-        public bool IsNotScalingFrom(IFilter chain)
+        public bool IsNotScalingFrom(ITextureFilter chain)
         {
-            return IsNotScalingFrom(chain.OutputSize);
+            return IsNotScalingFrom(chain.Output.Size);
         }
 
-        public bool IsUpscalingFrom(IFilter chain)
+        public bool IsUpscalingFrom(ITextureFilter chain)
         {
-            return IsUpscalingFrom(chain.OutputSize);
+            return IsUpscalingFrom(chain.Output.Size);
         }
 
         #endregion
     }
+
+    public class RenderScriptChain : ScriptChain<ITextureFilter, IRenderScript> { }
+    public class RenderScriptChainDialog : ScriptChainDialog<ITextureFilter, IRenderScript> { }
+
+    public class RenderScriptGroup : ScriptGroup<ITextureFilter, IRenderScript> { }
+    public class RenderScriptGroupDialog : ScriptGroupDialog<ITextureFilter, IRenderScript> { }
 }

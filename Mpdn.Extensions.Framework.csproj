@@ -93,12 +93,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\Framework\AudioChain\AudioChain.cs" />
+    <Compile Include="Extensions\Framework\AudioChain\AudioFilter.Source.cs" />
+    <Compile Include="Extensions\Framework\AudioChain\AudioFilter.cs" />
     <Compile Include="Extensions\Framework\AudioChain\AudioChainScript.cs" />
     <Compile Include="Extensions\Framework\AudioChain\AudioProc.cs" />
     <Compile Include="Extensions\Framework\AudioHelpers.cs" />
     <Compile Include="Extensions\Framework\AudioKernels.cs" />
     <Compile Include="Extensions\Framework\AudioChain\AudioChainUi.cs" />
     <Compile Include="Extensions\Framework\Chain\ChainUi.cs" />
+    <Compile Include="Extensions\Framework\Chain\FilterChainScript.cs" />
+    <Compile Include="Extensions\Framework\Chain\Dialogs\ScriptGroup.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\Framework\Chain\Dialogs\ScriptGroup.ConfigDialog.Designer.cs">
+      <DependentUpon>ScriptGroup.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\Framework\Chain\PresetCollections.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviderBase.cs" />
     <Compile Include="Extensions\Framework\Config\ConfigProviders.cs" />
     <Compile Include="Extensions\Framework\Config\ExtensionsUi.cs" />
@@ -124,6 +134,12 @@
     <Compile Include="Extensions\Framework\Controls\ChainList.Designer.cs">
       <DependentUpon>ChainList.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\Framework\Chain\Dialogs\ScriptChain.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\Framework\Chain\Dialogs\ScriptChain.ConfigDialog.Designer.cs">
+      <DependentUpon>ScriptChain.ConfigDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\Framework\Controls\ScriptEditorDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -133,27 +149,33 @@
     <Compile Include="Extensions\Framework\Exceptions\MpdnScriptEngineException.cs" />
     <Compile Include="Extensions\Framework\Exceptions\RenderScriptException.cs" />
     <Compile Include="Extensions\Framework\ExtensionsApi.cs" />
+    <Compile Include="Extensions\Framework\Filter\Filter.Meta.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
     <Compile Include="Extensions\Framework\PlayerExtension.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.Chroma.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.Shaders.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.Sources.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.Tag.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.Text.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Filter.Utilities.cs" />
+    <Compile Include="Extensions\Framework\Filter\Filter.cs" />
+    <Compile Include="Extensions\Framework\Filter\Filter.Sources.cs" />
+    <Compile Include="Extensions\Framework\Filter\Filter.Tag.cs" />
     <Compile Include="Extensions\Framework\RenderChain\RenderChain.cs" />
     <Compile Include="Extensions\Framework\RenderChain\RenderChainScript.cs" />
     <Compile Include="Extensions\Framework\RenderChain\RenderChainUi.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\RenderPreset.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\ChromaScalerPreset.cs" />
     <Compile Include="Extensions\Framework\RenderChain\ShaderCache.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\TextureFilter\Interface.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\TextureFilter\Chroma.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\TextureFilter\ShaderFilterSettings.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\TextureFilter\TextureFilter.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\TextureFilter\Shaders.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\TextureFilter\Sources.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\TextureFilter\Text.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\TextureFilter\Transformation.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Textures.cs" />
     <Compile Include="Extensions\Framework\RenderScript.cs" />
     <Compile Include="Extensions\Framework\Scripting\Clip.cs" />
     <Compile Include="Extensions\Framework\Chain\Chain.cs" />
     <Compile Include="Extensions\Framework\Scripting\ScriptEngine.cs" />
     <Compile Include="Extensions\Framework\Scripting\ScriptEngineUtilities.cs" />
-    <Compile Include="Extensions\Framework\Chain\Presets.cs" />
+    <Compile Include="Extensions\Framework\Chain\Preset.cs" />
+    <Compile Include="Extensions\Framework\Hotkeys.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -22,7 +22,9 @@ using System.Linq;
 using Mpdn.DxvaHd;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Exceptions;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -50,30 +52,30 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 private IDxvaHd m_DxvaHd;
 
-                public DxvaHdResizeFilter(IDxvaHd dxvaHd, IFilter inputFilter)
+                public DxvaHdResizeFilter(IDxvaHd dxvaHd, ITextureFilter inputFilter)
                     : base(inputFilter)
                 {
                     m_DxvaHd = dxvaHd;
                     SetSize(Renderer.TargetSize);
                 }
 
-                protected override IFilter<ITexture2D> Optimize()
+                protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
                 {
                     return this;
                 }
 
-                protected override void Render(IList<IBaseTexture> inputs)
+                protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
                 {
-                    var texture = inputs.OfType<ITexture2D>().SingleOrDefault();
+                    var texture = inputs.OfType<ITextureOutput<ITexture2D>>().SingleOrDefault();
                     if (texture == null)
                         return;
 
-                    if (texture.Format != TextureFormat.Unorm8 || OutputTarget.Format != TextureFormat.Unorm8)
+                    if (texture.Format != TextureFormat.Unorm8 || Target.Format != TextureFormat.Unorm8)
                     {
                         throw new RenderScriptException("Input and output formats must be Unorm8");
                     }
 
-                    m_DxvaHd.Render(texture, OutputTarget);
+                    m_DxvaHd.Render(texture.Texture, Target.Texture);
                 }
 
                 protected override void Dispose(bool disposing)
@@ -92,14 +94,14 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "DxvaHdScaler"; }
             }
 
-            protected override IFilter CreateFilter(IFilter sourceFilter)
+            protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
             {
-                if (sourceFilter.OutputSize == Renderer.TargetSize)
+                if (sourceFilter.Output.Size == Renderer.TargetSize)
                     return sourceFilter;
 
                 try
                 {
-                    m_DxvaHd = Renderer.CreateDxvaHd((Size) sourceFilter.OutputSize, TextureFormat.Unorm8,
+                    m_DxvaHd = Renderer.CreateDxvaHd((Size) sourceFilter.Output.Size, TextureFormat.Unorm8,
                         Renderer.TargetSize, TextureFormat.Unorm8, Quality);
                 }
                 catch (DxvaHdException)
@@ -111,7 +113,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var input = YuvMode ? sourceFilter.ConvertToYuv() : sourceFilter;
 
-                if (sourceFilter.OutputFormat != TextureFormat.Unorm8)
+                if (sourceFilter.Output.Format != TextureFormat.Unorm8)
                 {
                     // Convert input to Unorm8 (and unforunately murdering quality at the same time)
                     var copy = CompileShader("Copy.hlsl").Configure(linearSampling: false, format: TextureFormat.Unorm8);

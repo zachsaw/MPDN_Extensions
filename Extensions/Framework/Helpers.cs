@@ -47,16 +47,17 @@ namespace Mpdn.Extensions.Framework
         public static void DisposeElements<T>(T enumerable) where T : IEnumerable
         {
             if (enumerable == null) return;
-            foreach (var i in enumerable)
+            foreach (var obj in enumerable.OfType<IDisposable>())
             {
-                SafeDispose(i as IDisposable);
+                SafeDispose(obj);
             }
         }
 
-        public static void Dispose<T>(ref T obj) where T : class, IDisposable
+        public static void Dispose<T>(ref T obj)
         {
-            if (obj == null) return;
-            SafeDispose(obj);
+            var disposable = obj as IDisposable;
+            if (disposable == null) return;
+            SafeDispose(disposable);
             obj = default(T);
         }
 

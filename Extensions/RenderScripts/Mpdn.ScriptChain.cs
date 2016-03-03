@@ -16,23 +16,13 @@
 
 using System;
 using System.Linq;
-using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.ScriptChain
     {
-        public class ScriptChain : PresetCollection<IFilter, IRenderScript>
-        {
-            public override IFilter Process(IFilter input)
-            {
-                return Options.Aggregate(input, (result, chain) => result + chain);
-            }
-        }
-
-        public class ScriptChainScript : RenderChainUi<ScriptChain, ScriptChainDialog>
+        public class ScriptChainScript : RenderChainUi<RenderScriptChain, RenderScriptChainDialog>
         {
             protected override string ConfigFileName
             {

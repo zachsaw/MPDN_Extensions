@@ -18,6 +18,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 
@@ -71,7 +72,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private ManagedTexture<ISourceTexture3D> m_Texture3D;
+            private IManagedTexture<ISourceTexture3D> m_Texture3D;
             private string m_CurrentFileName;
 
             protected override string ShaderPath
@@ -79,14 +80,14 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "Lut3D"; }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 if (!Activate || !File.Exists(FileName))
                     return input;
 
                 Create3DTexture();
                 var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling : true);
-                return new ShaderFilter(shader, input, m_Texture3D.ToFilter());
+                return shader.ApplyTo(input, m_Texture3D.ToFilter());
             }
 
             private void Create3DTexture()
@@ -94,8 +95,8 @@ namespace Mpdn.Extensions.RenderScripts
                 if (m_Texture3D != null)
                 {
                     // If new 3dlut file was selected, manually dispose resources before we load the new one
-                    if (m_CurrentFileName != FileName) m_Texture3D.Discard();
-                    if (m_Texture3D.Valid) return;
+                    if (m_CurrentFileName != FileName) DisposeHelper.Dispose(ref m_Texture3D);
+                    else if (m_Texture3D.Valid) return;
                 }
                 Create3DLut(FileName);
             }

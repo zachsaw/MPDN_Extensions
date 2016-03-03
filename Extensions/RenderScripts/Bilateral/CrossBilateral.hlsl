@@ -13,18 +13,13 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
-// -- Edge detection options -- 
-#define acuity 25.0
-#define radius 0.5
-#define power 1.0
 
 // -- Misc --
 sampler s0 : register(s0);
 sampler sUV : register(s1);
 
-float4 p0	  : register(c0);
-float2 p1	  : register(c1);
+float4 p0     : register(c0);
+float2 p1     : register(c1);
 float4 size1  : register(c2);
 float4 args0  : register(c3);
 
@@ -35,21 +30,25 @@ float4 args0  : register(c3);
 #define dxdy (p1.xy)
 #define ddxddy (chromaSize.zw)
 #define chromaOffset (args0.xy)
+#define radius 0.66
+
+#define noise 1.0/(sqrt(12.0)*255.0)
 
 // -- Window Size --
-#define taps 3
+#define taps 4
 #define even (taps - 2 * (taps / 2) == 0)
 #define minX (1-ceil(taps/2.0))
 #define maxX (floor(taps/2.0))
+
+#define factor (ddxddy/dxdy)
+#define Kernel(x) saturate((taps - abs(x)) * factor)
 
 // -- Convenience --
 #define sqr(x) dot(x,x)
 
 // -- Input processing --
-//Current high res value
-#define GetY(x,y)      (tex2D(s0,ddxddy*(pos+chromaOffset+int2(x,y)+0.5))[0])
-//Low res values
-#define GetUV(x,y)    (tex2D(sUV,ddxddy*(pos+int2(x,y)+0.5)).yz)
+// Chroma value
+#define Get(x,y)     tex2D(sUV,ddxddy*(pos+int2(x,y)+0.5))
 
 // -- Colour space Processing --
 #define Kb args0[2]
@@ -66,25 +65,47 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     float2 offset = pos - (even ? floor(pos) : round(pos));
     pos -= offset;
 
-    // Calculate mean
+    float3 mean = 0;
+    float3 mean2 = 0;
+    float2 meanYUV = 0;
     float weightSum = 0;
-    float2 meanUV = 0;
-   
-    [unroll] for (int X = minX; X <= maxX; X++)
-    [unroll] for (int Y = minX; Y <= maxX; Y++)
+    float weightSum2 = 0;
+    [loop] for (int X = minX; X <= maxX; X++)
+    [loop] for (int Y = minX; Y <= maxX; Y++)
     {
-        float dI2 = sqr(acuity*(y - GetY(X,Y)));
+        float dI2 = sqr(Get(X,Y).x - c0.x);
         float dXY2 = sqr((float2(X,Y) - offset)/radius);
 
-        float weight = exp(-0.5*dXY2) * pow(1 + dI2/power, - power);
+        // float2 kernel = 1-smoothstep(0,taps/2.0,abs(float2(X,Y) - offset)); // Kernel(float2(X,Y) - offset);
+        // float weight = kernel.x*kernel.y * rsqrt(dI2 + sqr(noise));
+        float weight = exp(-0.5*dXY2)*rsqrt(dI2 + sqr(noise));
         
-        meanUV += weight*GetUV(X,Y);
+        mean += weight*Get(X,Y);
+        mean2 += weight*Get(X,Y)*Get(X,Y);
+        meanYUV += weight*Get(X,Y).x*Get(X,Y).yz;
         weightSum += weight;
+        weightSum2 += weight*weight;
     }
-    meanUV /= weightSum;
+    mean /= weightSum;
+    float3 Var = (mean2 / weightSum) - mean*mean;
+    float2 Cov = (meanYUV / weightSum) - mean.x*mean.yz;
+
+    // Var += sqr(1.0/255.0)/12.0;
+    Var.yz += sqr(0.01);
+    Var.x  += sqr(noise);
+
+    float n = weightSum * sqrt(0.5 * (Var.x + sqr(mean.x - c0.x)) + sqr(noise));
+    float2 R2 = saturate(Cov*Cov / (Var.x * Var.yz));
+    float2 err = (1 - R2) * (1/n + sqr((c0 - mean).x) / Var.x) / n;
+    
+    // balance systematic error vs accuracy
+    float2 a = 0.5;
+    float strength = a * R2 * n / lerp(1 - R2, R2 * n, a);
+
+    // return float4(strength, 0.5, 0.5,  0);
 
     // Update c0
-    c0.yz = meanUV;
-    
+    c0.yz = mean.yz + strength * (c0 - mean).x * Cov / Var.x;
+
     return c0;
 }

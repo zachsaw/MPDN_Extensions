@@ -15,10 +15,10 @@
 // License along with this library.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -97,7 +97,7 @@ namespace Mpdn.Extensions.RenderScripts
                 return result;
             }
 
-            public static Nnedi3Filter CreateFilter(IShader11 shader, IFilter input, NNedi3Neurons neurons, bool structured)
+            public static Nnedi3Filter CreateFilter(IShader11 shader, ITextureFilter input, NNedi3Neurons neurons, bool structured)
             {
                 switch (neurons)
                 {
@@ -125,7 +125,7 @@ namespace Mpdn.Extensions.RenderScripts
             private IDisposable m_Weights2;
             private IDisposable m_WeightsSum;
 
-            public Nnedi3Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured) : base(shader, inputFilter)
+            public Nnedi3Filter(IShader11 shader, ITextureFilter<IBaseTexture> inputFilter, bool structured) : base(shader, inputFilter)
             {
                 m_Structured = structured;
             }
@@ -178,11 +178,8 @@ namespace Mpdn.Extensions.RenderScripts
                 }
             }
 
-            protected override void LoadInputs(IList<IBaseTexture> inputs)
+            protected override void LoadCustomConstants()
             {
-                base.LoadInputs(inputs);
-
-                LoadSizeConstants(inputs, 0);
                 UploadWeights();
             }
         }
@@ -244,7 +241,7 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3N16Filter : Nnedi3Filter
         {
-            public Nnedi3N16Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured)
+            public Nnedi3N16Filter(IShader11 shader, ITextureFilter<IBaseTexture> inputFilter, bool structured)
                 : base(shader, inputFilter, structured)
             {
                 if (structured)
@@ -309,7 +306,7 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3N32Filter : Nnedi3Filter
         {
-            public Nnedi3N32Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured)
+            public Nnedi3N32Filter(IShader11 shader, ITextureFilter<IBaseTexture> inputFilter, bool structured)
                 : base(shader, inputFilter, structured)
             {
                 if (structured)
@@ -374,7 +371,7 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3N64Filter : Nnedi3Filter
         {
-            public Nnedi3N64Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured)
+            public Nnedi3N64Filter(IShader11 shader, ITextureFilter<IBaseTexture> inputFilter, bool structured)
                 : base(shader, inputFilter, structured)
             {
                 if (structured)
@@ -439,7 +436,7 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3N128Filter : Nnedi3Filter
         {
-            public Nnedi3N128Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured)
+            public Nnedi3N128Filter(IShader11 shader, ITextureFilter<IBaseTexture> inputFilter, bool structured)
                 : base(shader, inputFilter, structured)
             {
                 if (structured)
@@ -504,7 +501,7 @@ namespace Mpdn.Extensions.RenderScripts
 
         public class Nnedi3N256Filter : Nnedi3Filter
         {
-            public Nnedi3N256Filter(IShader11 shader, IFilter<IBaseTexture> inputFilter, bool structured)
+            public Nnedi3N256Filter(IShader11 shader, ITextureFilter<IBaseTexture> inputFilter, bool structured)
                 : base(shader, inputFilter, structured)
             {
                 if (structured)

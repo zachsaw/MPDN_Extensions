@@ -24,7 +24,6 @@ using System.Windows.Forms;
 using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Config;
-using Mpdn.DirectShow;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework
@@ -64,7 +63,7 @@ namespace Mpdn.Extensions.Framework
     {
         public static int InterfaceVersion
         {
-            get { return 8; }
+            get { return 9; }
         }
 
         public static IList<IExtensionUi> Scripts
@@ -401,6 +400,16 @@ namespace Mpdn.Extensions.Framework
             return PlayerControl.CreateText(font, size, style);
         }
 
+        public static void RegisterMediaFileExtension(string extension, params string[] extensions)
+        {
+            PlayerControl.RegisterMediaFileExtensions((new[] {extension}.Concat(extensions)));
+        }
+
+        public static void UnregisterMediaFileExtension(string extension, params string[] extensions)
+        {
+            PlayerControl.UnregisterMediaFileExtensions((new[] {extension}.Concat(extensions)));
+        }
+
         public static void ClearScreen()
         {
             PlayerControl.ClearScreen();
@@ -411,7 +420,7 @@ namespace Mpdn.Extensions.Framework
             PlayerControl.ShowOptionsDialog();
         }
 
-        public static IList<Filter> Filters
+        public static IList<DirectShow.Filter> Filters
         {
             get { return PlayerControl.Filters; }
         }

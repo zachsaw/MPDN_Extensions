@@ -17,9 +17,13 @@
 // -- Misc --
 sampler sMean:	register(s1);
 
-// -- Input processing --
-#define Initialization	float4 mean = tex2D(sMean, tex)
+// -- Variance Calculation
+#define Initialization	float4 mean = GetFrom(sMean, tex);
 #define sqr(x)			((x)*(x))
 #define Get(pos)		(sqr(GetFrom(s0, pos) - mean))
+
+#define pi acos(-1)
+// #define Kernel(x) exp(-2*x*x) // Gaussian
+#define taps 2
 
 #include "./Scalers/Downscaler.hlsl"

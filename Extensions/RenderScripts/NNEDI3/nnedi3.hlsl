@@ -115,6 +115,8 @@ struct PS_IN
 #endif
 #endif
 
+#define EPSILON_FL32 1.19209290e-07
+
 /* Main code */
 float4 main( PS_IN In ) : SV_TARGET
 {
@@ -143,9 +145,9 @@ float4 main( PS_IN In ) : SV_TARGET
 #endif
     
     float4 mstd = 0;
-    mstd[0] = sum / 32.0;
-    mstd[1] = sumsq / 32.0 - mstd[0] * mstd[0];
-    mstd[1] = (mstd[1] <= 1.19209290e-07) ? 0.0 : sqrt(mstd[1]);
+    mstd[0] = sum / (WT*HT);
+    mstd[1] = sumsq / (WT*HT) - mstd[0] * mstd[0];
+    mstd[1] = (mstd[1] <= EPSILON_FL32) ? 0.0 : sqrt(mstd[1]);
     mstd[2] = (mstd[1] > 0) ? (1.0 / mstd[1]) : 0.0;
 
     float vsum = 0;
@@ -170,7 +172,7 @@ float4 main( PS_IN In ) : SV_TARGET
             sum[0] += dot(pix, W1(n, i));
             sum[1] += dot(pix, W2(n, i));
 #else
-            [unroll] for (int j = 0; j<4; j++)
+            [unroll] for (int j = 0; j<HT; j++)
             {
                 float pix = t[i][j];
                 sum[0] += pix*W1(n, i)[j];

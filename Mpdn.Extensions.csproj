@@ -118,9 +118,6 @@
     <None Include="Examples\RenderScripts\Examples\BlueTint.cl" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\AudioScripts\Mpdn.AudioScriptChainList.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="Extensions\AudioScripts\Mpdn.DynamicRangeCompressor.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -129,19 +126,7 @@
     </Compile>
     <Compile Include="Extensions\AudioScripts\Mpdn.DynamicRangeCompressor.cs" />
     <Compile Include="Extensions\AudioScripts\Mpdn.Reclock.cs" />
-    <Compile Include="Extensions\AudioScripts\Mpdn.ScriptChain.ConfigDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Extensions\AudioScripts\Mpdn.ScriptChain.ConfigDialog.Designer.cs">
-      <DependentUpon>Mpdn.ScriptChain.ConfigDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Extensions\AudioScripts\Mpdn.ScriptChain.cs" />
-    <Compile Include="Extensions\AudioScripts\Mpdn.ScriptGroup.ConfigDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Extensions\AudioScripts\Mpdn.ScriptGroup.ConfigDialog.Designer.cs">
-      <DependentUpon>Mpdn.ScriptGroup.ConfigDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Extensions\AudioScripts\Mpdn.ScriptGroup.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
@@ -356,18 +341,6 @@
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Chroma.Nnedi3Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.OclNnedi3.Nnedi3Weights.cs" />
-    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.ConfigDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.ConfigDialog.Designer.cs">
-      <DependentUpon>Mpdn.ScriptChain.ConfigDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptGroup.ConfigDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Extensions\RenderScripts\Mpdn.ScriptGroup.ConfigDialog.Designer.cs">
-      <DependentUpon>Mpdn.ScriptGroup.ConfigDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.Resizer.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -387,9 +360,6 @@
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptChain.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.ScriptGroup.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.EwaScaler.cs" />
-    <Compile Include="Extensions\RenderScripts\RenderScriptChainList.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ChromaScaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.EwaScaler.ConfigDialog.cs">
       <SubType>Form</SubType>
@@ -457,6 +427,8 @@
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\PlayerExtensions\Subtitles\OpenSubtitles.LanguageHandler.cs" />
+    <None Include="Extensions\RenderScripts\Bilateral\LumaDownscalerI.hlsl" />
+    <None Include="Extensions\RenderScripts\Bilateral\LumaDownscalerII.hlsl" />
     <None Include="Extensions\RenderScripts\ChromaScaler\Chroma.hlsl" />
     <None Include="Extensions\RenderScripts\Common\ColourProcessing.hlsl" />
     <None Include="Extensions\RenderScripts\Common\GammaToLab.hlsl" />
@@ -497,24 +469,18 @@
     <None Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
     <None Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
-    <None Include="Extensions\RenderScripts\SSimDownscaler\Calc.hlsl" />
-    <None Include="Extensions\RenderScripts\SSimDownscaler\CalcR.hlsl" />
-    <None Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarI.hlsl" />
-    <None Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarII.hlsl" />
     <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Convolver.hlsl" />
     <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Downscaler.hlsl" />
     <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Upscaler.hlsl" />
-    <None Include="Extensions\RenderScripts\SSimDownscaler\SinglePassConvolver.hlsl" />
+    <None Include="Extensions\RenderScripts\SSimDownscaler\SoftDownscaler.hlsl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
     <None Include="Extensions\RenderScripts\SuperRes\Diff.hlsl" />
-    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyChroma.hlsl" />
-    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\CopyLuma.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\DownscaleAndDiff.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\Diff.hlsl" />
-    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\MergeChroma.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\ChromaDownscaler.hlsl" />
+    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\DownscaleAndDiff.hlsl" />
     <None Include="Extensions\RenderScripts\Bilateral\CrossBilateral.hlsl" />
-    <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperResEx.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\SuperRes.hlsl" />
-    <None Include="Extensions\RenderScripts\SuperRes\SuperResEx.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperRes.hlsl" />
     <None Include="Extensions\RenderScripts\NNEDI3\BuildShaders.bat" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
@@ -534,6 +500,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Extensions\RenderScripts\EwaScaler\EwaScaler.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Calc.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Convolver.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarI.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarII.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\CalcR.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\SinglePassConvolver.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Upscaler.hlsl" />
+    <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Downscaler.hlsl" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

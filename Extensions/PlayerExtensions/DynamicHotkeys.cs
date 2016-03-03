@@ -13,7 +13,6 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
 
 using System;
 using System.Collections.Generic;
@@ -25,31 +24,41 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class DynamicHotkeys : PlayerExtension
     {
-        private static IList<Verb> s_Verbs = new List<Verb>();
-        private static Action s_Reload;
+        private IDictionary<Keys, Action> m_Actions = new Dictionary<Keys, Action>();
 
-        public static void RegisterHotkey(Guid guid, string hotkey, Action action)
+        public override void Initialize()
         {
-            Keys keys;
-            if (TryDecodeKeyString(hotkey, out keys))
+            base.Initialize();
+            HotkeyRegister.HotkeysChanged += OnHotkeysChanged;
+            Player.KeyDown += PlayerKeyDown;
+        }
+
+        public override void Destroy()
+        {
+            Player.KeyDown -= PlayerKeyDown;
+            HotkeyRegister.HotkeysChanged -= OnHotkeysChanged;
+            base.Destroy();
+        }
+
+        private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
+        {
+            Action action;
+            if (m_Actions.TryGetValue(e.InputArgs.KeyData, out action))
             {
-                s_Verbs.Add(new Verb(Category.Window, "Dynamic Hotkeys", guid.ToString(), hotkey, "", action));
-                s_Reload();
+                action();
+                e.Handled = true;
             }
         }
 
-        public static void RemoveHotkey(Guid guid)
+        public void OnHotkeysChanged(object sender, EventArgs e)
         {
-            s_Verbs = s_Verbs.Where(v => v.Caption != guid.ToString()).ToList();
-            s_Reload();
+            m_Actions = HotkeyRegister.Hotkeys
+                .GroupBy(hotkey => hotkey.Keys)
+                .Select(group => group.First())
+                .ToDictionary(
+                    hotkey => hotkey.Keys, 
+                    hotkey => hotkey.Action);
         }
-
-        public DynamicHotkeys()
-        {
-            s_Reload = LoadVerbs;
-        }
-
-        public override IList<Verb> Verbs { get { return s_Verbs; } }
 
         public override ExtensionUiDescriptor Descriptor
         {

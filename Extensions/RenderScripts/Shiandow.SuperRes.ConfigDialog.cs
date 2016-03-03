@@ -30,7 +30,7 @@ namespace Mpdn.Extensions.RenderScripts
         {
             protected int? selectedIndex;
 
-            protected Preset<IFilter,IRenderScript> selectedPreset
+            protected Preset<ITextureFilter,IRenderScript> selectedPreset
             {
                 get
                 {
@@ -54,7 +54,7 @@ namespace Mpdn.Extensions.RenderScripts
                 StrengthSetter.Value = (decimal)Settings.Strength;
                 SoftnessSetter.Value = (decimal)Settings.Softness;
 
-                HQBox.Checked = Settings.HQdownscaling;
+                LegacyBox.Checked = Settings.LegacyDownscaling;
                 
                 UpdateGui();
             }
@@ -67,7 +67,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Settings.Strength = (float)StrengthSetter.Value;
                 Settings.Softness = (float)SoftnessSetter.Value;
 
-                Settings.HQdownscaling = HQBox.Checked;
+                Settings.LegacyDownscaling = LegacyBox.Checked;
             }
 
             private void SelectionChanged(object sender, EventArgs e)
@@ -77,13 +77,13 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void UpdateGui()
             {
-                var preset = PrescalerBox.SelectedValue as Preset<IFilter, IRenderScript>;
+                var preset = PrescalerBox.SelectedValue as Preset<ITextureFilter, IRenderScript>;
                 ConfigButton.Enabled = (preset != null) && preset.HasConfigDialog();
             }
 
             private void ConfigButtonClick(object sender, EventArgs e)
             {
-                ((Preset<IFilter, IRenderScript>) PrescalerBox.SelectedValue).ShowConfigDialog(Owner);
+                ((Preset<ITextureFilter, IRenderScript>) PrescalerBox.SelectedValue).ShowConfigDialog(Owner);
             }
 
             private void ModifyButtonClick(object sender, EventArgs e)

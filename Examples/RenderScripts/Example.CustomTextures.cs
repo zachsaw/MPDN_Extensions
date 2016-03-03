@@ -27,20 +27,20 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class CustomTextures : RenderChain
         {
-            private ManagedTexture<ISourceTexture> m_Texture1;
-            private ManagedTexture<ISourceTexture> m_Texture2;
+            private IManagedTexture<ISourceTexture> m_Texture1;
+            private IManagedTexture<ISourceTexture> m_Texture2;
 
             protected override string ShaderPath
             {
                 get { return "Examples"; }
             }
 
-            protected override IFilter CreateFilter(IFilter sourceFilter)
+            protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
             {
                 CreateTextures();
 
                 var shader = CompileShader("CustomTextures.hlsl");
-                return new ShaderFilter(shader, sourceFilter, m_Texture1.ToFilter(), m_Texture2.ToFilter());
+                return shader.ApplyTo(sourceFilter, m_Texture1.ToFilter(), m_Texture2.ToFilter());
             }
 
             private void CreateTextures()

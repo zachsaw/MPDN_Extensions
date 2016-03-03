@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using DirectShowLib;
 using Mpdn.Extensions.Framework;
 
@@ -27,29 +28,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class YouTubeSourceProvider : PlayerExtension
     {
-        private static readonly string[] s_SupportedSites =
-        {
-            "youtube.com",
-            "vimeo.com",
-            "dailymotion.com",
-            "liveleak.com",
-            "break.com",
-            "metacafe.com",
-            "veoh.com",
-            "facebook.com",
-            "ebaumsworld.com",
-            "vkmag.com",
-            "blip.tv",
-            "godtube.com",
-            "streetfire.net",
-            "g4tv.com",
-            "tcmag.com",
-            "dailyhaha.com",
-            "bofunk.com",
-            "mediabom.tv",
-            "tedxtalks.ted.com"
-        };
-
         public override ExtensionUiDescriptor Descriptor
         {
             get
@@ -80,6 +58,65 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             [ComImport, Guid("171252A0-8820-4AFE-9DF8-5C92B2D66B04")]
             private class LavSplitter { }
+
+            [ComImport, Guid("FF762ACC-13EC-463A-A29C-FD4B0CD3E019")]
+            [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+            [SuppressUnmanagedCodeSecurity]
+            public interface ISupportedSites
+            {
+                [PreserveSig]
+                [return: MarshalAs(UnmanagedType.U4)]
+                uint GetVersion();
+                [PreserveSig]
+                [return: MarshalAs(UnmanagedType.U4)]
+                uint GetCount();
+                [PreserveSig]
+                [return: MarshalAs(UnmanagedType.BStr)]
+                string GetName(uint index);
+                [PreserveSig]
+                int Test([MarshalAs(UnmanagedType.LPWStr)] string url, bool explicitly, [MarshalAs(UnmanagedType.BStr)] out string canonicalUrl);
+            }
+
+            private static readonly string[] s_SupportedSites =
+            {
+                "youtube.com",
+                "vimeo.com",
+                "dailymotion.com",
+                "liveleak.com",
+                "break.com",
+                "metacafe.com",
+                "veoh.com",
+                "facebook.com",
+                "ebaumsworld.com",
+                "vkmag.com",
+                "blip.tv",
+                "godtube.com",
+                "streetfire.net",
+                "g4tv.com",
+                "tcmag.com",
+                "dailyhaha.com",
+                "bofunk.com",
+                "mediabom.tv",
+                "tedxtalks.ted.com"
+            };
+
+            public static bool IsSiteSupported(Uri uri)
+            {
+                var filter = (IBaseFilter) new YouTubeSourceFilter();
+                try
+                {
+                    var sites = filter as ISupportedSites;
+                    if (sites == null)
+                        return s_SupportedSites.Any(s => uri.Host.ToLowerInvariant().Contains(s));
+
+                    string result;
+                    return sites.Test(uri.AbsoluteUri, true, out result) == 0;
+                }
+                finally
+                {
+                    Marshal.ReleaseComObject(filter);
+                }
+            }
 
             public YouTubeSource(IGraphBuilder graph, string filename)
             {
@@ -266,7 +303,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             Uri uri;
             return Uri.TryCreate(fileNameOrUri, UriKind.Absolute, out uri) &&
                     (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps) &&
-                    s_SupportedSites.Any(s => uri.Host.ToLowerInvariant().Contains(s));
+                    YouTubeSource.IsSiteSupported(uri);
         }
     }
 }

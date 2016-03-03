@@ -15,49 +15,14 @@
 // License along with this library.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Mpdn.AudioScript;
-using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.AudioChain;
-using Mpdn.Extensions.Framework.Chain;
 
 namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn.ScriptChain
     {
-        public class ScriptChain : PresetCollection<Audio, IAudioScript>
-        {
-            private List<Preset<Audio, IAudioScript>> m_Chain;
-
-            public override Audio Process(Audio input)
-            {
-                RefreshChain();
-                return m_Chain.Aggregate(input, (result, chain) => result + chain);
-            }
-
-            private void RefreshChain()
-            {
-                if (ReferenceEquals(m_Chain, Options)) return;
-                GuiThread.Do(() =>
-                {
-                    if (m_Chain != null)
-                    {
-                        foreach (var s in m_Chain)
-                        {
-                            s.Reset();
-                        }
-                    }
-                    m_Chain = Options;
-                    foreach (var s in m_Chain)
-                    {
-                        s.Initialize();
-                    }
-                });
-            }
-        }
-
-        public class ScriptChainScript : AudioChainUi<ScriptChain, ScriptChainDialog>
+        public class ScriptChainScript : AudioChainUi<AudioScriptChain, AudioScriptChainDialog>
         {
             protected override string ConfigFileName
             {

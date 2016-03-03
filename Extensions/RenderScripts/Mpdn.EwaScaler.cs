@@ -15,7 +15,6 @@
 // License along with this library.
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Mpdn.Extensions.CustomLinearScalers.Functions;
@@ -23,7 +22,6 @@ using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.RenderScript;
 using SharpDX;
-using WeightFilter = Mpdn.Extensions.Framework.RenderChain.SharedTextureSourceFilter<Mpdn.ISourceTexture>;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -33,7 +31,7 @@ namespace Mpdn.Extensions.RenderScripts
         {
             private const int BASE_DATA_POINTS = 8;
 
-            private ManagedTexture<ISourceTexture>[] m_Weights;
+            private IManagedTexture<ISourceTexture>[] m_Weights;
             private ICustomLinearScaler m_Scaler;
 
             #region Settings
@@ -77,9 +75,9 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "EwaScaler"; }
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
-                var sourceSize = input.OutputSize;
+                var sourceSize = input.Output.Size;
                 if (!IsUpscalingFrom(sourceSize))
                     return input;
 
@@ -105,10 +103,10 @@ namespace Mpdn.Extensions.RenderScripts
                 return Math.Log(dest/(double)source, 2);
             }
 
-            protected IFilter GetEwaFilter(ShaderFilterSettings<IShader> shader, IFilter[] inputs)
+            protected ITextureFilter GetEwaFilter(IShaderFilterSettings<IShader> shader, ITextureFilter[] inputs)
             {
-                var filters = m_Weights.Select(w => new WeightFilter(w));
-                return new ShaderFilter(shader, inputs.Concat((IEnumerable<IFilter<IBaseTexture>>) filters).ToArray());
+                var filters = m_Weights.Select(w => (ITextureFilter<IBaseTexture>)w.ToFilter());
+                return shader.ApplyTo(inputs.Concat(filters));
             }
 
             private static double GetDistance(double point1, double point2)
@@ -118,15 +116,14 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected void CreateWeights(TextureSize sourceSize, TextureSize targetSize)
             {
-                if (m_Weights != null && m_Weights.All(w => w.Valid))
-                    return;
+                DisposeHelper.DisposeElements(ref m_Weights);
 
                 double scaleFactorX = GetScaleFactor(targetSize.Width, sourceSize.Width);
                 double scaleFactorY = GetScaleFactor(targetSize.Height, sourceSize.Height);
 
                 var tapCount = TapCount.ToInt();
                 int lobes = tapCount / 2;
-                m_Weights = new ManagedTexture<ISourceTexture>[lobes];
+                m_Weights = new IManagedTexture<ISourceTexture>[lobes];
                 var dataPointsX = GetDataPointCount(scaleFactorX);
                 var dataPointsY = GetDataPointCount(scaleFactorY);
                 var channels = lobes == 2 ? 2 : 4;

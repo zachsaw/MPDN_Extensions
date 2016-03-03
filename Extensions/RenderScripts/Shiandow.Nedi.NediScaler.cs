@@ -40,9 +40,9 @@ namespace Mpdn.Extensions.RenderScripts
 
             public float[] LumaConstants = {0.2126f, 0.7152f, 0.0722f};
 
-            private bool UseNedi(IFilter input)
+            private bool UseNedi(ITextureFilter input)
             {
-                var size = input.OutputSize;
+                var size = input.Output.Size;
                 if (size.IsEmpty)
                     return false;
 
@@ -53,7 +53,7 @@ namespace Mpdn.Extensions.RenderScripts
                        Renderer.TargetSize.Height > size.Height;
             }
 
-            protected override IFilter CreateFilter(IFilter input)
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2*s.Width, s.Height);
                 Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2*s.Height);
@@ -66,13 +66,12 @@ namespace Mpdn.Extensions.RenderScripts
                 if (!UseNedi(input))
                     return input;
 
-                var nedi1 = new ShaderFilter(nedi1Shader, input);
-                var nediH = new ShaderFilter(nediHInterleaveShader, input, nedi1);
-                var nedi2 = new ShaderFilter(nedi2Shader, nediH);
-                var nediV = new ShaderFilter(nediVInterleaveShader, nediH, nedi2);
+                var nedi1 = nedi1Shader.ApplyTo(input);
+                var nediH = nediHInterleaveShader.ApplyTo(input, nedi1);
+                var nedi2 = nedi2Shader.ApplyTo(nediH);
+                var nediV = nediVInterleaveShader.ApplyTo(nediH, nedi2);
 
-                return new ResizeFilter(nediV, nediV.OutputSize, new Vector2(0.5f, 0.5f),
-                    Renderer.LumaUpscaler, Renderer.LumaDownscaler, ForceCentered ? Renderer.LumaUpscaler : null);
+                return nediV.Convolve(ForceCentered ? Renderer.LumaUpscaler : null, offset: new Vector2(0.5f, 0.5f));
             }
         }
 

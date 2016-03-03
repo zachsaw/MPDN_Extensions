@@ -15,70 +15,20 @@
 // License along with this library.
 
 using System;
-using System.Diagnostics;
-using DirectShowLib;
 using Mpdn.AudioScript;
 using Mpdn.Extensions.Framework.Chain;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public class AudioChainScript : IAudioScript, IDisposable
+    public class AudioChainScript : FilterChainScript<IAudioFilter, IAudioOutput>, IAudioScript
     {
-        protected readonly Chain<Audio> Chain;
         private IAudio m_Audio;
 
-        public AudioChainScript(Chain<Audio> chain)
-        {
-            Chain = chain;
-        }
-
-        ~AudioChainScript()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            Chain.Reset();
-            m_Audio = null;
-        }
-
-        public bool Execute()
-        {
-            if (m_Audio == null)
-                return false;
-
-            try
-            {
-                var output = Chain.Process(new Audio(m_Audio.InputFormat, m_Audio.Input));
-                AudioHelpers.CopySample(output.Sample, m_Audio.Output, true);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex);
-                return false;
-            }
-        }
-
-        public void OnGetMediaType(WaveFormatExtensible format)
-        {
-            // Provides script a chance to change the output format
-        }
+        public AudioChainScript(Chain<IAudioFilter> chain) : base(chain)
+        { }
 
         public void Update(IAudio audio)
         {
-            if (m_Audio != null)
-            {
-                throw new InvalidOperationException();
-            }
-
             if (!AudioProc.Initialize())
             {
                 // Note: Using GuiThread.DoAsync ensures the warning gets displayed after the current media filename
@@ -88,20 +38,23 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 return;
             }
 
-            Chain.Initialize();
             m_Audio = audio;
+            Update();
         }
-    }
 
-    public struct Audio
-    {
-        public WaveFormatExtensible Format;
-        public IMediaSample Sample;
-
-        public Audio(WaveFormatExtensible format, IMediaSample sample)
+        protected override void OutputResult(IAudioOutput result)
         {
-            Format = format;
-            Sample = sample;
+            AudioHelpers.CopySample(result.Sample, m_Audio.Output, true);
+        }
+
+        protected override IAudioFilter MakeInitialFilter()
+        {
+            return new AudioSource(m_Audio);
+        }
+
+        protected override IAudioFilter HandleError(Exception e)
+        {
+            return new AudioSource(m_Audio);
         }
     }
 }
