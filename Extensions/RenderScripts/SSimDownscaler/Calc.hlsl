@@ -20,6 +20,8 @@ sampler sR:	register(s2);
 float4 p0 : register(c0);
 float2 p1 : register(c1);
 float4 size0 : register(c2);
+float strength : register(c3);
+
 #define Initialized 1
 
 #define GetR(pos) tex2D(sR, pos)
@@ -38,7 +40,6 @@ float4 size0 : register(c2);
 #define axis 1
 #include "./Scalers/Convolver.hlsl"
 
-#define strength 0.5
 // -- Main code --
 float4 main(float2 tex : TEXCOORD0) : COLOR {
     float4 L = tex2D(sL, tex);

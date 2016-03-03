@@ -404,6 +404,12 @@
     <Compile Include="Extensions\RenderScripts\Shiandow.Nnedi3.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Bilateral.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.SSimDownscaling.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.SSimDownscaling.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.SSimDownscaling.ConfigDialog.Designer.cs">
+      <DependentUpon>Shiandow.SSimDownscaling.ConfigDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperChromaRes.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -469,9 +475,6 @@
     <None Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
     <None Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
-    <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Convolver.hlsl" />
-    <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Downscaler.hlsl" />
-    <None Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Upscaler.hlsl" />
     <None Include="Extensions\RenderScripts\SSimDownscaler\SoftDownscaler.hlsl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
     <None Include="Extensions\RenderScripts\SuperRes\Diff.hlsl" />
@@ -490,6 +493,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Extensions\RenderScripts\Shiandow.SSimDownscaling.ConfigDialog.resx">
+      <DependentUpon>Shiandow.SSimDownscaling.ConfigDialog.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

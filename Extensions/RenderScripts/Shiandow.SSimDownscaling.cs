@@ -26,11 +26,24 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class SSimDownscaler : RenderChain
         {
+            #region Settings
+
+            public bool SoftDownscaling { get; set; }
+            public float Strength { get; set; }
+
+            public SSimDownscaler()
+            {
+                SoftDownscaling = false;
+                Strength = 0.5f;
+            }
+
+            #endregion
+
             private void DownscaleAndCalcVar(ITextureFilter input, TextureSize targetSize, out ITextureFilter mean, out ITextureFilter var)
             {
-                var HDownscaler = CompileShader("SoftDownscaler.hlsl", macroDefinitions: "axis = 0;")
+                var HDownscaler = CompileShader(SoftDownscaling ? "SoftDownscaler.hlsl" : "./Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
                     .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
-                var VDownscaler = CompileShader("SoftDownscaler.hlsl", macroDefinitions: "axis = 1;")
+                var VDownscaler = CompileShader(SoftDownscaling ? "SoftDownscaler.hlsl" : "./Scalers/Downscaler.hlsl", macroDefinitions: "axis = 1;")
                     .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.Output.Format);
                 var HVar = CompileShader("DownscaledVarI.hlsl", macroDefinitions: "axis = 0;")
                     .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
@@ -62,6 +75,7 @@ namespace Mpdn.Extensions.RenderScripts
                     return input;
 
                 var Calc = CompileShader("calc.hlsl");
+                Calc["strength"] = Strength;
 
                 DownscaleAndCalcVar(H, targetSize, out L, out Sh);
                 ConvolveAndCalcR(L, Sh, out M, out R);
@@ -70,11 +84,11 @@ namespace Mpdn.Extensions.RenderScripts
             }
         }
         
-        public class SSimDownscalerUi : RenderChainUi<SSimDownscaler>
+        public class SSimDownscalerUi : RenderChainUi<SSimDownscaler, SSimDownscalingConfigDialog>
         {
             protected override string ConfigFileName
             {
-                get { return "Structural Similarity Based Downscaling"; }
+                get { return "SSIM.Downscaler"; }
             }
 
             public override string Category
