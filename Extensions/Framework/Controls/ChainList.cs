@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -142,7 +143,17 @@ namespace Mpdn.Extensions.Framework.Controls
 
         protected void LoadPresets(IEnumerable<Preset<T, TScript>> source)
         {
-            AddPresets(source);
+            try
+            {
+                AddPresets(source);
+            }
+            catch (Exception ex)
+            {
+                listViewChain.Clear();
+                // Ignore errors if we can't load saved presets here (e.g. framework changes)
+                // But warn via debug output
+                Trace.WriteLine(ex);
+            }
             listViewChain.SelectedIndices.Clear();
 
             ResizeLists();
