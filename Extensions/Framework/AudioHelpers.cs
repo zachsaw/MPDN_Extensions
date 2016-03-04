@@ -66,12 +66,22 @@ namespace Mpdn.Extensions.Framework
     {
         public CudafyCustomAsmResolver()
         {
-            var path = MpdnPath.GetDirectoryName(Assembly.GetAssembly(typeof (IAudioScript)).Location);
-            path = Path.Combine(path, "Extensions");
+            RegisterAssemblies(MpdnPath.GetDirectoryName(Assembly.GetAssembly(typeof (IAudioScript)).Location));
+        }
+
+        private void RegisterAssemblies(string path)
+        {
             var asms = new DirectoryInfo(path).GetFiles("*.dll", SearchOption.AllDirectories);
             foreach (var asm in asms)
             {
-                RegisterAssembly(AssemblyDefinition.ReadAssembly(asm.FullName));
+                try
+                {
+                    RegisterAssembly(AssemblyDefinition.ReadAssembly(asm.FullName));
+                }
+                catch (BadImageFormatException)
+                {
+                    // Not a .NET assembly - ignore
+                }
             }
         }
     }
