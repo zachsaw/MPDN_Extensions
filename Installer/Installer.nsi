@@ -178,10 +178,10 @@ Section -pre
 SectionEnd
 
 Section /o "Download & Update Player" SecInstallPlayer
-    StrCpy $R1 "MPDN_$playerArchitecture_$playerVersion_Installer.exe"
-    NSISdl::download "http://mpdn.zachsaw.com/Latest/MediaPlayerDotNet_$playerArchitecture_Installer.exe" $R1
+    StrCpy $R1 "$EXEDIR\MPDN_$playerArchitecture_$playerVersion_Installer.exe"
+    inetc::get /caption "MPDN $playerArchitecture v$playerVersion" "https://mpdn.zachsaw.com/Latest/MediaPlayerDotNet_$playerArchitecture_Installer.exe" "$R1" /end
     Pop $R0 ;Get the return value
-        StrCmp $R0 "success" +3
+        StrCmp $R0 "OK" +3
         MessageBox MB_OK "Download failed: $R0"
         Quit
         
