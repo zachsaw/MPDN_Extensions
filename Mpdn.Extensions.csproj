@@ -494,6 +494,9 @@
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Extensions\RenderScripts\Shiandow.SSimDownscaling.ConfigDialog.resx">
+      <DependentUpon>Shiandow.SSimDownscaling.ConfigDialog.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Mpdn.Extensions.Framework.csproj">
