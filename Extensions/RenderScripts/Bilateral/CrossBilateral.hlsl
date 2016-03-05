@@ -69,43 +69,28 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     float3 mean2 = 0;
     float2 meanYUV = 0;
     float weightSum = 0;
-    float weightSum2 = 0;
     [loop] for (int X = minX; X <= maxX; X++)
     [loop] for (int Y = minX; Y <= maxX; Y++)
     {
         float dI2 = sqr(Get(X,Y).x - c0.x);
+        float var = Get(X,Y).w;
         float dXY2 = sqr((float2(X,Y) - offset)/radius);
 
-        // float2 kernel = 1-smoothstep(0,taps/2.0,abs(float2(X,Y) - offset)); // Kernel(float2(X,Y) - offset);
-        // float weight = kernel.x*kernel.y * rsqrt(dI2 + sqr(noise));
-        float weight = exp(-0.5*dXY2)*rsqrt(dI2 + sqr(noise));
+        float weight = exp(-0.5*dXY2) * rsqrt(dI2 + var + sqr(noise));
         
         mean += weight*Get(X,Y);
-        mean2 += weight*Get(X,Y)*Get(X,Y);
+        mean2 += weight*(var + Get(X,Y)*Get(X,Y));
         meanYUV += weight*Get(X,Y).x*Get(X,Y).yz;
         weightSum += weight;
-        weightSum2 += weight*weight;
     }
     mean /= weightSum;
     float3 Var = (mean2 / weightSum) - mean*mean;
     float2 Cov = (meanYUV / weightSum) - mean.x*mean.yz;
 
-    // Var += sqr(1.0/255.0)/12.0;
-    Var.yz += sqr(0.01);
-    Var.x  += sqr(noise);
-
-    float n = weightSum * sqrt(0.5 * (Var.x + sqr(mean.x - c0.x)) + sqr(noise));
-    float2 R2 = saturate(Cov*Cov / (Var.x * Var.yz));
-    float2 err = (1 - R2) * (1/n + sqr((c0 - mean).x) / Var.x) / n;
-    
-    // balance systematic error vs accuracy
-    float2 a = 0.5;
-    float strength = a * R2 * n / lerp(1 - R2, R2 * n, a);
-
-    // return float4(strength, 0.5, 0.5,  0);
+    Var += sqr(noise);
 
     // Update c0
-    c0.yz = mean.yz + strength * (c0 - mean).x * Cov / Var.x;
+    c0.yz = mean.yz + (c0 - mean).x * Cov / Var.x;
 
     return c0;
 }

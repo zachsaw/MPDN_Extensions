@@ -36,12 +36,10 @@ namespace Mpdn.Extensions.RenderScripts
                 var HDownscaler = CompileShader("LumaDownscalerI.hlsl", macroDefinitions: "axis = 0;").Configure(
                         transform: s => new TextureSize(targetSize.Width, s.Height),
                         arguments: new ArgumentList { adjointOffset },
-                        format: TextureFormat.Unorm16_R);
+                        format: TextureFormat.Unorm16_RG);
                 var VDownscaler = CompileShader("LumaDownscalerII.hlsl", macroDefinitions: "axis = 1;").Configure(
                         transform: s => new TextureSize(s.Width, targetSize.Height),
-                        arguments: new ArgumentList { adjointOffset },
-                        format: TextureFormat.Float16);
-
+                        arguments: new ArgumentList { adjointOffset });
                 var Y = HDownscaler.ApplyTo(luma);
                 var YUV = VDownscaler.ApplyTo(Y, chroma);
 
