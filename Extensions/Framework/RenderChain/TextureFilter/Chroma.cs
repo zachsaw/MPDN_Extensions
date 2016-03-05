@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         public TextureSize TargetSize { get; private set; }
         public Vector2 ChromaOffset { get; private set; }
 
-        protected readonly ITextureFilter Result;
+        protected readonly ITextureFilter Fallback;
         protected readonly IChromaScaler ChromaScaler;
 
         public CompositionFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, IChromaScaler chromaScaler, TextureSize? targetSize = null, Vector2? chromaOffset = null, ITextureFilter fallback = null)
@@ -73,12 +73,13 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             Luma = lumaInput;
             Chroma = chromaInput;
 
+            Fallback = fallback;
             ChromaScaler = chromaScaler ?? new DefaultChromaScaler();
             ChromaOffset = chromaOffset ?? Renderer.ChromaOffset;
             TargetSize = targetSize ?? Luma.Output.Size;
 
-            Result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset) ?? fallback;
-            AddTag(Result.Tag);
+            if (Fallback != null)
+                Tag.AddInput(Fallback);
         }
 
         public ITextureFilter SetSize(TextureSize outputSize)
@@ -88,25 +89,22 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null)
         {
-            return new CompositionFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset)
-                .Tagged(Tag);
+            return new CompositionFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset, this);
         }
 
         public void EnableTag() { }
 
         protected override TextureSize OutputSize
         {
-            get { return Result.Output.Size; }
-        }
-
-        protected override TextureFormat OutputFormat
-        {
-            get { return Result.Output.Format; }
+            get { return TargetSize; }
         }
 
         protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
-            return Result.Compile();
+            var result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset) ?? Fallback;
+            return result
+                .SetSize(TargetSize, tagged: true)
+                .Compile();
         }
 
         protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
