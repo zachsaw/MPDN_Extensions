@@ -314,7 +314,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
             protected override void Render(IList<ITextureOutput<IBaseTexture>> textureOutputs)
             {
-                throw new NotImplementedException();
+                throw new NotImplementedException("Uncompiled Filter.");
             }
         }
 

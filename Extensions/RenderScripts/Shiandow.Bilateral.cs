@@ -40,6 +40,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var VDownscaler = CompileShader("LumaDownscalerII.hlsl", macroDefinitions: "axis = 1;").Configure(
                         transform: s => new TextureSize(s.Width, targetSize.Height),
                         arguments: new ArgumentList { adjointOffset });
+
                 var Y = HDownscaler.ApplyTo(luma);
                 var YUV = VDownscaler.ApplyTo(Y, chroma);
 

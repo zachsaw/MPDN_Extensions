@@ -109,7 +109,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Uncompiled Filter.");
         }
     }
 
