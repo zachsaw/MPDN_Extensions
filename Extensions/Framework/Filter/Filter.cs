@@ -122,6 +122,9 @@ namespace Mpdn.Extensions.Framework.Filter
             if (m_Initialized)
                 return;
 
+            if (m_CompilationResult != this)
+                throw new InvalidOperationException("Uncompiled Filter.");
+
             foreach (var f in InputFilters)
             {
                 f.Initialize(LastDependentIndex);

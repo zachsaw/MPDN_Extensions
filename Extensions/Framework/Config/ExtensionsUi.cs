@@ -46,13 +46,13 @@ namespace Mpdn.Extensions.Framework.Config
         protected virtual void LoadSettings()
         {
             // This needs to be overriden
-            throw new NotImplementedException();
+            throw new NotImplementedException("Loadsettings undefined (should be overriden).");
         }
 
         protected virtual void SaveSettings()
         {
             // This needs to be overriden
-            throw new NotImplementedException();
+            throw new NotImplementedException("SaveSettings undefined (should be overriden).");
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)

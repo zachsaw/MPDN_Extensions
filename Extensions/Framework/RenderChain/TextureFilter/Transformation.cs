@@ -204,7 +204,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
             if (InputFilter.Output.Size == m_OutputSize && m_Convolver == null)
-                return InputFilter;
+                return InputFilter.Compile();
 
             if (m_Tagged)
                 AddTag(Status());
