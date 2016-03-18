@@ -26,20 +26,27 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Bilateral : RenderChain, IChromaScaler
         {
-            protected override ITextureFilter CreateFilter(ITextureFilter input)
+            #region Settings
+
+            public float Strength { get; set; }
+
+            public Bilateral()
             {
-                return this.MakeChromaFilter(input);
+                Strength = 0.5f;
             }
+
+            #endregion
 
             private ITextureFilter DownscaleLuma(ITextureFilter luma, ITextureFilter chroma, TextureSize targetSize, Vector2 adjointOffset)
             {
                 var HDownscaler = CompileShader("LumaDownscalerI.hlsl", macroDefinitions: "axis = 0;").Configure(
                         transform: s => new TextureSize(targetSize.Width, s.Height),
                         arguments: new ArgumentList { adjointOffset },
-                        format: TextureFormat.Unorm16_RG);
+                        format: TextureFormat.Float16_RG);
                 var VDownscaler = CompileShader("LumaDownscalerII.hlsl", macroDefinitions: "axis = 1;").Configure(
                         transform: s => new TextureSize(s.Width, targetSize.Height),
-                        arguments: new ArgumentList { adjointOffset });
+                        arguments: new ArgumentList { adjointOffset },
+                        format: TextureFormat.Float16);
 
                 var Y = HDownscaler.ApplyTo(luma);
                 var YUV = VDownscaler.ApplyTo(Y, chroma);
@@ -55,24 +62,27 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Vector2 adjointOffset = -chromaOffset * lumaSize / chromaSize;
 
-                var crossBilateral = CompileShader("CrossBilateral.hlsl")
-                    .Configure(
-                        arguments: new[] { chromaOffset.X, chromaOffset.Y, yuvConsts[0], yuvConsts[1] },
-                        perTextureLinearSampling: new[] { false, false }
-                    );
+                var crossBilateral = CompileShader("CrossBilateral.hlsl");
+                crossBilateral["chromaParams"] = new Vector4(chromaOffset.X, chromaOffset.Y, yuvConsts[0], yuvConsts[1] );
+                crossBilateral["power"] = Strength;
 
                 // Fall back to default when downscaling is needed
                 if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
                     return null;
 
                 var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
-                var lowresYUV = DownscaleLuma(lumaInput, chromaInput, chromaSize, adjointOffset);
+                var lowresYuv = DownscaleLuma(lumaInput, chromaInput, chromaSize, adjointOffset);
 
-                return crossBilateral.ApplyTo(resizedLuma, lowresYUV).ConvertToRgb();
+                return crossBilateral.ApplyTo(resizedLuma, lowresYuv).ConvertToRgb();
+            }
+
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
+            {
+                return this.MakeChromaFilter(input);
             }
         }
         
-        public class BilateralUi : RenderChainUi<Bilateral>
+        public class BilateralUi : RenderChainUi<Bilateral, BilateralConfigDialog>
         {
             protected override string ConfigFileName
             {
