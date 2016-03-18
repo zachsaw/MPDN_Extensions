@@ -24,7 +24,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class RenderChainScript : FilterChainScript<ITextureFilter, ITextureOutput<ITexture2D>>, IRenderScript
     {
-        private TrueSourceFilter m_SourceFilter;
+        private TrueSourceFilter m_TrueSourceFilter;
 
         public RenderChainScript(Chain<ITextureFilter> chain)
             : base(chain) 
@@ -32,7 +32,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public ScriptInterfaceDescriptor Descriptor
         {
-            get { return m_SourceFilter == null ? null : m_SourceFilter.Descriptor; }
+            get { return m_TrueSourceFilter == null ? null : m_TrueSourceFilter.Descriptor; }
         }
 
         protected override void OutputResult(ITextureOutput<ITexture2D> result)
@@ -57,13 +57,14 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override ITextureFilter MakeInitialFilter()
         {
-            m_SourceFilter = new TrueSourceFilter(this);
+            m_TrueSourceFilter = new TrueSourceFilter(this);
+            var source = new VideoSourceFilter(m_TrueSourceFilter);
 
             if (Renderer.InputFormat.IsYuv() 
                 && (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height))
-                return new InternalChromaScaler(m_SourceFilter).MakeChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
+                return new InternalChromaScaler(source).MakeChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
 
-            return new VideoSourceFilter(m_SourceFilter);
+            return source;
         }
 
         protected override ITextureFilter FinalizeOutput(ITextureFilter output)
@@ -88,7 +89,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            DisposeHelper.Dispose(ref m_SourceFilter);
+            DisposeHelper.Dispose(ref m_TrueSourceFilter);
         }
 
         #endregion

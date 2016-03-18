@@ -21,7 +21,12 @@ sampler sUV : register(s1);
 float4 p0     : register(c0);
 float2 p1     : register(c1);
 float4 size1  : register(c2);
-float4 args0  : register(c3);
+float4 chromaParams : register(c3);
+float  power  : register(c4);
+
+// -- Convenience --
+#define sqr(x) dot(x,x)
+#define noise 1.0/(2.0*255.0)
 
 #define width  (p0[0])
 #define height (p0[1])
@@ -29,10 +34,8 @@ float4 args0  : register(c3);
 
 #define dxdy (p1.xy)
 #define ddxddy (chromaSize.zw)
-#define chromaOffset (args0.xy)
+#define chromaOffset (chromaParams.xy)
 #define radius 0.66
-
-#define noise 1.0/(sqrt(12.0)*255.0)
 
 // -- Window Size --
 #define taps 4
@@ -40,57 +43,83 @@ float4 args0  : register(c3);
 #define minX (1-ceil(taps/2.0))
 #define maxX (floor(taps/2.0))
 
-#define factor (ddxddy/dxdy)
-#define Kernel(x) saturate((taps - abs(x)) * factor)
-
-// -- Convenience --
-#define sqr(x) dot(x,x)
+#define factor (dxdy/ddxddy)
+#define Kernel(x) saturate(0.5 + (0.5 - abs(x)) * 2)
 
 // -- Input processing --
+// Luma value
+#define GetLuma(x,y)   tex2D(sUV,tex + dxdy*int2(x,y))[0]
 // Chroma value
-#define Get(x,y)     tex2D(sUV,ddxddy*(pos+int2(x,y)+0.5))
-
-// -- Colour space Processing --
-#define Kb args0[2]
-#define Kr args0[3]
-#include "../Common/ColourProcessing.hlsl"
+#define GetChroma(x,y) tex2D(sUV,ddxddy*(pos+int2(x,y)+0.5))
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
     float4 c0 = tex2D(s0, tex);
-    float y = c0.x;
 
     // Calculate position
     float2 pos = tex * chromaSize.xy - chromaOffset - 0.5;
-    float2 offset = pos - (even ? floor(pos) : round(pos));
+    float2 offset = pos - floor(pos);
     pos -= offset;
 
-    float3 mean = 0;
+    // Linear interpolation of chroma
+    float4 interp = 
+#if even
+    lerp(
+        lerp(GetChroma(0,0), GetChroma(1,0), offset.x),
+        lerp(GetChroma(0,1), GetChroma(1,1), offset.x), offset.y);
+#else
+    // TODO: unroll all cases to avoid extra texture lookups (not needed with even #taps)
+    lerp(
+        lerp(GetChroma(0,0), GetChroma(sign(offset.x),0), abs(offset.x)),
+        lerp(GetChroma(0,sign(offset.y)), GetChroma(sign(offset).x,sign(offset).y), offset.x), abs(offset.y));
+#endif
+
+    // Estimate local variance
+    float localVar = interp.w + sqr(interp.x - c0.x);
+
+    // Bilateral weighted interpolation
+    float4 mean = 0;
     float3 mean2 = 0;
     float2 meanYUV = 0;
-    float weightSum = 0;
-    [loop] for (int X = minX; X <= maxX; X++)
-    [loop] for (int Y = minX; Y <= maxX; Y++)
+    [unroll] for (int X = minX; X <= maxX; X++)
+    [unroll] for (int Y = minX; Y <= maxX; Y++)
     {
-        float dI2 = sqr(Get(X,Y).x - c0.x);
-        float var = Get(X,Y).w;
+        float dI2 = sqr(GetChroma(X,Y).x - c0.x);
+        float var = GetChroma(X,Y).w + sqr(noise);
         float dXY2 = sqr((float2(X,Y) - offset)/radius);
 
-        float weight = exp(-0.5*dXY2) * rsqrt(dI2 + var + sqr(noise));
+        float weight = exp(-0.5*dXY2) / (dI2 + var + localVar);
         
-        mean += weight*Get(X,Y);
-        mean2 += weight*(var + Get(X,Y)*Get(X,Y));
-        meanYUV += weight*Get(X,Y).x*Get(X,Y).yz;
-        weightSum += weight;
+        mean += weight*float4(GetChroma(X,Y).xyz,1);
+        mean2 += weight*(var + GetChroma(X,Y)*GetChroma(X,Y));
+        meanYUV += weight*GetChroma(X,Y).x*GetChroma(X,Y).yz;
     }
+    float weightSum = mean.w;
+
+    // Linear fit
     mean /= weightSum;
     float3 Var = (mean2 / weightSum) - mean*mean;
     float2 Cov = (meanYUV / weightSum) - mean.x*mean.yz;
 
-    Var += sqr(noise);
+    // Dampen bit level noise.
+    Var.x += sqr(noise);
+
+    // Estimate error
+    float2 n = weightSum * (sqr(c0.x - mean.x) + Var.x + localVar);
+    float2 R2 = saturate((Cov * Cov) / (Var.x * Var.yz));
+    float2 err = (1-R2) * (sqr((c0 - mean).x) / Var.x);
+
+    // Balance error of interpolation with error of fit.
+    float2 strength = power / lerp(err, 1, power);
+    
+    // Show strength (debugging)
+    // return float4(dot(strength, 1/2.0), 0.5, 0.5, 1);
 
     // Update c0
-    c0.yz = mean.yz + (c0 - mean).x * Cov / Var.x;
+    c0.yz = mean.yz + ((c0 - mean).x * Cov / Var.x);
+
+    // Fall back to linear interpolation if necessary
+    c0.yz = lerp(interp.yz, c0.yz, strength);
 
     return c0;
 }
