@@ -26,7 +26,8 @@ float  power  : register(c4);
 
 // -- Convenience --
 #define sqr(x) dot(x,x)
-#define noise 1.0/(2.0*255.0)
+#define noise 0.05
+#define bitnoise 1.0/(2.0*255.0)
 
 #define width  (p0[0])
 #define height (p0[1])
@@ -35,7 +36,7 @@ float  power  : register(c4);
 #define dxdy (p1.xy)
 #define ddxddy (chromaSize.zw)
 #define chromaOffset (chromaParams.xy)
-#define radius 0.66
+#define radius 0.5
 
 // -- Window Size --
 #define taps 4
@@ -44,13 +45,20 @@ float  power  : register(c4);
 #define maxX (floor(taps/2.0))
 
 #define factor (dxdy/ddxddy)
-#define Kernel(x) saturate(0.5 + (0.5 - abs(x)) * 2)
+// #define Kernel(x) saturate(0.5 + (0.5 - abs(x)) * 2)
+#define pi acos(-1)
+#define Kernel(x) (cos(pi*(x)/taps)) // Hann kernel
+
+#define sinc(x) sin(pi*(x))/(x)
+#define BCWeights(B,C,x) (x > 2.0 ? 0 : x <= 1.0 ? ((2-1.5*B-C)*x + (-3+2*B+C))*x*x + (1-B/3.) : (((-B/6.-C)*x + (B+5*C))*x + (-2*B-8*C))*x+((4./3.)*B+4*C))
+#define IntKernel(x) (BCWeights(1.0/3.0, 1.0/3.0, abs(x)))
+// #define IntKernel(x) (cos(0.5*pi*saturate(abs(x))))
 
 // -- Input processing --
 // Luma value
 #define GetLuma(x,y)   tex2D(sUV,tex + dxdy*int2(x,y))[0]
 // Chroma value
-#define GetChroma(x,y) tex2D(sUV,ddxddy*(pos+int2(x,y)+0.5))
+#define GetChroma(x,y) tex2D(sUV, ddxddy*(pos+int2(x,y)+0.5))
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
@@ -61,65 +69,64 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     float2 offset = pos - floor(pos);
     pos -= offset;
 
-    // Linear interpolation of chroma
-    float4 interp = 
-#if even
-    lerp(
-        lerp(GetChroma(0,0), GetChroma(1,0), offset.x),
-        lerp(GetChroma(0,1), GetChroma(1,1), offset.x), offset.y);
-#else
-    // TODO: unroll all cases to avoid extra texture lookups (not needed with even #taps)
-    lerp(
-        lerp(GetChroma(0,0), GetChroma(sign(offset.x),0), abs(offset.x)),
-        lerp(GetChroma(0,sign(offset.y)), GetChroma(sign(offset).x,sign(offset).y), offset.x), abs(offset.y));
-#endif
-
-    // Estimate local variance
-    float localVar = interp.w + sqr(interp.x - c0.x);
+    float localVar = sqr(noise);
 
     // Bilateral weighted interpolation
-    float4 mean = 0;
-    float3 mean2 = 0;
-    float2 meanYUV = 0;
-    [unroll] for (int X = minX; X <= maxX; X++)
-    [unroll] for (int Y = minX; Y <= maxX; Y++)
+    float4 fitAvg = 0;
+    float4 fitVar = 0;
+    float4 fitCov = 0;
+    float4 intAvg = 0;
+    float4 intVar = 0;
+    [loop] for (int X = minX; X <= maxX; X++)
+    [loop] for (int Y = minX; Y <= maxX; Y++)
     {
         float dI2 = sqr(GetChroma(X,Y).x - c0.x);
-        float var = GetChroma(X,Y).w + sqr(noise);
+        float var = GetChroma(X,Y).w + sqr(bitnoise);
         float dXY2 = sqr((float2(X,Y) - offset)/radius);
 
-        float weight = exp(-0.5*dXY2) / (dI2 + var + localVar);
+        float2 kernel = Kernel(float2(X,Y) - offset);
+        float weight = kernel.x * kernel.y / (dI2 + var + localVar);
         
-        mean += weight*float4(GetChroma(X,Y).xyz,1);
-        mean2 += weight*(var + GetChroma(X,Y)*GetChroma(X,Y));
-        meanYUV += weight*GetChroma(X,Y).x*GetChroma(X,Y).yz;
+        fitAvg += weight*float4(GetChroma(X,Y).xyz, 1);
+        fitVar += weight*float4((float4(var, sqr(bitnoise), sqr(bitnoise), 0) + GetChroma(X,Y)*GetChroma(X,Y)).xyz, weight);
+        fitCov += weight*float4(GetChroma(X,Y).x*GetChroma(X,Y).yz, var, 0);
+
+        kernel = IntKernel(float2(X,Y) - offset);
+        weight = kernel.x * kernel.y;
+        intAvg += weight*float4(GetChroma(X,Y).xyz, 1);
+        intVar += weight*float4((float4(var, sqr(bitnoise), sqr(bitnoise), 0) + GetChroma(X,Y)*GetChroma(X,Y)).xyz, weight);
     }
-    float weightSum = mean.w;
+    float weightSum = fitAvg.w;
+    float weightSqrSum = fitVar.w;
 
     // Linear fit
-    mean /= weightSum;
-    float3 Var = (mean2 / weightSum) - mean*mean;
-    float2 Cov = (meanYUV / weightSum) - mean.x*mean.yz;
+    fitAvg /= weightSum;
+    float3 Var = (fitVar / weightSum) - fitAvg*fitAvg;
+    float2 Cov = (fitCov / weightSum) - fitAvg.x*fitAvg.yz;
 
-    // Dampen bit level noise.
-    Var.x += sqr(noise);
+    // Interpolation
+    float intWeightSum = intAvg.w;
+    float intWeightSqrSum = intVar.w;
+    intAvg /= intWeightSum;
+    intVar = (intVar / intWeightSum) - intAvg*intAvg;
 
     // Estimate error
-    float2 n = weightSum * (sqr(c0.x - mean.x) + Var.x + localVar);
+    
+    // Coefficient of determination
     float2 R2 = saturate((Cov * Cov) / (Var.x * Var.yz));
-    float2 err = (1-R2) * (sqr((c0 - mean).x) / Var.x);
+    // Error of fit
+    float2 errFit = (1-R2) * (weightSqrSum / sqr(weightSum) + sqr((c0 - fitAvg).x) / Var.x) / (1 - weightSqrSum / sqr(weightSum));
+    // Error of interpolation
+    float2 errInt = lerp((intVar.yz / Var.yz) * intWeightSqrSum / sqr(intWeightSum), (sqr((c0 - intAvg).x) + intVar.x) / Var.x, R2);
 
     // Balance error of interpolation with error of fit.
-    float2 strength = power / lerp(err, 1, power);
-    
-    // Show strength (debugging)
-    // return float4(dot(strength, 1/2.0), 0.5, 0.5, 1);
+    float2 strength = saturate(power * errInt / lerp(errFit, errInt, power));
+
+    // Debugging
+    // return float4(dot(strength,0.5), 0.5, 0.5, 1);
 
     // Update c0
-    c0.yz = mean.yz + ((c0 - mean).x * Cov / Var.x);
-
-    // Fall back to linear interpolation if necessary
-    c0.yz = lerp(interp.yz, c0.yz, strength);
+    c0.yz = lerp(intAvg.yz, fitAvg.yz + ((c0 - fitAvg).x * Cov / Var.x), strength);
 
     return c0;
 }

@@ -18,10 +18,11 @@
 sampler sUV : register(s1);
 float4 args0 : register(c3);
 
+#define sqr(x) pow(x, 2)
 #define offset args0.xy
 
 // -- Downscaling --
 #define AverageFormat	float2
-#define Get(pos)		float2(GetFrom(s0, pos).x, GetFrom(s0, pos).y + pow(GetFrom(s0, pos).x,2))
+#define Get(pos)		float2(GetFrom(s0, pos).x, GetFrom(s0, pos).y + sqr(GetFrom(s0, pos).x))
 #define PostProcessing(y)	(float4(y[0], GetFrom(sUV,tex).yz, y[1] - y[0]*y[0]))
 #include "../SSimDownscaler/Scalers/Downscaler.hlsl"
