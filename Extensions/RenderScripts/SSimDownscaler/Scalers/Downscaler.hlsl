@@ -25,7 +25,7 @@
 #endif
 
 #define dxdy (p1.xy)
-#define ddxddy (size0.zw)
+#define ddxddy (OutputSize.zw)
 
 // -- Definitions --
 #define factor ((ddxddy*p0.xy)[axis])
@@ -34,6 +34,10 @@
 // -- Handles --
 #ifndef Get
 	#define Get(pos)    (GetFrom(s0, pos))
+#endif
+
+#ifndef OutputSize
+	#define OutputSize size0
 #endif
 
 #ifndef axis
@@ -76,17 +80,17 @@ OutputFormat EntryPoint(float2 tex : TEXCOORD0
 #endif
 ) : COLOR{
     // Calculate bounds
-	int low  = floor((tex - 0.5*taps*dxdy) * size0.xy - offset + 0.5)[axis];
-	int high = floor((tex + 0.5*taps*dxdy) * size0.xy - offset + 0.5)[axis];
+	int low  = floor((tex - 0.5*taps*dxdy) * OutputSize.xy - (offset) + 0.5)[axis];
+	int high = floor((tex + 0.5*taps*dxdy) * OutputSize.xy - (offset) + 0.5)[axis];
 
 	float W = 0;
 	AverageFormat avg = 0;
 	float2 pos = tex;
     Initialization;
 
-	[loop] for (int k = 0; k < high - low; k++) {
+	[loop] [fastopt] for (int k = 0; k < high - low; k++) {
 		pos[axis] = ddxddy[axis] * (k + low + 0.5);
-		float rel = (pos[axis] - tex[axis])*p0[axis] + offset[axis]*factor;
+		float rel = (pos[axis] - tex[axis])*p0[axis] + (offset)[axis]*factor;
 		float w = Kernel(rel);
 		
 		avg += w*(Get(pos));
