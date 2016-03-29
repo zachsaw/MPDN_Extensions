@@ -71,8 +71,12 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
-                return input.SetSize(GetOutputSize(), tagged: true)
-                    .Tagged(new TemporaryTag("Resizer"));
+                return input.SetSize(GetOutputSize(), tagged: true);
+            }
+
+            public override string Description
+            {
+                get { return ""; }
             }
 
             #region Size Calculation

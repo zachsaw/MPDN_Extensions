@@ -13,7 +13,6 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
 
 using System.IO;
 using Mpdn.Extensions.Framework.Chain;
@@ -24,41 +23,17 @@ using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public abstract class RenderChain : Chain<ITextureFilter>
+    public abstract class RenderChain : FilterChain<ITextureFilter>
     {
         protected RenderChain()
         {
             ShaderCache.Load();
         }
 
-        protected abstract ITextureFilter CreateFilter(ITextureFilter input);
-
         public sealed override ITextureFilter Process(ITextureFilter input)
         {
-            ITextureFilter output = CreateFilter(input);
-
-            if (output == input)
-                return input;
-
-            if (output.Tag.IsEmpty())
-            {
-                output.AddTag(Status);
-                output.Tag.AddInput(input);
-            }
-
-            return output
-                .AddTaggedResizer()
-                .Tagged(new TemporaryTag("Resizer"));
+            return base.Process(input).AddTaggedResizer();
         }
-
-        #region Status
-
-        public virtual string Status
-        {
-            get { return GetType().Name; }
-        }
-
-        #endregion
 
         #region Shader Compilation
 

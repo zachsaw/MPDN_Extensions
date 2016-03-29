@@ -167,8 +167,6 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
             : base(inputFilter)
         {
-            InputFilter = inputFilter;
-
             m_OutputSize = outputSize;
             m_Channels = channels;
             m_Offset = offset;
@@ -179,9 +177,12 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             m_Convolver = convolver;
         }
 
-        private ITextureFilter<ITexture2D> InputFilter { get; set; }
+        protected IFilter<ITextureOutput<ITexture2D>> InputFilter
+        {
+            get { return (IFilter<ITextureOutput<ITexture2D>>) InputFilters[0]; }
+        }
 
-        public void EnableTag() 
+        public void EnableTag()
         {
             m_Tagged = true;
         }
@@ -194,28 +195,24 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ITextureFilter SetSize(TextureSize targetSize)
         {
-            var result = new ResizeFilter(InputFilter, targetSize, m_Channels, m_Offset, m_Upscaler, m_Downscaler,
-                m_Convolver, m_OutputFormat);
-            result.AddTag(Tag);
+            var result = new ResizeFilter(InputFilter, targetSize, m_Channels, m_Offset, m_Upscaler, m_Downscaler, m_Convolver, m_OutputFormat);
             if (m_Tagged) result.EnableTag();
-            return result;
+            return result.Tagged(Tag);
         }
 
         protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
             if (InputFilter.Output.Size == m_OutputSize && m_Convolver == null)
-                return InputFilter.Compile();
-
-            if (m_Tagged)
-                AddTag(Status());
-
-            return this;
+                return InputFilter;
+            return this.Tagged(Description());
         }
 
-        public string Status()
+        public string Description()
         {
             var inputSize = InputFilter.Output.Size;
-            return StatusHelpers.ScaleDescription(inputSize, OutputSize, m_Upscaler, m_Downscaler, m_Convolver);            
+            return m_Tagged
+                ? StatusHelpers.ScaleDescription(inputSize, OutputSize, m_Upscaler, m_Downscaler, m_Convolver)
+                : "";
         }
 
         protected override TextureSize OutputSize

@@ -54,11 +54,16 @@ namespace Mpdn.Extensions.RenderScripts
             };
             private static readonly int[] s_NeuronCount = { 16, 32, 64, 128, 256 };
 
-            public override string Status
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
+            {
+                return this.MakeChromaFilter(input);
+            }
+
+            public override string Description
             {
                 get
                 {
-                    return string.Format("{0} {1}/{2}", base.Status, s_NeuronCount[(int) Neurons1],
+                    return string.Format("{0} {1}/{2}", base.Description, s_NeuronCount[(int) Neurons1],
                         s_NeuronCount[(int) Neurons2]);
                 }
             }
@@ -72,11 +77,6 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 return CompileClKernel("nnedi3ocl.cl", "nnedi3",
                     string.Format("-cl-fast-relaxed-math -D {0}", u ? "CHROMA_U=1" : "CHROMA_V=1"));
-            }
-
-            protected override ITextureFilter CreateFilter(ITextureFilter input)
-            {
-                return this.MakeChromaFilter(input);
             }
 
             public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)

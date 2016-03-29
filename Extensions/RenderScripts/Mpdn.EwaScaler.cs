@@ -62,7 +62,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            public override string Status
+            public override string Description
             {
                 get
                 {

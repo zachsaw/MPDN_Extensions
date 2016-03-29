@@ -55,7 +55,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return ShaderDataFilePath; }
             }
 
-            public override string Status
+            public override string Description
             {
                 get
                 {

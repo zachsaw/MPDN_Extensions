@@ -273,8 +273,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             throw new NotImplementedException("Uncompiled Filter.");
         }
 
-        public void EnableTag() // No effect
-        { }
+        public void EnableTag() { }
 
         public ITextureFilter SetSize(TextureSize outputSize)
         {
@@ -287,10 +286,10 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         private TextureSize? m_OutputSize;
         public bool WantYuv { get; set; }
 
-        public TrueSourceFilter(IRenderScript script) // Argument doesn't technically do anything, just prevents the creation of a TrueSourceFilter not coupled to an IRenderScript's Descriptor
-        { }
+        // Note: Argument doesn't technically do anything, just prevents the creation of a TrueSourceFilter not coupled to an IRenderScript's Descriptor
+        public TrueSourceFilter(IRenderScript script) { }
 
-        public string Status()
+        public string Description()
         {
             var chromaConvolver = Renderer.ChromaOffset.IsZero ? null : Renderer.ChromaUpscaler;
             var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, chromaConvolver)
@@ -301,15 +300,15 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             return chromastatus.AppendStatus(lumastatus);
         }
 
+        protected override void Initialize()
+        {
+            Tag.Insert(Description());
+        }
+
         public TextureSize OutputSize // Can only be set once
         {
             get { return m_OutputSize ?? Renderer.VideoSize; }
             set { m_OutputSize = value; }
-        }
-
-        protected override void Initialize()
-        {
-            AddTag(Status());
         }
 
         public ScriptInterfaceDescriptor Descriptor
