@@ -46,11 +46,16 @@ namespace Mpdn.Extensions.RenderScripts
             private static readonly int[] s_NeuronCount = {16, 32, 64, 128, 256};
             private static readonly string[] s_CodePath = {"A", "B", "C", "D", "E"};
 
-            public override string Status
+            protected override ITextureFilter CreateFilter(ITextureFilter input)
+            {
+                return this.MakeChromaFilter(input);
+            }
+
+            public override string Description
             {
                 get
                 {
-                    return string.Format("{0} {1}/{2}", base.Status, s_NeuronCount[(int) Neurons1],
+                    return string.Format("{0} {1}/{2}", base.Description, s_NeuronCount[(int) Neurons1],
                         s_NeuronCount[(int) Neurons2]);
                 }
             }
@@ -58,11 +63,6 @@ namespace Mpdn.Extensions.RenderScripts
             protected override string ShaderPath
             {
                 get { return typeof (NNedi3).Name; }
-            }
-
-            protected override ITextureFilter CreateFilter(ITextureFilter input)
-            {
-                return this.MakeChromaFilter(input);
             }
 
             private string GetShaderFileName(NNedi3Neurons neurons, bool u)

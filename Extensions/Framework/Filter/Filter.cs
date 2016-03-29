@@ -33,7 +33,6 @@ namespace Mpdn.Extensions.Framework.Filter
         void Initialize(int time = 1);
         IFilter<TOutput> Compile();
 
-        void AddTag(FilterTag newTag);
         FilterTag Tag { get; }
     }
 
@@ -83,12 +82,9 @@ namespace Mpdn.Extensions.Framework.Filter
 
             m_Initialized = false;
             m_CompilationResult = null;
-            InputFilters = inputFilters;
+            m_InputFilters = inputFilters;
 
             Tag = new EmptyTag();
-
-            foreach (var filter in inputFilters)
-                Tag.AddInput(filter);
         }
 
         protected abstract void Render(IList<TInput> inputs);
@@ -97,7 +93,8 @@ namespace Mpdn.Extensions.Framework.Filter
 
         #region IFilter Implementation
 
-        private IFilter<TInput>[] m_OriginalInputFilters;
+        private readonly IFilter<TInput>[] m_InputFilters;
+        private IFilter<TInput>[] m_CompiledFilters;
 
         private bool m_Updated;
         private bool m_Initialized;
@@ -106,7 +103,7 @@ namespace Mpdn.Extensions.Framework.Filter
         private IFilter<TOutput> m_CompilationResult;
         private TOutput m_Output;
 
-        public IFilter<TInput>[] InputFilters { get; private set; }
+        public IFilter<TInput>[] InputFilters { get { return m_CompiledFilters ?? m_InputFilters; } }
 
         public TOutput Output
         {
@@ -152,21 +149,20 @@ namespace Mpdn.Extensions.Framework.Filter
             if (m_CompilationResult != null)
                 return m_CompilationResult;
 
-            m_OriginalInputFilters = InputFilters;
-            InputFilters = InputFilters
+            m_CompiledFilters = m_InputFilters
                 .Select(x => x.Compile())
                 .ToArray();
+
+            var inputTag = new EmptyTag();
+            foreach (var filter in m_InputFilters)
+                inputTag.AddInput(filter.Tag);
+            Tag.AddPrefix(inputTag);
 
             m_CompilationResult = Optimize();
             return m_CompilationResult;
         }
 
         public FilterTag Tag { get; protected set; }
-
-        public void AddTag(FilterTag newTag)
-        {
-            Tag = Tag.Append(newTag);
-        }
 
         protected virtual IFilter<TOutput> Optimize()
         {
@@ -229,10 +225,9 @@ namespace Mpdn.Extensions.Framework.Filter
             if (!disposing)
                 return;
 
-            DisposeHelper.DisposeElements(ref m_OriginalInputFilters);
-            DisposeHelper.DisposeElements(InputFilters);
+            DisposeHelper.DisposeElements(m_InputFilters);
+            DisposeHelper.DisposeElements(ref m_CompiledFilters);
             DisposeHelper.Dispose(m_Output);
-            InputFilters = null;
         }
 
         #endregion
@@ -244,21 +239,6 @@ namespace Mpdn.Extensions.Framework.Filter
             where TFilter: IBaseFilter
         {
             filter.Initialize();
-            return filter;
-        }
-
-        public static TFilter GetTag<TFilter>(this TFilter filter, out FilterTag tag)
-            where TFilter : IBaseFilter
-        {
-            tag = new EmptyTag();
-            tag.AddInput(filter);
-            return filter;
-        }
-
-        public static TFilter Tagged<TFilter>(this TFilter filter, FilterTag tag)
-            where TFilter : IBaseFilter
-        {
-            filter.AddTag(tag);
             return filter;
         }
 

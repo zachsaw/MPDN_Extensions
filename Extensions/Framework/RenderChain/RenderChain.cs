@@ -13,7 +13,6 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
 
 using System.IO;
 using Mpdn.Extensions.Framework.Chain;
@@ -24,41 +23,17 @@ using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public abstract class RenderChain : Chain<ITextureFilter>
+    public abstract class RenderChain : FilterChain<ITextureFilter>
     {
         protected RenderChain()
         {
             ShaderCache.Load();
         }
 
-        protected abstract ITextureFilter CreateFilter(ITextureFilter input);
-
         public sealed override ITextureFilter Process(ITextureFilter input)
         {
-            ITextureFilter output = CreateFilter(input);
-
-            if (output == input)
-                return input;
-
-            if (output.Tag.IsEmpty())
-            {
-                output.AddTag(Status);
-                output.Tag.AddInput(input);
-            }
-
-            return output
-                .AddTaggedResizer()
-                .Tagged(new TemporaryTag("Resizer"));
+            return base.Process(input).AddTaggedResizer();
         }
-
-        #region Status
-
-        public virtual string Status
-        {
-            get { return GetType().Name; }
-        }
-
-        #endregion
 
         #region Shader Compilation
 
@@ -116,35 +91,37 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         #region Size Calculations
 
-        public bool IsDownscalingFrom(TextureSize size)
+        public bool IsDownscalingFrom(TextureSize size, TextureSize? targetSize = null)
         {
-            return !IsNotScalingFrom(size) && !IsUpscalingFrom(size);
+            var otherSize = targetSize ?? Renderer.TargetSize;
+            return otherSize.Width < size.Width || otherSize.Height < size.Height;
         }
 
-        public bool IsNotScalingFrom(TextureSize size)
+        public bool IsNotScalingFrom(TextureSize size, TextureSize? targetSize = null)
         {
-            return size == Renderer.TargetSize;
+            var otherSize = targetSize ?? Renderer.TargetSize;
+            return size == otherSize;
         }
 
-        public bool IsUpscalingFrom(TextureSize size)
+        public bool IsUpscalingFrom(TextureSize size, TextureSize? targetSize = null)
         {
-            var targetSize = Renderer.TargetSize;
-            return targetSize.Width > size.Width || targetSize.Height > size.Height;
+            var otherSize = targetSize ?? Renderer.TargetSize;
+            return otherSize.Width > size.Width || otherSize.Height > size.Height;
         }
 
-        public bool IsDownscalingFrom(ITextureFilter chain)
+        public bool IsDownscalingFrom(ITextureFilter chain, TextureSize? targetSize = null)
         {
-            return IsDownscalingFrom(chain.Output.Size);
+            return IsDownscalingFrom(chain.Output.Size, targetSize);
         }
 
-        public bool IsNotScalingFrom(ITextureFilter chain)
+        public bool IsNotScalingFrom(ITextureFilter chain, TextureSize? targetSize = null)
         {
-            return IsNotScalingFrom(chain.Output.Size);
+            return IsNotScalingFrom(chain.Output.Size, targetSize);
         }
 
-        public bool IsUpscalingFrom(ITextureFilter chain)
+        public bool IsUpscalingFrom(ITextureFilter chain, TextureSize? targetSize = null)
         {
-            return IsUpscalingFrom(chain.Output.Size);
+            return IsUpscalingFrom(chain.Output.Size, targetSize);
         }
 
         #endregion

@@ -161,7 +161,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             var sourceFilter = new TrueSourceFilter(null);
             sourceFilter.SetSize(Renderer.TargetSize);
             sourceFilter.Initialize();
-            return sourceFilter.Status();
+            return sourceFilter.Description();
         }
     }
 

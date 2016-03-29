@@ -12,8 +12,7 @@
 // Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public
-// License along with this library.
-// 
+// License along with this library
 
 using System;
 

@@ -52,7 +52,6 @@ namespace Mpdn.Extensions.Framework.Filter
                 if (m_PinInput != null)
                     throw new InvalidOperationException("Pin can only be connected once.");
 
-                Tag.AddInput(input);
                 m_PinInput = input;
             }
 
@@ -63,20 +62,24 @@ namespace Mpdn.Extensions.Framework.Filter
 
             protected override TOutput DefineOutput()
             {
-                if (m_PinInput != null)
-                    return m_PinInput.Output;
+                if (m_PinInput == null)
+                    throw new InvalidOperationException("Pin Hasn't been connected yet.");
 
-                throw new InvalidOperationException("Pin Hasn't been connected yet.");
+                return m_PinInput.Output;
             }
 
             protected override IFilter<TOutput> Optimize()
             {
+                if (m_PinInput == null)
+                    throw new InvalidOperationException("Pin Hasn't been connected yet.");
+
+                Tag.AddPrefix(m_PinInput.Tag);
                 return m_PinInput.Compile();
             }
         }
     }
 
-    public abstract class FilterChain<TFilter, TClass> : Chain<TClass>
+    public abstract class PinFilterChain<TFilter, TClass> : Chain<TClass>
         where TFilter : IPinFilter<TClass>, TClass
         where TClass : IFilter<IFilterOutput>
     {
@@ -95,7 +98,7 @@ namespace Mpdn.Extensions.Framework.Filter
         }
     }
 
-    public class StaticFilterChain<TFilter, TClass> : FilterChain<TFilter, TClass>
+    public class StaticPinFilterChain<TFilter, TClass> : PinFilterChain<TFilter, TClass>
         where TFilter : IPinFilter<TClass>, TClass, new()
         where TClass : IFilter<IFilterOutput>
     {

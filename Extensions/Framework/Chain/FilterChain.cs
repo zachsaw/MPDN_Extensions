@@ -12,36 +12,34 @@
 // Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public
-// License along with this library.
+// License along with this library
 
-using System.Collections.Generic;
+using System;
+using Mpdn.Extensions.Framework.Filter;
 
-namespace Mpdn.Extensions.Framework.Filter
+namespace Mpdn.Extensions.Framework.Chain
 {
-    public abstract class BaseSourceFilter<TOutput> : Filter<IFilterOutput, TOutput>
-        where TOutput : class, IFilterOutput
+    public abstract class FilterChain<TFilter> : Chain<TFilter>
+        where TFilter : class, IFilter<IFilterOutput>
     {
-        protected BaseSourceFilter()
+        protected abstract TFilter CreateFilter(TFilter input);
+
+        public virtual string Description
         {
-            Tag.AddInput(FilterTag.Bottom);
+            get { return GetType().Name; }
         }
 
-        protected override void Render(IList<IFilterOutput> inputs) { }
-    }
-
-    public class SourceFilter<TOutput> : BaseSourceFilter<TOutput>
-        where TOutput : class, IFilterOutput
-    {
-        private readonly TOutput m_Output;
-
-        public SourceFilter(TOutput output)
+        public override TFilter Process(TFilter input)
         {
-            m_Output = output;
-        }
+            TFilter output = CreateFilter(input);
+            
+            if (output == input)
+                return input;
 
-        protected override TOutput DefineOutput()
-        {
-            return m_Output;
+            if (output.Tag.IsEndNode())
+                output.Tag.AddJunction(Description, input.Tag);
+
+            return output;
         }
     }
 }

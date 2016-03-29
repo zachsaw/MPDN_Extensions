@@ -101,6 +101,7 @@
     <Compile Include="Extensions\Framework\AudioKernels.cs" />
     <Compile Include="Extensions\Framework\AudioChain\AudioChainUi.cs" />
     <Compile Include="Extensions\Framework\Chain\ChainUi.cs" />
+    <Compile Include="Extensions\Framework\Chain\FilterChain.cs" />
     <Compile Include="Extensions\Framework\Chain\FilterChainScript.cs" />
     <Compile Include="Extensions\Framework\Chain\Dialogs\ScriptGroup.ConfigDialog.cs">
       <SubType>Form</SubType>

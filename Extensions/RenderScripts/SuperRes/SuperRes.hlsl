@@ -21,10 +21,9 @@
 // -- Misc --
 sampler s0    : register(s0);
 sampler sDiff : register(s1);
-float4 p0      : register(c0);
-float2 p1      : register(c1);
 float4 size1  : register(c2); // Original size
-float4 args0  : register(c3);
+float4 sizeOutput : register(c3);
+float4 args0  : register(c4);
 
 // -- Edge detection options -- 
 #define acuity 6.0
@@ -39,10 +38,10 @@ float4 args0  : register(c3);
 // -- Size handling --
 #define originalSize size1
 
-#define width  (p0[0])
-#define height (p0[1])
+#define width  (sizeOutput[0])
+#define height (sizeOutput[1])
 
-#define dxdy (p1.xy)
+#define dxdy (sizeOutput.zw)
 #define ddxddy (originalSize.zw)
 
 // -- Window Size --
@@ -52,7 +51,8 @@ float4 args0  : register(c3);
 #define maxX (floor(taps/2.0))
 
 #define factor (ddxddy/dxdy)
-#define Kernel(x) saturate((taps*0.5 - abs(x)) * factor)
+#define pi acos(-1)
+#define Kernel(x) (cos(pi*(x)/taps)) // Hann kernel
 
 // -- Convenience --
 #define sqr(x) dot(x,x)
@@ -87,8 +87,8 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     [unroll] for (int Y = minX; Y <= maxX; Y++)
     {
         float dI2 = sqr(acuity*(Luma(c0) - GetY(X,Y)));
-        //float dXY2 = sqr((float2(X,Y) - offset)/radius);
-        //float weight = exp(-0.5*dXY2) * pow(1 + dI2/power, - power);
+        // float dXY2 = sqr((float2(X,Y) - offset)/radius);
+        // float weight = exp(-0.5*dXY2) * pow(1 + dI2/power, - power);
         float2 kernel = Kernel(float2(X,Y) - offset);
         float weight = kernel.x * kernel.y * pow(1 + dI2/power, - power);
 
@@ -97,11 +97,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     }
     diff /= weightSum;
 
-    [branch] if (!skip)
-    {
-        c0.xyz -= strength * diff;
-        // c0.a = length(diff);
-    }
+    c0.xyz -= strength * diff;
 
 #ifndef FinalPass
     // Convert back to linear light;
@@ -118,18 +114,14 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
             float dI2 = sqr(softAcuity*dI);
             float dXY2 = sqr(float2(X,Y)/radius);
             float weight = pow(rsqrt(dXY2 + dI2),3); // Fundamental solution to the 5d Laplace equation
-            // float weight = exp(-0.5*dXY2) * pow(1 + dI2/power, - power);
 
             soft += weight * dI;
             weightSum += weight;
         }
         soft /= weightSum;
 
-        [branch] if (!skip)
-            c0.xyz += softness * soft;
+        c0.xyz += softness * soft;
     #endif
-#else
-    c0.a = 1;
 #endif
 
     return c0;

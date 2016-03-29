@@ -15,7 +15,9 @@
 // License along with this library.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -28,18 +30,19 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         {
             var fullSizeChroma = new ResizeFilter(chromaInput, targetSize, TextureChannels.ChromaOnly,
                 chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+            fullSizeChroma.EnableTag();
 
             return new MergeFilter(lumaInput.SetSize(targetSize, tagged: true), fullSizeChroma)
                 .ConvertToRgb()
-                .Tagged(new ChromaScalerTag(chromaInput, fullSizeChroma.Status().PrependToStatus("Chroma: ")));
+                .Tagged(new ChromaScalerTag(chromaInput, fullSizeChroma.Description().PrependToStatus("Chroma: ")));
         }
     }
 
     public class InternalChromaScaler : IChromaScaler
     {
-        private readonly ITextureFilter m_SourceFilter;
+        private readonly VideoSourceFilter m_SourceFilter;
 
-        public InternalChromaScaler(ITextureFilter sourceFilter)
+        public InternalChromaScaler(VideoSourceFilter sourceFilter)
         {
             m_SourceFilter = sourceFilter;
         }
@@ -47,7 +50,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
         {
             if (lumaInput is YSourceFilter && chromaInput is ChromaSourceFilter && chromaOffset == Renderer.ChromaOffset)
-                return m_SourceFilter.SetSize(targetSize, tagged: true);
+                return m_SourceFilter;
 
             return null;
         }
@@ -60,10 +63,10 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         public TextureSize TargetSize { get; private set; }
         public Vector2 ChromaOffset { get; private set; }
 
-        protected readonly ITextureFilter Fallback;
+        protected readonly CompositionFilter Fallback;
         protected readonly IChromaScaler ChromaScaler;
 
-        public CompositionFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, IChromaScaler chromaScaler, TextureSize? targetSize = null, Vector2? chromaOffset = null, ITextureFilter fallback = null)
+        public CompositionFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, IChromaScaler chromaScaler, TextureSize? targetSize = null, Vector2? chromaOffset = null, CompositionFilter fallback = null)
         {
             if (lumaInput == null)
                 throw new ArgumentNullException("lumaInput");
@@ -77,9 +80,6 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             ChromaScaler = chromaScaler ?? new DefaultChromaScaler();
             ChromaOffset = chromaOffset ?? Renderer.ChromaOffset;
             TargetSize = targetSize ?? Luma.Output.Size;
-
-            if (Fallback != null)
-                Tag.AddInput(Fallback);
         }
 
         public ITextureFilter SetSize(TextureSize outputSize)
@@ -89,7 +89,8 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null)
         {
-            return new CompositionFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset, this);
+            return new CompositionFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset, this)
+                .Tagged(Tag);
         }
 
         public void EnableTag() { }
@@ -101,9 +102,9 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
-            var result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset) ?? Fallback;
-            return result
+            return (ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset) ?? Fallback)
                 .SetSize(TargetSize, tagged: true)
+                .PrefixTagTo(Tag)
                 .Compile();
         }
 
@@ -115,26 +116,12 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
     public class ChromaScalerTag : StringTag
     {
-        private readonly ITextureFilter m_ChromaFilter;
-
-        private FilterTag m_ChromaTag;
+        private readonly FilterTag m_ChromaTag;
 
         public ChromaScalerTag(ITextureFilter chromaFilter, string label)
             : base(label)
         {
-            m_ChromaFilter = chromaFilter;
-
-            AddInput(m_ChromaFilter);
-        }
-
-        public override int Initialize(int count = 1)
-        {
-            if (!Initialized)
-            {
-                m_ChromaTag = m_ChromaFilter.Tag;
-            }
-
-            return base.Initialize(count);
+            m_ChromaTag = chromaFilter.Tag;
         }
 
         public override string CreateString(int minIndex = -1)
@@ -146,9 +133,9 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
             foreach (var tag in SubTags)
                 if (tag.ConnectedTo(m_ChromaTag))
-                    chromaPart.AddInputLabel(tag);
+                    chromaPart.AddInput(tag);
                 else
-                    lumaPart.AddInputLabel(tag);
+                    lumaPart.AddInput(tag);
 
             lumaPart.Initialize();
             chromaPart.Initialize();

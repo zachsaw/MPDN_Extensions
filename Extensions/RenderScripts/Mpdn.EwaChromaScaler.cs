@@ -25,9 +25,9 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class EwaChromaScaler : EwaScaler, IChromaScaler
         {
-            public override string Status
+            public override string Description
             {
-                get { return "EWA Chroma" + base.Status.Substring(3); }
+                get { return "EWA Chroma" + base.Description.Substring(3); }
             }
 
             protected override string ShaderPath

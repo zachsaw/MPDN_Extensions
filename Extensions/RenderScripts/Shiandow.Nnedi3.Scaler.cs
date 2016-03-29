@@ -60,11 +60,11 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return ChromaScalers.FirstOrDefault(s => s.Script.Descriptor.Guid == ChromaScalerGuid); }
             }
 
-            public override string Status
+            public override string Description
             {
                 get
                 {
-                    return string.Format("{0} {1}/{2}", base.Status, s_NeuronCount[(int) Neurons1],
+                    return string.Format("{0} {1}/{2}", base.Description, s_NeuronCount[(int) Neurons1],
                         s_NeuronCount[(int) Neurons2]);
                 }
             }
