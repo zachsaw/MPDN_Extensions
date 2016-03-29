@@ -148,23 +148,23 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         private IScaler m_Convolver;
         private bool m_Tagged;
 
-        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+        public ResizeFilter(IFilter<ITextureOutput<ITexture2D>> inputFilter, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
             : this(inputFilter, inputFilter.Output.Size, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver, outputFormat)
         { }
 
-        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+        public ResizeFilter(IFilter<ITextureOutput<ITexture2D>> inputFilter, TextureSize outputSize, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
             : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver, outputFormat)
         { }
 
-        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+        public ResizeFilter(IFilter<ITextureOutput<ITexture2D>> inputFilter, TextureSize outputSize, TextureChannels channels, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
             : this(inputFilter, outputSize, channels, Vector2.Zero, upscaler, downscaler, convolver, outputFormat)
         { }
 
-        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+        public ResizeFilter(IFilter<ITextureOutput<ITexture2D>> inputFilter, TextureSize outputSize, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
             : this(inputFilter, outputSize, TextureChannels.All, offset, upscaler, downscaler, convolver, outputFormat)
         { }
 
-        public ResizeFilter(ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+        public ResizeFilter(IFilter<ITextureOutput<ITexture2D>> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
             : base(inputFilter)
         {
             m_OutputSize = outputSize;
