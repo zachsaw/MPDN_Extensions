@@ -21,11 +21,11 @@ using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public abstract class AudioChain<TFilter> : FilterChain<TFilter, IAudioFilter>
+    public abstract class AudioChain<TFilter> : PinFilterChain<TFilter, IAudioFilter>
         where TFilter : PinFilter<IAudioOutput>, IAudioFilter
     { }
 
-    public class StaticAudioChain<TFilter> : StaticFilterChain<TFilter, IAudioFilter>
+    public class StaticAudioChain<TFilter> : StaticPinFilterChain<TFilter, IAudioFilter>
         where TFilter : PinFilter<IAudioOutput>, IAudioFilter, new()
     { }
 

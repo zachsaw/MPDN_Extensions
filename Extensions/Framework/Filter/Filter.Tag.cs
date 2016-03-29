@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -35,11 +37,26 @@ namespace Mpdn.Extensions.Framework.Filter
 
         #region Base Implementation
 
-        private readonly List<IBaseFilter> m_FilterInputs = new List<IBaseFilter>();
-        private List<FilterTag> m_InputTags = new List<FilterTag>();
-
         private int m_Index;
-        protected IEnumerable<FilterTag> SubTags { get; private set; }
+        private readonly HashSet<FilterTag> m_InputTags = new HashSet<FilterTag>();
+
+        protected virtual ISet<FilterTag> InputTags
+        {
+            get { return m_InputTags; }
+        }
+
+        protected IEnumerable<FilterTag> SubTags
+        {
+            get
+            {
+                return InputTags
+                    .Where(x => x.IsEmpty())
+                    .SelectMany(x => x.SubTags)
+                    .Concat(InputTags.Where(x => !x.IsEmpty()))
+                    .Distinct()
+                    .ToArray();
+            }
+        }
 
         protected bool Initialized { get { return m_Index != 0; } }
 
@@ -52,26 +69,10 @@ namespace Mpdn.Extensions.Framework.Filter
         {
             if (Initialized)
                 return count;
-
-            var tags = new List<FilterTag>();
             m_Index = count;
-            m_InputTags = m_InputTags.Concat(
-                    m_FilterInputs
-                    .Select(t => t.Tag))
-                    .Distinct()
-                    .ToList();
 
-            foreach (var input in m_InputTags)
-            {
+            foreach (var input in InputTags)
                 m_Index = input.Initialize(m_Index);
-
-                if (input.IsEmpty())
-                    tags.AddRange(input.SubTags);
-                else
-                    tags.Add(input);
-            }
-            
-            SubTags = tags.Distinct().ToList();
 
             return ++m_Index;
         }
@@ -111,21 +112,39 @@ namespace Mpdn.Extensions.Framework.Filter
 
         #region Graph Operations
 
-        public void AddInput(IBaseFilter filter)
+        public void AddInput(FilterTag tag)
         {
-            m_FilterInputs.Add(filter);
+            InputTags.Add(tag);
         }
 
-        public void AddInputLabel(FilterTag tag)
+        public void AddInputs(IEnumerable<FilterTag> tags)
         {
-            m_InputTags.Add(tag);
+            foreach (var tag in tags)
+                InputTags.Add(tag);
+        }
+
+        public void AddPrefix(FilterTag prefix)
+        {
+            foreach (var tag in EndNodes())
+                tag.AddInput(prefix);
+        }
+
+        public void Insert(FilterTag tag)
+        {
+            foreach (var input in InputTags)
+                tag.InputTags.Add(input);
+            InputTags.Clear();
+            InputTags.Add(tag);
+        }
+
+        public bool IsEndNode()
+        {
+            return !InputTags.Any();
         }
 
         public bool HasAncestor(FilterTag ancestor)
         {
-            return (this == ancestor)
-                   || (     m_Index > ancestor.m_Index
-                       &&   m_InputTags.Any(t => t.HasAncestor(ancestor)));
+            return ancestor.Traverse().Contains(this);
         }
 
         public bool ConnectedTo(FilterTag tag)
@@ -133,6 +152,40 @@ namespace Mpdn.Extensions.Framework.Filter
             return (m_Index < tag.m_Index)
                 ? tag.HasAncestor(this)
                 : HasAncestor(tag);
+        }
+
+        #endregion
+
+        #region Node Enumeration
+
+        private IEnumerable<FilterTag> Traverse(ISet<FilterTag> visited)
+        {
+            yield return this;
+            var nodes = InputTags
+                .Except(visited)
+                .SelectMany(inputTag => inputTag.Traverse(visited));
+            foreach (var tag in nodes)
+                yield return tag;
+        }
+
+        private IEnumerable<FilterTag> Traverse()
+        {
+            var visited = new HashSet<FilterTag>();
+            foreach (var node in Traverse(visited))
+            {
+                visited.Add(node);
+                yield return node;
+            }
+        }
+
+        public IEnumerable<FilterTag> Nodes()
+        {
+            return Traverse().ToList();
+        }
+
+        public IEnumerable<FilterTag> EndNodes()
+        {
+            return Traverse().Where(t => t.IsEndNode()).ToList();
         }
 
         #endregion
@@ -155,9 +208,13 @@ namespace Mpdn.Extensions.Framework.Filter
         {
             public BottomTag() : base("⊥") { }
 
+            protected override ISet<FilterTag> InputTags
+            {
+                get { return new HashSet<FilterTag> { this }; }
+            }
+
             public override int Initialize(int count = 1)
             {
-                m_FilterInputs.Clear();
                 return count;
             }
 
@@ -188,48 +245,49 @@ namespace Mpdn.Extensions.Framework.Filter
         }
     }
 
-    public class HiddenTag : StringTag
+    public class JunctionTag : EmptyTag
     {
-        private bool m_Printing;
+        private readonly FilterTag m_Junction;
 
-        public HiddenTag(string label) : base(label) { }
-
-        public override string Label
+        public JunctionTag(FilterTag junction)
         {
-            get { return m_Printing ? "" : base.Label; }
+            m_Junction = junction;
         }
 
-        public override string CreateString(int minIndex = -1)
+        public override int Initialize(int count = 1)
         {
-            Initialize();
-
-            m_Printing = true;
-            var result = base.CreateString(minIndex);
-            m_Printing = false;
-            return result;
+            AddInput(m_Junction);
+            return base.Initialize(count);
         }
-    }
-
-    public class TemporaryTag : StringTag
-    {
-        public TemporaryTag(string label) : base(label) { }
-
-        public override bool IsEmpty() { return Initialized; }
     }
 
     public static class TagHelper
     {
-        public static bool IsNullOrEmpty(this FilterTag tag)
+        public static void AddJunction(this FilterTag tag, FilterTag name, FilterTag to)
         {
-            return tag == null || tag.IsEmpty();
+            tag.Insert(new JunctionTag(to));
+            tag.Insert(name);
         }
 
-        public static FilterTag Append(this FilterTag tag, FilterTag newTag)
+        public static TFilter GetTag<TFilter>(this TFilter filter, out FilterTag tag)
+            where TFilter : IBaseFilter
         {
-            if (tag != null && newTag != null)
-                newTag.AddInputLabel(tag);
+            tag = filter.Tag;
+            return filter;
+        }
 
-            return newTag ?? tag;
+        public static TFilter Tagged<TFilter>(this TFilter filter, FilterTag tag)
+            where TFilter : IBaseFilter
+        {
+            filter.Tag.Insert(tag);
+            return filter;
+        }
+
+        public static TFilter PrefixTagTo<TFilter>(this TFilter filter, FilterTag tag)
+            where TFilter : IBaseFilter
+        {
+            tag.AddPrefix(filter.Tag);
+            return filter;
         }
 
         public static TFilter MakeTagged<TFilter>(this TFilter filter)
