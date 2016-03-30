@@ -55,7 +55,8 @@ float4 args1  : register(c4);
 // -- Convenience --
 #define sqr(x) dot(x,x)
 #define factor (ddxddy/dxdy)
-#define Kernel(x) saturate((taps*0.5 - abs(x)) * factor)
+#define pi acos(-1)
+#define Kernel(x) (cos(pi*(x)/taps)) // Hann kernel
 
 // -- Colour space Processing --
 #define Kb args0[2]
