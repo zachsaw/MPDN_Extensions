@@ -284,7 +284,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
     public sealed class TrueSourceFilter : BaseSourceFilter<ITextureOutput<ITexture2D>>, ITextureFilter
     {
         private TextureSize? m_OutputSize;
-        public bool WantYuv { get; set; }
+        private bool m_WantYuv;
 
         // Note: Argument doesn't technically do anything, just prevents the creation of a TrueSourceFilter not coupled to an IRenderScript's Descriptor
         public TrueSourceFilter(IRenderScript script) { }
@@ -305,7 +305,13 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             Tag.Insert(Description());
         }
 
-        public TextureSize OutputSize // Can only be set once
+        public bool WantYuv
+        {
+            get { return m_WantYuv && Renderer.InputFormat.IsYuv(); }
+            set { m_WantYuv = value; }
+        }
+
+        public TextureSize OutputSize // Uses last given value
         {
             get { return m_OutputSize ?? Renderer.VideoSize; }
             set { m_OutputSize = value; }
@@ -317,7 +323,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             {
                 return new ScriptInterfaceDescriptor
                 {
-                    WantYuv = WantYuv && Renderer.InputFormat.IsYuv(),
+                    WantYuv = WantYuv,
                     Prescale = LastDependentIndex > 0,
                     PrescaleSize = (Size)OutputSize
                 };
