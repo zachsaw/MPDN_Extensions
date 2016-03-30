@@ -160,22 +160,21 @@ namespace Mpdn.Extensions.Framework.Filter
 
         private IEnumerable<FilterTag> Traverse(ISet<FilterTag> visited)
         {
+            visited.Add(this);
+            foreach (var tag in InputTags)
+            {
+                if (visited.Contains(tag))
+                    continue;
+                foreach (var node in tag.Traverse(visited))
+                    yield return node;
+            }
             yield return this;
-            var nodes = InputTags
-                .Except(visited)
-                .SelectMany(inputTag => inputTag.Traverse(visited));
-            foreach (var tag in nodes)
-                yield return tag;
         }
 
         private IEnumerable<FilterTag> Traverse()
         {
             var visited = new HashSet<FilterTag>();
-            foreach (var node in Traverse(visited))
-            {
-                visited.Add(node);
-                yield return node;
-            }
+            return Traverse(visited);
         }
 
         public IEnumerable<FilterTag> Nodes()
