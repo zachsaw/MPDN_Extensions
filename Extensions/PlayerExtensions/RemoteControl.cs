@@ -224,7 +224,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                     _locationTimer.Stop();
                     break;
                 case PlayerState.Paused:
-                    _locationTimer.Stop();
+                    _locationTimer.Start();
                     break;
             }
 
@@ -693,12 +693,11 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void SeekMedia(object seekLocation)
         {
-            double location = -1;
-            double.TryParse(seekLocation.ToString(), out location);
-            if (location != -1)
-            {
-                Media.Seek((long) location);
-            }
+            long location;
+            if (!long.TryParse(seekLocation.ToString(), out location))
+                return;
+
+            Media.Seek(location);
         }
 
         private void SetVolume(int level)
