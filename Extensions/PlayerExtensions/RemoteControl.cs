@@ -410,9 +410,12 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ClientAuth(string msgValue, Guid clientGuid)
         {
             WriteToSpecificClient("AuthCode|" + msgValue, clientGuid.ToString());
-            if (
-                MessageBox.Show(Gui.VideoBox, "Allow Remote Connection for " + msgValue, "Remote Authentication",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            var allow = false;
+            GuiThread.Do(() =>
+                allow =
+                    MessageBox.Show(Gui.VideoBox, "Allow Remote Connection for " + msgValue, "Remote Authentication",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes);
+            if (allow)
             {
                 DisplayTextMessage("Remote Connected");
                 WriteToSpecificClient("Connected|Authorized", clientGuid.ToString());
