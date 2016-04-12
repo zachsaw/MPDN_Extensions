@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -139,7 +140,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void GetPlaylistFormVisibleChanged(object sender, EventArgs e)
         {
-            PushToAllListeners("PlaylistShow|" + _playlistInstance.GetPlaylistForm.Visible);
+            PushToAllListeners("PlaylistShow|" + _playlistInstance.GetPlaylistForm.Visible.ToString(CultureInfo.InvariantCulture));
         }
 
         private void Subscribe()
@@ -195,18 +196,18 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void PlayerControlVolumeChanged(object sender, EventArgs e)
         {
-            PushToAllListeners("Volume|" + Player.Volume);
-            PushToAllListeners("Mute|" + Player.Mute);
+            PushToAllListeners("Volume|" + Player.Volume.ToString(CultureInfo.InvariantCulture));
+            PushToAllListeners("Mute|" + Player.Mute.ToString(CultureInfo.InvariantCulture));
         }
 
         private void PlayerControlExitingFullScreenMode(object sender, EventArgs e)
         {
-            PushToAllListeners("Fullscreen|False");
+            PushToAllListeners("Fullscreen|" + false.ToString(CultureInfo.InvariantCulture));
         }
 
         private void PlayerControlEnteringFullScreenMode(object sender, EventArgs e)
         {
-            PushToAllListeners("Fullscreen|True");
+            PushToAllListeners("Fullscreen|" + true.ToString(CultureInfo.InvariantCulture));
         }
 
         private void m_PlayerControl_PlayerStateChanged(object sender, PlayerStateEventArgs e)
@@ -486,13 +487,13 @@ namespace Mpdn.Extensions.PlayerExtensions
                     DisplayTextMessage(command[1]);
                     break;
                 case "Mute":
-                    bool mute = false;
-                    Boolean.TryParse(command[1], out mute);
+                    bool mute;
+                    bool.TryParse(command[1], out mute);
                     GuiThread.DoAsync(() => Mute(mute));
                     break;
                 case "Volume":
-                    int vol = 0;
-                    int.TryParse(command[1], out vol);
+                    int vol;
+                    int.TryParse(command[1], NumberStyles.Number, CultureInfo.InvariantCulture, out vol);
                     GuiThread.DoAsync(() => SetVolume(vol));
                     break;
                 case "ActiveSubTrack":
@@ -543,21 +544,21 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void InsertIntoPlaylist(string fileIndex, string filePath)
         {
             int index;
-            int.TryParse(fileIndex, out index);
+            int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out index);
             _playlistInstance.GetPlaylistForm.InsertFile(index, filePath);
         }
 
         private void RemoveFromPlaylist(string fileIndex)
         {
             int index;
-            int.TryParse(fileIndex, out index);
+            int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out index);
             _playlistInstance.GetPlaylistForm.RemoveFile(index);
         }
 
         private void PlaySelectedFile(string fileIndex)
         {
             int myIndex;
-            int.TryParse(fileIndex, out myIndex);
+            int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out myIndex);
             _playlistInstance.GetPlaylistForm.SetPlaylistIndex(myIndex);
         }
 
@@ -667,15 +668,15 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void PauseMedia(object showOsd)
         {
-            var dispOsd = false;
-            Boolean.TryParse(showOsd.ToString(), out dispOsd);
+            bool dispOsd;
+            bool.TryParse(showOsd.ToString(), out dispOsd);
             Media.Pause(dispOsd);
         }
 
         private void PlayMedia(object showOsd)
         {
-            bool dispOsd = false;
-            Boolean.TryParse(showOsd.ToString(), out dispOsd);
+            bool dispOsd;
+            bool.TryParse(showOsd.ToString(), out dispOsd);
             if (!string.IsNullOrEmpty(Media.FilePath))
             {
                 Media.Play(dispOsd);
@@ -694,7 +695,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void SeekMedia(object seekLocation)
         {
             long location;
-            if (!long.TryParse(seekLocation.ToString(), out location))
+            if (!long.TryParse(seekLocation.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out location))
                 return;
 
             Media.Seek(location);
@@ -729,26 +730,26 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void Mute(bool silence)
         {
             Player.Mute = silence;
-            PushToAllListeners("Mute|" + silence);
+            PushToAllListeners("Mute|" + silence.ToString(CultureInfo.InvariantCulture));
         }
 
         private void GetFullDuration(object guid)
         {
-            WriteToSpecificClient("FullLength|" + Media.Duration, guid.ToString());
+            WriteToSpecificClient("FullLength|" + Media.Duration.ToString(CultureInfo.InvariantCulture), guid.ToString());
         }
 
         private void GetCurrentState(object guid)
         {
             WriteToSpecificClient(GetAllChapters(), guid.ToString());
             WriteToSpecificClient(Player.State + "|" + Media.FilePath, guid.ToString());
-            WriteToSpecificClient("Fullscreen|" + Player.FullScreenMode.Active, guid.ToString());
-            WriteToSpecificClient("Mute|" + Player.Mute, guid.ToString());
-            WriteToSpecificClient("Volume|" + Player.Volume, guid.ToString());
+            WriteToSpecificClient("Fullscreen|" + Player.FullScreenMode.Active.ToString(CultureInfo.InvariantCulture), guid.ToString());
+            WriteToSpecificClient("Mute|" + Player.Mute.ToString(CultureInfo.InvariantCulture), guid.ToString());
+            WriteToSpecificClient("Volume|" + Player.Volume.ToString(CultureInfo.InvariantCulture), guid.ToString());
             GetPlaylist(guid);
             if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused)
             {
-                WriteToSpecificClient("FullLength|" + Media.Duration, guid.ToString());
-                WriteToSpecificClient("Position|" + Media.Position, guid.ToString());
+                WriteToSpecificClient("FullLength|" + Media.Duration.ToString(CultureInfo.InvariantCulture), guid.ToString());
+                WriteToSpecificClient("Position|" + Media.Position.ToString(CultureInfo.InvariantCulture), guid.ToString());
             }
             if (_playlistInstance != null)
             {
@@ -759,10 +760,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             WriteToSpecificClient(GetAllVideoTracks(), guid.ToString());
         }
 
-        private void FullScreen(object fullScreen)
+        private void FullScreen(string fullScreen)
         {
-            bool goFullscreen = false;
-            Boolean.TryParse(fullScreen.ToString(), out goFullscreen);
+            bool goFullscreen;
+            bool.TryParse(fullScreen, out goFullscreen);
             Player.FullScreenMode.Active = goFullscreen;
         }
 
@@ -771,10 +772,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             var args = msg.Split(new[] {">>"}, StringSplitOptions.None);
 
             int left, top, width, height;
-            if (int.TryParse(args[0], out left) &&
-                int.TryParse(args[1], out top) &&
-                int.TryParse(args[2], out width) &&
-                int.TryParse(args[3], out height))
+            if (int.TryParse(args[0], NumberStyles.Number, CultureInfo.InvariantCulture, out left) &&
+                int.TryParse(args[1], NumberStyles.Number, CultureInfo.InvariantCulture, out top) &&
+                int.TryParse(args[2], NumberStyles.Number, CultureInfo.InvariantCulture, out width) &&
+                int.TryParse(args[3], NumberStyles.Number, CultureInfo.InvariantCulture, out height))
             {
                 Player.ActiveForm.Left = left;
                 Player.ActiveForm.Top = top;
@@ -827,7 +828,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             try
             {
-                PushToAllListeners("Postion|" + Media.Position);
+                PushToAllListeners("Postion|" + Media.Position.ToString(CultureInfo.InvariantCulture));
             }
             catch (Exception)
             {
@@ -841,7 +842,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private readonly RemoteControl_AuthHandler _authHandler = new RemoteControl_AuthHandler();
         private RemoteClients _clientManager;
         private Timer _locationTimer;
-        private readonly Guid _playlistGuid = Guid.Parse("A1997E34-D67B-43BB-8FE6-55A71AE7184B");
+        private readonly Guid _playlistGuid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B");
         private Playlist.Playlist _playlistInstance;
 
         #endregion
