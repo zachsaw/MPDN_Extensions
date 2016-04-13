@@ -126,6 +126,32 @@ namespace Mpdn.Extensions.Framework
 
     public static class Player
     {
+        private static readonly List<string> s_RegisteredMediaExtensions = new List<string>(new[]
+        {
+            ".avi", ".mpg", ".mpeg", ".mpe", ".m1v", ".m2v", ".mpv2", ".mp2v", ".pva", ".evo", ".m2p", ".ts", ".tp",
+            ".trp", ".m2t", ".m2ts", ".mts", ".rec", ".vob", ".mkv", ".webm", ".mp4", ".m4v", ".mp4v", ".mpv4",
+            ".hdmov", ".mov", ".3gp", ".3gpp", ".3g2", ".3gp2", ".flv", ".f4v", ".ogm", ".ogv", ".rm", ".ram",
+            ".rpm", ".rmm", ".rt", ".rp", ".smi", ".smil", ".wmv", ".wmp", ".wm", ".asf", ".smk", ".bik", ".fli",
+            ".flc", ".flic", ".dsm", ".dsv", ".dsa", ".dss", ".ivf", ".swf", ".divx", ".rmvb", ".amv", ".ac3",
+            ".dts", ".aif", ".aifc", ".aiff", ".alac", ".amr", ".ape", ".apl", ".au", ".snd", ".cda", ".flac",
+            ".m4a", ".m4b", ".aac", ".mid", ".midi", ".rmi", ".mka", ".mp3", ".mpa", ".mp2", ".m1a", ".m2a", ".mpc",
+            ".ofr", ".ofs", ".ogg", ".oga", ".opus", ".ra", ".tta", ".wav", ".wma", ".wv", ".aob", ".mlp", ".asx",
+            ".m3u", ".m3u8", ".wvx", ".wax", ".wmx", ".bdmv"
+        });
+
+        private static readonly object s_RegExtLock = new object();
+
+        public static string[] RegisteredMediaExtensions
+        {
+            get
+            {
+                lock (s_RegExtLock)
+                {
+                    return s_RegisteredMediaExtensions.ToArray();
+                }
+            }
+        }
+
         public static Form ActiveForm
         {
             get { return PlayerControl.Form; }
@@ -402,12 +428,23 @@ namespace Mpdn.Extensions.Framework
 
         public static void RegisterMediaFileExtension(string extension, params string[] extensions)
         {
-            PlayerControl.RegisterMediaFileExtensions((new[] {extension}.Concat(extensions)));
+            lock (s_RegExtLock)
+            {
+                var exts = (new[] {extension}.Concat(extensions)).ToList();
+                PlayerControl.RegisterMediaFileExtensions(exts);
+                s_RegisteredMediaExtensions.AddRange(exts.Where(e => e.StartsWith(".")).Select(e => e.ToLower()));
+            }
         }
 
         public static void UnregisterMediaFileExtension(string extension, params string[] extensions)
         {
-            PlayerControl.UnregisterMediaFileExtensions((new[] {extension}.Concat(extensions)));
+            lock (s_RegExtLock)
+            {
+                var exts = (new[] {extension}.Concat(extensions)).ToList();
+                PlayerControl.UnregisterMediaFileExtensions(exts);
+                var removals = exts.Where(e => e.StartsWith(".")).Select(e => e.ToLower());
+                s_RegisteredMediaExtensions.RemoveAll(e => removals.Contains(e));
+            }
         }
 
         public static void ClearScreen()
