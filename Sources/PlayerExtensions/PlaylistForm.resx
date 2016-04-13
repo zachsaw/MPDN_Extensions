@@ -181,9 +181,6 @@
   <metadata name="openFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>213, 17</value>
   </metadata>
-  <data name="openFileDialog.Filter" xml:space="preserve">
-    <value>Media files (all types) (*.avi; *.mp4; *.mkv; ...) |*.avi; *.mpg; *.mpeg; *.mpe; *.m1v; *.m2v; *.mpv2; *.mp2v; *.pva; *.evo; *.m2p; *.ts; *.tp; *.trp; *.m2t; *.m2ts; *.mts; *.rec; *.vob; *.mkv; *.webm; *.mp4; *.m4v; *.mp4v; *.mpv4; *.hdmov; *.mov; *.3gp; *.3gpp; *.3g2; *.3gp2; *.flv; *.f4v; *.ogm; *.ogv; *.rm; *.ram; *.rpm; *.rmm; *.rt; *.rp; *.smi; *.smil; *.wmv; *.wmp; *.wm; *.asf; *.smk; *.bik; *.fli; *.flc; *.flic; *.dsm; *.dsv; *.dsa; *.dss; *.ivf; *.swf; *.divx; *.rmvb; *.amv; *.ac3; *.dts; *.aif; *.aifc; *.aiff; *.alac; *.amr; *.ape; *.apl; *.au; *.snd; *.cda; *.flac; *.m4a; *.m4b; *.aac; *.mid; *.midi; *.rmi; *.mka; *.mp3; *.mpa; *.mp2; *.m1a; *.m2a; *.mpc; *.ofr; *.ofs; *.ogg; *.oga; *.opus; *.ra; *.tta; *.wav; *.wma; *.wv; *.aob; *.mlp; *.asx; *.m3u; *.m3u8; *.wvx; *.wax; *.wmx; *.bdmv|All files (*.*)|*.*</value>
-  </data>
   <metadata name="openPlaylistDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>346, 17</value>
   </metadata>

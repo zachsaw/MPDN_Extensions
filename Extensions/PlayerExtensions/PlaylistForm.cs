@@ -2402,7 +2402,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 var actualFiles =
                     files.Where(file => !Directory.Exists(file))
                         .Where(f => PathHelper.GetExtension(f).Length > 0)
-                        .Where(file => openFileDialog.Filter.Contains(Path.GetExtension(file.ToLower())))
+                        .Where(file => Player.RegisteredMediaExtensions.Contains(Path.GetExtension(file.ToLower())))
                         .OrderBy(f => f, new NaturalSortComparer()).ToList();
                 AddFiles(actualFiles.NaturalSort().ToArray());
 
@@ -2450,12 +2450,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ButtonAddFilesClick(object sender, EventArgs e)
         {
-            if (openFileDialog.ShowDialog(this) != DialogResult.OK) return;
+            if (!ShowOpenFileDialog()) return;
 
             var fileNames = openFileDialog.FileNames;
 
             AddFiles(fileNames);
             dgv_PlayList.Focus();
+        }
+
+        private bool ShowOpenFileDialog()
+        {
+            openFileDialog.Filter =
+                "Media files (all types) (*.avi; *.mp4; *.mkv; ...) |*" +
+                string.Join("; *", Player.RegisteredMediaExtensions)
+                + "|All files (*.*)|*.*";
+            return openFileDialog.ShowDialog(this) == DialogResult.OK;
         }
 
         private void ButtonAddFolderClick(object sender, EventArgs e)
@@ -2478,7 +2487,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void ButtonOpenFilesClick(object sender, EventArgs e)
         {
-            if (openFileDialog.ShowDialog(this) != DialogResult.OK) return;
+            if (!ShowOpenFileDialog()) return;
 
             ClearPlaylist();
 

@@ -354,7 +354,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             // 
             // openFileDialog
             // 
-            this.openFileDialog.Filter = resources.GetString("openFileDialog.Filter");
             this.openFileDialog.Multiselect = true;
             this.openFileDialog.RestoreDirectory = true;
             this.openFileDialog.SupportMultiDottedExtensions = true;
