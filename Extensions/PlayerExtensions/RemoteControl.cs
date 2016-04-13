@@ -724,6 +724,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void CloseMedia(object blank)
         {
             Media.Close();
+            Player.ClearScreen();
         }
 
         private void SeekMedia(object seekLocation)
@@ -850,34 +851,26 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                path = Directory.GetCurrentDirectory();
+                path = !string.IsNullOrWhiteSpace(Media.FilePath)
+                    ? MpdnPath.GetDirectoryName(Media.FilePath)
+                    : Directory.GetCurrentDirectory();
             }
 
             if (!Directory.Exists(path))
                 return string.Empty;
 
             var sb = new StringBuilder();
-            var i = 0;
+            sb.Append(path);
             var directoryInfo = (new DirectoryInfo(path));
             foreach (var d in directoryInfo.GetDirectories())
             {
-                if (i > 0)
-                {
-                    sb.Append("]]");
-                }
-                sb.Append("D>>" + d.Name);
-                i++;
+                sb.Append("]]D>>" + d.Name);
             }
             var files = directoryInfo.EnumerateFiles();
             var registeredExts = Player.RegisteredMediaExtensions;
             foreach (var f in files.Where(f => registeredExts.Contains(f.Extension)))
             {
-                if (i > 0)
-                {
-                    sb.Append("]]");
-                }
-                sb.Append("F>>" + f.Name + ">>" + f.Length.ToString(CultureInfo.InvariantCulture));
-                i++;
+                sb.Append("]]F>>" + f.Name + ">>" + f.Length.ToString(CultureInfo.InvariantCulture));
             }
 
             return sb.ToString();
