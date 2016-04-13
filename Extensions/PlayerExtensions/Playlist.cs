@@ -319,8 +319,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public IEnumerable<string> GetAllMediaFiles(string mediaDir)
         {
-            var filter = m_Form.openFileDialog.Filter.Split('|');
-            var extensions = filter[1].Replace(";", string.Empty).Replace(" ", string.Empty).Split('*');
+            var extensions = Player.RegisteredMediaExtensions;
 
             var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.AllDirectories)
                 .OrderBy(Path.GetDirectoryName, new NaturalSortComparer())
@@ -333,8 +332,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public IEnumerable<string> GetMediaFiles(string mediaDir)
         {
-            var filter = m_Form.openFileDialog.Filter.Split('|');
-            var extensions = filter[1].Replace(";", string.Empty).Replace(" ", string.Empty).Split('*');
+            var extensions = Player.RegisteredMediaExtensions;
 
             var files = Directory.EnumerateFiles(mediaDir, "*.*", SearchOption.TopDirectoryOnly)
                 .OrderBy(Path.GetDirectoryName, new NaturalSortComparer())
@@ -622,8 +620,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void OnDragDrop(object sender, PlayerControlEventArgs<DragEventArgs> e)
         {
-            var filter = m_Form.openFileDialog.Filter.Split('|');
-            var extensions = filter[1].Replace(";", string.Empty).Replace(" ", string.Empty).Split('*');
+            var extensions = Player.RegisteredMediaExtensions;
 
             var files = (string[])e.InputArgs.Data.GetData(DataFormats.FileDrop);
             if (files == null) return;
