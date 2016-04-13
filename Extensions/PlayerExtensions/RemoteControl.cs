@@ -16,6 +16,7 @@
 // 
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -29,6 +30,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.PlayerExtensions.Playlist;
 using Timer = System.Timers.Timer;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -37,13 +39,13 @@ namespace Mpdn.Extensions.PlayerExtensions
     {
         #region Properties
 
-        public Dictionary<Guid, Socket> Clients { get; private set; }
+        public ConcurrentDictionary<Guid, Socket> Clients { get; private set; }
 
         #endregion
 
         public AcmPlug()
         {
-            Clients = new Dictionary<Guid, Socket>();
+            Clients = new ConcurrentDictionary<Guid, Socket>();
         }
 
         public override ExtensionUiDescriptor Descriptor
@@ -135,7 +137,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void GetPlaylistFormPlaylistChanged(object sender, EventArgs e)
         {
-            GetPlaylist(Guid.Empty, true);
+            GetPlaylist(null, true);
         }
 
         private void GetPlaylistFormVisibleChanged(object sender, EventArgs e)
@@ -366,22 +368,22 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ClientHandler(Socket client)
         {
             Guid clientGuid = Guid.NewGuid();
-            Clients.Add(clientGuid, client);
+            Clients.TryAdd(clientGuid, client);
 
             NetworkStream nStream = new NetworkStream(client);
             StreamReader reader = new StreamReader(nStream);
-            StreamWriter writer = new StreamWriter(nStream);
-            _writers.Add(clientGuid, writer);
+            StreamWriter writer = new StreamWriter(nStream) {AutoFlush = false};
+            _writers.TryAdd(clientGuid, writer);
             var clientGUID = reader.ReadLine();
             if (!_authHandler.IsGUIDAuthed(clientGUID) && Settings.ValidateClients)
             {
-                ClientAuth(clientGUID, clientGuid);
+                ClientAuth(writer, clientGUID, clientGuid);
             }
             else
             {
                 DisplayTextMessage("Remote Connected");
-                WriteToSpecificClient("Connected|Authorized", clientGuid.ToString());
-                WriteToSpecificClient("ClientGUID|" + clientGuid, clientGuid.ToString());
+                WriteToSpecificClient("Connected|Authorized", writer);
+                WriteToSpecificClient("ClientGUID|" + clientGuid, writer);
                 if (!_authHandler.IsGUIDAuthed(clientGUID))
                     _authHandler.AddAuthedClient(clientGUID);
                 if (_clientManager.Visible)
@@ -394,11 +396,16 @@ namespace Mpdn.Extensions.PlayerExtensions
                     var data = reader.ReadLine();
                     if (data == "Exit")
                     {
-                        HandleData(data);
+                        HandleData(writer, data);
                         client.Close();
-                        break;
                     }
-                    HandleData(data);
+                    else
+                    {
+                        if (!HandleData(writer, data))
+                        {
+                            WriteToSpecificClient("Error|Command not supported on server", writer);
+                        }
+                    }
                 }
                 catch
                 {
@@ -407,9 +414,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
-        private void ClientAuth(string msgValue, Guid clientGuid)
+        private void ClientAuth(StreamWriter writer, string msgValue, Guid clientGuid)
         {
-            WriteToSpecificClient("AuthCode|" + msgValue, clientGuid.ToString());
+            WriteToSpecificClient("AuthCode|" + msgValue, writer);
             var allow = false;
             GuiThread.Do(() =>
                 allow =
@@ -418,39 +425,39 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (allow)
             {
                 DisplayTextMessage("Remote Connected");
-                WriteToSpecificClient("Connected|Authorized", clientGuid.ToString());
-                WriteToSpecificClient("ClientGUID|" + clientGuid, clientGuid.ToString());
+                WriteToSpecificClient("Connected|Authorized", writer);
+                WriteToSpecificClient("ClientGUID|" + clientGuid, writer);
                 _authHandler.AddAuthedClient(msgValue);
                 if (_clientManager.Visible)
                     _clientManager.ForceUpdate();
             }
             else
             {
-                DisconnectClient("Unauthorized", clientGuid);
+                DisconnectClient(writer, "Unauthorized", clientGuid);
             }
         }
 
-        private void WriteToSpecificClient(string msg, string clientGuid)
+        private void WriteToSpecificClient(string msg, StreamWriter writer)
         {
-            Guid pushGuid;
-            Guid.TryParse(clientGuid, out pushGuid);
-
-            if (_writers.ContainsKey(pushGuid))
+            try
             {
-                _writers[pushGuid].WriteLine(msg);
-                _writers[pushGuid].Flush();
+                writer.WriteLine(msg);
+                writer.Flush();
+            }
+            catch
+            {
             }
         }
 
-        private void DisconnectClient(string exitMessage, Guid clientGuid)
+        private void DisconnectClient(StreamWriter writer, string exitMessage, Guid clientGuid)
         {
-            WriteToSpecificClient("Exit|" + exitMessage, clientGuid.ToString());
+            WriteToSpecificClient("Exit|" + exitMessage, writer);
 
             Clients[clientGuid].Disconnect(true);
             RemoveWriter(clientGuid.ToString());
         }
 
-        private void HandleData(string data)
+        private bool HandleData(StreamWriter writer, string data)
         {
             var command = data.Split('|');
             switch (command[0])
@@ -471,14 +478,17 @@ namespace Mpdn.Extensions.PlayerExtensions
                 case "Stop":
                     GuiThread.DoAsync(() => StopMedia(command[1]));
                     break;
+                case "Close":
+                    GuiThread.DoAsync(() => CloseMedia(command[1]));
+                    break;
                 case "Seek":
                     GuiThread.DoAsync(() => SeekMedia(command[1]));
                     break;
                 case "GetDuration":
-                    GuiThread.DoAsync(() => GetFullDuration(command[1]));
+                    GuiThread.DoAsync(() => GetFullDuration(writer));
                     break;
                 case "GetCurrentState":
-                    GuiThread.DoAsync(() => GetCurrentState(command[1]));
+                    GuiThread.DoAsync(() => GetCurrentState(writer));
                     break;
                 case "FullScreen":
                     GuiThread.DoAsync(() => FullScreen(command[1]));
@@ -530,7 +540,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                     GuiThread.DoAsync(HidePlaylist);
                     break;
                 case "GetPlaylist":
-                    GuiThread.DoAsync(() => GetPlaylist(command[1]));
+                    GuiThread.DoAsync(() => GetPlaylist(writer));
                     break;
                 case "PlaySelectedFile":
                     GuiThread.DoAsync(() => PlaySelectedFile(command[1]));
@@ -541,7 +551,13 @@ namespace Mpdn.Extensions.PlayerExtensions
                 case "ActiveVideoTrack":
                     GuiThread.DoAsync(() => SetVideoTrack(command[1]));
                     break;
+                case "Dir":
+                    HandleDir(writer, command[1]);
+                    break;
+                default:
+                    return false;
             }
+            return true;
         }
 
         private void InsertIntoPlaylist(string fileIndex, string filePath)
@@ -565,12 +581,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             _playlistInstance.GetPlaylistForm.SetPlaylistIndex(myIndex);
         }
 
-        private void GetPlaylist(object guid, bool notify = false)
+        private void GetPlaylist(StreamWriter writer, bool notify = false)
         {
             int counter = 0;
             StringBuilder sb = new StringBuilder();
             var fullPlaylist = _playlistInstance.GetPlaylistForm.Playlist;
-            foreach (var item in fullPlaylist)
+            foreach (var item in fullPlaylist ?? new List<PlaylistItem>())
             {
                 counter++;
                 if (counter > 1)
@@ -579,7 +595,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
             if (!notify)
             {
-                WriteToSpecificClient("PlaylistContent|" + sb, guid.ToString());
+                WriteToSpecificClient("PlaylistContent|" + sb, writer);
             }
             else
             {
@@ -616,7 +632,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             _playlistInstance.GetPlaylistForm.ClearPlaylist();
             _playlistInstance.GetPlaylistForm.PopulatePlaylist();
-            GetPlaylist(Guid.Empty, true);
+            GetPlaylist(null, true);
         }
 
         private void AddFilesToPlaylist(string files)
@@ -659,14 +675,24 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void RemoveWriter(string guid)
         {
             var callerGuid = Guid.Parse(guid);
-            _writers.Remove(callerGuid);
-            Clients.Remove(callerGuid);
+            StreamWriter writer;
+            _writers.TryRemove(callerGuid, out writer);
+            Socket socket;
+            Clients.TryRemove(callerGuid, out socket);
             _clientManager.ForceUpdate();
         }
 
         private void OpenMedia(object file)
         {
-            Media.Open(file.ToString());
+            try
+            {
+                var media = Media.Load(file.ToString());
+                Media.Open(media);
+            }
+            catch (Exception ex)
+            {
+                PushToAllListeners("Error|" + ex.Message);
+            }
         }
 
         private void PauseMedia(object showOsd)
@@ -693,6 +719,11 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void StopMedia(object blank)
         {
             Media.Stop();
+        }
+
+        private void CloseMedia(object blank)
+        {
+            Media.Close();
         }
 
         private void SeekMedia(object seekLocation)
@@ -736,31 +767,31 @@ namespace Mpdn.Extensions.PlayerExtensions
             PushToAllListeners("Mute|" + silence.ToString(CultureInfo.InvariantCulture));
         }
 
-        private void GetFullDuration(object guid)
+        private void GetFullDuration(StreamWriter writer)
         {
-            WriteToSpecificClient("FullLength|" + Media.Duration.ToString(CultureInfo.InvariantCulture), guid.ToString());
+            WriteToSpecificClient("FullLength|" + Media.Duration.ToString(CultureInfo.InvariantCulture), writer);
         }
 
-        private void GetCurrentState(object guid)
+        private void GetCurrentState(StreamWriter writer)
         {
-            WriteToSpecificClient(GetAllChapters(), guid.ToString());
-            WriteToSpecificClient(Player.State + "|" + Media.FilePath, guid.ToString());
-            WriteToSpecificClient("Fullscreen|" + Player.FullScreenMode.Active.ToString(CultureInfo.InvariantCulture), guid.ToString());
-            WriteToSpecificClient("Mute|" + Player.Mute.ToString(CultureInfo.InvariantCulture), guid.ToString());
-            WriteToSpecificClient("Volume|" + Player.Volume.ToString(CultureInfo.InvariantCulture), guid.ToString());
-            GetPlaylist(guid);
+            WriteToSpecificClient(GetAllChapters(), writer);
+            WriteToSpecificClient(Player.State + "|" + Media.FilePath, writer);
+            WriteToSpecificClient("Fullscreen|" + Player.FullScreenMode.Active.ToString(CultureInfo.InvariantCulture), writer);
+            WriteToSpecificClient("Mute|" + Player.Mute.ToString(CultureInfo.InvariantCulture), writer);
+            WriteToSpecificClient("Volume|" + Player.Volume.ToString(CultureInfo.InvariantCulture), writer);
+            GetPlaylist(writer);
             if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused)
             {
-                WriteToSpecificClient("FullLength|" + Media.Duration.ToString(CultureInfo.InvariantCulture), guid.ToString());
-                WriteToSpecificClient("Position|" + Media.Position.ToString(CultureInfo.InvariantCulture), guid.ToString());
+                WriteToSpecificClient("FullLength|" + Media.Duration.ToString(CultureInfo.InvariantCulture), writer);
+                WriteToSpecificClient("Position|" + Media.Position.ToString(CultureInfo.InvariantCulture), writer);
             }
             if (_playlistInstance != null)
             {
                 PushToAllListeners("PlaylistShow|" + _playlistInstance.GetPlaylistForm.Visible);
             }
-            WriteToSpecificClient(GetAllSubtitleTracks(), guid.ToString());
-            WriteToSpecificClient(GetAllAudioTracks(), guid.ToString());
-            WriteToSpecificClient(GetAllVideoTracks(), guid.ToString());
+            WriteToSpecificClient(GetAllSubtitleTracks(), writer);
+            WriteToSpecificClient(GetAllAudioTracks(), writer);
+            WriteToSpecificClient(GetAllVideoTracks(), writer);
         }
 
         private void FullScreen(string fullScreen)
@@ -815,6 +846,48 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
+        private string GetDirectoryListing(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                path = Directory.GetCurrentDirectory();
+            }
+
+            if (!Directory.Exists(path))
+                return string.Empty;
+
+            var sb = new StringBuilder();
+            var i = 0;
+            var directoryInfo = (new DirectoryInfo(path));
+            foreach (var d in directoryInfo.GetDirectories())
+            {
+                if (i > 0)
+                {
+                    sb.Append("]]");
+                }
+                sb.Append("D>>" + d.Name);
+                i++;
+            }
+            var files = directoryInfo.EnumerateFiles();
+            var registeredExts = Player.RegisteredMediaExtensions;
+            foreach (var f in files.Where(f => registeredExts.Contains(f.Extension)))
+            {
+                if (i > 0)
+                {
+                    sb.Append("]]");
+                }
+                sb.Append("F>>" + f.Name + ">>" + f.Length.ToString(CultureInfo.InvariantCulture));
+                i++;
+            }
+
+            return sb.ToString();
+        }
+
+        private void HandleDir(StreamWriter writer, string path)
+        {
+            WriteToSpecificClient("Dir|" + GetDirectoryListing(path), writer);
+        }
+
         private void DisplayTextMessage(object msg)
         {
             GuiThread.DoAsync(() => Player.OsdText.Show(msg.ToString()));
@@ -823,8 +896,12 @@ namespace Mpdn.Extensions.PlayerExtensions
         public void DisconnectClient(string guid)
         {
             Guid clientGuid;
-            Guid.TryParse(guid, out clientGuid);
-            DisconnectClient("Disconnected by User", clientGuid);
+            if (!Guid.TryParse(guid, out clientGuid))
+                return;
+            StreamWriter writer;
+            if (!_writers.TryGetValue(clientGuid, out writer))
+                return;
+            DisconnectClient(writer, "Disconnected by User", clientGuid);
         }
 
         private void _locationTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -833,7 +910,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 PushToAllListeners("Postion|" + Media.Position.ToString(CultureInfo.InvariantCulture));
             }
-            catch (Exception)
+            catch
             {
             }
         }
@@ -841,7 +918,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         #region Variables
 
         private Socket _serverSocket;
-        private readonly Dictionary<Guid, StreamWriter> _writers = new Dictionary<Guid, StreamWriter>();
+        private readonly ConcurrentDictionary<Guid, StreamWriter> _writers = new ConcurrentDictionary<Guid, StreamWriter>();
         private readonly RemoteControl_AuthHandler _authHandler = new RemoteControl_AuthHandler();
         private RemoteClients _clientManager;
         private Timer _locationTimer;
