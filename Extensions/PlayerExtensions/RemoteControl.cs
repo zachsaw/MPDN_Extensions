@@ -457,7 +457,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             WriteToSpecificClient(writer, "Exit|" + exitMessage);
 
             Clients[clientGuid].Disconnect(true);
-            RemoveWriter(clientGuid.ToString());
+            RemoveWriter(clientGuid);
         }
 
         private bool HandleData(StreamWriter writer, string data)
@@ -467,7 +467,11 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 case "Exit":
                     DisplayTextMessage("Remote Disconnected");
-                    RemoveWriter(command[1]);
+                    Guid clientGuid;
+                    if (Guid.TryParse(command[1], out clientGuid))
+                    {
+                        RemoveWriter(clientGuid);
+                    }
                     break;
                 case "Open":
                     GuiThread.DoAsync(() => OpenMedia(command[1]));
@@ -678,9 +682,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                               || uriResult.Scheme == Uri.UriSchemeHttps);
         }
 
-        private void RemoveWriter(string guid)
+        private void RemoveWriter(Guid callerGuid)
         {
-            var callerGuid = Guid.Parse(guid);
             StreamWriter writer;
             _writers.TryRemove(callerGuid, out writer);
             Socket socket;
@@ -850,6 +853,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
                 catch
                 {
+                    var guid = writer.Key;
+                    GuiThread.DoAsync(() => RemoveWriter(guid));
                 }
             }
         }
