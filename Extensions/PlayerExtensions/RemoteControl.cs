@@ -27,11 +27,10 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.PlayerExtensions.Playlist;
-using Timer = System.Timers.Timer;
+using Timer = System.Windows.Forms.Timer;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -107,8 +106,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 try
                 {
-                    writer.Value.WriteLine("Closing|Close");
-                    writer.Value.Flush();
+                    var w = writer.Value;
+                    lock (w)
+                    {
+                        w.WriteLine("Closing|Close");
+                        w.Flush();
+                    }
                 }
                 catch
                 {
@@ -121,8 +124,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void SetupServer()
         {
             Subscribe();
-            _locationTimer = new Timer(100);
-            _locationTimer.Elapsed += _locationTimer_Elapsed;
+            _locationTimer = new Timer {Interval = 100};
+            _locationTimer.Tick += _locationTimer_Elapsed;
             _clientManager = new RemoteClients(this);
             var playlist = Extension.PlayerExtensions.FirstOrDefault(t => t.Descriptor.Guid == _playlistGuid);
             if (playlist != null)
@@ -237,6 +240,18 @@ namespace Mpdn.Extensions.PlayerExtensions
             PushToAllListeners(e.NewState + "|" + Media.FilePath);
         }
 
+        private static string EscapeDelimiters(string input)
+        {
+            // Simple method to escape delimiters (can't reconstruct it back)
+            var result = input;
+            do
+            {
+                input = result;
+                result = input.Replace("]]", " ] ]").Replace(">>", " > >");
+            } while (result != input);
+            return result;
+        }
+
         private string GetAllVideoTracks()
         {
             if (Player.State != PlayerState.Playing && Player.State != PlayerState.Paused) return string.Empty;
@@ -250,7 +265,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 if (counter > 1)
                     videoStringBuilder.Append("]]");
-                videoStringBuilder.Append(counter + ">>" + track.Description + ">>" + track.Type);
+                videoStringBuilder.Append(counter.ToString(CultureInfo.InvariantCulture) + ">>" + EscapeDelimiters(track.Description) +
+                                          ">>" + track.Type);
                 if (activeTrack != null && track.Description == activeTrack.Description)
                     videoStringBuilder.Append(">>True");
                 else
@@ -274,7 +290,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                 {
                     if (counter > 1)
                         audioStringBuilder.Append("]]");
-                    audioStringBuilder.Append(counter + ">>" + track.Description + ">>" + track.Type);
+                    audioStringBuilder.Append(counter.ToString(CultureInfo.InvariantCulture) + ">>" + EscapeDelimiters(track.Description) +
+                                              ">>" + track.Type);
                     if (activeTrack != null && track.Description == activeTrack.Description)
                         audioStringBuilder.Append(">>True");
                     else
@@ -300,7 +317,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                 {
                     if (counter > 1)
                         subSb.Append("]]");
-                    subSb.Append(counter + ">>" + sub.Description + ">>" + sub.Type);
+                    subSb.Append(counter.ToString(CultureInfo.InvariantCulture) + ">>" + EscapeDelimiters(sub.Description) + ">>" +
+                                 sub.Type);
                     if (activeSub != null && sub.Description == activeSub.Description)
                         subSb.Append(">>True");
                     else
@@ -323,7 +341,8 @@ namespace Mpdn.Extensions.PlayerExtensions
                 {
                     if (counter > 1)
                         chapterSb.Append("]]");
-                    chapterSb.Append(counter + ">>" + chapter.Name + ">>" + chapter.Position);
+                    chapterSb.Append(counter.ToString(CultureInfo.InvariantCulture) + ">>" + EscapeDelimiters(chapter.Name) + ">>" +
+                                     chapter.Position.ToString(CultureInfo.InvariantCulture));
                     counter++;
                 }
                 return "Chapters|" + chapterSb;
@@ -442,14 +461,20 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void WriteToSpecificClient(StreamWriter writer, string msg)
         {
-            try
+            Task.Factory.StartNew(() =>
             {
-                writer.WriteLine(msg);
-                writer.Flush();
-            }
-            catch
-            {
-            }
+                try
+                {
+                    lock (writer)
+                    {
+                        writer.WriteLine(msg);
+                        writer.Flush();
+                    }
+                }
+                catch
+                {
+                }
+            });
         }
 
         private void DisconnectClient(StreamWriter writer, string exitMessage, Guid clientGuid)
@@ -601,7 +626,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 counter++;
                 if (counter > 1)
                     sb.Append(">>");
-                sb.Append(item.FilePath + "]]" + item.Active);
+                sb.Append(item.FilePath + "]]" + item.Active.ToString(CultureInfo.InvariantCulture));
             }
             if (!notify)
             {
@@ -791,14 +816,17 @@ namespace Mpdn.Extensions.PlayerExtensions
             WriteToSpecificClient(writer, "Mute|" + Player.Mute.ToString(CultureInfo.InvariantCulture));
             WriteToSpecificClient(writer, "Volume|" + Player.Volume.ToString(CultureInfo.InvariantCulture));
             GetPlaylist(writer);
-            if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused)
+            if (Player.State != PlayerState.Closed)
             {
                 WriteToSpecificClient(writer, "FullLength|" + Media.Duration.ToString(CultureInfo.InvariantCulture));
+            }
+            if (Player.State == PlayerState.Playing || Player.State == PlayerState.Paused)
+            {
                 WriteToSpecificClient(writer, "Position|" + Media.Position.ToString(CultureInfo.InvariantCulture));
             }
             if (_playlistInstance != null)
             {
-                PushToAllListeners("PlaylistShow|" + _playlistInstance.GetPlaylistForm.Visible);
+                PushToAllListeners("PlaylistShow|" + _playlistInstance.GetPlaylistForm.Visible.ToString(CultureInfo.InvariantCulture));
             }
             WriteToSpecificClient(writer, GetAllSubtitleTracks());
             WriteToSpecificClient(writer, GetAllAudioTracks());
@@ -846,16 +874,23 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             foreach (var writer in _writers)
             {
-                try
+                var w = writer.Value;
+                var guid = writer.Key;
+                Task.Factory.StartNew(() =>
                 {
-                    writer.Value.WriteLine(msg);
-                    writer.Value.Flush();
-                }
-                catch
-                {
-                    var guid = writer.Key;
-                    GuiThread.DoAsync(() => RemoveWriter(guid));
-                }
+                    try
+                    {
+                        lock (w)
+                        {
+                            w.WriteLine(msg);
+                            w.Flush();
+                        }
+                    }
+                    catch
+                    {
+                        GuiThread.DoAsync(() => RemoveWriter(guid));
+                    }
+                });
             }
         }
 
@@ -915,10 +950,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             DisconnectClient(writer, "Disconnected by User", clientGuid);
         }
 
-        private void _locationTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void _locationTimer_Elapsed(object sender, EventArgs eventArgs)
         {
             try
             {
+                if (_lastPosition == Media.Position) return;
+                _lastPosition = Media.Position;
                 PushToAllListeners("Postion|" + Media.Position.ToString(CultureInfo.InvariantCulture));
             }
             catch
@@ -935,6 +972,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private Timer _locationTimer;
         private readonly Guid _playlistGuid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B");
         private Playlist.Playlist _playlistInstance;
+        private long _lastPosition = -1;
 
         #endregion
     }
