@@ -914,9 +914,9 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                path = !string.IsNullOrWhiteSpace(Media.FilePath)
-                    ? MpdnPath.GetDirectoryName(Media.FilePath)
-                    : Directory.GetCurrentDirectory();
+                var lastMediaFile = Player.Config.Settings.GeneralSettings.LastSelectedMediaFileName;
+                var lastMediaPath = MpdnPath.GetDirectoryName(lastMediaFile);
+                path = Directory.Exists(lastMediaPath) ? lastMediaPath : Directory.GetCurrentDirectory();
             }
 
             path = Path.GetFullPath(path);
