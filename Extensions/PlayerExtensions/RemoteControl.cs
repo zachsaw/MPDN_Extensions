@@ -396,18 +396,18 @@ namespace Mpdn.Extensions.PlayerExtensions
             StreamReader reader = new StreamReader(nStream);
             StreamWriter writer = new StreamWriter(nStream) {AutoFlush = false};
             _writers.TryAdd(clientGuid, writer);
-            var clientGUID = reader.ReadLine();
-            if (!_authHandler.IsGUIDAuthed(clientGUID) && Settings.ValidateClients)
+            var authGuid = reader.ReadLine();
+            if (!_authHandler.IsGUIDAuthed(authGuid) && Settings.ValidateClients)
             {
-                ClientAuth(writer, clientGUID, clientGuid);
+                ClientAuth(writer, authGuid, clientGuid);
             }
             else
             {
                 DisplayTextMessage("Remote Connected");
                 WriteToSpecificClient(writer, "Connected|Authorized");
                 WriteToSpecificClient(writer, "ClientGUID|" + clientGuid);
-                if (!_authHandler.IsGUIDAuthed(clientGUID))
-                    _authHandler.AddAuthedClient(clientGUID);
+                if (!_authHandler.IsGUIDAuthed(authGuid))
+                    _authHandler.AddAuthedClient(authGuid);
                 if (_clientManager.Visible)
                     _clientManager.ForceUpdate();
             }
@@ -416,6 +416,10 @@ namespace Mpdn.Extensions.PlayerExtensions
                 try
                 {
                     var data = reader.ReadLine();
+                    if (string.IsNullOrWhiteSpace(data))
+                    {
+                        break;
+                    }
                     if (data == "Exit")
                     {
                         HandleData(writer, data);
@@ -434,6 +438,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                     break;
                 }
             }
+            GuiThread.DoAsync(() => RemoveWriter(clientGuid));
         }
 
         private void ClientAuth(StreamWriter writer, string msgValue, Guid clientGuid)
