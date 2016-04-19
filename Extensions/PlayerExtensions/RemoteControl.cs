@@ -420,6 +420,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                     {
                         break;
                     }
+                    data = UnsanatiseMessage(data);
                     if (data == "Exit")
                     {
                         HandleData(writer, data);
@@ -464,6 +465,16 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
+        private string SanatiseMessage(string msg)
+        {
+            return msg.Replace("\r\n", "\n").Replace("\n", " \a ");
+        }
+
+        private string UnsanatiseMessage(string msg)
+        {
+            return msg.Replace(" \a ", Environment.NewLine);
+        }
+
         private void WriteToSpecificClient(StreamWriter writer, string msg)
         {
             Task.Factory.StartNew(() =>
@@ -472,7 +483,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 {
                     lock (writer)
                     {
-                        writer.WriteLine(msg);
+                        writer.WriteLine(SanatiseMessage(msg));
                         writer.Flush();
                     }
                 }
@@ -730,7 +741,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
             catch (Exception ex)
             {
-                PushToAllListeners("Error|" + ex.Message);
+                PushToAllListeners("Error|" + "Failed to open media!\r\n" + ex.Message);
             }
         }
 
@@ -887,7 +898,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                     {
                         lock (w)
                         {
-                            w.WriteLine(msg);
+                            w.WriteLine(SanatiseMessage(msg));
                             w.Flush();
                         }
                     }
