@@ -501,36 +501,40 @@ namespace Mpdn.Extensions.PlayerExtensions
             RemoveWriter(clientGuid);
         }
 
-        private bool HandleData(StreamWriter writer, string data)
+        private bool HandleData(StreamWriter writer, string command)
         {
-            var command = data.Split('|');
-            switch (command[0])
+            var seperator = command.IndexOf('|');
+            if (seperator < 0)
+                return false;
+            var cmd = command.Substring(0, seperator);
+            var param = command.Substring(seperator + 1);
+            switch (cmd)
             {
                 case "Exit":
                     DisplayTextMessage("Remote Disconnected");
                     Guid clientGuid;
-                    if (Guid.TryParse(command[1], out clientGuid))
+                    if (Guid.TryParse(param, out clientGuid))
                     {
                         RemoveWriter(clientGuid);
                     }
                     break;
                 case "Open":
-                    GuiThread.DoAsync(() => OpenMedia(command[1]));
+                    GuiThread.DoAsync(() => OpenMedia(param));
                     break;
                 case "Pause":
-                    GuiThread.DoAsync(() => PauseMedia(command[1]));
+                    GuiThread.DoAsync(() => PauseMedia(param));
                     break;
                 case "Play":
-                    GuiThread.DoAsync(() => PlayMedia(command[1]));
+                    GuiThread.DoAsync(() => PlayMedia(param));
                     break;
                 case "Stop":
-                    GuiThread.DoAsync(() => StopMedia(command[1]));
+                    GuiThread.DoAsync(() => StopMedia(param));
                     break;
                 case "Close":
-                    GuiThread.DoAsync(() => CloseMedia(command[1]));
+                    GuiThread.DoAsync(() => CloseMedia(param));
                     break;
                 case "Seek":
-                    GuiThread.DoAsync(() => SeekMedia(command[1]));
+                    GuiThread.DoAsync(() => SeekMedia(param));
                     break;
                 case "GetDuration":
                     GuiThread.DoAsync(() => GetFullDuration(writer));
@@ -539,35 +543,43 @@ namespace Mpdn.Extensions.PlayerExtensions
                     GuiThread.DoAsync(() => GetCurrentState(writer));
                     break;
                 case "FullScreen":
-                    GuiThread.DoAsync(() => FullScreen(command[1]));
+                    GuiThread.DoAsync(() => FullScreen(param));
                     break;
                 case "MoveWindow":
-                    GuiThread.DoAsync(() => MoveWindow(command[1]));
+                    GuiThread.DoAsync(() => MoveWindow(param));
                     break;
                 case "WriteToScreen":
-                    DisplayTextMessage(command[1]);
+                    DisplayTextMessage(param);
                     break;
                 case "Mute":
                     bool mute;
-                    bool.TryParse(command[1], out mute);
+                    bool.TryParse(param, out mute);
                     GuiThread.DoAsync(() => Mute(mute));
                     break;
                 case "Volume":
                     int vol;
-                    int.TryParse(command[1], NumberStyles.Number, CultureInfo.InvariantCulture, out vol);
+                    int.TryParse(param, NumberStyles.Number, CultureInfo.InvariantCulture, out vol);
                     GuiThread.DoAsync(() => SetVolume(vol));
                     break;
                 case "ActiveSubTrack":
-                    GuiThread.DoAsync(() => SetSubtitle(command[1]));
+                    GuiThread.DoAsync(() => SetSubtitle(param));
                     break;
                 case "ActiveAudioTrack":
-                    GuiThread.DoAsync(() => SetAudioTrack(command[1]));
+                    GuiThread.DoAsync(() => SetAudioTrack(param));
                     break;
                 case "AddFilesToPlaylist":
-                    AddFilesToPlaylist(command[1]);
+                    AddFilesToPlaylist(param);
                     break;
                 case "InsertFileInPlaylist":
-                    GuiThread.DoAsync(() => InsertIntoPlaylist(command[1], command[2]));
+                    var parameters = param.Split('|');
+                    if (parameters.Length == 2)
+                    {
+                        GuiThread.DoAsync(() => InsertIntoPlaylist(parameters[0], parameters[1]));
+                    }
+                    else
+                    {
+                        return false;
+                    }
                     break;
                 case "ClearPlaylist":
                     GuiThread.DoAsync(ClearPlaylist);
@@ -591,16 +603,16 @@ namespace Mpdn.Extensions.PlayerExtensions
                     GuiThread.DoAsync(() => GetPlaylist(writer));
                     break;
                 case "PlaySelectedFile":
-                    GuiThread.DoAsync(() => PlaySelectedFile(command[1]));
+                    GuiThread.DoAsync(() => PlaySelectedFile(param));
                     break;
                 case "RemoveFile":
-                    GuiThread.DoAsync(() => RemoveFromPlaylist(command[1]));
+                    GuiThread.DoAsync(() => RemoveFromPlaylist(param));
                     break;
                 case "ActiveVideoTrack":
-                    GuiThread.DoAsync(() => SetVideoTrack(command[1]));
+                    GuiThread.DoAsync(() => SetVideoTrack(param));
                     break;
                 case "Dir":
-                    HandleDir(writer, command[1]);
+                    HandleDir(writer, param);
                     break;
                 case "GetDriveLetters":
                     GetDriveLetters(writer);
@@ -915,8 +927,17 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (string.IsNullOrWhiteSpace(path))
             {
                 var lastMediaFile = Player.Config.Settings.GeneralSettings.LastSelectedMediaFileName;
-                var lastMediaPath = MpdnPath.GetDirectoryName(lastMediaFile);
-                path = Directory.Exists(lastMediaPath) ? lastMediaPath : Directory.GetCurrentDirectory();
+                if (IsValidUrl(lastMediaFile))
+                {
+                    path = Directory.GetCurrentDirectory();
+                }
+                else
+                {
+                    var lastMediaPath = MpdnPath.GetDirectoryName(lastMediaFile);
+                    path = !lastMediaPath.StartsWith(@"\\") && Directory.Exists(lastMediaPath)
+                        ? lastMediaPath
+                        : Directory.GetCurrentDirectory();
+                }
             }
 
             path = Path.GetFullPath(path);
