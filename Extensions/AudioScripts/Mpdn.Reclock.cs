@@ -131,7 +131,7 @@ namespace Mpdn.Extensions.AudioScripts
                 output.Sample.GetTime(out start, out end);
                 long endDelta = end - start;
                 start = (long) (start*m_Ratio);
-                output.Sample.SetTime(start, endDelta);
+                output.Sample.SetTime(start, start + endDelta);
             }
 
             public bool CompatibleAudioRenderer
