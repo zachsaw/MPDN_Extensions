@@ -211,11 +211,9 @@ Section -post
     ; Register for 64-bit first so it has precedence over the 32-bit MPDN
     ${IfNot} $mpdn64_root == ""
         ${registerExtension} "$mpdn64_root\MediaPlayerDotNet.exe" ".mpl" "MPDN Playlist File"
-        WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MediaPlayerDotNet_x64" "DisplayVersion" "$playerVersion/${VERSION_1}.${VERSION_2}.${VERSION_3}"      
     ${EndIf}
     ${IfNot} $mpdn32_root == ""
         ${registerExtension} "$mpdn32_root\MediaPlayerDotNet.exe" ".mpl" "MPDN Playlist File"
-        WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MediaPlayerDotNet_x86" "DisplayVersion" "$playerVersion/${VERSION_1}.${VERSION_2}.${VERSION_3}"     
     ${EndIf}
     
 SectionEnd
