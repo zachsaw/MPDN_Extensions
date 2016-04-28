@@ -373,6 +373,9 @@ namespace Mpdn.Extensions.Framework.AudioChain
         private long m_TimeEnd;
         private long m_MediaTimeStart;
         private long m_MediaTimeEnd;
+        private bool m_HasTime;
+        private bool m_HasMediaTime;
+        private readonly AMMediaType m_MediaType;
 
         private bool m_Disposed;
 
@@ -383,9 +386,15 @@ namespace Mpdn.Extensions.Framework.AudioChain
             m_IsSyncPoint = sample.IsSyncPoint() == 0;
             m_IsPreroll = sample.IsPreroll() == 0;
             m_IsDiscontinuity = sample.IsDiscontinuity() == 0;
-            sample.GetTime(out m_TimeStart, out m_TimeEnd);
-            sample.GetMediaTime(out m_MediaTimeStart, out m_MediaTimeEnd);
+            m_HasTime = sample.GetTime(out m_TimeStart, out m_TimeEnd) == 0;
+            m_HasMediaTime = sample.GetMediaTime(out m_MediaTimeStart, out m_MediaTimeEnd) == 0;
             m_Buffer = Marshal.AllocCoTaskMem(m_Size);
+            // Copy the media type
+            AMMediaType mediaType;
+            if (sample.GetMediaType(out mediaType) == 0)
+            {
+                m_MediaType = mediaType;
+            }
         }
 
         public int GetPointer(out IntPtr ppBuffer)
@@ -403,13 +412,14 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             pTimeStart = m_TimeStart;
             pTimeEnd = m_TimeEnd;
-            return 0;
+            return !m_HasTime ? -2147220919 /* VFW_E_SAMPLE_TIME_NOT_SET */ : 0;
         }
 
         public int SetTime(DsLong pTimeStart, DsLong pTimeEnd)
         {
             m_TimeStart = pTimeStart.ToInt64();
             m_TimeEnd = pTimeEnd.ToInt64();
+            m_HasTime = true;
             return 0;
         }
 
@@ -448,13 +458,13 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         public int GetMediaType(out AMMediaType mediaType)
         {
-            mediaType = null;
-            return 1;
+            mediaType = m_MediaType;
+            return m_MediaType == null ? 1 : 0;
         }
 
         public int SetMediaType(AMMediaType pMediaType)
         {
-            return 0;
+            return 1; // not supported
         }
 
         public int IsDiscontinuity()
@@ -472,13 +482,14 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             pTimeStart = m_MediaTimeStart;
             pTimeEnd = m_MediaTimeEnd;
-            return 0;
+            return !m_HasMediaTime ? -2147220911 : 0;
         }
 
         public int SetMediaTime(DsLong pTimeStart, DsLong pTimeEnd)
         {
             m_MediaTimeStart = pTimeStart.ToInt64();
             m_MediaTimeEnd = pTimeEnd.ToInt64();
+            m_HasMediaTime = true;
             return 0;
         }
 
@@ -488,6 +499,10 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 return;
 
             Marshal.FreeCoTaskMem(m_Buffer);
+            if (m_MediaType != null)
+            {
+                DsUtils.FreeAMMediaType(m_MediaType);
+            }
             m_Disposed = true;
         }
     }
