@@ -18,22 +18,21 @@
 sampler s0 : register(s0);
 sampler sUV : register(s1);
 
-float4 p0     : register(c0);
-float2 p1     : register(c1);
 float4 size1  : register(c2);
-float4 chromaParams : register(c3);
-float  power  : register(c4);
+float4 sizeOutput : register(c3);
+float4 chromaParams : register(c4);
+float  power  : register(c5);
 
 // -- Convenience --
 #define sqr(x) dot(x,x)
 #define noise 0.05
 #define bitnoise 1.0/(2.0*255.0)
 
-#define width  (p0[0])
-#define height (p0[1])
+#define width  (sizeOutput.x)
+#define height (sizeOutput.y)
 #define chromaSize size1
 
-#define dxdy (p1.xy)
+#define dxdy (sizeOutput.zw)
 #define ddxddy (chromaSize.zw)
 #define chromaOffset (chromaParams.xy)
 #define radius 0.5
