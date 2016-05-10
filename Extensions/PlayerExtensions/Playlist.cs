@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.PlayerExtensions.DataContracts;
 
 namespace Mpdn.Extensions.PlayerExtensions.Playlist
 {
@@ -625,44 +626,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             var files = (string[])e.InputArgs.Data.GetData(DataFormats.FileDrop);
             if (files == null) return;
 
-            if (files.Length == 1)
-            {
-                string filename = files[0];
-
-                if (Directory.Exists(filename))
-                {
-                    var media = GetAllMediaFiles(filename);
-                    m_Form.CloseMedia();
-                    m_Form.ClearPlaylist();
-                    m_Form.AddFiles(
-                        media.Where(file => extensions.Contains(PathHelper.GetExtension(file.ToLower())))
-                            .OrderBy(f => f, new NaturalSortComparer())
-                            .Where(f => PathHelper.GetExtension(f).Length > 0)
-                            .ToArray());
-                    m_Form.SetPlaylistIndex(0);
-                    return;
-                }
-
-                if (IsPlaylistFile(filename))
-                {
-                    m_Form.OpenPlaylist(filename);
-                    return;
-                }
-
-                if (PathHelper.GetExtension(filename).Length < 1 || !extensions.Contains(Path.GetExtension(filename))) return;
-
-                m_Form.ActiveFile(filename);
-                m_Form.SetPlaylistIndex(0);
-            }
-            else
-            {
-                m_Form.AddFiles(
-                    files.Where(file => extensions.Contains(PathHelper.GetExtension(file.ToLower())))
-                        .OrderBy(f => f, new NaturalSortComparer())
-                        .Where(f => PathHelper.GetExtension(f).Length > 0)
-                        .ToArray());
-                m_Form.SetPlaylistIndex(0);
-            }
+            if (!m_Form.AddDroppedFiles(files, extensions)) return;
 
             e.Handled = true;
         }

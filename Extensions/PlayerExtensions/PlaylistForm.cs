@@ -36,6 +36,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.Design;
 using MediaInfoDotNet;
 using Mpdn.Extensions.Framework;
+using Mpdn.Extensions.PlayerExtensions.DataContracts;
 using Ookii.Dialogs;
 
 namespace Mpdn.Extensions.PlayerExtensions.Playlist
@@ -121,9 +122,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private int m_TitleCellIndex = 4;
         private int m_SkipCellIndex = 5;
         private int m_EndCellIndex = 6;
-
-        private int m_MinWorker;
-        private int m_MinIoc;
 
         private ToolTip m_PlayCountToolTip;
 
@@ -214,9 +212,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             Playlist = new List<PlaylistItem>();
             TempRememberedFiles = new List<string>();
-
-            ThreadPool.GetMaxThreads(out m_MinWorker, out m_MinIoc);
-            ThreadPool.SetMinThreads(m_MinWorker, m_MinIoc);
 
             SetControlStates();
             DisableTabStop(this);
@@ -409,6 +404,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void PopulatePlaylist()
         {
+            NotifyPlaylistChanged();
+
             bool hasShownException = false;
             int prevScrollIndex = dgv_PlayList.FirstDisplayedScrollingRowIndex;
 
@@ -419,48 +416,58 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             foreach (var i in Playlist)
             {
-                string path = PathHelper.GetDirectoryName(i.FilePath);
-                string directory = path.Substring(path.LastIndexOf("\\", StringComparison.Ordinal) + 1);
-                string file = Path.GetFileName(i.FilePath);
+                string path, directory, file;
 
-                if (RegexList != null && RegexList.Count > 0)
+                if (IsValidUrl(i.FilePath))
                 {
-                    var count = 1;
-
-                    try
+                    path = i.FilePath.Substring(0, i.FilePath.LastIndexOf('/'));
+                    directory = path.Substring(path.LastIndexOf('/') + 1);
+                    file = Path.GetFileName(i.FilePath);
+                }
+                else
+                {
+                    path = PathHelper.GetDirectoryName(i.FilePath);
+                    directory = path.Substring(path.LastIndexOf("\\", StringComparison.Ordinal) + 1);
+                    file = Path.GetFileName(i.FilePath);
+                    if (RegexList != null && RegexList.Count > 0)
                     {
-                        foreach (string t in RegexList)
-                        {
-                            if (t.Equals("-") || t.Equals("_") || t.Equals("\\."))
-                            {
-                                file = Regex.Replace(file, t, " ", RegexOptions.Compiled);
-                                file = Regex.Replace(file, @"\s+", " ", RegexOptions.Compiled).Trim();
-                            }
-                            else
-                            {
-                                var matches = Regex.Matches(file, t, RegexOptions.Compiled);
+                        var count = 1;
 
-                                foreach (Match match in matches)
+                        try
+                        {
+                            foreach (string t in RegexList)
+                            {
+                                if (t.Equals("-") || t.Equals("_") || t.Equals("\\."))
                                 {
-                                    int offset = match.Index == 0 ? 0 : 1;
-                                    if (file.Substring(match.Index - offset, 1).Contains(" ")) file = file.Remove(match.Index - offset, 1);
+                                    file = Regex.Replace(file, t, " ", RegexOptions.Compiled);
+                                    file = Regex.Replace(file, @"\s+", " ", RegexOptions.Compiled).Trim();
+                                }
+                                else
+                                {
+                                    var matches = Regex.Matches(file, t, RegexOptions.Compiled);
+
+                                    foreach (Match match in matches)
+                                    {
+                                        int offset = match.Index == 0 ? 0 : 1;
+                                        if (file.Substring(match.Index - offset, 1).Contains(" ")) file = file.Remove(match.Index - offset, 1);
+                                    }
+
+                                    file = Regex.Replace(file, t, string.Empty, RegexOptions.Compiled).Trim();
                                 }
 
-                                file = Regex.Replace(file, t, string.Empty, RegexOptions.Compiled).Trim();
+                                count++;
                             }
-
-                            count++;
                         }
-                    }
-                    catch (Exception)
-                    {
-                        if (!hasShownException)
+                        catch (Exception)
                         {
-                            MessageBox.Show(
-                                "Error evaluating expression at 'Regex " + count + "'!", "Error",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            if (!hasShownException)
+                            {
+                                MessageBox.Show(
+                                    "Error evaluating expression at 'Regex " + count + "'!", "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                            hasShownException = true;
+                                hasShownException = true;
+                            }
                         }
                     }
                 }
@@ -493,8 +500,51 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             SetPlayStyling();
 
-            NotifyPlaylistChanged();
             PlaylistCount = Playlist.Count;
+        }
+
+        public bool AddDroppedFiles(string[] files, string[] extensions)
+        {
+            if (files.Length == 1)
+            {
+                string filename = files[0];
+
+                if (Directory.Exists(filename))
+                {
+                    var media = m_PlayListUi.GetAllMediaFiles(filename);
+                    CloseMedia();
+                    ClearPlaylist();
+                    AddFiles(
+                        media.Where(file => extensions.Contains(PathHelper.GetExtension(file.ToLower())))
+                            .OrderBy(f => f, new NaturalSortComparer())
+                            .Where(f => PathHelper.GetExtension(f).Length > 0)
+                            .ToArray());
+                    SetPlaylistIndex(0);
+                    return true;
+                }
+
+                if (PlayerExtensions.Playlist.Playlist.IsPlaylistFile(filename))
+                {
+                    OpenPlaylist(filename);
+                    return true;
+                }
+
+                if (PathHelper.GetExtension(filename).Length < 1 || !extensions.Contains(Path.GetExtension(filename)))
+                    return false;
+
+                ActiveFile(filename);
+                SetPlaylistIndex(0);
+            }
+            else
+            {
+                AddFiles(
+                    files.Where(file => extensions.Contains(PathHelper.GetExtension(file.ToLower())))
+                        .OrderBy(f => f, new NaturalSortComparer())
+                        .Where(f => PathHelper.GetExtension(f).Length > 0)
+                        .ToArray());
+                SetPlaylistIndex(0);
+            }
+            return true;
         }
 
         public void ResetPlayCount()
@@ -536,6 +586,22 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             m_LoadedPlaylist = openPlaylistDialog.FileName;
             OpenPlaylist(openPlaylistDialog.FileName, clear);
+        }
+
+        public void UpdatePlaylist(IList<PlaylistItem> playlist, int index, bool resetCurrentIndex)
+        {
+            Playlist = playlist.ToList();
+            if (resetCurrentIndex)
+            {
+                m_CurrentPlayIndex = -1;
+            }
+            PopulatePlaylist();
+            if (index >= 0)
+            {
+                SetPlaylistIndex(index, false);
+            }
+            if (!Duration.Visible) return;
+            Task.Factory.StartNew(GetMediaDuration);
         }
 
         public void OpenPlaylist(string fileName, bool clear = true)
@@ -817,11 +883,17 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             OpenMedia();
         }
 
-        public void SetPlaylistIndex(int index)
+        public void SetPlaylistIndex(int index, bool play = true)
         {
+            if (index < 0 || index >= Playlist.Count)
+                return;
+
             m_CurrentPlayIndex = index;
             SetPlayStyling();
-            OpenMedia();
+            if (play)
+            {
+                OpenMedia();
+            }
         }
 
         private void PlaySelectedFile()
@@ -1037,7 +1109,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public void InsertFile(int index, string fileName)
         {
             var item = new PlaylistItem(fileName, false);
-            Playlist.Insert(index, item);
+            Playlist.Insert(Math.Min(Math.Max(index, 0), Playlist.Count), item);
             PopulatePlaylist();
         }
 
@@ -1204,6 +1276,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void RemoveFile(int index)
         {
+            if (index < 0 || index >= Playlist.Count)
+                return;
+
             Playlist.RemoveAt(index);
             if (index == Playlist.Count) CloseMedia();
             PopulatePlaylist();
@@ -2026,16 +2101,21 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (CurrentItem == null) return;
 
-            if (IsValidUrl(CurrentItem.FilePath))
+            // TODO: Use a separate thread to fetch (and cache in settings file) and update title
+            // Note: The following doesn't work very well - it blocks the player UI
+//            if (IsValidUrl(CurrentItem.FilePath))
+//            {
+//                string title = FetchTitleFromUrl(CurrentItem.FilePath);
+//                Text = Player.State + " - " + title;
+//                if (dgv_PlayList.CurrentRow == null)
+//                    dgv_PlayList.CurrentCell = dgv_PlayList.Rows[Math.Max(0, m_CurrentPlayIndex)].Cells[0];
+//                if (dgv_PlayList.CurrentRow != null)
+//                    dgv_PlayList.CurrentRow.Cells[m_TitleCellIndex].Value = title;
+//            }
+//            else
             {
-                string title = FetchTitleFromUrl(CurrentItem.FilePath);
-                Text = Player.State + " - " + title;
-                if (dgv_PlayList.CurrentRow == null)
-                    dgv_PlayList.CurrentCell = dgv_PlayList.Rows[Math.Max(0, m_CurrentPlayIndex)].Cells[0];
-                if (dgv_PlayList.CurrentRow != null)
-                    dgv_PlayList.CurrentRow.Cells[m_TitleCellIndex].Value = title;
+                Text = Player.State + " - " + CurrentItem.FilePath;
             }
-            else Text = Player.State + " - " + CurrentItem.FilePath;
 
             HandleContextMenu();
 
@@ -2417,7 +2497,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 if (destinationRow == -1 || destinationRow >= Playlist.Count) return;
                 var playItem = Playlist.ElementAt(m_DragRowIndex);
                 Playlist.RemoveAt(m_DragRowIndex);
-                //NotifyPlaylistChanged();
                 Playlist.Insert(destinationRow, playItem);
                 PopulatePlaylist();
                 dgv_PlayList.CurrentCell = dgv_PlayList.Rows[destinationRow].Cells[m_TitleCellIndex];
@@ -2736,80 +2815,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         #endregion
     }
 
-    #region PlaylistItem
-
-    public class PlaylistItem
-    {
-        public string FilePath { get; set; }
-        public bool Active { get; set; }
-        public bool HasChapter { get; set; }
-        public List<int> SkipChapters { get; set; }
-        public int EndChapter { get; set; }
-        public string Duration { get; set; }
-        public int PlayCount { get; set; }
-
-        public PlaylistItem(string filePath, bool isActive)
-        {
-            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException("filePath");
-
-            FilePath = filePath;
-            Active = isActive;
-            PlayCount = 0;
-        }
-
-        public PlaylistItem(string filePath, List<int> skipChapter, int endChapter, bool isActive)
-        {
-            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException("filePath");
-
-            FilePath = filePath;
-            Active = isActive;
-            SkipChapters = skipChapter;
-            EndChapter = endChapter;
-            HasChapter = true;
-            PlayCount = 0;
-        }
-
-        public PlaylistItem(string filePath, List<int> skipChapter, int endChapter, bool isActive, string duration)
-        {
-            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException("filePath");
-
-            FilePath = filePath;
-            Active = isActive;
-            SkipChapters = skipChapter;
-            EndChapter = endChapter;
-            HasChapter = true;
-            Duration = duration;
-            PlayCount = 0;
-        }
-
-        public PlaylistItem(string filePath, List<int> skipChapter, int endChapter, bool isActive, string duration,
-            int playCount)
-        {
-            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException("filePath");
-
-            FilePath = filePath;
-            Active = isActive;
-            SkipChapters = skipChapter;
-            EndChapter = endChapter;
-            HasChapter = true;
-            Duration = duration;
-            PlayCount = playCount;
-        }
-
-        public override string ToString()
-        {
-            if (HasChapter)
-            {
-                return Path.GetFileName(FilePath) + " | SkipChapter: " + string.Join(",", SkipChapters) +
-                       " | EndChapter: " + EndChapter;
-            }
-
-            return Path.GetFileName(FilePath) ?? "???";
-        }
-    }
-
-    #endregion
-
     #region CustomEventArgs
 
     public class RegexEventArgs : EventArgs
@@ -2828,7 +2833,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
     #region PlaylistDataGrid
 
-    public class PlaylistDataGrid : DataGridView
+    public sealed class PlaylistDataGrid : DataGridView
     {
         protected override CreateParams CreateParams
         {
@@ -3163,6 +3168,92 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 list[k] = list[n];
                 list[n] = value;
             }
+        }
+    }
+
+    #endregion
+}
+
+namespace Mpdn.Extensions.PlayerExtensions.DataContracts
+{
+    #region PlaylistItem
+
+    public class PlaylistItem
+    {
+        public string FilePath { get; set; }
+        public bool Active { get; set; }
+        public bool HasChapter { get; set; }
+        public List<int> SkipChapters { get; set; }
+        public int EndChapter { get; set; }
+        public string Duration { get; set; }
+        public int PlayCount { get; set; }
+        public Guid Guid { get; set; }
+
+        public PlaylistItem()
+        {
+        }
+
+        public PlaylistItem(string filePath, bool isActive)
+        {
+            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException("filePath");
+
+            FilePath = filePath;
+            Active = isActive;
+            PlayCount = 0;
+            Guid = Guid.NewGuid();
+        }
+
+        public PlaylistItem(string filePath, List<int> skipChapter, int endChapter, bool isActive)
+        {
+            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException("filePath");
+
+            FilePath = filePath;
+            Active = isActive;
+            SkipChapters = skipChapter;
+            EndChapter = endChapter;
+            HasChapter = true;
+            PlayCount = 0;
+            Guid = Guid.NewGuid();
+        }
+
+        public PlaylistItem(string filePath, List<int> skipChapter, int endChapter, bool isActive, string duration)
+        {
+            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException("filePath");
+
+            FilePath = filePath;
+            Active = isActive;
+            SkipChapters = skipChapter;
+            EndChapter = endChapter;
+            HasChapter = true;
+            Duration = duration;
+            PlayCount = 0;
+            Guid = Guid.NewGuid();
+        }
+
+        public PlaylistItem(string filePath, List<int> skipChapter, int endChapter, bool isActive, string duration,
+            int playCount)
+        {
+            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException("filePath");
+
+            FilePath = filePath;
+            Active = isActive;
+            SkipChapters = skipChapter;
+            EndChapter = endChapter;
+            HasChapter = true;
+            Duration = duration;
+            PlayCount = playCount;
+            Guid = Guid.NewGuid();
+        }
+
+        public override string ToString()
+        {
+            if (HasChapter)
+            {
+                return Path.GetFileName(FilePath) + " | SkipChapter: " + string.Join(",", SkipChapters) +
+                       " | EndChapter: " + EndChapter;
+            }
+
+            return Path.GetFileName(FilePath) ?? "???";
         }
     }
 

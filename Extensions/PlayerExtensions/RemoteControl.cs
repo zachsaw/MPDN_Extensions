@@ -19,6 +19,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -30,13 +31,15 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.PlayerExtensions.Playlist;
+using Mpdn.Extensions.PlayerExtensions.DataContracts;
+using YAXLib;
 using Timer = System.Windows.Forms.Timer;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
     public class AcmPlug : PlayerExtension<RemoteControlSettings, RemoteControlConfig>
     {
-        private const int SERVER_VERSION = 2;
+        private const int SERVER_VERSION = 3;
 
         #region Properties
 
@@ -127,27 +130,17 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_LocationTimer = new Timer {Interval = 100};
             m_LocationTimer.Tick += _locationTimer_Elapsed;
             m_ClientManager = new RemoteClients(this);
-            var playlist = Extension.PlayerExtensions.FirstOrDefault(t => t.Descriptor.Guid == m_PlaylistGuid);
-            if (playlist != null)
-            {
-                m_PlaylistInstance = playlist as Playlist.Playlist;
-                if (m_PlaylistInstance != null)
-                {
-                    m_PlaylistInstance.GetPlaylistForm.VisibleChanged += GetPlaylistFormVisibleChanged;
-                    m_PlaylistInstance.GetPlaylistForm.PlaylistChanged += GetPlaylistFormPlaylistChanged;
-                }
-            }
             Task.Factory.StartNew(Server);
         }
 
         private void GetPlaylistFormPlaylistChanged(object sender, EventArgs e)
         {
-            GetPlaylist(null, true);
+            GetPlaylist(null);
         }
 
         private void GetPlaylistFormVisibleChanged(object sender, EventArgs e)
         {
-            PushToAllListeners("PlaylistShow|" + m_PlaylistInstance.GetPlaylistForm.Visible.ToString(CultureInfo.InvariantCulture));
+            PushToAllListeners("PlaylistShow|" + PlaylistForm.Visible.ToString(CultureInfo.InvariantCulture));
         }
 
         private void Subscribe()
@@ -160,6 +153,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             Media.SubtitleTrackChanged += PlayerControlSubtitleTrackChanged;
             Media.AudioTrackChanged += PlayerControlAudioTrackChanged;
             Media.VideoTrackChanged += MediaOnVideoTrackChanged;
+            PlaylistForm.VisibleChanged += GetPlaylistFormVisibleChanged;
+            PlaylistForm.PlaylistChanged += GetPlaylistFormPlaylistChanged;
         }
 
         private void SettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -176,6 +171,8 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void Unsubscribe()
         {
+            PlaylistForm.VisibleChanged -= GetPlaylistFormVisibleChanged;
+            PlaylistForm.PlaylistChanged -= GetPlaylistFormPlaylistChanged;
             Player.Playback.Completed -= PlayerControlPlaybackCompleted;
             Player.StateChanged -= m_PlayerControl_PlayerStateChanged;
             Player.FullScreenMode.Entering -= PlayerControlEnteringFullScreenMode;
@@ -238,6 +235,18 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
 
             PushToAllListeners(e.NewState + "|" + Media.FilePath);
+            if (e.OldState == PlayerState.Closed)
+            {
+                GetPlaylistActiveIndex();
+            }
+        }
+
+        private void GetPlaylistActiveIndex()
+        {
+            PushToAllListeners("PlaylistActiveIndex|" +
+                               (PlaylistForm.Playlist ?? new List<PlaylistItem>())
+                                   .TakeWhile(item => !item.Active)
+                                   .Count().ToString(CultureInfo.InvariantCulture));
         }
 
         private static string EscapeDelimiters(string input)
@@ -415,22 +424,29 @@ namespace Mpdn.Extensions.PlayerExtensions
                 try
                 {
                     var data = reader.ReadLine();
-                    if (string.IsNullOrWhiteSpace(data))
+                    try
                     {
-                        break;
-                    }
-                    data = UnsanatiseMessage(data);
-                    if (data == "Exit")
-                    {
-                        HandleData(writer, data);
-                        client.Close();
-                    }
-                    else
-                    {
-                        if (!HandleData(writer, data))
+                        if (string.IsNullOrWhiteSpace(data))
                         {
-                            WriteToSpecificClient(writer, "Error|Command not supported on server");
+                            break;
                         }
+                        data = UnsanatiseMessage(data);
+                        if (data == "Exit")
+                        {
+                            HandleData(writer, data);
+                            client.Close();
+                        }
+                        else
+                        {
+                            if (!HandleData(writer, data))
+                            {
+                                WriteToSpecificClient(writer, "Error|Command not supported on server");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine(ex);
                     }
                 }
                 catch
@@ -568,16 +584,19 @@ namespace Mpdn.Extensions.PlayerExtensions
                     AddFilesToPlaylist(param);
                     break;
                 case "InsertFileInPlaylist":
+                {
                     var parameters = param.Split('|');
-                    if (parameters.Length == 2)
-                    {
-                        GuiThread.DoAsync(() => InsertIntoPlaylist(parameters[0], parameters[1]));
-                    }
-                    else
-                    {
+                    if (parameters.Length != 2)
                         return false;
-                    }
+                    GuiThread.DoAsync(() => InsertIntoPlaylist(parameters[0], parameters[1]));
                     break;
+                }
+                case "UpdatePlaylist":
+                {
+                    var data = Deserialize<UpdatePlaylistData>(param);
+                    GuiThread.DoAsync(() => UpdatePlaylist(data.Playlist, data.ActiveIndex, data.CloseMedia));
+                    break;
+                }
                 case "ClearPlaylist":
                     GuiThread.DoAsync(ClearPlaylist);
                     break;
@@ -609,8 +628,18 @@ namespace Mpdn.Extensions.PlayerExtensions
                     GuiThread.DoAsync(() => SetVideoTrack(param));
                     break;
                 case "Dir":
-                    HandleDir(writer, param);
+                {
+                    var parameters = param.Split('|');
+                    if (parameters.Length == 1)
+                    {
+                        HandleDir(writer, param);
+                    }
+                    else
+                    {
+                        HandleDir(writer, parameters[0], parameters[1]);
+                    }
                     break;
+                }
                 case "GetDriveLetters":
                     GetDriveLetters(writer);
                     break;
@@ -624,63 +653,82 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             int index;
             int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out index);
-            m_PlaylistInstance.GetPlaylistForm.InsertFile(index, filePath);
+            PlaylistForm.InsertFile(index, filePath);
+        }
+
+        private PlaylistForm PlaylistForm
+        {
+            get
+            {
+                if (m_PlaylistInstance != null)
+                    return m_PlaylistInstance.GetPlaylistForm;
+
+                var playlist = Extension.PlayerExtensions.FirstOrDefault(t => t.Descriptor.Guid == s_PlaylistGuid);
+                if (playlist == null)
+                {
+                    throw new Exception("RemoteControl requires playlist extension to function");
+                }
+
+                m_PlaylistInstance = (Playlist.Playlist) playlist;
+                return m_PlaylistInstance.GetPlaylistForm;
+            }
+        }
+
+        private void UpdatePlaylist(IList<PlaylistItem> playlist, int index, bool closeMedia)
+        {
+            if (closeMedia)
+            {
+                Media.Close();
+                Player.ClearScreen();
+            }
+            PlaylistForm.UpdatePlaylist(playlist, index, closeMedia);
         }
 
         private void RemoveFromPlaylist(string fileIndex)
         {
             int index;
             int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out index);
-            m_PlaylistInstance.GetPlaylistForm.RemoveFile(index);
+            PlaylistForm.RemoveFile(index);
         }
 
         private void PlaySelectedFile(string fileIndex)
         {
             int myIndex;
             int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out myIndex);
-            m_PlaylistInstance.GetPlaylistForm.SetPlaylistIndex(myIndex);
+            PlaylistForm.SetPlaylistIndex(myIndex);
         }
 
-        private void GetPlaylist(StreamWriter writer, bool notify = false)
+        private void GetPlaylist(StreamWriter writer)
         {
-            int counter = 0;
-            StringBuilder sb = new StringBuilder();
-            var fullPlaylist = m_PlaylistInstance.GetPlaylistForm.Playlist;
-            foreach (var item in fullPlaylist ?? new List<PlaylistItem>())
+            var content = Serialize(new PlaylistData {Playlist = PlaylistForm.Playlist ?? new List<PlaylistItem>()});
+            if (writer != null)
             {
-                counter++;
-                if (counter > 1)
-                    sb.Append(">>");
-                sb.Append(item.FilePath + "]]" + item.Active.ToString(CultureInfo.InvariantCulture));
-            }
-            if (!notify)
-            {
-                WriteToSpecificClient(writer, "PlaylistContent|" + sb);
+                WriteToSpecificClient(writer, "PlaylistContent|" + content);
             }
             else
             {
-                PushToAllListeners("PlaylistContent|" + sb);
+                PushToAllListeners("PlaylistContent|" + content);
             }
         }
 
         private void HidePlaylist()
         {
-            m_PlaylistInstance.GetPlaylistForm.Hide();
+            PlaylistForm.Hide();
         }
 
         private void ShowPlaylist()
         {
-            m_PlaylistInstance.GetPlaylistForm.Show();
+            PlaylistForm.Show();
         }
 
         private void PlaylistPlayNext()
         {
-            m_PlaylistInstance.GetPlaylistForm.PlayNext();
+            PlaylistForm.PlayNext();
         }
 
         private void PlaylistPlayPrevious()
         {
-            m_PlaylistInstance.GetPlaylistForm.PlayPrevious();
+            PlaylistForm.PlayPrevious();
         }
 
         public void FocusMpdn()
@@ -690,9 +738,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void ClearPlaylist()
         {
-            m_PlaylistInstance.GetPlaylistForm.ClearPlaylist();
-            m_PlaylistInstance.GetPlaylistForm.PopulatePlaylist();
-            GetPlaylist(null, true);
+            PlaylistForm.NewPlaylist(true);
         }
 
         private void AddFilesToPlaylist(string files)
@@ -715,12 +761,12 @@ namespace Mpdn.Extensions.PlayerExtensions
                 foreach (var playlistFile in playlistFiles)
                 {
                     var file = playlistFile;
-                    GuiThread.DoAsync(() => m_PlaylistInstance.GetPlaylistForm.OpenPlaylist(file));
+                    GuiThread.DoAsync(() => PlaylistForm.OpenPlaylist(file));
                 }
             }
             if (filesToAdd.Any())
             {
-                GuiThread.DoAsync(() => m_PlaylistInstance.GetPlaylistForm.AddFiles(filesToAdd.ToArray()));
+                GuiThread.DoAsync(() => PlaylistForm.AddFiles(filesToAdd.ToArray()));
             }
         }
 
@@ -774,7 +820,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
             else
             {
-                m_PlaylistInstance.GetPlaylistForm.PlayActive();
+                PlaylistForm.PlayActive();
             }
         }
 
@@ -864,10 +910,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 WriteToSpecificClient(writer, "Position|" + Media.Position.ToString(CultureInfo.InvariantCulture));
             }
-            if (m_PlaylistInstance != null)
-            {
-                PushToAllListeners("PlaylistShow|" + m_PlaylistInstance.GetPlaylistForm.Visible.ToString(CultureInfo.InvariantCulture));
-            }
+            PushToAllListeners("PlaylistShow|" + PlaylistForm.Visible.ToString(CultureInfo.InvariantCulture));
             WriteToSpecificClient(writer, GetAllSubtitleTracks());
             WriteToSpecificClient(writer, GetAllAudioTracks());
             WriteToSpecificClient(writer, GetAllVideoTracks());
@@ -934,7 +977,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
-        private string GetDirectoryListing(string path)
+        private string GetDirectoryListing(string path, IEnumerable<string> patterns)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -963,9 +1006,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             {
                 sb.Append("]]D>>" + d.Name);
             }
-            var files = directoryInfo.EnumerateFiles();
-            var registeredExts = Player.RegisteredMediaExtensions;
-            foreach (var f in files.Where(f => registeredExts.Contains(f.Extension)))
+            var files = patterns.SelectMany(s => directoryInfo.EnumerateFiles(s));
+            foreach (var f in files)
             {
                 sb.Append("]]F>>" + f.Name + ">>" + f.Length.ToString(CultureInfo.InvariantCulture));
             }
@@ -973,9 +1015,14 @@ namespace Mpdn.Extensions.PlayerExtensions
             return sb.ToString();
         }
 
-        private void HandleDir(StreamWriter writer, string path)
+        private void HandleDir(StreamWriter writer, string path, string pattern = null)
         {
-            WriteToSpecificClient(writer, "Dir|" + GetDirectoryListing(path));
+            var patterns = new List<string>();
+            patterns.AddRange(string.IsNullOrWhiteSpace(pattern)
+                ? Player.RegisteredMediaExtensions.Select(s => "*" + s)
+                : pattern.Split(';'));
+
+            WriteToSpecificClient(writer, "Dir|" + GetDirectoryListing(path, patterns));
         }
 
         private void GetDriveLetters(StreamWriter writer)
@@ -1012,6 +1059,24 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
+        private static string Serialize<T>(T value)
+        {
+            return CreateSerializer(typeof(T)).Serialize(value);
+        }
+
+        private static T Deserialize<T>(string serializedObject)
+        {
+            return (T) CreateSerializer(typeof(T)).Deserialize(serializedObject);
+        }
+
+        private static YAXSerializer CreateSerializer(Type type)
+        {
+            return new YAXSerializer(type, YAXExceptionHandlingPolicies.DoNotThrow, YAXExceptionTypes.Ignore,
+                YAXSerializationOptions.DontSerializeCyclingReferences |
+                YAXSerializationOptions.DontSerializePropertiesWithNoSetter |
+                YAXSerializationOptions.SerializeNullObjects);
+        }
+
         #region Variables
 
         private Socket m_ServerSocket;
@@ -1019,7 +1084,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private readonly RemoteControl_AuthHandler m_AuthHandler = new RemoteControl_AuthHandler();
         private RemoteClients m_ClientManager;
         private Timer m_LocationTimer;
-        private readonly Guid m_PlaylistGuid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B");
+        private static readonly Guid s_PlaylistGuid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B");
         private Playlist.Playlist m_PlaylistInstance;
         private long m_LastPosition = -1;
 
@@ -1094,5 +1159,20 @@ namespace Mpdn.Extensions.PlayerExtensions
         }
 
         #endregion
+    }
+}
+
+namespace Mpdn.Extensions.PlayerExtensions.DataContracts
+{
+    public class UpdatePlaylistData
+    {
+        public int ActiveIndex { get; set; }
+        public bool CloseMedia { get; set; }
+        public List<PlaylistItem> Playlist { get; set; }
+    }
+
+    public class PlaylistData
+    {
+        public List<PlaylistItem> Playlist { get; set; }
     }
 }
