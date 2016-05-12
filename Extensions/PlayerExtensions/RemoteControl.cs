@@ -674,7 +674,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
         }
 
-        private void UpdatePlaylist(IList<PlaylistItem> playlist, int index, bool closeMedia)
+        private void UpdatePlaylist(PlaylistData playlist, int index, bool closeMedia)
         {
             if (closeMedia)
             {
@@ -700,7 +700,12 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void GetPlaylist(StreamWriter writer)
         {
-            var content = Serialize(new PlaylistData {Playlist = PlaylistForm.Playlist ?? new List<PlaylistItem>()});
+            var content =
+                Serialize(new PlaylistData
+                {
+                    PlaylistName = PlaylistForm.PlaylistTitle,
+                    Playlist = PlaylistForm.Playlist ?? new List<PlaylistItem>()
+                });
             if (writer != null)
             {
                 WriteToSpecificClient(writer, "PlaylistContent|" + content);
@@ -1168,11 +1173,12 @@ namespace Mpdn.Extensions.PlayerExtensions.DataContracts
     {
         public int ActiveIndex { get; set; }
         public bool CloseMedia { get; set; }
-        public List<PlaylistItem> Playlist { get; set; }
+        public PlaylistData Playlist { get; set; }
     }
 
     public class PlaylistData
     {
+        public string PlaylistName { get; set; }
         public List<PlaylistItem> Playlist { get; set; }
     }
 }

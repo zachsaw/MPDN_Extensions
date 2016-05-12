@@ -137,8 +137,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         #endregion
 
         #region Properties
+
         public static Color StatusHighlightColor { get; set; }
         public static int IconSize { get; set; }
+        public string PlaylistTitle { get; set; }
         public List<PlaylistItem> Playlist { get; set; }
         public PlaylistItem CurrentItem { get; set; }
         public static int PlaylistCount { get; set; }
@@ -167,6 +169,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             InitializeComponent();
             Opacity = MIN_OPACITY;
+            PlaylistTitle = string.Empty;
         }
 
         public void Setup(Playlist playListUi)
@@ -566,7 +569,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             PopulatePlaylist();
             CurrentItem = null;
             m_CurrentPlayIndex = -1;
-            Text = "Playlist";
+            UpdateTitle();
             dgv_PlayList.Invalidate();
 
             if (closeMedia) CloseMedia();
@@ -575,6 +578,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         public void ClearPlaylist()
         {
             Playlist.Clear();
+            PlaylistTitle = string.Empty;
             m_CurrentPlayIndex = -1;
             playToolStripMenuItem.Text = "Play";
         }
@@ -588,9 +592,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             OpenPlaylist(openPlaylistDialog.FileName, clear);
         }
 
-        public void UpdatePlaylist(IList<PlaylistItem> playlist, int index, bool resetCurrentIndex)
+        public void UpdatePlaylist(PlaylistData playlist, int index, bool resetCurrentIndex)
         {
-            Playlist = playlist.ToList();
+            Playlist = playlist.Playlist.ToList();
+            PlaylistTitle = playlist.PlaylistName;
             if (resetCurrentIndex)
             {
                 m_CurrentPlayIndex = -1;
@@ -626,6 +631,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 MessageBox.Show("Invalid or corrupt playlist file.\nAdditional info: " + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            PlaylistTitle = clear ? Path.GetFileNameWithoutExtension(fileName) : string.Empty;
 
             PopulatePlaylist();
 
@@ -666,6 +673,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             var t = new ToolTip();
             t.Show("Playlist saved!", this, PointToClient(Cursor.Position), 2000);
+            PlaylistTitle = Path.GetFileNameWithoutExtension(filename);
         }
 
         public void SavePlaylistAs()
@@ -999,13 +1007,15 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Media.Close();
             CurrentItem = null;
             m_CurrentPlayIndex = -1;
-            Text = "Playlist";
+            UpdateTitle();
             dgv_PlayList.Invalidate();
             Player.ClearScreen();
         }
 
         public void DisposeLoadNextTask()
         {
+            IMedia result;
+
             lock (m_LoadNextTaskLock)
             {
                 if (m_LoadNextTask == null) return;
@@ -1014,9 +1024,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 Thread.MemoryBarrier();
                 m_LoadNextCancellation.Cancel(false);
                 m_LoadNextTask.Wait();
-                DisposeHelper.Dispose(m_LoadNextTask.Result);
+                result = m_LoadNextTask.Result;
                 m_LoadNextTask = null;
             }
+
+            Task.Factory.StartNew(() => DisposeHelper.Dispose(result));
         }
 
         public void HandleMediaLoading(MediaLoadingEventArgs e)
@@ -1932,6 +1944,19 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                               || uriResult.Scheme == Uri.UriSchemeHttps);
         }
 
+        private void UpdateTitle()
+        {
+            var hasTitle = string.IsNullOrWhiteSpace(PlaylistTitle);
+            Text = hasTitle
+                ? "Playlist"
+                : string.Format("Playlist - {0}", PlaylistTitle);
+            if (!string.IsNullOrEmpty(Media.FilePath) && (File.Exists(Media.FilePath) || IsValidUrl(Media.FilePath)) &&
+                CurrentItem != null && Player.State != PlayerState.Closed)
+            {
+                Text = (hasTitle ? string.Empty : (PlaylistTitle + " - ")) + Player.State + " - " + CurrentItem.FilePath;
+            }
+        }
+
         private float GetDpi()
         {
             var g = Graphics.FromHwnd(IntPtr.Zero);
@@ -2090,11 +2115,11 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         private void PlayerStateChanged(object sender, PlayerStateEventArgs e)
         {
+            UpdateTitle();
             if (string.IsNullOrEmpty(Media.FilePath)) return;
             if (!File.Exists(Media.FilePath) && !IsValidUrl(Media.FilePath))
             {
                 m_CurrentPlayIndex = -1;
-                Text = "Playlist";
                 RefreshPlaylist();
                 return;
             }
@@ -2112,10 +2137,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 //                if (dgv_PlayList.CurrentRow != null)
 //                    dgv_PlayList.CurrentRow.Cells[m_TitleCellIndex].Value = title;
 //            }
-//            else
-            {
-                Text = Player.State + " - " + CurrentItem.FilePath;
-            }
 
             HandleContextMenu();
 

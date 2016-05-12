@@ -645,8 +645,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         private void OnMpdnFormClosed(object sender, EventArgs e)
         {
             RememberSettings();
-            // Do the following in the background to prevent it holding up the UI thread
-            Task.Factory.StartNew(() => m_Form.DisposeLoadNextTask());
+            m_Form.DisposeLoadNextTask();
         }
 
         private void OnMpdnFormMove(object sender, EventArgs e)
