@@ -126,6 +126,11 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void SetupServer()
         {
+            if (m_LocationTimer != null)
+            {
+                ShutdownServer();
+            }
+
             Subscribe();
             m_LocationTimer = new Timer {Interval = 100};
             m_LocationTimer.Tick += _locationTimer_Elapsed;
@@ -987,7 +992,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (string.IsNullOrWhiteSpace(path))
             {
                 var lastMediaFile = Player.Config.Settings.GeneralSettings.LastSelectedMediaFileName;
-                if (IsValidUrl(lastMediaFile))
+                if (string.IsNullOrWhiteSpace(lastMediaFile) || IsValidUrl(lastMediaFile))
                 {
                     path = Directory.GetCurrentDirectory();
                 }
@@ -1103,7 +1108,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         public RemoteControlSettings()
         {
             ConnectionPort = 6545;
-            ValidateClients = true;
+            ValidateClients = false;
         }
 
         #endregion
