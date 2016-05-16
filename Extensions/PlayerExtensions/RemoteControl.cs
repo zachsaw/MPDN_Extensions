@@ -656,9 +656,12 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void InsertIntoPlaylist(string fileIndex, string filePath)
         {
-            int index;
-            int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out index);
-            PlaylistForm.InsertFile(index, filePath);
+            SafeCall(() =>
+            {
+                int index;
+                int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out index);
+                PlaylistForm.InsertFile(index, filePath);
+            });
         }
 
         private PlaylistForm PlaylistForm
@@ -681,26 +684,29 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void UpdatePlaylist(PlaylistData playlist, int index, bool closeMedia)
         {
-            if (closeMedia)
+            SafeCall(() =>
             {
-                Media.Close();
-                Player.ClearScreen();
-            }
-            PlaylistForm.UpdatePlaylist(playlist, index, closeMedia);
+                if (closeMedia)
+                {
+                    Media.Close();
+                    Player.ClearScreen();
+                }
+                PlaylistForm.UpdatePlaylist(playlist, index, closeMedia);
+            });
         }
 
         private void RemoveFromPlaylist(string fileIndex)
         {
             int index;
             int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out index);
-            PlaylistForm.RemoveFile(index);
+            SafeCall(() => PlaylistForm.RemoveFile(index));
         }
 
         private void PlaySelectedFile(string fileIndex)
         {
-            int myIndex;
-            int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out myIndex);
-            PlaylistForm.SetPlaylistIndex(myIndex);
+            int index;
+            int.TryParse(fileIndex, NumberStyles.Number, CultureInfo.InvariantCulture, out index);
+            SafeCall(() => PlaylistForm.SetPlaylistIndex(index));
         }
 
         private void GetPlaylist(StreamWriter writer)
@@ -723,32 +729,32 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void HidePlaylist()
         {
-            PlaylistForm.Hide();
+            SafeCall(() => PlaylistForm.Hide());
         }
 
         private void ShowPlaylist()
         {
-            PlaylistForm.Show();
+            SafeCall(() => PlaylistForm.Show());
         }
 
         private void PlaylistPlayNext()
         {
-            PlaylistForm.PlayNext();
+            SafeCall(() => PlaylistForm.PlayNext());
         }
 
         private void PlaylistPlayPrevious()
         {
-            PlaylistForm.PlayPrevious();
+            SafeCall(() => PlaylistForm.PlayPrevious());
         }
 
         public void FocusMpdn()
         {
-            Player.ActiveForm.Focus();
+            SafeCall(() => Player.ActiveForm.Focus());
         }
 
         private void ClearPlaylist()
         {
-            PlaylistForm.NewPlaylist(true);
+            SafeCall(() => PlaylistForm.NewPlaylist(true));
         }
 
         private void AddFilesToPlaylist(string files)
@@ -797,19 +803,27 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_ClientManager.ForceUpdate();
         }
 
+        private void SafeCall(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                GuiThread.DoAsync(() => PushToAllListeners("Error|" + "Failed to open media!\r\n" + ex.Message));
+            }
+        }
+
         private void OpenMedia(object file)
         {
             Task.Factory.StartNew(() =>
             {
-                try
+                SafeCall(() =>
                 {
                     var media = Media.Load(file.ToString());
                     GuiThread.DoAsync(() => Media.Open(media));
-                }
-                catch (Exception ex)
-                {
-                    GuiThread.DoAsync(() => PushToAllListeners("Error|" + "Failed to open media!\r\n" + ex.Message));
-                }
+                });
             });
         }
 
@@ -817,7 +831,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             bool dispOsd;
             bool.TryParse(showOsd.ToString(), out dispOsd);
-            Media.Pause(dispOsd);
+            SafeCall(() => Media.Pause(dispOsd));
         }
 
         private void PlayMedia(object showOsd)
@@ -826,23 +840,26 @@ namespace Mpdn.Extensions.PlayerExtensions
             bool.TryParse(showOsd.ToString(), out dispOsd);
             if (!string.IsNullOrEmpty(Media.FilePath))
             {
-                Media.Play(dispOsd);
+                SafeCall(() => Media.Play(dispOsd));
             }
             else
             {
-                PlaylistForm.PlayActive();
+                SafeCall(() => PlaylistForm.PlayActive());
             }
         }
 
         private void StopMedia(object blank)
         {
-            Media.Stop();
+            SafeCall(Media.Stop);
         }
 
         private void CloseMedia(object blank)
         {
-            Media.Close();
-            Player.ClearScreen();
+            SafeCall(() =>
+            {
+                Media.Close();
+                Player.ClearScreen();
+            });
         }
 
         private void SeekMedia(object seekLocation)
@@ -854,12 +871,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (Player.State == PlayerState.Closed)
                 return;
 
-            Media.Seek(location);
+            SafeCall(() => Media.Seek(location));
         }
 
         private void SetVolume(int level)
         {
-            Player.Volume = level;
+            SafeCall(() => Player.Volume = level);
         }
 
         private void SetSubtitle(string subDescription)
@@ -867,9 +884,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (Player.State == PlayerState.Closed)
                 return;
 
-            var selTrack = Media.SubtitleTracks.FirstOrDefault(t => t.Description == subDescription);
-            if (selTrack != null)
-                Media.SelectSubtitleTrack(selTrack);
+            SafeCall(() =>
+            {
+                var selTrack = Media.SubtitleTracks.FirstOrDefault(t => t.Description == subDescription);
+                if (selTrack != null)
+                    Media.SelectSubtitleTrack(selTrack);
+            });
         }
 
         private void SetVideoTrack(string videoDescription)
@@ -877,9 +897,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (Player.State == PlayerState.Closed)
                 return;
 
-            var selTrack = Media.VideoTracks.FirstOrDefault(t => t.Description == videoDescription);
-            if(selTrack != null)
-                Media.SelectVideoTrack(selTrack);
+            SafeCall(() =>
+            {
+                var selTrack = Media.VideoTracks.FirstOrDefault(t => t.Description == videoDescription);
+                if (selTrack != null)
+                    Media.SelectVideoTrack(selTrack);
+            });
         }
 
         private void SetAudioTrack(string audioDescription)
@@ -887,14 +910,17 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (Player.State == PlayerState.Closed)
                 return;
 
-            var selTrack = Media.AudioTracks.FirstOrDefault(t => t.Description == audioDescription);
-            if (selTrack != null)
-                Media.SelectAudioTrack(selTrack);
+            SafeCall(() =>
+            {
+                var selTrack = Media.AudioTracks.FirstOrDefault(t => t.Description == audioDescription);
+                if (selTrack != null)
+                    Media.SelectAudioTrack(selTrack);
+            });
         }
 
         private void Mute(bool silence)
         {
-            Player.Mute = silence;
+            SafeCall(() => Player.Mute = silence);
             PushToAllListeners("Mute|" + silence.ToString(CultureInfo.InvariantCulture));
         }
 
@@ -930,7 +956,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             bool goFullscreen;
             bool.TryParse(fullScreen, out goFullscreen);
-            Player.FullScreenMode.Active = goFullscreen;
+            SafeCall(() => Player.FullScreenMode.Active = goFullscreen);
         }
 
         private void MoveWindow(string msg)

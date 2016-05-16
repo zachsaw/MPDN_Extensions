@@ -900,7 +900,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             SetPlayStyling();
             if (play)
             {
-                OpenMedia();
+                OpenMedia(false, true);
             }
         }
 
@@ -934,7 +934,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             return nextFile;
         }
 
-        private void OpenMedia(bool queue = false)
+        private void OpenMedia(bool queue = false, bool throwException = false)
         {
             if (m_CurrentPlayIndex < 0 || m_CurrentPlayIndex >= Playlist.Count) return;
 
@@ -988,6 +988,9 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             }
             catch (Exception ex)
             {
+                if (throwException)
+                    throw;
+
                 Player.HandleException(ex);
                 PlayNext();
             }
