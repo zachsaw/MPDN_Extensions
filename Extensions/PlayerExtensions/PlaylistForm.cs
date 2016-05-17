@@ -180,7 +180,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Icon = Gui.Icon;
             DoubleBuffered = true;
 
-            Task.Factory.StartNew(LoadCustomSettings);
+            LoadCustomSettings();
 
             Load += PlaylistFormLoad;
             Shown += PlaylistFormShown;
@@ -606,7 +606,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
                 SetPlaylistIndex(index, false);
             }
             if (!Duration.Visible) return;
-            Task.Factory.StartNew(GetMediaDuration);
+            GetMediaDuration();
         }
 
         public void OpenPlaylist(string fileName, bool clear = true)
@@ -778,7 +778,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Playlist.Add(item);
 
             if (!Duration.Visible) return;
-            Task.Factory.StartNew(GetMediaDuration);
+            GetMediaDuration();
         }
 
         private void ParseWithChapters(string line)
@@ -810,7 +810,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Playlist.Add(new PlaylistItem(title, skipChapters, endChapter, isActive));
 
             if (!Duration.Visible) return;
-            Task.Factory.StartNew(GetMediaDuration);
+            GetMediaDuration();
         }
 
         private void UpdatePlaylist()
@@ -1001,7 +1001,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
             if (string.IsNullOrEmpty(Media.FilePath)) return;
             if (!Duration.Visible) return;
-            Task.Factory.StartNew(GetCurrentMediaDuration);
+            GetCurrentMediaDuration();
             LoadNextInBackground();
         }
 
@@ -1149,7 +1149,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (play) OpenMedia();
 
             if (!Duration.Visible) return;
-            Task.Factory.StartNew(GetCurrentMediaDuration);
+            GetCurrentMediaDuration();
         }
 
         private void AddFilesToPlaylist(IEnumerable<string> fileNames)
@@ -1169,7 +1169,7 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             dgv_PlayList.CurrentCell = dgv_PlayList.Rows[m_SelectedRowIndex].Cells[m_TitleCellIndex];
 
             if (!Duration.Visible) return;
-            Task.Factory.StartNew(GetMediaDuration);
+            GetMediaDuration();
         }
 
         private void AddFolderToPlaylist()
@@ -2319,8 +2319,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
         {
             if (e.Column.Name == "Duration" && e.Column.Visible)
             {
-                Task.Factory.StartNew(GetMediaDuration);
-                if (CurrentItem != null) Task.Factory.StartNew(GetCurrentMediaDuration);
+                GetMediaDuration();
+                if (CurrentItem != null) GetCurrentMediaDuration();
             }
         }
 
@@ -2786,33 +2786,37 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
 
         public void GetMediaDuration()
         {
-            try
+            var playlist = Playlist.ToList();
+            Task.Factory.StartNew(() =>
             {
-                for (var i = 0; i < Playlist.Count; i++)
+                try
                 {
-                    var item = Playlist[i];
-                    if (!File.Exists(item.FilePath)) continue;
-                    if (!string.IsNullOrEmpty(item.Duration)) continue;
-                    var media = new MediaFile(item.FilePath);
-                    var time = TimeSpan.FromMilliseconds(media.duration);
-                    item.Duration = time.ToString(@"hh\:mm\:ss");
-
-                    int idx = i;
-                    GuiThread.DoAsync(() =>
+                    for (var i = 0; i < playlist.Count; i++)
                     {
-                        if (dgv_PlayList.Rows.Count < 1) return;
-                        if (idx != m_CurrentPlayIndex || !string.IsNullOrEmpty(item.Duration))
+                        var item = playlist[i];
+                        if (!File.Exists(item.FilePath)) continue;
+                        if (!string.IsNullOrEmpty(item.Duration)) continue;
+                        var media = new MediaFile(item.FilePath);
+                        var time = TimeSpan.FromMilliseconds(media.duration);
+                        item.Duration = time.ToString(@"hh\:mm\:ss");
+
+                        int idx = i;
+                        GuiThread.DoAsync(() =>
                         {
-                            dgv_PlayList.Rows[idx].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
-                            dgv_PlayList.InvalidateRow(idx);
-                        }
-                    });
+                            if (dgv_PlayList.Rows.Count < 1) return;
+                            if (idx != m_CurrentPlayIndex || !string.IsNullOrEmpty(item.Duration))
+                            {
+                                dgv_PlayList.Rows[idx].Cells["Duration"].Value = time.ToString(@"hh\:mm\:ss");
+                                dgv_PlayList.InvalidateRow(idx);
+                            }
+                        });
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                GuiThread.DoAsync(() => Player.HandleException(ex));
-            }
+                catch (Exception ex)
+                {
+                    GuiThread.DoAsync(() => Player.HandleException(ex));
+                }
+            });
         }
 
         #endregion

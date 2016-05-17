@@ -72,7 +72,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public override IList<Verb> Verbs
         {
-
             get
             {
                 return new[]
@@ -80,8 +79,6 @@ namespace Mpdn.Extensions.PlayerExtensions
                     new Verb(Category.Help, string.Empty, "Connected Clients", "Ctrl+Shift+R",
                         "Show Remote Client connections", ConnectedClientMenuClick)
                 };
-
-
             }
         }
 
@@ -103,7 +100,9 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ShutdownServer()
         {
             Unsubscribe();
-            m_LocationTimer.Stop();
+            m_AreYouAliveTimer.Dispose();
+            m_AreYouAliveTimer = null;
+            m_LocationTimer.Dispose();
             m_LocationTimer = null;
             foreach (var writer in m_Writers)
             {
@@ -121,7 +120,10 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
             }
             if (m_ServerSocket != null)
+            {
                 m_ServerSocket.Close();
+                m_ServerSocket = null;
+            }
         }
 
         private void SetupServer()
@@ -132,6 +134,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             }
 
             Subscribe();
+            m_AreYouAliveTimer = new Timer {Interval = 1000};
+            m_AreYouAliveTimer.Tick += (sender, args) => { PushToAllListeners("AreYouAlive|"); };
+            m_AreYouAliveTimer.Start();
             m_LocationTimer = new Timer {Interval = 100};
             m_LocationTimer.Tick += _locationTimer_Elapsed;
             m_ClientManager = new RemoteClients(this);
@@ -404,7 +409,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private void ClientHandler(Socket client)
         {
             Guid clientGuid = Guid.NewGuid();
-            Clients.TryAdd(clientGuid, client);
+            Clients.AddOrUpdate(clientGuid, client, (guid, socket) => client);
 
             NetworkStream nStream = new NetworkStream(client);
             StreamReader reader = new StreamReader(nStream);
@@ -424,6 +429,13 @@ namespace Mpdn.Extensions.PlayerExtensions
                 if (m_ClientManager.Visible)
                     m_ClientManager.ForceUpdate();
             }
+            GuiThread.DoAsync(() =>
+            {
+                Player.RedirectExceptionHandler(ex =>
+                {
+                    GuiThread.DoAsync(() => PushToAllListeners("Error|" + ex.Message));
+                });
+            });
             while (true)
             {
                 try
@@ -801,6 +813,10 @@ namespace Mpdn.Extensions.PlayerExtensions
             Socket socket;
             Clients.TryRemove(callerGuid, out socket);
             m_ClientManager.ForceUpdate();
+            if (Clients.IsEmpty)
+            {
+                Player.RemoveExceptionHandlerRedirection();
+            }
         }
 
         private void SafeCall(Action action)
@@ -1120,6 +1136,7 @@ namespace Mpdn.Extensions.PlayerExtensions
         private readonly RemoteControl_AuthHandler m_AuthHandler = new RemoteControl_AuthHandler();
         private RemoteClients m_ClientManager;
         private Timer m_LocationTimer;
+        private Timer m_AreYouAliveTimer;
         private static readonly Guid s_PlaylistGuid = new Guid("A1997E34-D67B-43BB-8FE6-55A71AE7184B");
         private Playlist.Playlist m_PlaylistInstance;
         private long m_LastPosition = -1;

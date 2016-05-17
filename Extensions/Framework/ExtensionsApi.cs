@@ -140,6 +140,7 @@ namespace Mpdn.Extensions.Framework
         });
 
         private static readonly object s_RegExtLock = new object();
+        private static Action<Exception> s_CustomExceptionHandler;
 
         public static string[] RegisteredMediaExtensions
         {
@@ -405,7 +406,25 @@ namespace Mpdn.Extensions.Framework
 
         public static void HandleException(Exception exception)
         {
-            PlayerControl.HandleException(exception);
+            var handler = s_CustomExceptionHandler;
+            if (handler != null)
+            {
+                handler(exception);
+            }
+            else
+            {
+                GuiThread.DoAsync(() => PlayerControl.HandleException(exception));
+            }
+        }
+
+        public static void RedirectExceptionHandler(Action<Exception> handler)
+        {
+            s_CustomExceptionHandler = handler;
+        }
+
+        public static void RemoveExceptionHandlerRedirection()
+        {
+            s_CustomExceptionHandler = null;
         }
 
         public static class OsdText
