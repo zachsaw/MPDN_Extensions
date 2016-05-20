@@ -431,6 +431,13 @@
     <Compile Include="Extensions\RenderScripts\Hylian.Super-xBR.ConfigDialog.Designer.cs">
       <DependentUpon>Hylian.Super-xBR.ConfigDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.SSSR.cs" />
+    <Compile Include="Extensions\RenderScripts\Shiandow.SSSR.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.SSSR.ConfigDialog.Designer.cs">
+      <DependentUpon>Shiandow.SSSR.ConfigDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\RenderScripts\Shiandow.SuperRes.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -483,7 +490,12 @@
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
     <None Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
     <None Include="Extensions\RenderScripts\SSimDownscaler\SoftDownscaler.hlsl" />
+    <None Include="Extensions\RenderScripts\SSSR\GammaToLinear.hlsl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
+    <None Include="Extensions\RenderScripts\SSSR\Diff.hlsl" />
+    <None Include="Extensions\RenderScripts\SSSR\Downscale.hlsl" />
+    <None Include="Extensions\RenderScripts\SSSR\DownscaleII.hlsl" />
+    <None Include="Extensions\RenderScripts\SSSR\SuperRes.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\Diff.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\DownscaleAndDiff.hlsl" />
     <None Include="Extensions\RenderScripts\SuperRes\SuperChromaRes\Diff.hlsl" />

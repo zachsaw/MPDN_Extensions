@@ -120,7 +120,18 @@ namespace Mpdn.Extensions.Framework.Filter
         public void AddInputs(IEnumerable<FilterTag> tags)
         {
             foreach (var tag in tags)
-                InputTags.Add(tag);
+                AddInput(tag);
+        }
+
+        public void RemoveInput(FilterTag tag)
+        {
+            m_InputTags.Remove(tag);
+        }
+
+        public void RemoveInputs(IEnumerable<FilterTag> tags)
+        {
+            foreach (var tag in tags)
+                RemoveInput(tag);
         }
 
         public void AddPrefix(FilterTag prefix)
@@ -177,12 +188,12 @@ namespace Mpdn.Extensions.Framework.Filter
             return Traverse(visited);
         }
 
-        public IEnumerable<FilterTag> Nodes()
+        public IList<FilterTag> Nodes()
         {
             return Traverse().ToList();
         }
 
-        public IEnumerable<FilterTag> EndNodes()
+        public IList<FilterTag> EndNodes()
         {
             return Traverse().Where(t => t.IsEndNode()).ToList();
         }
@@ -262,10 +273,10 @@ namespace Mpdn.Extensions.Framework.Filter
 
     public static class TagHelper
     {
-        public static void AddJunction(this FilterTag tag, FilterTag name, FilterTag to)
+        public static void AddJunction(this FilterTag from, FilterTag name, FilterTag to)
         {
-            tag.Insert(new JunctionTag(to));
-            tag.Insert(name);
+            from.Insert(new JunctionTag(to));
+            from.Insert(name);
         }
 
         public static TFilter GetTag<TFilter>(this TFilter filter, out FilterTag tag)

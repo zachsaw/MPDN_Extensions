@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Mpdn.Extensions.CustomLinearScalers;
 using Mpdn.Extensions.Framework;
@@ -28,7 +29,7 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
-        public class SuperRes : RenderChain
+        public class SSSR : RenderChain
         {
             #region Settings
 
@@ -44,7 +45,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public Func<TextureSize> TargetSize; // Not saved
 
-            public SuperRes()
+            public SSSR()
             {
                 TargetSize = () => Renderer.TargetSize;
 
@@ -60,8 +61,7 @@ namespace Mpdn.Extensions.RenderScripts
                     {
                         Scaler = new SincJinc(),
                         TapCount = ScalerTaps.Six,
-                        AntiRingingEnabled = true,
-                        AntiRingingStrength = 1.0f, // No need to hold back, SuperRes should lessen possible artefacts
+                        AntiRingingEnabled = false // Not needed
                     }
                 }.ToPreset("EWA Sinc-Jinc");
 
@@ -89,7 +89,7 @@ namespace Mpdn.Extensions.RenderScripts
                     SelectedIndex = 0
                 };
 
-                PrescalerGroup.Name = "SuperRes Prescaler";
+                PrescalerGroup.Name = "SSSR Prescaler";
             }
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)
@@ -98,18 +98,18 @@ namespace Mpdn.Extensions.RenderScripts
                 return option == null ? input : CreateFilter(input, input + option);
             }
 
-            private ITextureFilter DownscaleAndDiff(ITextureFilter input, ITextureFilter original, TextureSize targetSize)
+            private ITextureFilter Downscale(ITextureFilter input, ITextureFilter original, TextureSize targetSize)
             {
-                var HDownscaler = CompileShader("../SSimDownscaler/Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
+                var HDownscaler = CompileShader("./Downscale.hlsl", macroDefinitions: "axis = 0;")
                     .Configure(transform: s => new TextureSize(targetSize.Width, s.Height));
-                var VDonwscaleAndDiff = CompileShader("./DownscaleAndDiff.hlsl", macroDefinitions: "axis = 1;")
+                var VDonwscale = CompileShader("./DownscaleII.hlsl", macroDefinitions: "axis = 1;")
                     .Configure(transform: s => new TextureSize(s.Width, targetSize.Height))
                     .Configure(format: TextureFormat.Float16);
 
                 var hMean = HDownscaler.ApplyTo(input);
-                var diff = VDonwscaleAndDiff.ApplyTo(hMean, original);
+                var output = VDonwscale.ApplyTo(hMean, original);
 
-                return diff;
+                return output;
             }
 
             public ITextureFilter CreateFilter(ITextureFilter original, ITextureFilter initial)
@@ -135,13 +135,7 @@ namespace Mpdn.Extensions.RenderScripts
                     .Configure(arguments: new[] { Strength, Softness });
                 var FinalSuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: macroDefinitions + "FinalPass = 1;")
                     .Configure(arguments: new[] { Strength });
-
-                var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
-                var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
-                var LinearToGamma = CompileShader("../Common/LinearToGamma.hlsl");
-                var GammaToLinear = CompileShader("../Common/GammaToLinear.hlsl");
-                var LabToLinear = CompileShader("../Common/LabToLinear.hlsl");
-                var LinearToLab = CompileShader("../Common/LinearToLab.hlsl");
+                var GammaToLinear = CompileShader("./GammaToLinear.hlsl");
 
                 // Skip if downscaling
                 if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
@@ -155,36 +149,34 @@ namespace Mpdn.Extensions.RenderScripts
                     if (filter != null)
                         filter.ForceOffsetCorrection();
 
+                    original = original.Apply(GammaToLinear);
                     result = initial.SetSize(targetSize).Apply(GammaToLinear);
                 }
                 else
-                    result = original.Apply(GammaToLinear).Resize(targetSize);
+                {
+                    original = original.Apply(GammaToLinear);
+                    result = original.Resize(targetSize);
+                }
 
                 for (int i = 1; i <= Passes; i++)
                 {
                     // Downscale and Subtract
-                    ITextureFilter diff;
-                    if (LegacyDownscaling)
-                    {
-                        var loRes = result.Resize(inputSize, downscaler: HQDownscaler);
-                        diff = Diff.ApplyTo(loRes, original);
-                    }
-                    else
-                    {   diff = DownscaleAndDiff(result, original, inputSize); }
+                    var loRes = Downscale(result, original, inputSize);
+                    var diff = Diff.ApplyTo(loRes, original);
 
                     // Update result
-                    result = (i != Passes ? SuperRes : FinalSuperRes).ApplyTo(result, diff);
+                    result = (i != Passes ? SuperRes : FinalSuperRes).ApplyTo(result, diff, loRes);
                 }
 
                 return result;
             }
         }
 
-        public class SuperResUi : RenderChainUi<SuperRes, SuperResConfigDialog>
+        public class SSSRUi : RenderChainUi<SSSR, SSSRConfigDialog>
         {
             protected override string ConfigFileName
             {
-                get { return "Shiandow.SuperRes"; }
+                get { return "Shiandow.SSSR"; }
             }
 
             public override string Category
@@ -198,10 +190,10 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     return new ExtensionUiDescriptor
                     {
-                        Guid = new Guid("3E7C670C-EFFB-41EB-AC19-207E650DEBD0"),
-                        Name = "SuperRes",
-                        Description = "SuperRes image scaling",
-                        Copyright = "SuperRes by Shiandow",
+                        Guid = new Guid("162AF4FC-FDD4-11E5-9504-697BFDC8A409"),
+                        Name = "SSSR",
+                        Description = "SSSR image scaling",
+                        Copyright = "SSSR by Shiandow",
                     };
                 }
             }
