@@ -84,7 +84,8 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
         float dXY2 = sqr((float2(X,Y) - offset)/radius);
 
         float2 kernel = Kernel(float2(X,Y) - offset);
-        float weight = kernel.x * kernel.y / (dI2 + var + localVar);
+        // float weight = kernel.x * kernel.y / (dI2 + var + localVar);
+        float weight = - kernel.x * kernel.y * log(dI2 + var + localVar);
         
         fitAvg += weight*float4(GetChroma(X,Y).xyz, 1);
         fitVar += weight*float4((float4(var, sqr(bitnoise), sqr(bitnoise), 0) + GetChroma(X,Y)*GetChroma(X,Y)).xyz, weight);
