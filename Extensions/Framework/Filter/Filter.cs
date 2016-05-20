@@ -84,7 +84,7 @@ namespace Mpdn.Extensions.Framework.Filter
             m_CompilationResult = null;
             m_InputFilters = inputFilters;
 
-            Tag = new EmptyTag();
+            m_Tag = new EmptyTag();
         }
 
         protected abstract void Render(IList<TInput> inputs);
@@ -102,6 +102,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
         private IFilter<TOutput> m_CompilationResult;
         private TOutput m_Output;
+        private readonly FilterTag m_Tag;
 
         public IFilter<TInput>[] InputFilters { get { return m_CompiledFilters ?? m_InputFilters; } }
 
@@ -162,7 +163,7 @@ namespace Mpdn.Extensions.Framework.Filter
             return m_CompilationResult;
         }
 
-        public FilterTag Tag { get; protected set; }
+        public FilterTag Tag { get { return m_Tag; } }
 
         protected virtual IFilter<TOutput> Optimize()
         {

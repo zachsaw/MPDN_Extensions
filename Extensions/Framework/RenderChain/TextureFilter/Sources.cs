@@ -195,7 +195,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             : base(output)
         {
             /* Don't connect to bottom label */
-            Tag = new EmptyTag();
+            Tag.RemoveInput(FilterTag.Bottom);
         }
     }
     
