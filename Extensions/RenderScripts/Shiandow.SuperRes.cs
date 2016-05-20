@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mpdn.Extensions.CustomLinearScalers;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.EwaScaler;
@@ -57,7 +58,7 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     Settings = new EwaScaler
                     {
-                        Scaler = new EwaScaler.JincScaler(),
+                        Scaler = new SincJinc(),
                         TapCount = ScalerTaps.Six,
                         AntiRingingEnabled = true,
                         AntiRingingStrength = 1.0f, // No need to hold back, SuperRes should lessen possible artefacts
