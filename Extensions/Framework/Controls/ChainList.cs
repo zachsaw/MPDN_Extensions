@@ -171,6 +171,9 @@ namespace Mpdn.Extensions.Framework.Controls
             listViewChain.SelectedItems.Clear();
             foreach (var preset in presets)
             {
+                if (preset.Script == null)
+                    preset.Script = ChainUi<T, TScript>.Identity;
+
                 var item = index < 0
                     ? listViewChain.Items.Add(string.Empty)
                     : listViewChain.Items.Insert(index++, string.Empty);
