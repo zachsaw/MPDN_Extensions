@@ -49,25 +49,32 @@ namespace Mpdn.Extensions.RenderScripts
                 PrescalerBox.DisplayMember = "Name";
                 PrescalerBox.SelectedIndex = Math.Min(Settings.PrescalerGroup.SelectedIndex,
                     PrescalerBox.Items.Count - 1);
+                ModeBox.DataSource = Enum.GetValues(typeof(SSSRMode))
+                    .Cast<SSSRMode>()
+                    .Select(p => new { Key = (int)p, Value = p.ToString() })
+                    .ToList();
+                ModeBox.SelectedIndex = Enum.GetValues(typeof(SSSRMode))
+                    .Cast<SSSRMode>()
+                    .ToList()
+                    .IndexOf(Settings.Mode);
+                ModeBox.DisplayMember = "Value";
+                ModeBox.ValueMember = "Key";
 
                 PassesSetter.Value = Settings.Passes;
-                StrengthSetter.Value = (decimal)Settings.Strength;
-                SoftnessSetter.Value = (decimal)Settings.Softness;
-
-                LegacyBox.Checked = Settings.LegacyDownscaling;
+                OverSharpSetter.Value = (decimal)Settings.OverSharp;
+                LocalitySetter.Value = (decimal)Settings.Locality;
                 
                 UpdateGui();
             }
 
             protected override void SaveSettings()
             {
-                Settings.PrescalerGroup.SelectedIndex = PrescalerBox.SelectedIndex;
-
                 Settings.Passes = (int)PassesSetter.Value;
-                Settings.Strength = (float)StrengthSetter.Value;
-                Settings.Softness = (float)SoftnessSetter.Value;
+                Settings.OverSharp = (float)OverSharpSetter.Value;
+                Settings.Locality = (float)LocalitySetter.Value;
 
-                Settings.LegacyDownscaling = LegacyBox.Checked;
+                Settings.PrescalerGroup.SelectedIndex = PrescalerBox.SelectedIndex;
+                Settings.Mode = (SSSRMode)ModeBox.SelectedValue;
             }
 
             private void SelectionChanged(object sender, EventArgs e)
