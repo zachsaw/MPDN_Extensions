@@ -13,34 +13,17 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
-// -- Main parameters --
-#define strength (args0[0])
-#define softness (args0[1])
 
 // -- Misc --
-sampler s0    : register(s0);
-sampler sDiff : register(s1);
-sampler sOriginal : register(s2);
-float4 size1  : register(c2); // Original size
+sampler s0          : register(s0);
+sampler sDiff       : register(s1);
+sampler sOriginal   : register(s2);
+
+float4 size1      : register(c2); // Original size
 float4 sizeOutput : register(c3);
-float4 args0  : register(c4);
-
-// -- Edge detection options -- 
-#define acuity 6.0
-#define radius 0.5
-#define power 1.0
-
-// -- Skip threshold --
-#define threshold 1
-#define skip (1 == 0)
-// #define skip (c0.a < threshold/255.0)
 
 // -- Size handling --
 #define originalSize size1
-
-#define width  (sizeOutput[0])
-#define height (sizeOutput[1])
 
 #define dxdy (sizeOutput.zw)
 #define ddxddy (originalSize.zw)
@@ -63,11 +46,10 @@ float4 args0  : register(c4);
 
 // -- Input processing --
 //Current high res value
-#define Get(x,y)        (tex2Dlod(s0, float4(tex + sqrt(ddxddy/dxdy)*dxdy*int2(x,y),0,0)))
-// #define GetY(x,y)   (tex2Dlod(sDiff,float4(ddxddy*(pos+int2(x,y)+0.5),              0,0)).a)
-#define GetOriginal(x,y)   (tex2Dlod(sOriginal, float4(ddxddy*(pos+int2(x,y)+0.5),0,0)))
+#define Get(x,y)        (tex2Dlod(s0,        float4(tex + sqrt(ddxddy/dxdy)*dxdy*int2(x,y),0,0)))
+#define GetLoRes(x,y)   (tex2Dlod(sOriginal, float4(ddxddy*(pos+int2(x,y)+0.5),0,0)))
 //Downsampled result
-#define Diff(x,y)       (tex2Dlod(sDiff,  float4(ddxddy*(pos+int2(x,y)+0.5),0,0)))
+#define Diff(x,y)       (tex2Dlod(sDiff,     float4(ddxddy*(pos+int2(x,y)+0.5),0,0)))
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
@@ -82,24 +64,26 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     // Calculate faithfulness force
     float weightSum = 0;
     float3 diff = 0;
-    float3 soft = 0;
    
     [unroll] for (int X = minX; X <= maxX; X++)
     [unroll] for (int Y = minX; Y <= maxX; Y++)
     {
-        float2 kernel = Kernel(float2(X,Y) - offset);
-        float weight = kernel.x * kernel.y / (sqr(Luma(c0 - GetOriginal(X,Y))) + GetOriginal(X,Y).w + sqr(0.5/255.0));
-        // float weight = kernel.x * kernel.y * (- log(sqr(Luma(c0 - GetOriginal(X,Y))) + GetOriginal(X,Y).w + sqr(0.5/255.0)));
+        float R = Diff(X,Y).w;
+        float Var = GetLoRes(X,Y).w;
 
-        diff += weight * ((1-Diff(X,Y).w)*c0 - Diff(X,Y));
+        float2 kernel = Kernel(float2(X,Y) - offset);
+        float weight = kernel.x * kernel.y / (sqr(Luma(c0 - GetLoRes(X,Y))) + Var + sqr(0.5/255.0));
+
+        diff += weight * (Diff(X,Y) - (1-R) * c0.xyz);
         weightSum += weight;
     }
     diff /= weightSum;
 
-    c0.xyz -= strength * diff;
+    c0.xyz += diff;
 
     #ifdef FinalPass
         c0.xyz = Gamma(2*(c0.xyz - 0.25));
+        // c0.xyz = Diff(0,0).w * 0.5; // Debugging
     #endif
 
     return c0;

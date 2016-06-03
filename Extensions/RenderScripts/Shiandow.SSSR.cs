@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using Mpdn.Extensions.CustomLinearScalers;
@@ -29,6 +30,16 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
+        public enum SSSRMode
+        {
+            [Description("Sharp")]
+            Sharp = 0,
+            [Description("Soft I")]
+            SoftI = 1,
+            [Description("Soft II")]
+            SoftII = 2
+        }
+
         public class SSSR : RenderChain
         {
             #region Settings
@@ -36,10 +47,10 @@ namespace Mpdn.Extensions.RenderScripts
             public RenderScriptGroup PrescalerGroup { get; set; }
 
             public int Passes { get; set; }
-            public float Strength { get; set; }
-            public float Softness { get; set; }
+            public float OverSharp { get; set; }
+            public float Locality { get; set; }
 
-            public bool LegacyDownscaling { get; set; }
+            public SSSRMode Mode { get; set; }
 
             #endregion
 
@@ -50,10 +61,10 @@ namespace Mpdn.Extensions.RenderScripts
                 TargetSize = () => Renderer.TargetSize;
 
                 Passes = 2;
-                Strength = 1.0f;
-                Softness = 0.0f;
+                OverSharp = 0.0f;
+                Locality = 4.0f;
 
-                LegacyDownscaling = false;
+                Mode = SSSRMode.Sharp;
 
                 var EWASincJinc = new EwaScalerScaler
                 {
@@ -102,12 +113,11 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 var HDownscaler = CompileShader("./Downscale.hlsl", macroDefinitions: "axis = 0;")
                     .Configure(transform: s => new TextureSize(targetSize.Width, s.Height));
-                var VDonwscale = CompileShader("./DownscaleII.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height))
-                    .Configure(format: TextureFormat.Float16);
+                var VDownscaler = CompileShader("./DownscaleII.hlsl", macroDefinitions: "axis = 1;")
+                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height));
 
                 var hMean = HDownscaler.ApplyTo(input);
-                var output = VDonwscale.ApplyTo(hMean, original);
+                var output = VDownscaler.ApplyTo(hMean, original);
 
                 return output;
             }
@@ -115,30 +125,23 @@ namespace Mpdn.Extensions.RenderScripts
             public ITextureFilter CreateFilter(ITextureFilter original, ITextureFilter initial)
             {
                 ITextureFilter result;
-                var HQDownscaler = (IScaler)new Bicubic(0.75f, false);
 
                 // Calculate Sizes
                 var inputSize = original.Output.Size;
                 var targetSize = TargetSize();
 
-                string macroDefinitions = "";
-                if (Softness == 0.0f)
-                    macroDefinitions += "SkipSoftening = 1;";
-                if (Strength == 0.0f)
-                    return initial;
-
                 // Compile Shaders
-                var Diff = CompileShader("Diff.hlsl")
+                var Diff = CompileShader("Diff.hlsl", macroDefinitions: String.Format("MODE = {0};", (int)Mode))
                     .Configure(format: TextureFormat.Float16);
-
-                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: macroDefinitions)
-                    .Configure(arguments: new[] { Strength, Softness });
-                var FinalSuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: macroDefinitions + "FinalPass = 1;")
-                    .Configure(arguments: new[] { Strength });
+                var SuperRes = CompileShader("SuperRes.hlsl");
+                var FinalSuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: "FinalPass = 1;");
                 var GammaToLinear = CompileShader("./GammaToLinear.hlsl");
 
+                Diff["spread"] = 1/Locality;
+                Diff["oversharp"] = OverSharp;
+
                 // Skip if downscaling
-                if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
+                if (targetSize.Width <= inputSize.Width || targetSize.Height <= inputSize.Height)
                     return original;
 
                 // Initial scaling

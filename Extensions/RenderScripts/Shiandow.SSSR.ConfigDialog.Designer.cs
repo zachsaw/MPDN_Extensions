@@ -47,7 +47,7 @@ namespace Mpdn.Extensions.RenderScripts
             /// </summary>
             private void InitializeComponent()
             {
-            this.StrengthSetter = new System.Windows.Forms.NumericUpDown();
+            this.OverSharpSetter = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.ButtonOK = new System.Windows.Forms.Button();
             this.ButtonCancel = new System.Windows.Forms.Button();
@@ -56,55 +56,56 @@ namespace Mpdn.Extensions.RenderScripts
             this.PrescalerBox = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.ConfigButton = new System.Windows.Forms.Button();
-            this.SoftnessSetter = new System.Windows.Forms.NumericUpDown();
+            this.LocalitySetter = new System.Windows.Forms.NumericUpDown();
             this.label8 = new System.Windows.Forms.Label();
             this.ModifyButton = new System.Windows.Forms.Button();
-            this.LegacyBox = new System.Windows.Forms.CheckBox();
-            ((System.ComponentModel.ISupportInitialize)(this.StrengthSetter)).BeginInit();
+            this.ModeBox = new System.Windows.Forms.ComboBox();
+            this.label2 = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.OverSharpSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PassesSetter)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.SoftnessSetter)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.LocalitySetter)).BeginInit();
             this.SuspendLayout();
             // 
-            // StrengthSetter
+            // OverSharpSetter
             // 
-            this.StrengthSetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.StrengthSetter.DecimalPlaces = 2;
-            this.StrengthSetter.Increment = new decimal(new int[] {
+            this.OverSharpSetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.OverSharpSetter.DecimalPlaces = 2;
+            this.OverSharpSetter.Increment = new decimal(new int[] {
             1,
             0,
             0,
             65536});
-            this.StrengthSetter.Location = new System.Drawing.Point(167, 38);
-            this.StrengthSetter.Maximum = new decimal(new int[] {
-            2,
+            this.OverSharpSetter.Location = new System.Drawing.Point(223, 38);
+            this.OverSharpSetter.Maximum = new decimal(new int[] {
+            1,
             0,
             0,
             0});
-            this.StrengthSetter.Name = "StrengthSetter";
-            this.StrengthSetter.Size = new System.Drawing.Size(44, 20);
-            this.StrengthSetter.TabIndex = 3;
-            this.StrengthSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.StrengthSetter.Value = new decimal(new int[] {
-            8,
+            this.OverSharpSetter.Minimum = new decimal(new int[] {
+            1,
             0,
             0,
-            65536});
+            -2147483648});
+            this.OverSharpSetter.Name = "OverSharpSetter";
+            this.OverSharpSetter.Size = new System.Drawing.Size(44, 20);
+            this.OverSharpSetter.TabIndex = 3;
+            this.OverSharpSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(12, 40);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(47, 13);
+            this.label1.Size = new System.Drawing.Size(87, 13);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Strength";
+            this.label1.Text = "Over Sharpening";
             // 
             // ButtonOK
             // 
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(55, 165);
+            this.ButtonOK.Location = new System.Drawing.Point(111, 171);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 8;
@@ -116,7 +117,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(136, 165);
+            this.ButtonCancel.Location = new System.Drawing.Point(192, 171);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 9;
@@ -135,7 +136,7 @@ namespace Mpdn.Extensions.RenderScripts
             // PassesSetter
             // 
             this.PassesSetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.PassesSetter.Location = new System.Drawing.Point(167, 12);
+            this.PassesSetter.Location = new System.Drawing.Point(223, 12);
             this.PassesSetter.Maximum = new decimal(new int[] {
             10,
             0,
@@ -158,16 +159,16 @@ namespace Mpdn.Extensions.RenderScripts
             this.PrescalerBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.PrescalerBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.PrescalerBox.FormattingEnabled = true;
-            this.PrescalerBox.Location = new System.Drawing.Point(69, 90);
+            this.PrescalerBox.Location = new System.Drawing.Point(69, 117);
             this.PrescalerBox.Name = "PrescalerBox";
-            this.PrescalerBox.Size = new System.Drawing.Size(142, 21);
+            this.PrescalerBox.Size = new System.Drawing.Size(198, 21);
             this.PrescalerBox.TabIndex = 0;
             this.PrescalerBox.SelectedIndexChanged += new System.EventHandler(this.SelectionChanged);
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 93);
+            this.label6.Location = new System.Drawing.Point(12, 120);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(51, 13);
             this.label6.TabIndex = 13;
@@ -177,35 +178,35 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.ConfigButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ConfigButton.Location = new System.Drawing.Point(15, 117);
+            this.ConfigButton.Location = new System.Drawing.Point(15, 144);
             this.ConfigButton.Name = "ConfigButton";
-            this.ConfigButton.Size = new System.Drawing.Size(115, 21);
+            this.ConfigButton.Size = new System.Drawing.Size(171, 21);
             this.ConfigButton.TabIndex = 6;
             this.ConfigButton.Text = "Configure Prescaler";
             this.ConfigButton.UseVisualStyleBackColor = true;
             this.ConfigButton.Click += new System.EventHandler(this.ConfigButtonClick);
             // 
-            // SoftnessSetter
+            // LocalitySetter
             // 
-            this.SoftnessSetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SoftnessSetter.DecimalPlaces = 2;
-            this.SoftnessSetter.Increment = new decimal(new int[] {
-            5,
+            this.LocalitySetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.LocalitySetter.DecimalPlaces = 2;
+            this.LocalitySetter.Location = new System.Drawing.Point(223, 64);
+            this.LocalitySetter.Maximum = new decimal(new int[] {
+            100,
             0,
             0,
-            131072});
-            this.SoftnessSetter.Location = new System.Drawing.Point(167, 64);
-            this.SoftnessSetter.Maximum = new decimal(new int[] {
-            2,
+            65536});
+            this.LocalitySetter.Minimum = new decimal(new int[] {
+            10,
             0,
             0,
-            0});
-            this.SoftnessSetter.Name = "SoftnessSetter";
-            this.SoftnessSetter.Size = new System.Drawing.Size(44, 20);
-            this.SoftnessSetter.TabIndex = 6;
-            this.SoftnessSetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.SoftnessSetter.Value = new decimal(new int[] {
-            5,
+            65536});
+            this.LocalitySetter.Name = "LocalitySetter";
+            this.LocalitySetter.Size = new System.Drawing.Size(44, 20);
+            this.LocalitySetter.TabIndex = 6;
+            this.LocalitySetter.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.LocalitySetter.Value = new decimal(new int[] {
+            10,
             0,
             0,
             65536});
@@ -215,14 +216,15 @@ namespace Mpdn.Extensions.RenderScripts
             this.label8.AutoSize = true;
             this.label8.Location = new System.Drawing.Point(12, 66);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(48, 13);
+            this.label8.Size = new System.Drawing.Size(43, 13);
             this.label8.TabIndex = 16;
-            this.label8.Text = "Softness";
+            this.label8.Text = "Locality";
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // ModifyButton
             // 
             this.ModifyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ModifyButton.Location = new System.Drawing.Point(136, 117);
+            this.ModifyButton.Location = new System.Drawing.Point(192, 144);
             this.ModifyButton.Name = "ModifyButton";
             this.ModifyButton.Size = new System.Drawing.Size(75, 21);
             this.ModifyButton.TabIndex = 17;
@@ -230,27 +232,39 @@ namespace Mpdn.Extensions.RenderScripts
             this.ModifyButton.UseVisualStyleBackColor = true;
             this.ModifyButton.Click += new System.EventHandler(this.ModifyButtonClick);
             // 
-            // LegacyBox
+            // ModeBox
             // 
-            this.LegacyBox.AutoSize = true;
-            this.LegacyBox.Location = new System.Drawing.Point(15, 144);
-            this.LegacyBox.Name = "LegacyBox";
-            this.LegacyBox.Size = new System.Drawing.Size(141, 17);
-            this.LegacyBox.TabIndex = 18;
-            this.LegacyBox.Text = "Use legacy downscaling";
-            this.LegacyBox.UseVisualStyleBackColor = true;
+            this.ModeBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ModeBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ModeBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.ModeBox.FormattingEnabled = true;
+            this.ModeBox.Location = new System.Drawing.Point(69, 90);
+            this.ModeBox.Name = "ModeBox";
+            this.ModeBox.Size = new System.Drawing.Size(198, 21);
+            this.ModeBox.TabIndex = 18;
             // 
-            // SuperResConfigDialog
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 93);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(34, 13);
+            this.label2.TabIndex = 19;
+            this.label2.Text = "Mode";
+            // 
+            // SSSRConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(223, 200);
-            this.Controls.Add(this.LegacyBox);
+            this.ClientSize = new System.Drawing.Size(279, 206);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.ModeBox);
             this.Controls.Add(this.ModifyButton);
             this.Controls.Add(this.label8);
-            this.Controls.Add(this.SoftnessSetter);
+            this.Controls.Add(this.LocalitySetter);
             this.Controls.Add(this.ConfigButton);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.PrescalerBox);
@@ -259,18 +273,18 @@ namespace Mpdn.Extensions.RenderScripts
             this.Controls.Add(this.ButtonCancel);
             this.Controls.Add(this.ButtonOK);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.StrengthSetter);
+            this.Controls.Add(this.OverSharpSetter);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "SuperResConfigDialog";
+            this.Name = "SSSRConfigDialog";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "SuperRes Settings";
-            ((System.ComponentModel.ISupportInitialize)(this.StrengthSetter)).EndInit();
+            this.Text = "SSSR Settings";
+            ((System.ComponentModel.ISupportInitialize)(this.OverSharpSetter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PassesSetter)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.SoftnessSetter)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.LocalitySetter)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -278,7 +292,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             #endregion
 
-            private System.Windows.Forms.NumericUpDown StrengthSetter;
+            private System.Windows.Forms.NumericUpDown OverSharpSetter;
             private System.Windows.Forms.Label label1;
             private System.Windows.Forms.Button ButtonOK;
             private System.Windows.Forms.Button ButtonCancel;
@@ -287,11 +301,11 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.ComboBox PrescalerBox;
             private System.Windows.Forms.Label label6;
             private System.Windows.Forms.Button ConfigButton;
-            private System.Windows.Forms.NumericUpDown SoftnessSetter;
+            private System.Windows.Forms.NumericUpDown LocalitySetter;
             private System.Windows.Forms.Label label8;
             private System.Windows.Forms.Button ModifyButton;
-            private System.Windows.Forms.CheckBox LegacyBox;
-
+            private System.Windows.Forms.ComboBox ModeBox;
+            private System.Windows.Forms.Label label2;
         }
     }
 }
