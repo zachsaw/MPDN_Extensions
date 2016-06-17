@@ -38,7 +38,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         TextureSize TargetSize { get; }
         Vector2 ChromaOffset { get; }
 
-        ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null);
+        ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null, ICompositionFilter fallback = null);
     }
 
     public interface IShaderFilterSettings<T>
@@ -260,7 +260,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return filter.SetSize(filter.Output.Size, true);
         }
 
-        public static ITextureFilter SetSize(this ITextureFilter<ITexture2D> filter, TextureSize size, bool tagged = false)
+        public static ITextureFilter SetSize(this IFilter<ITextureOutput<ITexture2D>> filter, TextureSize size, bool tagged = false)
         {
             var resizeable = (filter as IResizeableFilter) ?? new ResizeFilter(filter);
             if (tagged)
@@ -408,7 +408,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return input;
 
             return compositionFilter
-                .Rebuild(scaler)
+                .Rebuild(scaler, fallback: compositionFilter)
                 .Tagged(new ChromaScalerTag(compositionFilter.Chroma, scaler.Description));
         }
     }
