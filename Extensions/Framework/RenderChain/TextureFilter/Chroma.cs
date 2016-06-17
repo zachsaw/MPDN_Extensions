@@ -63,10 +63,10 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         public TextureSize TargetSize { get; private set; }
         public Vector2 ChromaOffset { get; private set; }
 
-        protected readonly CompositionFilter Fallback;
+        protected readonly ICompositionFilter Fallback;
         protected readonly IChromaScaler ChromaScaler;
 
-        public CompositionFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, IChromaScaler chromaScaler, TextureSize? targetSize = null, Vector2? chromaOffset = null, CompositionFilter fallback = null)
+        public CompositionFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, IChromaScaler chromaScaler, TextureSize? targetSize = null, Vector2? chromaOffset = null, ICompositionFilter fallback = null)
         {
             if (lumaInput == null)
                 throw new ArgumentNullException("lumaInput");
@@ -87,9 +87,9 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             return Rebuild(targetSize: outputSize);
         }
 
-        public ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null)
+        public ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null, ICompositionFilter fallback = null)
         {
-            return new CompositionFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset, this)
+            return new CompositionFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset, fallback ?? Fallback)
                 .Tagged(Tag);
         }
 
