@@ -102,9 +102,12 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
-            return (ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset) ?? Fallback)
+            var Result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset);
+            if (Result != null)
+                Result.Tag.AddPrefix(Tag);
+
+            return (Result ?? Fallback)
                 .SetSize(TargetSize, tagged: true)
-                .PrefixTagTo(Tag)
                 .Compile();
         }
 
