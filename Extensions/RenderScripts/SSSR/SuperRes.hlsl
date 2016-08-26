@@ -40,6 +40,7 @@ float4 sizeOutput : register(c3);
 
 // -- Convenience --
 #define sqr(x) dot(x,x)
+#define noise (0.5/255.0)
 
 // -- Colour space Processing --
 #include "../Common/ColourProcessing.hlsl"
@@ -72,13 +73,13 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
         float Var = GetLoRes(X,Y).w;
 
         float2 kernel = Kernel(float2(X,Y) - offset);
-        float weight = kernel.x * kernel.y / (sqr(Luma(c0 - GetLoRes(X,Y))) + Var + sqr(0.5/255.0));
+        float weight = kernel.x * kernel.y / (sqr(Luma(c0 - GetLoRes(X,Y))) + Var + sqr(noise));
 
         diff += weight * (Diff(X,Y) - (1-R) * c0.xyz);
         weightSum += weight;
     }
     diff /= weightSum;
-
+    
     c0.xyz += diff;
 
     #ifdef FinalPass
