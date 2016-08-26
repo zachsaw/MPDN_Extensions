@@ -34,10 +34,10 @@ namespace Mpdn.Extensions.RenderScripts
         {
             [Description("Sharp")]
             Sharp = 0,
-            [Description("Soft I")]
-            SoftI = 1,
-            [Description("Soft II")]
-            SoftII = 2
+            [Description("Soft")]
+            Soft = 1,
+            [Description("Hybrid")]
+            Hybrid = 2
         }
 
         public class SSSR : RenderChain
@@ -64,7 +64,7 @@ namespace Mpdn.Extensions.RenderScripts
                 OverSharp = 0.0f;
                 Locality = 4.0f;
 
-                Mode = SSSRMode.Sharp;
+                Mode = SSSRMode.Hybrid;
 
                 var EWASincJinc = new EwaScalerScaler
                 {
@@ -112,9 +112,13 @@ namespace Mpdn.Extensions.RenderScripts
             private ITextureFilter Downscale(ITextureFilter input, ITextureFilter original, TextureSize targetSize)
             {
                 var HDownscaler = CompileShader("./Downscale.hlsl", macroDefinitions: "axis = 0;")
-                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height));
+                    .Configure(
+                        transform: s => new TextureSize(targetSize.Width, s.Height),
+                        format: TextureFormat.Float16);
                 var VDownscaler = CompileShader("./DownscaleII.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height));
+                    .Configure(
+                        transform: s => new TextureSize(s.Width, targetSize.Height),
+                        format: TextureFormat.Float16);
 
                 var hMean = HDownscaler.ApplyTo(input);
                 var output = VDownscaler.ApplyTo(hMean, original);
@@ -131,11 +135,16 @@ namespace Mpdn.Extensions.RenderScripts
                 var targetSize = TargetSize();
 
                 // Compile Shaders
-                var Diff = CompileShader("Diff.hlsl", macroDefinitions: String.Format("MODE = {0};", (int)Mode))
+                var SharpDiff = CompileShader("Diff.hlsl", macroDefinitions: "MODE = 0;")
+                    .Configure(format: TextureFormat.Float16);
+                var Diff = CompileShader("Diff.hlsl", macroDefinitions: String.Format("MODE = {0};", Mode == SSSRMode.Sharp ? 0 : 1))
                     .Configure(format: TextureFormat.Float16);
                 var SuperRes = CompileShader("SuperRes.hlsl");
                 var FinalSuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: "FinalPass = 1;");
                 var GammaToLinear = CompileShader("./GammaToLinear.hlsl");
+
+                SharpDiff["spread"] = 1 / Locality;
+                SharpDiff["oversharp"] = OverSharp;
 
                 Diff["spread"] = 1/Locality;
                 Diff["oversharp"] = OverSharp;
@@ -163,9 +172,16 @@ namespace Mpdn.Extensions.RenderScripts
 
                 for (int i = 1; i <= Passes; i++)
                 {
+                    ITextureFilter diff;
+
                     // Downscale and Subtract
                     var loRes = Downscale(result, original, inputSize);
-                    var diff = Diff.ApplyTo(loRes, original);
+                    
+                    // Calculate difference   
+                    if (Mode == SSSRMode.Hybrid && i == 1)
+                        diff = SharpDiff.ApplyTo(loRes, original);
+                    else
+                        diff = Diff.ApplyTo(loRes, original);
 
                     // Update result
                     result = (i != Passes ? SuperRes : FinalSuperRes).ApplyTo(result, diff, loRes);
