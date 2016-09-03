@@ -24,15 +24,23 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.Bilateral
     {
+        public enum BilateralMode
+        {
+            Legacy=0,
+            Krig=1
+        }
+
         public class Bilateral : RenderChain, IChromaScaler
         {
             #region Settings
 
             public float Strength { get; set; }
+            public BilateralMode Mode { get; set; }
 
             public Bilateral()
             {
                 Strength = 0.5f;
+                Mode = BilateralMode.Krig;
             }
 
             #endregion
@@ -62,7 +70,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Vector2 adjointOffset = -chromaOffset * lumaSize / chromaSize;
 
-                var crossBilateral = CompileShader("CrossBilateral.hlsl");
+                var crossBilateral = CompileShader("CrossBilateral.hlsl", macroDefinitions: String.Format("Mode = {0};", (int)Mode));
                 crossBilateral["chromaParams"] = new Vector4(chromaOffset.X, chromaOffset.Y, yuvConsts[0], yuvConsts[1] );
                 crossBilateral["power"] = Strength;
 

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
+using System;
+using System.Linq;
 using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -29,7 +31,23 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
+                Initialize();
+
                 StrengthSetter.Value = (decimal)Settings.Strength;
+            }
+
+            private void Initialize()
+            {
+                ModeBox.DataSource = Enum.GetValues(typeof(BilateralMode))
+                    .Cast<BilateralMode>()
+                    .Select(p => new { Key = (int)p, Value = p.ToString() })
+                    .ToList();
+                ModeBox.SelectedIndex = Enum.GetValues(typeof(BilateralMode))
+                    .Cast<BilateralMode>()
+                    .ToList()
+                    .IndexOf(Settings.Mode);
+                ModeBox.DisplayMember = "Value";
+                ModeBox.ValueMember = "Key";
             }
 
             protected override void SaveSettings()
