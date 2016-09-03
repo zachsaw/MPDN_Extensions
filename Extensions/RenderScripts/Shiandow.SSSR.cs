@@ -47,6 +47,7 @@ namespace Mpdn.Extensions.RenderScripts
             public RenderScriptGroup PrescalerGroup { get; set; }
 
             public int Passes { get; set; }
+            public bool LinearLight { get; set; }
             public float OverSharp { get; set; }
             public float Locality { get; set; }
 
@@ -61,6 +62,7 @@ namespace Mpdn.Extensions.RenderScripts
                 TargetSize = () => Renderer.TargetSize;
 
                 Passes = 2;
+                LinearLight = false;
                 OverSharp = 0.0f;
                 Locality = 4.0f;
 
@@ -140,8 +142,8 @@ namespace Mpdn.Extensions.RenderScripts
                 var Diff = CompileShader("Diff.hlsl", macroDefinitions: String.Format("MODE = {0};", Mode == SSSRMode.Sharp ? 0 : 1))
                     .Configure(format: TextureFormat.Float16);
                 var SuperRes = CompileShader("SuperRes.hlsl");
-                var FinalSuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: "FinalPass = 1;");
-                var GammaToLinear = CompileShader("./GammaToLinear.hlsl");
+                var FinalSuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: "FinalPass = 1;" + (LinearLight ? "LinearLight = 1;" : "" ));
+                var GammaToLinear = CompileShader("GammaToLinear.hlsl");
 
                 SharpDiff["spread"] = 1 / Locality;
                 SharpDiff["oversharp"] = OverSharp;
@@ -161,12 +163,14 @@ namespace Mpdn.Extensions.RenderScripts
                     if (filter != null)
                         filter.ForceOffsetCorrection();
 
-                    original = original.Apply(GammaToLinear);
+                    if (LinearLight)
+                        original = original.Apply(GammaToLinear);
                     result = initial.SetSize(targetSize).Apply(GammaToLinear);
                 }
                 else
                 {
-                    original = original.Apply(GammaToLinear);
+                    if (LinearLight)
+                        original = original.Apply(GammaToLinear);
                     result = original.Resize(targetSize);
                 }
 

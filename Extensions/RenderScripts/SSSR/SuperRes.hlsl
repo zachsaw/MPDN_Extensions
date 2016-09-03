@@ -83,7 +83,9 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     c0.xyz += diff;
 
     #ifdef FinalPass
+        #ifdef LinearLight
         c0.xyz = Gamma(2*(c0.xyz - 0.25));
+        #endif
         // c0.xyz = Diff(0,0).w * 0.5; // Debugging
     #endif
 

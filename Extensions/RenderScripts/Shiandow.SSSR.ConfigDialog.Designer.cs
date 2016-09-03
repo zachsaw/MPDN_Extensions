@@ -61,6 +61,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ModifyButton = new System.Windows.Forms.Button();
             this.ModeBox = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.LinearLightBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.OverSharpSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PassesSetter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.LocalitySetter)).BeginInit();
@@ -75,7 +76,7 @@ namespace Mpdn.Extensions.RenderScripts
             0,
             0,
             65536});
-            this.OverSharpSetter.Location = new System.Drawing.Point(223, 38);
+            this.OverSharpSetter.Location = new System.Drawing.Point(190, 38);
             this.OverSharpSetter.Maximum = new decimal(new int[] {
             1,
             0,
@@ -105,7 +106,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonOK.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.ButtonOK.Location = new System.Drawing.Point(111, 171);
+            this.ButtonOK.Location = new System.Drawing.Point(78, 195);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
             this.ButtonOK.TabIndex = 8;
@@ -117,7 +118,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.Cursor = System.Windows.Forms.Cursors.Default;
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(192, 171);
+            this.ButtonCancel.Location = new System.Drawing.Point(159, 195);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 9;
@@ -136,7 +137,7 @@ namespace Mpdn.Extensions.RenderScripts
             // PassesSetter
             // 
             this.PassesSetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.PassesSetter.Location = new System.Drawing.Point(223, 12);
+            this.PassesSetter.Location = new System.Drawing.Point(190, 12);
             this.PassesSetter.Maximum = new decimal(new int[] {
             10,
             0,
@@ -161,7 +162,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.PrescalerBox.FormattingEnabled = true;
             this.PrescalerBox.Location = new System.Drawing.Point(69, 117);
             this.PrescalerBox.Name = "PrescalerBox";
-            this.PrescalerBox.Size = new System.Drawing.Size(198, 21);
+            this.PrescalerBox.Size = new System.Drawing.Size(165, 21);
             this.PrescalerBox.TabIndex = 0;
             this.PrescalerBox.SelectedIndexChanged += new System.EventHandler(this.SelectionChanged);
             // 
@@ -180,7 +181,7 @@ namespace Mpdn.Extensions.RenderScripts
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ConfigButton.Location = new System.Drawing.Point(15, 144);
             this.ConfigButton.Name = "ConfigButton";
-            this.ConfigButton.Size = new System.Drawing.Size(171, 21);
+            this.ConfigButton.Size = new System.Drawing.Size(138, 21);
             this.ConfigButton.TabIndex = 6;
             this.ConfigButton.Text = "Configure Prescaler";
             this.ConfigButton.UseVisualStyleBackColor = true;
@@ -190,7 +191,7 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.LocalitySetter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LocalitySetter.DecimalPlaces = 2;
-            this.LocalitySetter.Location = new System.Drawing.Point(223, 64);
+            this.LocalitySetter.Location = new System.Drawing.Point(190, 64);
             this.LocalitySetter.Maximum = new decimal(new int[] {
             100,
             0,
@@ -224,7 +225,7 @@ namespace Mpdn.Extensions.RenderScripts
             // ModifyButton
             // 
             this.ModifyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ModifyButton.Location = new System.Drawing.Point(192, 144);
+            this.ModifyButton.Location = new System.Drawing.Point(159, 144);
             this.ModifyButton.Name = "ModifyButton";
             this.ModifyButton.Size = new System.Drawing.Size(75, 21);
             this.ModifyButton.TabIndex = 17;
@@ -241,7 +242,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.ModeBox.FormattingEnabled = true;
             this.ModeBox.Location = new System.Drawing.Point(69, 90);
             this.ModeBox.Name = "ModeBox";
-            this.ModeBox.Size = new System.Drawing.Size(198, 21);
+            this.ModeBox.Size = new System.Drawing.Size(165, 21);
             this.ModeBox.TabIndex = 18;
             // 
             // label2
@@ -253,13 +254,24 @@ namespace Mpdn.Extensions.RenderScripts
             this.label2.TabIndex = 19;
             this.label2.Text = "Mode";
             // 
+            // LinearLightBox
+            // 
+            this.LinearLightBox.AutoSize = true;
+            this.LinearLightBox.Location = new System.Drawing.Point(15, 171);
+            this.LinearLightBox.Name = "LinearLightBox";
+            this.LinearLightBox.Size = new System.Drawing.Size(136, 17);
+            this.LinearLightBox.TabIndex = 20;
+            this.LinearLightBox.Text = "Linear Light Processing";
+            this.LinearLightBox.UseVisualStyleBackColor = true;
+            // 
             // SSSRConfigDialog
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(279, 206);
+            this.ClientSize = new System.Drawing.Size(246, 230);
+            this.Controls.Add(this.LinearLightBox);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.ModeBox);
             this.Controls.Add(this.ModifyButton);
@@ -306,6 +318,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button ModifyButton;
             private System.Windows.Forms.ComboBox ModeBox;
             private System.Windows.Forms.Label label2;
+            private System.Windows.Forms.CheckBox LinearLightBox;
         }
     }
 }
