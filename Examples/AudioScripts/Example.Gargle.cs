@@ -81,7 +81,7 @@ namespace Mpdn.Examples.AudioScripts
             }
         }
 
-        public class GargleUi : AudioChainUi<StaticAudioChain<Gargle>>
+        public class GargleUi : AudioChainUi<Gargle>
         {
             public override ExtensionUiDescriptor Descriptor
             {
