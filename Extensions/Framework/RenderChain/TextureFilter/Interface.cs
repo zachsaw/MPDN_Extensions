@@ -136,6 +136,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             m_Arguments.Add(NextKey(), entry);
         }
 
+        public void Add(string Key, Entry entry)
+        {
+            m_Arguments.Add(Key, entry);
+        }
+
         public static implicit operator ArgumentList(Dictionary<string, Entry> arguments)
         {
             return new ArgumentList(arguments);
