@@ -54,10 +54,9 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             m_Actions = HotkeyRegister.Hotkeys
                 .GroupBy(hotkey => hotkey.Keys)
-                .Select(group => group.First())
                 .ToDictionary(
-                    hotkey => hotkey.Keys, 
-                    hotkey => hotkey.Action);
+                    group => group.Key,
+                    group => group.Select(hotkey => hotkey.Action).Aggregate((a, b) => a + b));
         }
 
         public override ExtensionUiDescriptor Descriptor
@@ -68,7 +67,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 {
                     Guid = new Guid("29CBA419-591F-4CEB-9BC1-41D592F5F203"),
                     Name = "DynamicHotkeys",
-                    Description = "Allows scripts to dynamically add and remove hotkeys.",
+                    Description = "Handles hotkeys.",
                     Copyright = ""
                 };
             }
