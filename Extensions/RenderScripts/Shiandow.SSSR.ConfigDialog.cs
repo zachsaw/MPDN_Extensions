@@ -43,7 +43,7 @@ namespace Mpdn.Extensions.RenderScripts
                 InitializeComponent();
             }
 
-            protected override void LoadSettings()
+            private void Initialize()
             {
                 PrescalerBox.DataSource = Settings.PrescalerGroup.Options;
                 PrescalerBox.DisplayMember = "Name";
@@ -59,8 +59,14 @@ namespace Mpdn.Extensions.RenderScripts
                     .IndexOf(Settings.Mode);
                 ModeBox.DisplayMember = "Value";
                 ModeBox.ValueMember = "Key";
+            }
+
+            protected override void LoadSettings()
+            {
+                Initialize();
 
                 PassesSetter.Value = Settings.Passes;
+                LinearLightBox.Checked = Settings.LinearLight;
                 OverSharpSetter.Value = (decimal)Settings.OverSharp;
                 LocalitySetter.Value = (decimal)Settings.Locality;
                 
@@ -70,6 +76,7 @@ namespace Mpdn.Extensions.RenderScripts
             protected override void SaveSettings()
             {
                 Settings.Passes = (int)PassesSetter.Value;
+                Settings.LinearLight = LinearLightBox.Checked;
                 Settings.OverSharp = (float)OverSharpSetter.Value;
                 Settings.Locality = (float)LocalitySetter.Value;
 
