@@ -163,9 +163,12 @@ namespace Mpdn.Extensions.RenderScripts
                     if (filter != null)
                         filter.ForceOffsetCorrection();
 
+                    result = initial.SetSize(targetSize);
                     if (LinearLight)
+                    {
                         original = original.Apply(GammaToLinear);
-                    result = initial.SetSize(targetSize).Apply(GammaToLinear);
+                        result = result.Apply(GammaToLinear);
+                    }
                 }
                 else
                 {
