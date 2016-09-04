@@ -53,6 +53,7 @@ namespace Mpdn.Extensions.RenderScripts
             protected override void SaveSettings()
             {
                 Settings.Strength = (float)StrengthSetter.Value;
+                Settings.Mode = (BilateralMode)ModeBox.SelectedValue;
             }
         }
 
