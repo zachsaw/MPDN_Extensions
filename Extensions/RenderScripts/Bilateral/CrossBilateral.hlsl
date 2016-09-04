@@ -63,6 +63,7 @@ float  power  : register(c5);
 #define KernelRadius 3
 
 #if Mode == 0 
+    #define fixLuma 0
     #define old main
 #elif Mode == 1
     #define radius 1
