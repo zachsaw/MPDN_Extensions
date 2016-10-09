@@ -17,14 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using Mpdn.Extensions.CustomLinearScalers;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.EwaScaler;
 using Mpdn.RenderScript;
-using Mpdn.RenderScript.Scaler;
 
 namespace Mpdn.Extensions.RenderScripts
 {
