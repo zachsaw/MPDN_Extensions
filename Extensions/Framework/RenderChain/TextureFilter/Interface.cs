@@ -413,8 +413,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return input;
 
             return compositionFilter
-                .Rebuild(scaler, fallback: compositionFilter)
-                .Tagged(new ChromaScalerTag(compositionFilter.Chroma, scaler.Description));
+                .Rebuild(scaler, fallback: compositionFilter);
         }
     }
 

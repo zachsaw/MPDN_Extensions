@@ -36,8 +36,7 @@ namespace Mpdn.Extensions.Framework.Chain
             if (output == input)
                 return input;
 
-            if (output.Tag.IsEndNode())
-                output.Tag.AddJunction(Description, input.Tag);
+            output.Tag.Insert(Description);
 
             return output;
         }

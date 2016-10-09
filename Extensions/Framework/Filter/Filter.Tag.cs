@@ -15,7 +15,6 @@
 // License along with this library.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -35,9 +34,10 @@ namespace Mpdn.Extensions.Framework.Filter
 
         public abstract string Label { get; }
 
+        public abstract int Verbosity { get; }
+
         #region Base Implementation
 
-        private int m_Index;
         private readonly HashSet<FilterTag> m_InputTags = new HashSet<FilterTag>();
 
         protected virtual ISet<FilterTag> InputTags
@@ -45,67 +45,59 @@ namespace Mpdn.Extensions.Framework.Filter
             get { return m_InputTags; }
         }
 
-        protected IEnumerable<FilterTag> SubTags
-        {
-            get
-            {
-                return InputTags
-                    .Where(x => x.IsEmpty())
-                    .SelectMany(x => x.SubTags)
-                    .Concat(InputTags.Where(x => !x.IsEmpty()))
-                    .Distinct()
-                    .ToArray();
-            }
-        }
-
-        protected bool Initialized { get { return m_Index != 0; } }
-
-        public virtual bool IsEmpty()
-        {
-            return string.IsNullOrEmpty(Label);
-        }
-
-        public virtual int Initialize(int count = 1)
-        {
-            if (Initialized)
-                return count;
-            m_Index = count;
-
-            foreach (var input in InputTags)
-                m_Index = input.Initialize(m_Index);
-
-            return ++m_Index;
-        }
-
         #endregion
 
         #region Text rendering
 
-        public virtual string CreateString(int minIndex = -1)
+        public IList<KeyValuePair<FilterTag, HashSet<FilterTag>>> SubTree(Func<FilterTag, bool> predicate)
         {
-            Initialize();
+            var nodes = Nodes();
 
-            string result = Label;
-            var tags = SubTags
-                .OrderBy(l => l.m_Index)
-                .SkipWhile(l => l.m_Index <= minIndex)
-                .ToList();
-
-            if (tags.Any())
+            var subNodes = nodes.ToDictionary(n => n, n => new HashSet<FilterTag>());
+            foreach (var node in nodes)
             {
-                var first = tags.First();
-                result = first
-                    .CreateString(minIndex)
-                    .AppendStatus(Label);
-                minIndex = first.m_Index;
-
-                foreach (var tag in tags.Skip(1))
-                {
-                    result = result.AppendSubStatus(tag.CreateString(minIndex));
-                    minIndex = tag.m_Index;
-                }
+                subNodes[node].UnionWith(
+                    node.InputTags
+                        .SelectMany(x => predicate(x)
+                            ? new HashSet<FilterTag> { x }
+                            : subNodes[x]));
             }
-            return result;
+
+            return nodes.Where(predicate)
+                .Select(n => new KeyValuePair<FilterTag, HashSet<FilterTag>>(n, subNodes[n]))
+                .ToList();
+        }
+
+#if DEBUG
+        protected const int DefaultVerbosity = 0;
+        protected string TreeDescription { get { return CreateString(100); } }
+#else
+        protected const int DefaultVerbosity = 0;
+#endif
+
+        public string CreateString(int verbosity = DefaultVerbosity)
+        {
+            var subtree = SubTree(n => n.Verbosity <= verbosity);
+            var subNodes = subtree.ToDictionary(n => n.Key, n => n.Value);
+            var nodes = subNodes.Keys;
+
+            var index = subtree
+                .Select((n, i) => new KeyValuePair<FilterTag, int>(n.Key, i))
+                .ToDictionary(x => x.Key, x => x.Value);
+
+            var minIndex = subNodes.ToDictionary(x => x.Key, x => x.Value
+                .Union(new[] { x.Key })
+                .Select(n => index[n])
+                .Min());
+
+            var depth = nodes.ToDictionary(
+                node => node, 
+                node => nodes.Count(n => minIndex[n] < index[node] && index[node] < index[n]));
+
+            var labels = nodes
+                .Where(n => n.Verbosity >= 0)
+                .Select(n => String.Concat(Enumerable.Repeat("    ", depth[n])) + n.Label);
+            return string.Join("\n", labels);
         }
 
         #endregion
@@ -160,9 +152,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
         public bool ConnectedTo(FilterTag tag)
         {
-            return (m_Index < tag.m_Index)
-                ? tag.HasAncestor(this)
-                : HasAncestor(tag);
+            return tag.HasAncestor(this) || this.HasAncestor(tag);
         }
 
         #endregion
@@ -216,67 +206,51 @@ namespace Mpdn.Extensions.Framework.Filter
 
         private class BottomTag : StringTag
         {
-            public BottomTag() : base("⊥") { }
+            public BottomTag() : base("⊥", -1) { }
 
             protected override ISet<FilterTag> InputTags
             {
-                get { return new HashSet<FilterTag> { this }; }
-            }
-
-            public override int Initialize(int count = 1)
-            {
-                return count;
-            }
-
-            public override string CreateString(int minIndex = -1)
-            {
-                return "";
+                get { return new HashSet<FilterTag> {this}; }
             }
         }
     }
 
     public class EmptyTag : FilterTag
     {
-        public sealed override string Label { get { return ""; } }
+        public override string Label { get { return ""; } }
+
+        public sealed override int Verbosity { get { return 100; } }
     }
 
     public class StringTag : FilterTag
     {
         private readonly string m_Label;
+        private readonly int m_Verbosity;
 
         public override string Label
         {
             get { return m_Label; }
         }
 
-        public StringTag(string label)
+        public override int Verbosity
+        {
+            get { return m_Verbosity; }
+        }
+
+        public StringTag(string label, int verbosity = 0)
         {
             m_Label = label;
-        }
-    }
-
-    public class JunctionTag : EmptyTag
-    {
-        private readonly FilterTag m_Junction;
-
-        public JunctionTag(FilterTag junction)
-        {
-            m_Junction = junction;
-        }
-
-        public override int Initialize(int count = 1)
-        {
-            AddInput(m_Junction);
-            return base.Initialize(count);
+            m_Verbosity = string.IsNullOrEmpty(label) ? 100 : verbosity;
         }
     }
 
     public static class TagHelper
     {
-        public static void AddJunction(this FilterTag from, FilterTag name, FilterTag to)
+        public static void AddJunction(this FilterTag from, string description, FilterTag to)
         {
-            from.Insert(new JunctionTag(to));
-            from.Insert(name);
+            FilterTag tag = description;
+            from.Insert(tag);
+            tag.AddInput(to);
         }
 
         public static TFilter GetTag<TFilter>(this TFilter filter, out FilterTag tag)

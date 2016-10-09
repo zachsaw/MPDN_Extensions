@@ -34,7 +34,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
             return new MergeFilter(lumaInput.SetSize(targetSize, tagged: true), fullSizeChroma)
                 .ConvertToRgb()
-                .Tagged(new ChromaScalerTag(chromaInput, fullSizeChroma.Description().PrependToStatus("Chroma: ")));
+                .Tagged(fullSizeChroma.Description().PrependToDescription("Chroma: "));
         }
     }
 
@@ -116,46 +116,4 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             throw new NotImplementedException("Uncompiled Filter.");
         }
     }
-
-    public class ChromaScalerTag : StringTag
-    {
-        private readonly FilterTag m_ChromaTag;
-
-        public ChromaScalerTag(ITextureFilter chromaFilter, string label)
-            : base(label)
-        {
-            m_ChromaTag = chromaFilter.Tag;
-        }
-
-        public override string CreateString(int minIndex = -1)
-        {
-            Initialize();
-
-            var lumaPart = new EmptyTag();
-            var chromaPart = new StringTag(Label);
-
-            foreach (var tag in SubTags)
-                if (tag.ConnectedTo(m_ChromaTag))
-                    chromaPart.AddInput(tag);
-                else
-                    lumaPart.AddInput(tag);
-
-            lumaPart.Initialize();
-            chromaPart.Initialize();
-
-            var luma = lumaPart
-                .CreateString(minIndex)
-                .FlattenStatus()
-                .PrependToStatus("Luma: ");
-
-            var chroma = chromaPart
-                .CreateString(minIndex)
-                .FlattenStatus();
-            if (!chroma.StartsWith("Chroma: "))
-                chroma = chroma.PrependToStatus(luma == "" ? "" : "Chroma: ");
-
-            return chroma.AppendStatus(luma);
-        }
-    }
-
 }
