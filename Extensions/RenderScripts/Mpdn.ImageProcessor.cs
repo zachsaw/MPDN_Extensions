@@ -38,6 +38,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             public bool CompatibilityMode { get; set; }
 
+            public bool ProcessInYUV { get; set; }
+
             public ImageProcessor()
             {
                 CompatibilityMode = true;
@@ -71,11 +73,18 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
-                return ShaderFileNames.Aggregate(input,
+                if (ProcessInYUV)
+                    input = input.ConvertToYuv();
+
+                var output = ShaderFileNames.Aggregate(input,
                     (current, filename) =>
                         CompileShader(filename)
                             .Configure(format: GetTextureFormat())
                             .ApplyTo(current));
+
+                return ProcessInYUV
+                    ? output.ConvertToRgb()
+                    : output;
             }
 
             private TextureFormat? GetTextureFormat()

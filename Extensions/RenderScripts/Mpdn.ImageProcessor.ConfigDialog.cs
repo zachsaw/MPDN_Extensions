@@ -50,12 +50,14 @@ namespace Mpdn.Extensions.RenderScripts
                 }
 
                 checkBoxCompatibilityMode.Checked = Settings.CompatibilityMode;
+                checkBoxYUVProcessing.Checked = Settings.ProcessInYUV;
             }
 
             protected override void SaveSettings()
             {
                 Settings.ShaderFileNames = listBox.Items.Cast<string>().ToArray();
                 Settings.CompatibilityMode = checkBoxCompatibilityMode.Checked;
+                Settings.ProcessInYUV = checkBoxYUVProcessing.Checked;
             }
 
             private void ButtonAddClick(object sender, EventArgs e)

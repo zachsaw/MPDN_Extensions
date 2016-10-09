@@ -58,13 +58,14 @@ namespace Mpdn.Extensions.RenderScripts
             this.buttonClear = new System.Windows.Forms.Button();
             this.buttonEdit = new System.Windows.Forms.Button();
             this.checkBoxCompatibilityMode = new System.Windows.Forms.CheckBox();
+            this.checkBoxYUVProcessing = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(297, 272);
+            this.buttonCancel.Location = new System.Drawing.Point(297, 292);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1007;
@@ -75,7 +76,7 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(216, 272);
+            this.buttonOk.Location = new System.Drawing.Point(216, 292);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 1006;
@@ -100,7 +101,7 @@ namespace Mpdn.Extensions.RenderScripts
             this.listBox.IntegralHeight = false;
             this.listBox.Location = new System.Drawing.Point(13, 33);
             this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(357, 210);
+            this.listBox.Size = new System.Drawing.Size(357, 207);
             this.listBox.TabIndex = 0;
             this.listBox.SelectedIndexChanged += new System.EventHandler(this.ListBoxSelectedIndexChanged);
             this.listBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ListBoxMouseDoubleClick);
@@ -179,7 +180,7 @@ namespace Mpdn.Extensions.RenderScripts
             // buttonEdit
             // 
             this.buttonEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonEdit.Location = new System.Drawing.Point(15, 272);
+            this.buttonEdit.Location = new System.Drawing.Point(15, 292);
             this.buttonEdit.Name = "buttonEdit";
             this.buttonEdit.Size = new System.Drawing.Size(75, 23);
             this.buttonEdit.TabIndex = 2;
@@ -189,15 +190,29 @@ namespace Mpdn.Extensions.RenderScripts
             // 
             // checkBoxCompatibilityMode
             // 
+            this.checkBoxCompatibilityMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBoxCompatibilityMode.AutoSize = true;
             this.checkBoxCompatibilityMode.Checked = true;
             this.checkBoxCompatibilityMode.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxCompatibilityMode.Location = new System.Drawing.Point(15, 249);
+            this.checkBoxCompatibilityMode.Location = new System.Drawing.Point(15, 246);
             this.checkBoxCompatibilityMode.Name = "checkBoxCompatibilityMode";
             this.checkBoxCompatibilityMode.Size = new System.Drawing.Size(148, 17);
             this.checkBoxCompatibilityMode.TabIndex = 1;
             this.checkBoxCompatibilityMode.Text = "Enable compatibility mode";
             this.checkBoxCompatibilityMode.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxYUVProcessing
+            // 
+            this.checkBoxYUVProcessing.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.checkBoxYUVProcessing.AutoSize = true;
+            this.checkBoxYUVProcessing.Checked = true;
+            this.checkBoxYUVProcessing.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxYUVProcessing.Location = new System.Drawing.Point(15, 269);
+            this.checkBoxYUVProcessing.Name = "checkBoxYUVProcessing";
+            this.checkBoxYUVProcessing.Size = new System.Drawing.Size(131, 17);
+            this.checkBoxYUVProcessing.TabIndex = 1008;
+            this.checkBoxYUVProcessing.Text = "Process image in YUV";
+            this.checkBoxYUVProcessing.UseVisualStyleBackColor = true;
             // 
             // ImageProcessorConfigDialog
             // 
@@ -205,7 +220,8 @@ namespace Mpdn.Extensions.RenderScripts
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(384, 307);
+            this.ClientSize = new System.Drawing.Size(384, 327);
+            this.Controls.Add(this.checkBoxYUVProcessing);
             this.Controls.Add(this.checkBoxCompatibilityMode);
             this.Controls.Add(this.buttonEdit);
             this.Controls.Add(this.buttonClear);
@@ -244,7 +260,7 @@ namespace Mpdn.Extensions.RenderScripts
             private System.Windows.Forms.Button buttonClear;
             private System.Windows.Forms.Button buttonEdit;
             private System.Windows.Forms.CheckBox checkBoxCompatibilityMode;
-
+            private System.Windows.Forms.CheckBox checkBoxYUVProcessing;
         }
     }
 }
