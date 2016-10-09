@@ -96,17 +96,14 @@ namespace Mpdn.Extensions.Framework.Config
 
         private IScriptSettings<TSettings> ScriptConfig { get; set; }
 
+        protected ExtensionUi()
+        {
+            ScriptConfig = new MemConfig<TSettings>();
+        }
+
         public TSettings Settings
         {
-            get
-            {
-                if (ScriptConfig == null)
-                {
-                    ScriptConfig = new MemConfig<TSettings>();
-                }
-
-                return ScriptConfig.Config;
-            }
+            get { return ScriptConfig.Config; }
             set { ScriptConfig = new MemConfig<TSettings>(value); }
         }
 
