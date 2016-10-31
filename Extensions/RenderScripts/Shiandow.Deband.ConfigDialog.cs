@@ -31,18 +31,18 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override void LoadSettings()
             {
-                MaxBitdepthSetter.Value = (decimal)Settings.maxbitdepth;
-                PowerSetter.Value = (decimal)Settings.power;
-                GrainBox.Checked = Settings.grain;
+                MaxBitdepthSetter.Value = (decimal)Settings.MaxBitDepth;
+                PowerSetter.Value = (decimal)Settings.Power;
+                DetailBox.Checked = Settings.PreserveDetail;
 
                 UpdateGui();
             }
 
             protected override void SaveSettings()
             {
-                Settings.maxbitdepth = (int)MaxBitdepthSetter.Value;
-                Settings.power = (float)PowerSetter.Value;
-                Settings.grain = GrainBox.Checked;
+                Settings.MaxBitDepth = (int)MaxBitdepthSetter.Value;
+                Settings.Power = (float)PowerSetter.Value;
+                Settings.PreserveDetail = DetailBox.Checked;
             }
 
             private void ValueChanged(object sender, EventArgs e)

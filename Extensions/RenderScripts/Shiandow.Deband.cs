@@ -25,15 +25,15 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class Deband : RenderChain
         {
-            public int maxbitdepth { get; set; }
-            public float power { get; set; }
-            public bool grain { get; set; }
+            public int MaxBitDepth { get; set; }
+            public float Power { get; set; }
+            public bool PreserveDetail { get; set; }
 
             public Deband()
             {
-                maxbitdepth = 8;
-                power = 0.5f;
-                grain = false;
+                MaxBitDepth = 8;
+                Power = 0.5f;
+                PreserveDetail = true;
             }
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)
@@ -42,14 +42,14 @@ namespace Mpdn.Extensions.RenderScripts
                     return input;
 
                 int bits = Renderer.InputFormat.GetBitDepth();
-                if (bits > maxbitdepth) return input;
+                if (bits > MaxBitDepth) return input;
 
                 float[] consts = {
                     (1 << bits) - 1, 
-                    power
+                    Power
                 };
 
-                var Deband = CompileShader("Deband.hlsl", macroDefinitions: !grain ? "SkipDithering=1" : "")
+                var Deband = CompileShader("Deband.hlsl", macroDefinitions: PreserveDetail ? "PRESERVE_DETAIL=1" : "")
                     .Configure(arguments: consts, perTextureLinearSampling: new[] { true, false });
 
                 ITextureFilter yuv = input.ConvertToYuv();
