@@ -117,7 +117,7 @@ namespace Mpdn.Extensions.Framework.Controls
                     var group = script.Chain as PresetCollection<T, TScript>;
                     if (group != null)
                     {
-                        var item = menuitem.DropDownItems.Add(script.Descriptor.Name);
+                        var item = menuitem.DropDownItems.Add("as " + script.Descriptor.Name);
                         item.Tag = script;
                     }
                 }

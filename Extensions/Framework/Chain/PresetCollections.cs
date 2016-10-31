@@ -69,25 +69,6 @@ namespace Mpdn.Extensions.Framework.Chain
             get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) ?? Options.LastOrDefault() : null; }
         }
 
-        [YAXDontSerialize]
-        public string ScriptName
-        {
-            get
-            {
-                var preset = SelectedOption;
-                return preset == null ? string.Empty : preset.Name;
-            }
-            set
-            {
-                var index = Options.FindIndex(p => p.Name == value);
-                if (index < 0)
-                {
-                    throw new KeyNotFoundException(string.Format("ScriptName '{0}' is not found", value));
-                }
-                SelectedIndex = index;
-            }
-        }
-
         #endregion
 
         public ScriptGroup()
