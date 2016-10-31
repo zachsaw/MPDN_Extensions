@@ -79,7 +79,7 @@ namespace Mpdn.Extensions.Framework.Controls
                 var renderScripts = Extension.Scripts
                     .Where(script => script is IChainUi<T, TScript>)
                     .Select(x => (x as IChainUi<T, TScript>).CreateNew())
-                    .Concat(new[] { ChainUi<T, TScript>.Identity })
+                    .Concat(new[] { ChainUi<T, TScript>.IDENTITY })
                     .OrderBy(x => x.Category + SELECTED_INDICATOR_STR + x.Descriptor.Name);
 
                 var groups = new Dictionary<string, ListViewGroup>();
@@ -172,7 +172,7 @@ namespace Mpdn.Extensions.Framework.Controls
             foreach (var preset in presets)
             {
                 if (preset.Script == null)
-                    preset.Script = ChainUi<T, TScript>.Identity;
+                    preset.Script = ChainUi<T, TScript>.IDENTITY;
 
                 var item = index < 0
                     ? listViewChain.Items.Add(string.Empty)

@@ -39,7 +39,7 @@ namespace Mpdn.Extensions.Framework.Chain
     public static class ChainUi<T, TScript>
         where TScript : class, IScript
     {
-        public static readonly IChainUi<T, TScript> Identity = new IdentityRenderChainUi();
+        public static readonly IChainUi<T, TScript> IDENTITY = new IdentityRenderChainUi();
 
         public class IdentityRenderChain : StaticChain<T>
         {
