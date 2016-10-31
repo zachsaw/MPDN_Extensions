@@ -86,12 +86,18 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private readonly IDictionary<string, Entry> m_Arguments;
 
         public ArgumentList()
-            : this(new Dictionary<string, Entry>())
-        { }
+        {
+            m_Arguments = new Dictionary<string, Entry>();
+        }
 
         public ArgumentList(IDictionary<string, Entry> arguments)
         {
             m_Arguments = arguments;
+        }
+
+        public ArgumentList(ArgumentList argumentList)
+        {
+            m_Arguments = argumentList.ToDictionary(x => x.Key, x=> x.Value);
         }
 
         #region Implementation 
@@ -109,7 +115,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             foreach (var pair in other)
                 dict[pair.Key] = pair.Value;
 
-            return new ArgumentList(dict);
+            return dict;
         }
 
         public IEnumerator<KeyValuePair<string, Entry>> GetEnumerator()
@@ -145,7 +151,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public static implicit operator ArgumentList(Dictionary<string, Entry> arguments)
         {
-            return new ArgumentList(arguments);
+            return new ArgumentList((IDictionary<string,Entry>)arguments);
         }
 
         public static implicit operator ArgumentList(Dictionary<string, Vector4> arguments)
