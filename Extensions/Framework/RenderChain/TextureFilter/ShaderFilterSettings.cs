@@ -36,6 +36,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             get { return Arguments[identifier]; }
             set { Arguments[identifier] = value; }
         }
+        public string Name { get; set; }
 
         public ShaderFilterSettings(T shader)
         {
@@ -55,7 +56,8 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public IShaderFilterSettings<T> Configure(bool? linearSampling = null,
             ArgumentList arguments = null, Func<TextureSize, TextureSize> transform = null, int? sizeIndex = null, 
-            TextureFormat? format = null, IEnumerable<bool> perTextureLinearSampling = null)
+            TextureFormat? format = null, IEnumerable<bool> perTextureLinearSampling = null,
+            string name = null)
         {
             return new ShaderFilterSettings<T>(Shader)
             {
@@ -63,9 +65,12 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
                 LinearSampling = linearSampling ?? LinearSampling,
                 Format = format ?? Format,
                 SizeIndex = sizeIndex ?? SizeIndex,
-                Arguments = arguments ?? Arguments,
-                PerTextureLinearSampling = perTextureLinearSampling != null ? perTextureLinearSampling.ToArray() : PerTextureLinearSampling
+                Arguments = arguments ?? new ArgumentList(Arguments),
+                PerTextureLinearSampling = perTextureLinearSampling != null 
+                    ? perTextureLinearSampling.ToArray() 
+                    : PerTextureLinearSampling,
+                Name = name ?? Name
             };
         }   
-    }
+    } 
 }

@@ -52,6 +52,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         int SizeIndex { get; set; }
         ArgumentList Arguments { get; set; }
         ArgumentList.Entry this[string identifier] { get; set; }
+        string Name { get; set; }
 
         IShaderFilterSettings<T> Configure(
             bool? linearSampling = null,
@@ -59,7 +60,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
             TransformFunc transform = null,
             int? sizeIndex = null,
             TextureFormat? format = null,
-            IEnumerable<bool> perTextureLinearSampling = null);
+            IEnumerable<bool> perTextureLinearSampling = null,
+            string name = null);
     }
 
     public interface IManagedTexture<out TTexture> : IDisposable
@@ -250,19 +252,17 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return new TransformedResizeableFilter(transformation, filter);
         }
 
-        public static ITextureFilter Resize(this ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels? channels = null, Vector2? offset = null, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+        public static IResizeableFilter Resize(this ITextureFilter<ITexture2D> inputFilter, TextureSize outputSize, TextureChannels? channels = null, Vector2? offset = null, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null, bool tagged =  false)
         {
-            return new ResizeFilter(inputFilter, outputSize, channels ?? TextureChannels.All, offset ?? Vector2.Zero, upscaler, downscaler, convolver, outputFormat);
+            var result = new ResizeFilter(inputFilter, outputSize, channels ?? TextureChannels.All, offset ?? Vector2.Zero, upscaler, downscaler, convolver, outputFormat);
+            if (tagged)
+                result.EnableTag();
+            return result;
         }
 
         public static ITextureFilter Convolve(this ITextureFilter<ITexture2D> inputFilter, IScaler convolver, TextureChannels? channels = null, Vector2? offset = null, IScaler upscaler = null, IScaler downscaler = null, TextureFormat ? outputFormat = null)
         {
             return new ResizeFilter(inputFilter, inputFilter.Output.Size, channels ?? TextureChannels.All, offset ?? Vector2.Zero, upscaler, downscaler, convolver, outputFormat);
-        }
-
-        public static ITextureFilter AddTaggedResizer(this ITextureFilter<ITexture2D> filter)
-        {
-            return filter.SetSize(filter.Output.Size, true);
         }
 
         public static ITextureFilter SetSize(this IFilter<ITextureOutput<ITexture2D>> filter, TextureSize size, bool tagged = false)
@@ -328,13 +328,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public static class ShaderFilterHelper
     {
-        public static IShaderFilterSettings<T> Configure<T>(this T shader, bool? linearSampling = null,
-            ArgumentList arguments = null, TransformFunc transform = null, int? sizeIndex = null,
-            TextureFormat? format = null, IEnumerable<bool> perTextureLinearSampling = null)
+        public static IShaderFilterSettings<T> Configure<T>(this T shader, bool? linearSampling = null, ArgumentList arguments = null, TransformFunc transform = null, int? sizeIndex = null, TextureFormat? format = null, IEnumerable<bool> perTextureLinearSampling = null, string name = null)
             where T : IShaderBase
         {
             return new ShaderFilterSettings<T>(shader).Configure(linearSampling, arguments, transform, sizeIndex,
-                format, perTextureLinearSampling);
+                format, perTextureLinearSampling, name);
         }
 
         public static ITextureFilter ApplyTo<T>(this IShaderFilterSettings<T> settings, params IBaseTextureFilter[] inputFilters)

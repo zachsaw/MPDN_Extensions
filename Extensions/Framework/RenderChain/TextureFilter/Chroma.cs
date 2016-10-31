@@ -30,7 +30,6 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         {
             var fullSizeChroma = new ResizeFilter(chromaInput, targetSize, TextureChannels.ChromaOnly,
                 chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
-            fullSizeChroma.EnableTag();
 
             return new MergeFilter(lumaInput.SetSize(targetSize, tagged: true), fullSizeChroma)
                 .ConvertToRgb()
@@ -84,13 +83,12 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ITextureFilter SetSize(TextureSize outputSize)
         {
-            return Rebuild(targetSize: outputSize);
+            return Rebuild(targetSize: outputSize).Tagged(Tag); ;
         }
 
         public ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null, ICompositionFilter fallback = null)
         {
-            return new CompositionFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset, fallback ?? Fallback)
-                .Tagged(Tag);
+            return new CompositionFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset, fallback ?? Fallback);
         }
 
         public void EnableTag() { }
@@ -102,13 +100,13 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
-            var Result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset);
-            if (Result != null)
-                Result.Tag.AddPrefix(Tag);
+            IFilter<ITextureOutput<ITexture2D>> Result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset);
+            Result = (Result != null)
+                ? Result.SetSize(TargetSize, tagged: true)
+                : Fallback.Compile();
 
-            return (Result ?? Fallback)
-                .SetSize(TargetSize, tagged: true)
-                .Compile();
+            Tag.Insert(Result.Tag);
+            return Result.Compile();
         }
 
         protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
