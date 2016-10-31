@@ -21,11 +21,8 @@
 #ifndef RGBSpace
     #define RGBSpace sRGB
 #endif
-#ifndef gamma
-    #define gamma 2.2
-#endif
-#ifndef QuasiLab
-    #define QuasiLab true
+#ifndef GammaCoeff
+    #define GammaCoeff 2.2
 #endif
 
 #ifndef Kb
@@ -52,8 +49,8 @@ float3 Rec709_GammaInv(float3 x){ return x < 0.018 * 4.506198600878514  ? x / 4.
 float3 sRGB_Gamma(float3 x)   { return x < 0.00303993442528169  ? x * 12.9232102 : 1.055*pow(x, 1 / 2.4) - 0.055; }
 float3 sRGB_GammaInv(float3 x){ return x < 0.039285711572131475 ? x / 12.9232102 : pow((x + 0.055) / 1.055, 2.4); }
 
-float3 Power_Gamma(float3 x)   { return pow(saturate(x), 1 / gamma); }
-float3 Power_GammaInv(float3 x){ return pow(saturate(x), gamma); }
+float3 Power_Gamma(float3 x)   { return pow(saturate(x), 1 / GammaCoeff); }
+float3 Power_GammaInv(float3 x){ return pow(saturate(x), GammaCoeff); }
 
 float3 Fast_Gamma(float3 x)   { return saturate(x)*rsqrt(saturate(x)); }
 float3 Fast_GammaInv(float3 x){ return x*x; }
@@ -124,29 +121,13 @@ float3 DLabfinv(float3 x){ return max((3.0 * 6.0 * 6.0) / (29.0 * 29.0), 3.0*x*x
 float3 RGBtoLab(float3 rgb) {    
     float3 xyz = mul(RGBtoXYZ, rgb);
     xyz = Labf(xyz);
-    #if QuasiLab == true
-        return 1.16*xyz - 0.16;
-    #else
-        return float3(1.16*xyz.y - 0.16, 5.0*(xyz.x - xyz.y), 2.0*(xyz.y - xyz.z));
-    #endif
+    return float3(1.16*xyz.y - 0.16, 5.0*(xyz.x - xyz.y), 2.0*(xyz.y - xyz.z));
 }
 
 // Lab
 
-const static float3x3 QuasiLabTransform = {{0, 1.16, 0}, {5.0, -5.0, 0}, {0.0, -2.0, 2.0}};
-const static float3x3 QuasiLabInverse = {{25.0/29.0, 1.0/5.0, 0}, {25.0/29.0, 0, 0}, {25.0/29.0, 0, 1.0/2.0}};
-
-float QuasiLabNorm(float3 xyz) {
-    xyz = float3(1.16*xyz.y, 5.0*(xyz.x - xyz.y), 2.0*(xyz.y - xyz.z));
-    return dot(xyz,xyz);
-}
-
 float3 LabtoRGB(float3 lab) {
-    #if QuasiLab == true
-        float3 xyz = (lab + 0.16) / 1.16;
-    #else
-        float3 xyz = (lab.x + 0.16) / 1.16 + float3(lab.y / 5.0, 0, -lab.z / 2.0);
-    #endif
+    float3 xyz = (lab.x + 0.16) / 1.16 + float3(lab.y / 5.0, 0, -lab.z / 2.0);
     return mul(XYZtoRGB, Labfinv(xyz));
 }
 
