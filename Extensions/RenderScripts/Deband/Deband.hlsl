@@ -13,9 +13,10 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
+
 sampler s0 : register(s0);
 sampler s1 : register(s1);
+float4  p0 : register(c0);
 float4 args0 : register(c2);
 float4 size0 : register(c3);
 float4 size1 : register(c4);
@@ -29,28 +30,6 @@ float4 sizeOutput : register(c5);
 
 #define pi acos(-1)
 #define sqr(x) ((x)*(x))
-
-/* Noise between -0.5 and 0.5 */
-float noise(float2 c0){
-	for (int i = 0; i<2; i++) {
-		sincos(mul(c0.xy, float2(12.9898,78.233)),c0.x,c0.y);
-	    c0 = frac(c0 * 43758.5453);
-	}
-    return c0 - 0.5;
-}
-
-/* Noise between -0.5 and 0.5 */
-float tempNoise(float2 tex, float t) 
-{
-	const float PI = acos(-1);
-	float s = frac(t);
-	s = s*s*(3-s*2);
-	t = cosh(3)+floor(t);
-
-	float4 rand1 = noise(float2(tex.x+1,(tex.y+2)+t/100));
-	float4 rand2 = noise(float2(tex.x+1,(tex.y+2)+(t+1)/100));
-	return atan(lerp(tan(rand1*PI), tan(rand2*PI), s))/PI;
-}
 
 // Input Processing
 #define GetXY(xy) 	(tex2D(s1,ddxddy*(pos + 0.5 + (xy))))
@@ -87,30 +66,14 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 
 	float3 m = (avg-c0)*acuity;
 	float3 diff = 0.5 * sign(m) * max(0, abs(m)+1 - sqrt(sqr(abs(m)-1) + 4*varY)); // Maximum likelihood estimate
-
 	// varY += 1e-10; // Add noise to avoid numerical issues
 	// float3 p = 2 * saturate(1 - abs(diff)) * rsqrt(2*pi*varY) * exp(-0.5*sqr(diff - m)/varY); // Posterior Probability
 
-#define PRESERVE_DETAIL
 #ifdef PRESERVE_DETAIL
-	diff -= abs(diff) * ((GetHR(1,0) + GetHR(-1,0) + GetHR(0,1) + GetHR(0,-1))/4.0 - c0) * acuity;
+	diff -= diff * saturate(sign(diff) * ((GetHR(1,0) + GetHR(-1,0) + GetHR(0,1) + GetHR(0,-1))/4.0 - c0) * acuity);
 #endif
 
-	c0.xyz = c0 + (diff / acuity) * (sqr(m)*grad2*(1 - power) <= power);
+	c0.xyz = c0 + (diff / acuity) * (grad2 * (1 - power) <= power);
 
-	// Dithering
-#ifndef SkipDithering
-	[branch] if (all(sizeOutput.xy == size0.xy)) {
-		float noise = tempNoise(tex, p0[2]/4);
-		noise = noise * sqrt(12) / acuity;
-		c0.rgb += noise * sqrt(varX*str);
-	}
-#endif
-
-	// Debugging
-	// if (all(p0.xy == size0.xy)) {
-	// 	c0 = round(c0*acuity)/acuity;
-	// }
-	
 	return c0;
 }
