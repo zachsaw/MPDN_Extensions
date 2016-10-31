@@ -94,7 +94,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public bool IsDownscalingFrom(TextureSize size, TextureSize? targetSize = null)
         {
             var otherSize = targetSize ?? Renderer.TargetSize;
-            return otherSize.Width < size.Width || otherSize.Height < size.Height;
+            return otherSize.Width < size.Width && otherSize.Height < size.Height;
         }
 
         public bool IsNotScalingFrom(TextureSize size, TextureSize? targetSize = null)
@@ -106,7 +106,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public bool IsUpscalingFrom(TextureSize size, TextureSize? targetSize = null)
         {
             var otherSize = targetSize ?? Renderer.TargetSize;
-            return otherSize.Width > size.Width || otherSize.Height > size.Height;
+            return otherSize.Width > size.Width && otherSize.Height > size.Height;
         }
 
         public bool IsDownscalingFrom(ITextureFilter chain, TextureSize? targetSize = null)
