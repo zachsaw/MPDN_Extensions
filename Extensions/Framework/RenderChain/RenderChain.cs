@@ -29,11 +29,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             ShaderCache.Load();
         }
 
-        public sealed override ITextureFilter Process(ITextureFilter input)
-        {
-            return base.Process(input).AddTaggedResizer();
-        }
-
         #region Shader Compilation
 
         protected virtual string ShaderPath

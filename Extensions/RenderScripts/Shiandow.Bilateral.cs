@@ -70,7 +70,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Vector2 adjointOffset = -chromaOffset * lumaSize / chromaSize;
 
-                var crossBilateral = CompileShader("CrossBilateral.hlsl", macroDefinitions: String.Format("Mode = {0};", (int)Mode));
+                var crossBilateral = CompileShader((Mode == BilateralMode.Legacy) ? "CrossBilateral.hlsl" : "KrigBilateral.hlsl");
                 crossBilateral["chromaParams"] = new Vector4(chromaOffset.X, chromaOffset.Y, yuvConsts[0], yuvConsts[1] );
                 crossBilateral["power"] = Strength;
 
