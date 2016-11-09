@@ -521,6 +521,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Extensions\RenderScripts\Bilateral\KrigBilateral.hlsl" />
     <Content Include="Extensions\RenderScripts\EwaScaler\EwaScaler.hlsl" />
     <Content Include="Extensions\RenderScripts\SSimDownscaler\Calc.hlsl" />
     <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Convolver.hlsl" />

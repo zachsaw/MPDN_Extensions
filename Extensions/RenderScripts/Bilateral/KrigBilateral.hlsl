@@ -26,7 +26,7 @@ float  power  : register(c5);
 // -- Convenience --
 #define sqr(x) dot(x,x)
 #define bitnoise (1.0/(2.0*255.0))
-#define noise (5*bitnoise)
+#define noise (0.05)//(5*bitnoise)
 
 #define chromaSize size1
 
@@ -110,7 +110,8 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
         total += w.x*w.y*float4(X[i].x, X[i].x*X[i].x, X[i].w, 1);
     }
     total /= total.w;
-    float localVar = sqr(noise) + saturate(total.y - total.x*total.x)*(9/8) + total.z;
+    float localVar = sqr(noise) + saturate(total.y - total.x*total.x) + sqr(c0.x - total.x) + total.z;
+    // float radius = lerp(1, 2, sqr(noise) / localVar);
     float radius = lerp(1, 2, (localVar - total.z) / localVar);
 
     // return float4(radius / 2, 0.5, 0.5, 1);
@@ -129,9 +130,9 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 
     [unroll] for (int i=0; i<N; i++) {
         [unroll] for (int j=i+1; j<N; j++) {
-            b(j) -= b(i) * (( M(i,j) / M(i,i) ));
+            b(j) -= (( M(j,i) / M(i,i) )) * b(i);
             [unroll] for (int k=j; k<N; k++) {
-                M(j,k) -= M(i,k) * (( M(i,j) / M(i,i) ));
+                M(j,k) -= (( M(j,i) / M(i,i) )) * M(i,k);
             }
         }
     }

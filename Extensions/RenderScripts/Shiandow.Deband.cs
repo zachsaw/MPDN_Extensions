@@ -58,7 +58,8 @@ namespace Mpdn.Extensions.RenderScripts
                 var deband = yuv;
                 double factor = 2.0;// 0.5 * Math.Sqrt(5) + 0.5;
 
-                int max = (int)Math.Floor(Math.Log(Math.Min(inputsize.Width, inputsize.Height) / 3.0, factor));
+                int maxWidth = Math.Min(Math.Min(inputsize.Width, inputsize.Height)/3, 256);
+                int max = (int)Math.Floor(Math.Log(maxWidth, factor));
                 for (int i = max; i >= 0; i--)
                 {
                     double scale = Math.Pow(factor, i);

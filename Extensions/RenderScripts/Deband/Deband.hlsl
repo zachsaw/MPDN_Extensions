@@ -61,9 +61,10 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 	// Calculate variance of debanded value
 	float3 varY = SSres * (1.0/4.0 + dot(offset-0.5, offset-0.5));
 
+	// Calculate gradient
 	float4x2 grad = transpose(mul(float2x4(LinFit[0], LinFit[1]), Y));
-	float4 grad2 = float4(dot(grad[0], grad[0]), dot(grad[1], grad[1]), dot(grad[2], grad[2]), dot(grad[3], grad[3]));
 
+	float4 grad2 = float4(dot(grad[0], grad[0]), dot(grad[1], grad[1]), dot(grad[2], grad[2]), dot(grad[3], grad[3]));
 	float3 m = (avg-c0)*acuity;
 	float3 diff = 0.5 * sign(m) * max(0, abs(m)+1 - sqrt(sqr(abs(m)-1) + 4*varY)); // Maximum likelihood estimate
 	// varY += 1e-10; // Add noise to avoid numerical issues
@@ -73,7 +74,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
 	diff -= diff * saturate(sign(diff) * ((GetHR(1,0) + GetHR(-1,0) + GetHR(0,1) + GetHR(0,-1))/4.0 - c0) * acuity);
 #endif
 
-	c0.xyz = c0 + (diff / acuity) * (grad2 * (1 - power) <= power);
+	c0.xyz = c0 + (diff / acuity) * (grad2 * (1 - power) <= sqr(2) * power);
 
 	return c0;
 }
