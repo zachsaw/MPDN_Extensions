@@ -132,6 +132,12 @@ namespace Mpdn.Extensions.Framework
             var config = new MemConfig<TSettings>();
             return config.LoadFromString(input) ? config.Config : null;
         }
+
+        public static TSettings MakeXMLDuplicate<TSettings>(TSettings settings)
+            where TSettings : class, new()
+        {
+            return LoadFromString<TSettings>(SaveToString(settings));
+        }
     }
 
     public static class PresetHelper
@@ -349,48 +355,11 @@ namespace Mpdn.Extensions.Framework
 
     public static class StatusHelpers
     {
-        public static string FlattenStatus(this string status)
-        {
-            return status.Replace(';', ',');
-        }
-
-        public static string ToSubStatus(this string status)
-        {
-            return string.IsNullOrEmpty(status)
-                ? ""
-                : string.Format("({0})", FlattenStatus(status));
-        }
-
-        public static string AppendSubStatus(this string first, string status)
-        {
-            return string.IsNullOrEmpty(status)
-                ? first
-                : first + " " + status.ToSubStatus();
-        }
-
-        public static Func<string> AppendSubStatus(this Func<string> first, Func<string> status)
-        {
-            return () => first().AppendSubStatus(status());
-        }
-
-        public static string AppendStatus(this string first, string status)
-        {
-            return string.Join("; ",
-                (new[] { first, status })
-                .Where(str => !string.IsNullOrEmpty(str))
-                .ToArray());
-        }
-
-        public static string PrependToStatus(this string status, string prefix)
+        public static string PrependToDescription(this string status, string prefix)
         {
             return (string.IsNullOrEmpty(status))
                 ? status
                 : prefix + status;
-        }
-
-        public static Func<string> Append(this Func<string> first, Func<string> status)
-        {
-            return () => first().AppendStatus(status());
         }
 
         public static string ScaleDescription(TextureSize inputSize, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
@@ -401,10 +370,15 @@ namespace Mpdn.Extensions.Framework
             if (xDesc == yDesc)
                 return xDesc;
 
-            xDesc = xDesc.PrependToStatus("X:");
-            yDesc = yDesc.PrependToStatus("Y:");
+            xDesc = xDesc.PrependToDescription("X: ");
+            yDesc = yDesc.PrependToDescription("Y: ");
 
-            return xDesc.AppendStatus(yDesc);
+            if (xDesc == "")
+                return yDesc;
+            if (yDesc == "")
+                return xDesc;
+
+            return xDesc + ", " + yDesc;
         }
 
         public static string ScaleDescription(int inputDimension, int outputDimension, IScaler upscaler, IScaler downscaler, IScaler convolver = null)

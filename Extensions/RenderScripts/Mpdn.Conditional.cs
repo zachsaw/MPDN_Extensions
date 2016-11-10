@@ -16,35 +16,54 @@
 // 
 
 using System;
+using System.Collections.Generic;
+using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.Framework.Scripting;
+using Mpdn.Extensions.RenderScripts.Mpdn.ScriptChain;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.Conditional
     {
-        public class Conditional : RenderChain
+        public class Conditional : RenderScriptChain
         {
             private const string RESULT_VAR = "__$result";
 
             #region Settings
 
             public string Condition { get; set; }
-            public Preset<ITextureFilter, IRenderScript> Preset { get; set; }
+
+            // Backwards compatiblity, to be removed at some point.
+            public Preset<ITextureFilter, IRenderScript> Preset
+            {
+                get
+                {
+                    return new ScriptChainScript
+                    {
+                        Settings = this
+                    }.MakeNewPreset();
+                }
+                set
+                {
+                    var scriptchain = value.Chain as RenderScriptChain;
+                    Options = scriptchain != null
+                        ? scriptchain.Options
+                        : new List<Preset<ITextureFilter, IRenderScript>> { value };
+                }
+            }
 
             #endregion
 
-            protected override ITextureFilter CreateFilter(ITextureFilter input)
+            public override ITextureFilter Process(ITextureFilter input)
             {
-                if (string.IsNullOrWhiteSpace(Condition) || Preset == null)
+                if (   string.IsNullOrWhiteSpace(Condition) 
+                    || !RenderScriptEngine.Eval(input, GetScript(), GetType().Name))
                     return input;
 
-                if (!RenderScriptEngine.Eval(input, GetScript(), GetType().Name))
-                    return input;
-
-                return input + Preset;
+                return base.Process(input);
             }
 
             private string GetScript()

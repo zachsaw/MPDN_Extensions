@@ -25,7 +25,7 @@
 #endif
 
 #define dxdy (p1.xy)
-#define ddxddy (OutputSize.zw)
+#define ddxddy (InputSize.zw)
 
 // -- Definitions --
 #define factor ((ddxddy*p0.xy)[axis])
@@ -36,8 +36,8 @@
 	#define Get(pos)    (GetFrom(s0, pos))
 #endif
 
-#ifndef OutputSize
-	#define OutputSize size0
+#ifndef InputSize
+	#define InputSize size0
 #endif
 
 #ifndef axis
@@ -80,8 +80,8 @@ OutputFormat EntryPoint(float2 tex : TEXCOORD0
 #endif
 ) : COLOR{
     // Calculate bounds
-	int low  = floor((tex - 0.5*taps*dxdy) * OutputSize.xy - (offset) + 0.5)[axis];
-	int high = floor((tex + 0.5*taps*dxdy) * OutputSize.xy - (offset) + 0.5)[axis];
+	int low  = floor((tex - 0.5*taps*dxdy) * InputSize.xy - (offset) + 0.5)[axis];
+	int high = floor((tex + 0.5*taps*dxdy) * InputSize.xy - (offset) + 0.5)[axis];
 
 	float W = 0;
 	AverageFormat avg = 0;

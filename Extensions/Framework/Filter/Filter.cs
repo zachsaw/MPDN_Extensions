@@ -22,7 +22,13 @@ namespace Mpdn.Extensions.Framework.Filter
 {
     using IBaseFilter = IFilter<IFilterOutput>;
 
-    public interface IFilter<out TOutput> : IDisposable
+    public interface ITaggableFilter<out TOutput> : IFilter<TOutput>
+        where TOutput : class, IFilterOutput
+    {
+        void EnableTag();
+    }
+
+    public interface IFilter<out TOutput> : IDisposable, ITagged
         where TOutput : class, IFilterOutput
     {
         TOutput Output { get; }
@@ -32,8 +38,6 @@ namespace Mpdn.Extensions.Framework.Filter
         void Reset();
         void Initialize(int time = 1);
         IFilter<TOutput> Compile();
-
-        FilterTag Tag { get; }
     }
 
     public interface IFilterOutput : IDisposable
@@ -102,7 +106,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
         private IFilter<TOutput> m_CompilationResult;
         private TOutput m_Output;
-        private readonly FilterTag m_Tag;
+        private readonly ProcessTag m_Tag;
 
         public IFilter<TInput>[] InputFilters { get { return m_CompiledFilters ?? m_InputFilters; } }
 
@@ -154,16 +158,14 @@ namespace Mpdn.Extensions.Framework.Filter
                 .Select(x => x.Compile())
                 .ToArray();
 
-            var inputTag = new EmptyTag();
-            foreach (var filter in m_InputFilters)
-                inputTag.AddInput(filter.Tag);
+            var inputTag = new HubTag(m_InputFilters.Select(f => f.Tag).ToArray());
             Tag.AddPrefix(inputTag);
 
             m_CompilationResult = Optimize();
             return m_CompilationResult;
         }
 
-        public FilterTag Tag { get { return m_Tag; } }
+        public ProcessTag Tag { get { return m_Tag; } }
 
         protected virtual IFilter<TOutput> Optimize()
         {
@@ -248,6 +250,16 @@ namespace Mpdn.Extensions.Framework.Filter
             where TOther : IBaseFilter
         {
             return map(filter);
+        }
+
+        public static TFilter MakeTagged<TFilter>(this TFilter filter)
+            where TFilter : IFilter<IFilterOutput>
+        {
+            var taggableFilter = filter as ITaggableFilter<IFilterOutput>;
+            if (taggableFilter != null)
+                taggableFilter.EnableTag();
+
+            return filter;
         }
     }
 }

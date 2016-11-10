@@ -23,7 +23,7 @@ namespace Mpdn.Extensions.Framework.Filter
     {
         protected BaseSourceFilter()
         {
-            Tag.AddInput(FilterTag.Bottom);
+            Tag.Insert(ProcessTag.BOTTOM);
         }
 
         protected override void Render(IList<IFilterOutput> inputs) { }

@@ -36,7 +36,7 @@ namespace Mpdn.Extensions.Framework.Chain
 
         private IFilter<TOutput> m_SourceFilter;
         private IFilter<TOutput> m_Filter;
-        private FilterTag m_Tag;
+        private ProcessTag m_Tag;
 
         private readonly Chain<TFilter> m_Chain;
 

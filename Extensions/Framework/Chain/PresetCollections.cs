@@ -17,6 +17,16 @@ namespace Mpdn.Extensions.Framework.Chain
 
         #endregion
 
+        protected virtual string Description
+        {
+            get
+            {
+                return String.IsNullOrEmpty(Name)
+                    ? GetType().Name
+                    : Name;
+            }
+        }
+
         protected PresetCollection()
         {
             Options = new List<Preset<T, TScript>>();
@@ -24,15 +34,19 @@ namespace Mpdn.Extensions.Framework.Chain
     }
 
     public class ScriptChain<T, TScript> : PresetCollection<T, TScript>
+        where T : ITagged
         where TScript : class, IScript
     {
         public override T Process(T input)
         {
-            return Options.Aggregate(input, (result, chain) => result + chain);
+            var result = Options.Aggregate(input, (temp, chain) => temp + chain);
+            result.AddJunction(new StringTag(Description, 10), input);
+            return result;
         }
     }
 
     public class ScriptGroup<T, TScript> : PresetCollection<T, TScript>
+        where T : ITagged
         where TScript : class, IScript
     {
         #region Settings
@@ -55,25 +69,6 @@ namespace Mpdn.Extensions.Framework.Chain
             get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) ?? Options.LastOrDefault() : null; }
         }
 
-        [YAXDontSerialize]
-        public string ScriptName
-        {
-            get
-            {
-                var preset = SelectedOption;
-                return preset == null ? string.Empty : preset.Name;
-            }
-            set
-            {
-                var index = Options.FindIndex(p => p.Name == value);
-                if (index < 0)
-                {
-                    throw new KeyNotFoundException(string.Format("ScriptName '{0}' is not found", value));
-                }
-                SelectedIndex = index;
-            }
-        }
-
         #endregion
 
         public ScriptGroup()
@@ -89,7 +84,9 @@ namespace Mpdn.Extensions.Framework.Chain
 
         public override T Process(T input)
         {
-            return SelectedOption != null ? input + SelectedOption : input;
+            var result = (SelectedOption != null ? input + SelectedOption : input);
+            result.AddJunction(new StringTag(Description, 10), input);
+            return result;
         }
 
         #region Hotkey Handling

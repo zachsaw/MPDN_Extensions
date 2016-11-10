@@ -30,11 +30,10 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         {
             var fullSizeChroma = new ResizeFilter(chromaInput, targetSize, TextureChannels.ChromaOnly,
                 chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
-            fullSizeChroma.EnableTag();
 
             return new MergeFilter(lumaInput.SetSize(targetSize, tagged: true), fullSizeChroma)
                 .ConvertToRgb()
-                .Tagged(new ChromaScalerTag(chromaInput, fullSizeChroma.Description().PrependToStatus("Chroma: ")));
+                .Tagged(fullSizeChroma.Description().PrependToDescription("Chroma: "));
         }
     }
 
@@ -84,13 +83,12 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ITextureFilter SetSize(TextureSize outputSize)
         {
-            return Rebuild(targetSize: outputSize);
+            return Rebuild(targetSize: outputSize).Tagged(Tag); ;
         }
 
         public ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null, ICompositionFilter fallback = null)
         {
-            return new CompositionFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset, fallback ?? Fallback)
-                .Tagged(Tag);
+            return new CompositionFilter(Luma, Chroma, chromaScaler ?? ChromaScaler, targetSize ?? TargetSize, chromaOffset ?? ChromaOffset, fallback ?? Fallback);
         }
 
         public void EnableTag() { }
@@ -102,13 +100,13 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
-            var Result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset);
-            if (Result != null)
-                Result.Tag.AddPrefix(Tag);
+            IFilter<ITextureOutput<ITexture2D>> Result = ChromaScaler.CreateChromaFilter(Luma, Chroma, TargetSize, ChromaOffset);
+            Result = (Result != null)
+                ? Result.SetSize(TargetSize, tagged: true)
+                : Fallback.Compile();
 
-            return (Result ?? Fallback)
-                .SetSize(TargetSize, tagged: true)
-                .Compile();
+            Tag.Insert(Result.Tag);
+            return Result.Compile();
         }
 
         protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
@@ -116,46 +114,4 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             throw new NotImplementedException("Uncompiled Filter.");
         }
     }
-
-    public class ChromaScalerTag : StringTag
-    {
-        private readonly FilterTag m_ChromaTag;
-
-        public ChromaScalerTag(ITextureFilter chromaFilter, string label)
-            : base(label)
-        {
-            m_ChromaTag = chromaFilter.Tag;
-        }
-
-        public override string CreateString(int minIndex = -1)
-        {
-            Initialize();
-
-            var lumaPart = new EmptyTag();
-            var chromaPart = new StringTag(Label);
-
-            foreach (var tag in SubTags)
-                if (tag.ConnectedTo(m_ChromaTag))
-                    chromaPart.AddInput(tag);
-                else
-                    lumaPart.AddInput(tag);
-
-            lumaPart.Initialize();
-            chromaPart.Initialize();
-
-            var luma = lumaPart
-                .CreateString(minIndex)
-                .FlattenStatus()
-                .PrependToStatus("Luma: ");
-
-            var chroma = chromaPart
-                .CreateString(minIndex)
-                .FlattenStatus();
-            if (!chroma.StartsWith("Chroma: "))
-                chroma = chroma.PrependToStatus(luma == "" ? "" : "Chroma: ");
-
-            return chroma.AppendStatus(luma);
-        }
-    }
-
 }

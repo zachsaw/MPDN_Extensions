@@ -18,7 +18,8 @@ using Mpdn.Extensions.Framework.Config;
 
 namespace Mpdn.Extensions.Framework.Chain.Dialogs
 {
-    public partial class ScriptGroupDialog<T, TScript> : ScriptGroupDialogBase<T, TScript> 
+    public partial class ScriptGroupDialog<T, TScript> : ScriptGroupDialogBase<T, TScript>
+        where T : ITagged
         where TScript : class, IScript
     {
         public ScriptGroupDialog()
@@ -42,6 +43,7 @@ namespace Mpdn.Extensions.Framework.Chain.Dialogs
     }
 
     public class ScriptGroupDialogBase<T, TScript> : ScriptConfigDialog<ScriptGroup<T,TScript>> 
+        where T : ITagged
         where TScript : class, IScript
     { }
 }

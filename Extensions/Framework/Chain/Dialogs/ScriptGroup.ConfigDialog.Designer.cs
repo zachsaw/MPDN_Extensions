@@ -19,7 +19,7 @@ using Mpdn.Extensions.Framework.Controls;
 
 namespace Mpdn.Extensions.Framework.Chain.Dialogs
 {
-    partial class ScriptGroupDialog<T, TScript> where TScript : class, IScript
+    partial class ScriptGroupDialog<T, TScript>
     {
         /// <summary> 
         /// Required designer variable.

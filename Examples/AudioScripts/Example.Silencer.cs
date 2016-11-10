@@ -40,7 +40,7 @@ namespace Mpdn.Examples.AudioScripts
             }
         }
 
-        public class SilencerUi : AudioChainUi<StaticAudioChain<Silencer>>
+        public class SilencerUi : AudioChainUi<Silencer>
         {
             public override ExtensionUiDescriptor Descriptor
             {

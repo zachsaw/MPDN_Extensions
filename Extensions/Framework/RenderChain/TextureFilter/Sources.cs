@@ -195,7 +195,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             : base(output)
         {
             /* Don't connect to bottom label */
-            Tag.RemoveInput(FilterTag.Bottom);
+            Tag.Purge(ProcessTag.BOTTOM);
         }
     }
     
@@ -289,20 +289,14 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         // Note: Argument doesn't technically do anything, just prevents the creation of a TrueSourceFilter not coupled to an IRenderScript's Descriptor
         public TrueSourceFilter(IRenderScript script) { }
 
-        public string Description()
-        {
-            var chromaConvolver = Renderer.ChromaOffset.IsZero ? null : Renderer.ChromaUpscaler;
-            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, chromaConvolver)
-                .PrependToStatus("Chroma: ");
-            var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler)
-                .PrependToStatus("Luma: ");
-
-            return chromastatus.AppendStatus(lumastatus);
-        }
-
         protected override void Initialize()
         {
-            Tag.Insert(Description());
+            var chromaConvolver = Renderer.ChromaOffset.IsZero ? null : Renderer.ChromaUpscaler;
+            var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, OutputSize, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, chromaConvolver);
+            var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, OutputSize, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+
+            Tag.Insert(chromastatus.PrependToDescription("Chroma: "));
+            Tag.Insert(lumastatus.PrependToDescription("Luma: "));
         }
 
         public bool WantYuv

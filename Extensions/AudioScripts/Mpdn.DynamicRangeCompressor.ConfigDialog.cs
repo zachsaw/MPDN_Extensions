@@ -16,6 +16,7 @@
 // 
 
 using Mpdn.Extensions.Framework.Config;
+using Mpdn.Extensions.Framework.AudioChain;
 
 namespace Mpdn.Extensions.AudioScripts
 {
@@ -47,7 +48,7 @@ namespace Mpdn.Extensions.AudioScripts
             }
         }
 
-        public class DynamicRangeCompressorConfigDialogBase : ScriptConfigDialog<DynamicRangeCompressor>
+        public class DynamicRangeCompressorConfigDialogBase : AudioConfigDialog<DynamicRangeCompressor>
         {
         }
     }

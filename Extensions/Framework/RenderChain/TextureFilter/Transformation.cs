@@ -204,15 +204,13 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         {
             if (InputFilter.Output.Size == m_OutputSize && m_Convolver == null)
                 return InputFilter;
-            return this.Tagged(Description());
+            return this.Tagged(new StringTag(Description(), m_Tagged ? 0 : 10));
         }
 
         public string Description()
         {
             var inputSize = InputFilter.Output.Size;
-            return m_Tagged
-                ? StatusHelpers.ScaleDescription(inputSize, OutputSize, m_Upscaler, m_Downscaler, m_Convolver)
-                : "";
+            return StatusHelpers.ScaleDescription(inputSize, OutputSize, m_Upscaler, m_Downscaler, m_Convolver);
         }
 
         protected override TextureSize OutputSize

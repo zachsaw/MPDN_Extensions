@@ -41,10 +41,9 @@ namespace Mpdn.Extensions.Framework.Chain
             set
             {
                 m_Name = value;
-                if (Script != null && Chain is INameable)
-                {
-                    ((INameable) Chain).Name = value;
-                }
+                var chain = Chain as INameable;
+                if (chain != null)
+                    chain.Name = value;
             }
         }
 
@@ -53,14 +52,13 @@ namespace Mpdn.Extensions.Framework.Chain
 
         public IChainUi<T, TScript> Script
         {
-            get { return m_Script; }
+            get { return m_Script ?? ChainUi<T, TScript>.IDENTITY; }
             set
             {
                 m_Script = value;
-                if (Script != null && Chain is INameable)
-                {
-                    ((INameable) Chain).Name = Name;
-                }
+                var chain = Chain as INameable;
+                if (chain != null)
+                    chain.Name = Name;
             }
         }
 
@@ -114,32 +112,32 @@ namespace Mpdn.Extensions.Framework.Chain
 
         public bool HasConfigDialog()
         {
-            return Script != null && Script.HasConfigDialog();
+            return Script.HasConfigDialog();
         }
 
         public bool ShowConfigDialog(IWin32Window owner)
         {
-            return Script != null && Script.ShowConfigDialog(owner);
+            return Script.ShowConfigDialog(owner);
         }
 
         public TScript CreateScript()
         {
-            return (Script != null) ? Script.CreateScript() : null;
+            return Script.CreateScript();
         }
 
         void IExtensionUi.Initialize()
         {
-            if (Script != null) Script.Initialize();
+            Script.Initialize();
         }
 
         public void Destroy()
         {
-            if (Script != null) Script.Destroy();
+            Script.Destroy();
         }
 
         public void Dispose()
         {
-            if (Script != null) Script.Dispose();
+            Script.Dispose();
         }
 
         #endregion

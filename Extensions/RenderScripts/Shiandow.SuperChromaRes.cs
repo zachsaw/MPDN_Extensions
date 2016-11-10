@@ -94,7 +94,7 @@ namespace Mpdn.Extensions.RenderScripts
                 string superResMacros = "";
                 if (Softness == 0.0f)
                     superResMacros += "SkipSoftening = 1;";
-                string diffMacros = string.Format("LimitedRange = {0}; range = {1}", limited ? 1 : 0, (1 << bitdepth) - 1);
+                string diffMacros = string.Format("LimitedRange = {0}; Range = {1}", limited ? 1 : 0, (1 << bitdepth) - 1);
 
                 var configArgs = yuvConsts.Concat(new[] { chromaOffset.X, chromaOffset.Y }).ToArray();
 

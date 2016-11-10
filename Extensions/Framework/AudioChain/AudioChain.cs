@@ -21,13 +21,21 @@ using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public abstract class AudioChain<TFilter> : PinFilterChain<TFilter, IAudioFilter>
-        where TFilter : PinFilter<IAudioOutput>, IAudioFilter
-    { }
-
-    public class StaticAudioChain<TFilter> : StaticPinFilterChain<TFilter, IAudioFilter>
+    public class AudioChain<TFilter> : PinFilterChain<TFilter, IAudioFilter>
         where TFilter : PinFilter<IAudioOutput>, IAudioFilter, new()
-    { }
+    {
+        public TFilter FilterSettings { get; set; }
+
+        public AudioChain()
+        {
+            FilterSettings = new TFilter();
+        }
+
+        protected override TFilter MakeFilter()
+        {
+            return ConfigHelper.MakeXMLDuplicate<TFilter>(FilterSettings);
+        }
+    }
 
     public class AudioScriptChain : ScriptChain<IAudioFilter, IAudioScript> { }
     public class AudioScriptChainDialog : ScriptChainDialog<IAudioFilter, IAudioScript> { }

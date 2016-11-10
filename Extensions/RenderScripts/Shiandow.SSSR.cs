@@ -17,14 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using Mpdn.Extensions.CustomLinearScalers;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.Extensions.RenderScripts.Mpdn.EwaScaler;
 using Mpdn.RenderScript;
-using Mpdn.RenderScript.Scaler;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -163,7 +161,7 @@ namespace Mpdn.Extensions.RenderScripts
                     if (filter != null)
                         filter.ForceOffsetCorrection();
 
-                    result = initial.SetSize(targetSize);
+                    result = initial.SetSize(targetSize, tagged: true);
                     if (LinearLight)
                     {
                         original = original.Apply(GammaToLinear);
@@ -174,7 +172,7 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     if (LinearLight)
                         original = original.Apply(GammaToLinear);
-                    result = original.Resize(targetSize);
+                    result = original.Resize(targetSize, tagged: true);
                 }
 
                 for (int i = 1; i <= Passes; i++)

@@ -128,12 +128,12 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             var script = Extension.RenderScript as RenderChainScript;
             var desc = script == null ? GetInternalScalerDesc() : script.Status;
-            desc = desc.Trim();
 
-            var descriptions = desc.Split(';')
+            /*var descriptions = desc.Trim().Split(';')
                 .Select(str => str.Trim())
                 .Where(str => !string.IsNullOrEmpty(str))
-                .ToArray();
+                .ToArray();*/
+            var descriptions = desc.Split('\n');
 
             var text = string.Format("Render Chain\r\n    {0}", string.Join("\r\n    ", descriptions));
             var width = m_Text.MeasureWidth(text);
@@ -159,9 +159,10 @@ namespace Mpdn.Extensions.PlayerExtensions
         private static string GetInternalScalerDesc()
         {
             var sourceFilter = new TrueSourceFilter(null);
-            sourceFilter.SetSize(Renderer.TargetSize);
+            sourceFilter.OutputSize = Renderer.TargetSize;
+            sourceFilter.Compile();
             sourceFilter.Initialize();
-            return sourceFilter.Description();
+            return sourceFilter.Tag.CreateString();
         }
     }
 

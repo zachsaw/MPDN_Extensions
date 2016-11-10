@@ -191,7 +191,7 @@ namespace Mpdn.Extensions.AudioScripts
             }
         }
 
-        public class ReclockUi : AudioChainUi<StaticAudioChain<Reclock>>
+        public class ReclockUi : AudioChainUi<Reclock>
         {
             public override string Category
             {

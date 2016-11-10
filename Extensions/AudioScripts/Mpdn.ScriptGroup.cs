@@ -22,7 +22,7 @@ namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn.ScriptGroup
     {
-        public class ScriptGroupScript : AudioChainUi<AudioScriptGroup, AudioScriptGroupDialog>
+        public class ScriptGroupScript : GeneralAudioChainUI<AudioScriptGroup, AudioScriptGroupDialog>
         {
             protected override string ConfigFileName
             {
