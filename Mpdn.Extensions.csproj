@@ -374,6 +374,7 @@
     <Compile Include="Extensions\RenderScripts\Shiandow.Chroma.ConfigDialog.Designer.cs">
       <DependentUpon>Shiandow.Chroma.ConfigDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\RenderScripts\Shiandow.DebandExperimental.cs" />
     <Compile Include="Extensions\RenderScripts\Shiandow.Deband.ConfigDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -522,6 +523,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Extensions\RenderScripts\Bilateral\KrigBilateral.hlsl" />
+    <None Include="Extensions\RenderScripts\DebandExperimental\Downscale.hlsl" />
+    <Content Include="Extensions\RenderScripts\DebandExperimental\Deband.hlsl" />
     <Content Include="Extensions\RenderScripts\EwaScaler\EwaScaler.hlsl" />
     <Content Include="Extensions\RenderScripts\SSimDownscaler\Calc.hlsl" />
     <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Convolver.hlsl" />
