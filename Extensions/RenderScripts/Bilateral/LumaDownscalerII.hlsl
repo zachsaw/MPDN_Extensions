@@ -25,4 +25,8 @@ float4 args0 : register(c3);
 #define AverageFormat	float2
 #define Get(pos)		float2(GetFrom(s0, pos).x, GetFrom(s0, pos).y + sqr(GetFrom(s0, pos).x))
 #define PostProcessing(y)	(float4(y[0], GetFrom(sUV,tex).yz, y[1] - y[0]*y[0]))
+
+#define pi acos(-1)
+#define Kernel(x) cos(0.5*pi*x)
+#define taps 2
 #include "../SSimDownscaler/Scalers/Downscaler.hlsl"
