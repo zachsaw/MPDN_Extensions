@@ -21,6 +21,16 @@ float spread : register(c2);
 float oversharp : register(c3);
 float4 sizeOutput : register(c4);
 
+#define noise (0.01)
+
+#define spreadH (spread)
+
+#if MODE == 0
+	#define spreadL (0.01)
+#else
+	#define spreadL (spread)
+#endif
+
 #define dxdy (sizeOutput.zw)
 
 #include "../Common/ColourProcessing.hlsl"
@@ -34,24 +44,32 @@ float4 main(float2 tex : TEXCOORD0) : COLOR {
     float4 c0 = tex2D(s0, tex);
     float4 c1 = tex2D(s1, tex);
 
-	float4 meanH = (GetH(0,0) + spread * (GetH(-1, 0) + GetH(0, 1) + GetH(1, 0) + GetH(0, -1)))/(1.0 + 4.0 * spread);
-	float4 meanL = (GetL(0,0) + spread * (GetL(-1, 0) + GetL(0, 1) + GetL(1, 0) + GetL(0, -1)))/(1.0 + 4.0 * spread);
+	float4 meanH = 0;
+	float4 meanL = 0;
+	for (int X=-1; X<=1; X++)
+	for (int Y=-1; Y<=1; Y++) {
+		meanH += GetH(X,Y) * pow(spreadH, sqr(X) + sqr(Y));
+		meanL += GetL(X,Y) * pow(spreadL, sqr(X) + sqr(Y));
+	}
+	meanH /= (1 + 4*spreadH + 4*spreadH*spreadH);
+	meanL /= (1 + 4*spreadL + 4*spreadL*spreadL);
 
-	float varH = (sqr(Luma(GetH(0, 0) - meanH)) + spread * (sqr(Luma(GetH(-1, 0) - meanH)) + sqr(Luma(GetH(0, 1) - meanH)) + sqr(Luma(GetH(1, 0) - meanH)) + sqr(Luma(GetH(0, -1) - meanH)))) / (1 + 4 * spread);
-	float varL = (sqr(Luma(GetL(0, 0) - meanL)) + spread * (sqr(Luma(GetL(-1, 0) - meanL)) + sqr(Luma(GetL(0, 1) - meanL)) + sqr(Luma(GetL(1, 0) - meanL)) + sqr(Luma(GetL(0, -1) - meanL)))) / (1 + 4 * spread);
+	float varH = 0;
+	float varL = 0;
+	for (int X=-1; X<=1; X++)
+	for (int Y=-1; Y<=1; Y++) {
+		varH += sqr(Luma(GetH(X,Y) - meanH)) * pow(spreadH, sqr(X) + sqr(Y));
+		varL += sqr(Luma(GetL(X,Y) - meanL)) * pow(spreadL, sqr(X) + sqr(Y));
+	}
+	varH /= (1 + 4*spreadH + 4*spreadH*spreadH) - (1 + 4*spreadH*spreadH + 4*spreadH*spreadH*spreadH*spreadH)/(1 + 4*spreadH + 4*spreadH*spreadH);
+	varL /= (1 + 4*spreadL + 4*spreadL*spreadL) - (1 + 4*spreadL*spreadL + 4*spreadL*spreadL*spreadL*spreadL)/(1 + 4*spreadL + 4*spreadL*spreadL);
 
-	varH = varH + meanH.w + sqr(0.5/255.0);
-	varL = varL + sqr(0.5/255.0);
+	varH = varH + meanH.w + sqr(noise);
+	varL = varL + sqr(noise);
 
 	float R = (1 + oversharp) * sqrt(varL/varH);
 
 	// Variance matching:
 	// x -> mu + R (x - E[x]) = x + (mu - (1-R) * x - R * E[x])
-#if MODE == 0
-	return float4(c1.xyz - R * meanH, R);
-#elif MODE == 1
 	return float4(meanL.xyz - R * meanH, R);
-#else
-	return float4(c1.xyz - R * c0, R);
-#endif
 }

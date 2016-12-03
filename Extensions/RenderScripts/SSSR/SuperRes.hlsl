@@ -15,9 +15,9 @@
 // License along with this library.
 
 // -- Misc --
-sampler s0          : register(s0);
-sampler sDiff       : register(s1);
-sampler sOriginal   : register(s2);
+sampler s0       : register(s0);
+sampler sDiff    : register(s1);
+sampler sLoRes   : register(s2);
 
 float4 size1      : register(c2); // Original size
 float4 sizeOutput : register(c3);
@@ -29,7 +29,7 @@ float4 sizeOutput : register(c3);
 #define ddxddy (originalSize.zw)
 
 // -- Window Size --
-#define taps 4
+#define taps 3
 #define even (taps - 2 * (taps / 2) == 0)
 #define minX (1-ceil(taps/2.0))
 #define maxX (floor(taps/2.0))
@@ -46,11 +46,8 @@ float4 sizeOutput : register(c3);
 #include "../Common/ColourProcessing.hlsl"
 
 // -- Input processing --
-//Current high res value
-#define Get(x,y)        (tex2Dlod(s0,        float4(tex + sqrt(ddxddy/dxdy)*dxdy*int2(x,y),0,0)))
-#define GetLoRes(x,y)   (tex2Dlod(sOriginal, float4(ddxddy*(pos+int2(x,y)+0.5),0,0)))
-//Downsampled result
-#define Diff(x,y)       (tex2Dlod(sDiff,     float4(ddxddy*(pos+int2(x,y)+0.5),0,0)))
+#define GetLoRes(x,y)   (tex2Dlod(sLoRes, float4(ddxddy*(pos+int2(x,y)+0.5),0,0)))
+#define Diff(x,y)       (tex2Dlod(sDiff,  float4(ddxddy*(pos+int2(x,y)+0.5),0,0)))
 
 // -- Main Code --
 float4 main(float2 tex : TEXCOORD0) : COLOR{
@@ -79,7 +76,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
         weightSum += weight;
     }
     diff /= weightSum;
-    
+
     c0.xyz += diff;
 
     #ifdef FinalPass
