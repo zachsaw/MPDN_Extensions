@@ -15,27 +15,18 @@
 // License along with this library.
 
 using System;
+using System.Collections.Generic;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.RenderChain.Shader;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.Deband
     {
-        public class Deband : RenderChain
+        public class DebandExperimental : Deband
         {
-            public int MaxBitDepth { get; set; }
-            public float Power { get; set; }
-            public bool PreserveDetail { get; set; }
-
-            public Deband()
-            {
-                MaxBitDepth = 8;
-                Power = 0.5f;
-                PreserveDetail = true;
-            }
-
             protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 if (Renderer.InputFormat.IsRgb())
@@ -49,36 +40,40 @@ namespace Mpdn.Extensions.RenderScripts
                     Power
                 };
 
-                var Deband = CompileShader("Deband.hlsl", macroDefinitions: PreserveDetail ? "PRESERVE_DETAIL=1" : "")
-                    .Configure(arguments: consts, perTextureLinearSampling: new[] { true, false });
-
-                ITextureFilter yuv = input.ConvertToYuv();
-                var inputsize = yuv.Output.Size;
-
-                var deband = yuv;
-                double factor = 2.0;// 0.5 * Math.Sqrt(5) + 0.5;
-
-                int maxWidth = Math.Min(Math.Min(inputsize.Width, inputsize.Height) / 3, 256);
-                int max = (int)Math.Floor(Math.Log(maxWidth, factor));
-                for (int i = max; i >= 0; i--)
+                var Downscale = new Shader(FromFile("Downscale.hlsl"))
                 {
-                    double scale = Math.Pow(factor, i);
-                    var size = new TextureSize((int)Math.Round(inputsize.Width / scale), (int)Math.Round(inputsize.Height / scale));
-                    if (size.Width == 0 || size.Height == 0) continue;
-                    if (i == 0) size = inputsize;
+                    Transform = s => new TextureSize(s.Width/2, s.Height/2)
+                };
 
-                    deband = Deband.Configure(transform: s => size).ApplyTo(yuv, deband);
-                }
+                var Deband = new Shader(FromFile("Deband.hlsl", macroDefinitions: PreserveDetail ? "PRESERVE_DETAIL=1" : ""))
+                {
+                    Arguments = consts,
+                    PerTextureLinearSampling = new[] {true, false, true},
+                    SizeIndex = 1
+                };
 
-                return deband.ConvertToRgb();
+                var deband = input.ConvertToYuv();
+                var pyramid = new Stack<ITextureFilter>();
+
+                // Build gaussian pyramid
+                pyramid.Push(deband);
+                while (pyramid.Peek().Output.Size.Width  >= 2
+                    && pyramid.Peek().Output.Size.Height >= 2)
+                    pyramid.Push(Downscale.ApplyTo(pyramid.Peek()));
+
+                var result = pyramid.Peek();
+                while (pyramid.Count > 1)
+                    result = Deband.ApplyTo(pyramid.Pop(), pyramid.Peek(), result);
+
+                return result.ConvertToRgb();
             }
         }
 
-        public class DebandUi : RenderChainUi<Deband, DebandConfigDialog>
+        public class DebandExperimentalUi : RenderChainUi<DebandExperimental, DebandConfigDialog>
         {
             protected override string ConfigFileName
             {
-                get { return "Shiandow.Deband"; }
+                get { return "Shiandow.DebandExperimental"; }
             }
 
             public override string Category
@@ -92,10 +87,10 @@ namespace Mpdn.Extensions.RenderScripts
                 {
                     return new ExtensionUiDescriptor
                     {
-                        Guid = new Guid("EE3B46F7-00BB-4299-9B3F-058BCC3F591C"),
-                        Name = "Deband",
+                        Guid = new Guid("e386c8a2-e380-418e-a4a6-cb79d9f8c020"),
+                        Name = "Deband Experimental",
                         Description = "Removes banding",
-                        Copyright = "Deband by Shiandow"
+                        Copyright = "Deband Experimental by Shiandow"
                     };
                 }
             }
