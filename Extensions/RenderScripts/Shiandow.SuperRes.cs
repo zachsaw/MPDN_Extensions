@@ -102,12 +102,12 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 var HDownscaler = CompileShader("../SSimDownscaler/Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
                     .Configure(transform: s => new TextureSize(targetSize.Width, s.Height));
-                var VDonwscaleAndDiff = CompileShader("./DownscaleAndDiff.hlsl", macroDefinitions: "axis = 1;")
+                var VDownscaleAndDiff = CompileShader("DownscaleAndDiff.hlsl", macroDefinitions: "axis = 1;")
                     .Configure(transform: s => new TextureSize(s.Width, targetSize.Height))
                     .Configure(format: TextureFormat.Float16);
 
                 var hMean = HDownscaler.ApplyTo(input);
-                var diff = VDonwscaleAndDiff.ApplyTo(hMean, original);
+                var diff = VDownscaleAndDiff.ApplyTo(hMean, original);
 
                 return diff;
             }
