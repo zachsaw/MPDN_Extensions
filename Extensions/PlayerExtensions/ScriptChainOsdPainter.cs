@@ -21,12 +21,11 @@ using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
-    using TrueSourceFilter = Framework.RenderChain.TextureFilter.TrueSourceFilter;
-
     public class ScriptChainOsdPainter : PlayerExtension<ScriptChainOsdPainterSettings, ScriptChainOsdPainterConfigDialog>
     {
         private const int TEXT_HEIGHT = 15;
@@ -158,11 +157,9 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static string GetInternalScalerDesc()
         {
-            var sourceFilter = new TrueSourceFilter(null);
-            sourceFilter.OutputSize = Renderer.TargetSize;
-            sourceFilter.Compile();
-            sourceFilter.Initialize();
-            return sourceFilter.Tag.CreateString();
+            ProcessTag tag = new EmptyTag();
+            VideoSourceFilter.InsertScaleDescription(tag, Renderer.TargetSize);
+            return tag.CreateString();
         }
     }
 
