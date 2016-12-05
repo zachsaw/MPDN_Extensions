@@ -27,6 +27,11 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public class DebandExperimental : Deband
         {
+            public DebandExperimental()
+            {
+                Power = 0.25f;
+            }
+
             protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 if (Renderer.InputFormat.IsRgb())
