@@ -17,6 +17,7 @@
 using System.IO;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Chain.Dialogs;
+using Mpdn.Extensions.Framework.RenderChain.Shader;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 
@@ -39,6 +40,21 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected string ShaderDataFilePath
         {
             get { return Path.Combine(ShaderCache.ShaderPathRoot, ShaderPath); }
+        }
+
+        protected ShaderFromFile FromFile(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
+        {
+            return new ShaderFromFile(Path.Combine(ShaderDataFilePath, shaderFileName), profile, entryPoint, macroDefinitions);
+        }
+
+        protected ShaderFromByteCode FromByteCode(string bytecodeFileName)
+        {
+            return new ShaderFromByteCode(Path.Combine(ShaderDataFilePath, bytecodeFileName));
+        }
+
+        protected ShaderFromString FromString(string shadercode, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
+        {
+            return new ShaderFromString(shadercode, profile, entryPoint, macroDefinitions);
         }
 
         protected IShaderFilterSettings<IShader> CompileShader(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
