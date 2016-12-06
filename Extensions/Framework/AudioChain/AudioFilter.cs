@@ -25,15 +25,26 @@ using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public interface IAudioFilter : IFilter<IAudioOutput>
-    { }
+    public interface IAudioFilter : IFilter<IAudioOutput> { }
 
     public abstract class AudioFilter : PinFilter<IAudioOutput>, IAudioFilter
     {
+        private readonly IPinAudioOutput m_PinOutput;
+
+        public AudioFilter() : this(new PinAudioOutput()) { }
+        
+        protected AudioFilter(IPinAudioOutput output) : base(output)
+        {
+            m_PinOutput = output;
+        }
+
         protected abstract void Process(float[,] samples, short channels, int sampleCount);
 
         protected override void Initialize()
         {
+            m_PinOutput.SetPin(Pin);
+            base.Initialize();
+
             try
             {
                 OnLoadAudioKernel();
@@ -56,16 +67,6 @@ namespace Mpdn.Extensions.Framework.AudioChain
             {
                 Trace.WriteLine(ex);
             }
-        }
-
-        protected override IAudioOutput DefineOutput()
-        {
-            return new AudioOutput(OutputFormat, Pin.Output.MediaSample);
-        }
-
-        protected virtual WaveFormatExtensible OutputFormat
-        {
-            get { return Pin.Output.Format; }
         }
 
         protected override void Render(IList<IAudioOutput> inputs)
@@ -327,26 +328,41 @@ namespace Mpdn.Extensions.Framework.AudioChain
         IMediaSample Sample { get; }
     }
 
-    public class AudioOutput : FilterOutput, IAudioOutput
+    public interface IPinAudioOutput : IAudioOutput
     {
+        void SetPin(IFilter<IAudioOutput> pin);
+    }
+
+    public class PinAudioOutput : FilterOutput, IPinAudioOutput
+    {
+        private IFilter<IAudioOutput> m_Pin;
+
         private IMediaSample m_Sample;
 
-        public AudioOutput(WaveFormatExtensible format, IMediaSample mediaSample)
+        public void SetPin(IFilter<IAudioOutput> pin)
         {
-            if (format == null) throw new ArgumentNullException("format");
-            if (mediaSample == null) throw new ArgumentNullException("mediaSample");
-
-            MediaSample = mediaSample;
-            Format = format;
+            m_Pin = pin;
         }
 
-        public WaveFormatExtensible Format { get; private set; }
+        public WaveFormatExtensible Format
+        {
+            get { return (m_Pin != null) ? m_Pin.Output.Format : null; }
+        }
 
-        public IMediaSample MediaSample { get; private set; }
+        public IMediaSample MediaSample
+        {
+            get { return (m_Pin != null) ? m_Pin.Output.MediaSample : null; }
+        }
 
         public IMediaSample Sample
         {
             get { return m_Sample; }
+        }
+
+        public override void Initialize()
+        {
+            if (m_Pin == null)
+                throw new InvalidOperationException("Pin not set, can't allocate output.");
         }
 
         public override void Allocate()

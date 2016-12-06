@@ -34,22 +34,23 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             : this((ShaderFilterSettings<T>) shader, inputFilters)
         { }
 
+        protected static TextureSize CalcSize(IShaderFilterSettings<T> settings, params IBaseTextureFilter[] inputFilters)
+        {
+            if (settings.SizeIndex < 0 || settings.SizeIndex >= inputFilters.Length || inputFilters[settings.SizeIndex] == null)
+            {
+                throw new IndexOutOfRangeException(string.Format("No valid input filter at index {0}", settings.SizeIndex));
+            }
+
+            return settings.Transform(inputFilters[settings.SizeIndex].Output.Size);
+        }
+
         protected GenericShaderFilter(IShaderFilterSettings<T> settings, params IBaseTextureFilter[] inputFilters)
-            : base(inputFilters)
+            : base(CalcSize(settings, inputFilters), settings.Format, inputFilters)
         {
             Shader = settings.Shader;
             LinearSampling = settings.PerTextureLinearSampling
                 .Concat(Enumerable.Repeat(settings.LinearSampling, inputFilters.Length - settings.PerTextureLinearSampling.Length))
                 .ToArray();
-
-            Transform = settings.Transform;
-            Format = settings.Format;
-            SizeIndex = settings.SizeIndex;
-
-            if (SizeIndex < 0 || SizeIndex >= inputFilters.Length || inputFilters[SizeIndex] == null)
-            {
-                throw new IndexOutOfRangeException(string.Format("No valid input filter at index {0}", SizeIndex));
-            }
 
             Args = settings.Arguments;
             Tag.Insert(new StringTag(settings.Name, 50));
@@ -66,9 +67,6 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         protected T Shader { get; private set; }
         protected bool[] LinearSampling { get; private set; }
-        protected TransformFunc Transform { get; private set; }
-        protected TextureFormat Format { get; private set; }
-        protected int SizeIndex { get; private set; }
         protected ArgumentList Args { get; private set; }
 
         protected void LoadTextureConstants(IList<IBaseTexture> inputs)
@@ -104,16 +102,6 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         {
             foreach (var argument in Args)
                 SetConstant(argument.Key, argument.Value);
-        }
-
-        protected override TextureSize OutputSize
-        {
-            get { return Transform(InputFilters[SizeIndex].Output.Size); }
-        }
-
-        protected override TextureFormat OutputFormat
-        {
-            get { return Format; }
         }
 
         protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)

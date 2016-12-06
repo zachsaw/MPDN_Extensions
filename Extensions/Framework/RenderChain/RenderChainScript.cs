@@ -24,7 +24,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class RenderChainScript : FilterChainScript<ITextureFilter, ITextureOutput<ITexture2D>>, IRenderScript
     {
-        private TrueSourceFilter m_TrueSourceFilter;
+        private VideoSourceFilter m_SourceFilter;
 
         public RenderChainScript(Chain<ITextureFilter> chain)
             : base(chain) 
@@ -32,7 +32,17 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public ScriptInterfaceDescriptor Descriptor
         {
-            get { return m_TrueSourceFilter == null ? null : m_TrueSourceFilter.Descriptor; }
+            get { return m_SourceFilter == null ? DefaultDescriptor() : m_SourceFilter.Descriptor; }
+        }
+
+        protected ScriptInterfaceDescriptor DefaultDescriptor()
+        {
+            return new ScriptInterfaceDescriptor
+            {
+                PrescaleSize = Renderer.VideoSize,
+                Prescale = true,
+                WantYuv = false
+            };
         }
 
         protected override void OutputResult(ITextureOutput<ITexture2D> result)
@@ -57,14 +67,13 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override ITextureFilter MakeInitialFilter()
         {
-            m_TrueSourceFilter = new TrueSourceFilter(this);
-            var source = new VideoSourceFilter(m_TrueSourceFilter);
+            m_SourceFilter = new VideoSourceFilter(this);
 
             if (Renderer.InputFormat.IsYuv() 
                 && (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height))
-                return new InternalChromaScaler(source).MakeChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
+                return new InternalChromaScaler(m_SourceFilter).MakeChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
 
-            return source;
+            return m_SourceFilter;
         }
 
         protected override ITextureFilter FinalizeOutput(ITextureFilter output)
@@ -89,7 +98,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            DisposeHelper.Dispose(ref m_TrueSourceFilter);
+            DisposeHelper.Dispose(ref m_SourceFilter);
         }
 
         #endregion

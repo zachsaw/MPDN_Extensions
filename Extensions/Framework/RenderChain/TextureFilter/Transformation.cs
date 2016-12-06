@@ -27,7 +27,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
     public abstract class BasicFilter : TextureFilter
     {
         protected BasicFilter(ITextureFilter inputFilter)
-            : base(inputFilter)
+            : base(inputFilter.Output.Size, inputFilter.Output.Format, inputFilter)
         { }
 
         protected abstract void Render(ITexture2D input);
@@ -43,16 +43,6 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
                 return;
 
             Render(texture);
-        }
-
-        protected override TextureSize OutputSize
-        {
-            get { return InputFilters[0].Output.Size; }
-        }
-
-        protected override TextureFormat OutputFormat
-        {
-            get { return InputFilters[0].Output.Format; }
         }
     }
 
@@ -141,7 +131,6 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         private readonly TextureSize m_OutputSize;
         private readonly TextureChannels m_Channels;
         private readonly Vector2 m_Offset;
-        private readonly TextureFormat? m_OutputFormat;
 
         private readonly IScaler m_Downscaler;
         private readonly IScaler m_Upscaler;
@@ -165,13 +154,12 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         { }
 
         public ResizeFilter(IFilter<ITextureOutput<ITexture2D>> inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
-            : base(inputFilter)
+            : base(outputSize, outputFormat ?? inputFilter.Output.Format, inputFilter)
         {
             m_OutputSize = outputSize;
             m_Channels = channels;
             m_Offset = offset;
 
-            m_OutputFormat = outputFormat;
             m_Upscaler = upscaler ?? Renderer.LumaUpscaler;
             m_Downscaler = downscaler ?? Renderer.LumaDownscaler;
             m_Convolver = convolver;
@@ -195,7 +183,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ITextureFilter SetSize(TextureSize targetSize)
         {
-            var result = new ResizeFilter(InputFilter, targetSize, m_Channels, m_Offset, m_Upscaler, m_Downscaler, m_Convolver, m_OutputFormat);
+            var result = new ResizeFilter(InputFilter, targetSize, m_Channels, m_Offset, m_Upscaler, m_Downscaler, m_Convolver, Output.Format);
             if (m_Tagged) result.EnableTag();
             return result.Tagged(Tag);
         }
@@ -210,17 +198,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         public string Description()
         {
             var inputSize = InputFilter.Output.Size;
-            return StatusHelpers.ScaleDescription(inputSize, OutputSize, m_Upscaler, m_Downscaler, m_Convolver);
-        }
-
-        protected override TextureSize OutputSize
-        {
-            get { return m_OutputSize; }
-        }
-
-        protected override TextureFormat OutputFormat
-        {
-            get { return m_OutputFormat ?? InputFilter.Output.Format; }
+            return StatusHelpers.ScaleDescription(inputSize, Output.Size, m_Upscaler, m_Downscaler, m_Convolver);
         }
 
         protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)

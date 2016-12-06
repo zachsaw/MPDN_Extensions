@@ -31,9 +31,26 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
     public class TextureOutput : FilterOutput, ITextureOutput<ITargetTexture>
     {
+        private readonly TextureSize m_Size;
+        private readonly TextureFormat m_Format;
+
+        public TextureOutput(TextureSize size, TextureFormat format)
+        {
+            m_Size = size;
+            m_Format = format;
+        }
+
         public ITargetTexture Texture { get; protected set; }
-        public TextureSize Size { get; set; }
-        public TextureFormat Format { get; set; }
+
+        public TextureSize Size
+        {
+            get { return m_Size; }
+        }
+
+        public TextureFormat Format
+        {
+            get { return m_Format; }
+        }
 
         public override void Allocate()
         {
@@ -53,24 +70,18 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
     {
         protected ITextureOutput<ITargetTexture> Target { get; private set; }
 
-        protected TextureFilter(params IBaseTextureFilter[] inputFilters)
-            : base(inputFilters)
+        protected TextureFilter(TextureSize size, params IBaseTextureFilter[] inputFilters)
+            : this(size, Renderer.RenderQuality.GetTextureFormat(), inputFilters)
         { }
 
-        protected abstract TextureSize OutputSize { get; }
+        protected TextureFilter(TextureSize size, TextureFormat format, params IBaseTextureFilter[] inputFilters)
+            : this(new TextureOutput(size, format), inputFilters)
+        { }
 
-        protected virtual TextureFormat OutputFormat
+        private TextureFilter(ITextureOutput<ITargetTexture> outputTarget, params IBaseTextureFilter[] inputFilters)
+            : base(outputTarget, inputFilters)
         {
-            get { return Renderer.RenderQuality.GetTextureFormat(); }
-        }
-
-        protected override ITextureOutput<ITexture2D> DefineOutput()
-        {
-            return Target = new TextureOutput
-            {
-                Size = OutputSize,
-                Format = OutputFormat
-            };
+            Target = outputTarget;
         }
     }
 }

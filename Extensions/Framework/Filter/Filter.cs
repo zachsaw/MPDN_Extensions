@@ -42,12 +42,15 @@ namespace Mpdn.Extensions.Framework.Filter
 
     public interface IFilterOutput : IDisposable
     {
+        void Initialize();
         void Allocate();
         void Deallocate();
     }
 
     public abstract class FilterOutput : IFilterOutput
     {
+        public virtual void Initialize() { }
+
         public abstract void Allocate();
 
         public abstract void Deallocate();
@@ -77,7 +80,7 @@ namespace Mpdn.Extensions.Framework.Filter
         where TOutput : class, IFilterOutput
         where TInput : class, IFilterOutput
     {
-        protected Filter(params IFilter<TInput>[] inputFilters)
+        protected Filter(TOutput output, params IFilter<TInput>[] inputFilters)
         {
             if (inputFilters == null || inputFilters.Any(f => f == null))
             {
@@ -88,32 +91,37 @@ namespace Mpdn.Extensions.Framework.Filter
             m_CompilationResult = null;
             m_InputFilters = inputFilters;
 
+            m_Output = output;
+
             m_Tag = new EmptyTag();
         }
 
         protected abstract void Render(IList<TInput> inputs);
-
-        protected abstract TOutput DefineOutput();
 
         #region IFilter Implementation
 
         private readonly IFilter<TInput>[] m_InputFilters;
         private IFilter<TInput>[] m_CompiledFilters;
 
+        private readonly TOutput m_Output;
+        private readonly ProcessTag m_Tag;
+
         private bool m_Updated;
         private bool m_Initialized;
         private int m_FilterIndex;
-
         private IFilter<TOutput> m_CompilationResult;
-        private TOutput m_Output;
-        private readonly ProcessTag m_Tag;
 
         public IFilter<TInput>[] InputFilters { get { return m_CompiledFilters ?? m_InputFilters; } }
 
         public TOutput Output
         {
-            get { return m_Output ?? DefineOutput(); }
+            get
+            {
+                return m_Output;
+            }
         }
+
+        public ProcessTag Tag { get { return m_Tag; } }
 
         public int LastDependentIndex { get; private set; }
 
@@ -132,7 +140,7 @@ namespace Mpdn.Extensions.Framework.Filter
                 f.Initialize(LastDependentIndex);
                 LastDependentIndex = f.LastDependentIndex;
             }
-          
+
             Initialize();
 
             m_FilterIndex = LastDependentIndex;
@@ -147,7 +155,10 @@ namespace Mpdn.Extensions.Framework.Filter
         }
 
         // Called if the filter is actually used, but before it is used.
-        protected virtual void Initialize() { }
+        protected virtual void Initialize()
+        {
+            Output.Initialize();
+        }
 
         public IFilter<TOutput> Compile()
         {
@@ -165,8 +176,6 @@ namespace Mpdn.Extensions.Framework.Filter
             return m_CompilationResult;
         }
 
-        public ProcessTag Tag { get { return m_Tag; } }
-
         protected virtual IFilter<TOutput> Optimize()
         {
             return this;
@@ -178,7 +187,6 @@ namespace Mpdn.Extensions.Framework.Filter
                 return;
 
             m_Updated = true;
-            m_Output = Output;
 
             foreach (var filter in InputFilters)
             {
@@ -205,7 +213,6 @@ namespace Mpdn.Extensions.Framework.Filter
             m_Updated = false;
 
             Output.Deallocate();
-            m_Output = null;
         }
 
         #endregion

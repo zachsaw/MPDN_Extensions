@@ -30,22 +30,25 @@ namespace Mpdn.Extensions.Framework.Filter
     public abstract class PinFilter<TOutput> : Filter<TOutput, TOutput>, IPinFilter<IFilter<TOutput>> 
         where TOutput : class, IFilterOutput
     {
-        protected FilterPin Pin;
+        protected IFilter<TOutput> Pin { get { return InputFilters[0]; } }
 
-        protected PinFilter()
-            : base(new FilterPin())
-        {
-            Pin = (FilterPin) InputFilters.First();
-        }
+        protected PinFilter(TOutput output) : base(output, new FilterPin()) { }
 
         public void ConnectPinTo(IFilter<TOutput> filter)
         {
-            Pin.ConnectTo(filter);
+            var filterPin = Pin as FilterPin;
+            if (filterPin == null)
+                throw new InvalidOperationException("Can't reconnect pin when already compiled.");
+
+            filterPin.ConnectTo(filter);
         }
 
         protected class FilterPin : Filter<IFilterOutput, TOutput>
         {
             private IFilter<TOutput> m_PinInput;
+
+            // WARNING: Output undefined until compiled
+            public FilterPin() : base(null) { }
 
             public void ConnectTo(IFilter<TOutput> input)
             {
@@ -58,14 +61,6 @@ namespace Mpdn.Extensions.Framework.Filter
             protected override void Render(IList<IFilterOutput> inputs)
             {
                 throw new InvalidOperationException("Uncompiled filter.");
-            }
-
-            protected override TOutput DefineOutput()
-            {
-                if (m_PinInput == null)
-                    throw new InvalidOperationException("Pin Hasn't been connected yet.");
-
-                return m_PinInput.Output;
             }
 
             protected override IFilter<TOutput> Optimize()

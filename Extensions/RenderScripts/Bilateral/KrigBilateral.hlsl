@@ -39,11 +39,6 @@ float  power  : register(c5);
 #define pi acos(-1)
 #define Kernel(x) (cos(pi*(x)/taps)) // Hann kernel
 
-#define sinc(x) sin(pi*(x))/(x)
-#define BCWeights(B,C,x) (x > 2.0 ? 0 : x <= 1.0 ? ((2-1.5*B-C)*x + (-3+2*B+C))*x*x + (1-B/3.) : (((-B/6.-C)*x + (B+5*C))*x + (-2*B-8*C))*x+((4./3.)*B+4*C))
-#define IntKernel(x) (BCWeights(1.0/3.0, 1.0/3.0, abs(x)))
-// #define IntKernel(x) (cos(0.5*pi*saturate(abs(x))))
-
 #include "../Common/ColourProcessing.hlsl"
 
 // -- Input processing --
@@ -57,8 +52,8 @@ float  power  : register(c5);
 // #define radius 1
 // #define localVar sqr(0.15)
 
-// #define C(i,j) (rsqrt(localVar + X[i].w + X[j].w) * exp(-0.5*(sqr(X[i].x - X[j].x)/(localVar + X[i].w + X[j].w) + sqr((coords[i] - coords[j])/(localRadius + radius)))))
-// #define c(i) (rsqrt(localVar + X[i].w) * exp(-0.5*(sqr(X[i].x - c0.x)/(localVar + X[i].w) + sqr((coords[i] - offset)/localRadius))))
+// #define C(i,j) (rsqrt(localVar + X[i].w + X[j].w) * exp(-0.5*(sqr(X[i].x - X[j].x)/(localVar + X[i].w + X[j].w) + sqr((coords[i] - coords[j])/radius))))
+// #define c(i) (rsqrt(localVar + X[i].w) * exp(-0.5*(sqr(X[i].x - c0.x)/(localVar + X[i].w) + sqr((coords[i] - offset)/radius))))
 
 // #define C(i,j) (exp(-0.5*(sqr(X[i].x - X[j].x)/localVar + sqr((coords[i] - coords[j])/radius))))
 // #define c(i) (exp(-0.5*(sqr(X[i].x - c0.x)/localVar + sqr((coords[i] - offset)/radius))))
@@ -106,7 +101,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     
     float4 total = 0;
     [unroll] for (int i=0; i<N+1; i++) {
-        float2 w = saturate(2 - abs(coords[i] - offset));//saturate(1.5 - abs(coords[i] - offset));
+        float2 w = Kernel(coords[i] - offset);//saturate(1.5 - abs(coords[i] - offset));
         total += w.x*w.y*float4(X[i].x, X[i].x*X[i].x, X[i].w, 1);
     }
     total /= total.w;

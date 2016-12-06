@@ -50,6 +50,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
             private static Dictionary<string, ShaderWithDateTime> s_CompiledShaders =
                 new Dictionary<string, ShaderWithDateTime>();
 
+            private static bool s_Saved = false;
+
             public static string ShaderCacheRoot
             {
                 get { return AppPath.GetUserDataDir("ShaderCache"); }
@@ -59,16 +61,16 @@ namespace Mpdn.Extensions.Framework.RenderChain
             {
                 var lastMod = File.GetLastWriteTimeUtc(shaderPath);
 
-                ShaderWithDateTime result;
-                if (s_LoadedShaders.TryGetValue(shaderPath, out result) &&
-                    result.LastModified == lastMod)
+                ShaderWithDateTime entry;
+                if (s_LoadedShaders.TryGetValue(shaderPath, out entry) &&
+                    entry.LastModified == lastMod)
                 {
-                    return result.Shader;
+                    return entry.Shader;
                 }
 
-                if (result != null)
+                if (entry != null)
                 {
-                    DisposeHelper.Dispose(result.Shader);
+                    DisposeHelper.Dispose(entry.Shader);
                     s_LoadedShaders.Remove(shaderPath);
                 }
 
@@ -80,19 +82,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
             public static T AddCompiled(string shaderPath, string key, Func<T> compileFunc, Func<string, T> loadFunc)
             {
                 var lastMod = File.GetLastWriteTimeUtc(shaderPath);
+                T shader = null;
 
-                ShaderWithDateTime result;
-                if (s_CompiledShaders.TryGetValue(key, out result) &&
-                    result.LastModified == lastMod)
+                ShaderWithDateTime entry;
+                if (s_CompiledShaders.TryGetValue(key, out entry) && entry.LastModified == lastMod)
                 {
-                    if (result.Shader != null)
-                        return result.Shader;
+                    if (entry.Shader != null)
+                        return entry.Shader;
 
                     try
                     {
                         if (loadFunc != null)
                         {
-                            return loadFunc(result.CachePath);
+                            shader = loadFunc(entry.CachePath);
                         }
                     }
                     catch
@@ -101,37 +103,43 @@ namespace Mpdn.Extensions.Framework.RenderChain
                     }
                 }
 
-                if (result != null)
+                if (shader == null)
                 {
-                    DisposeHelper.Dispose(result.Shader);
-                    if (loadFunc != null)
+                    try
                     {
-                        File.Delete(result.CachePath);
+                        shader = compileFunc();
                     }
-                    s_CompiledShaders.Remove(key);
+                    catch (CompilationException e)
+                    {
+                        throw new CompilationException(e.ResultCode, "Compilation Error in " + key + "\r\n\r\n" + e.Message);
+                    }
+                    catch (OpenClException e)
+                    {
+                        throw new OpenClException("Compilation Error in " + key + "\r\n\r\n" + e.Message, e.ErrorCode);
+                    }
+                    s_Saved = false;
+
+                    // Remove obsolete cache file
+                    if (entry != null && loadFunc != null)
+                    {
+                        File.Delete(entry.CachePath);
+                    }
                 }
 
-                T shader;
-                try
+                // Save / Replace Entry
+                if (entry != null)
                 {
-                    shader = compileFunc();
-                }
-                catch (CompilationException e)
-                {
-                    throw new CompilationException(e.ResultCode,
-                        "Compilation Error in " + key + "\r\n\r\n" + e.Message);
-                }
-                catch (OpenClException e)
-                {
-                    throw new OpenClException("Compilation Error in " + key + "\r\n\r\n" + e.Message, e.ErrorCode);
+                    DisposeHelper.Dispose(entry);
+                    s_CompiledShaders.Remove(key);
                 }
 
                 s_CompiledShaders.Add(key, new ShaderWithDateTime(shader, lastMod, loadFunc != null));
                 return shader;
             }
 
+
             [Serializable]
-            private class ShaderWithDateTime
+            private class ShaderWithDateTime : IDisposable
             {
                 private readonly DateTime m_LastModified;
                 private readonly string m_CachePath;
@@ -169,15 +177,24 @@ namespace Mpdn.Extensions.Framework.RenderChain
                     Directory.CreateDirectory(PathHelper.GetDirectoryName(m_CachePath));
                     File.WriteAllBytes(m_CachePath, shader.ObjectByteCode);
                 }
+
+                public void Dispose()
+                {
+                    DisposeHelper.Dispose(Shader);
+                }
             }
 
             public static void Save(string path)
             {
+                if (s_Saved)
+                    return;
+
                 using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Write))
                 {
                     var bf = new BinaryFormatter();
                     bf.Serialize(fs, s_CompiledShaders);
                 }
+                s_Saved = true;
             }
 
             public static void Load(string path)
@@ -189,6 +206,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                         var bf = new BinaryFormatter();
                         s_CompiledShaders = (Dictionary<string, ShaderWithDateTime>) bf.Deserialize(fs);
                     }
+                    s_Saved = true; // Everything already on disk
                 }
                 catch
                 {
@@ -251,7 +269,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 () => Renderer.CompileShader11(shaderFileName, entryPoint, profile, macroDefinitions),
                 Renderer.LoadShader11);
 
-            Cache<IShader11>.Save(ShaderCachePath);
+            Cache<IShader11>.Save(Shader11CachePath);
             return result;
         }
 

@@ -287,7 +287,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             private readonly Func<ITextureFilter, ITextureFilter> m_Transformation;
 
             public TransformedResizeableFilter(Func<ITextureFilter, ITextureFilter> transformation, IResizeableFilter inputFilter)
-                : base(inputFilter)
+                : base(inputFilter.Output.Size, inputFilter.Output.Format, inputFilter)
             {
                 m_InputFilter = inputFilter;
                 m_Transformation = transformation;
@@ -313,16 +313,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 return new TransformedResizeableFilter(m_Transformation, m_InputFilter);
             }
 
-            protected override TextureSize OutputSize
-            {
-                get { return m_InputFilter.Output.Size; }
-            }
-
-            protected override TextureFormat OutputFormat
-            {
-                get { return m_InputFilter.Output.Format; }
-            }
-
             protected override void Render(IList<ITextureOutput<IBaseTexture>> textureOutputs)
             {
                 throw new NotImplementedException("Uncompiled Filter.");
@@ -339,6 +329,18 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             return new ShaderFilterSettings<T>(shader).Configure(linearSampling, arguments, transform, sizeIndex,
                 format, perTextureLinearSampling, name);
+        }
+
+        public static ITextureFilter ApplyTo<T>(this T settings, params IBaseTextureFilter[] inputFilters)
+            where T : Shader.IShaderConfig
+        {
+            return new Shader.ShaderFilter(settings, inputFilters);
+        }
+
+        public static ITextureFilter Apply<T>(this IBaseTextureFilter filter, T settings)
+            where T : Shader.IShaderConfig
+        {
+            return settings.ApplyTo(filter);
         }
 
         public static ITextureFilter ApplyTo<T>(this IShaderFilterSettings<T> settings, params IBaseTextureFilter[] inputFilters)
@@ -362,29 +364,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             where T : IShaderBase
         {
             return settings.ApplyTo(filter);
-        }
-
-        public static ITextureFilter ApplyTo<T>(this T shader, params IBaseTextureFilter[] inputFilters)
-            where T : IShaderBase
-        {
-            if (shader is IShader)
-                return new ShaderFilter((IShader)shader, inputFilters);
-            if (shader is IShader11)
-                return new Shader11Filter((IShader11)shader, inputFilters);
-
-            throw new ArgumentException("Unsupported Shader type.");
-        }
-
-        public static ITextureFilter ApplyTo<T>(this T shader, IEnumerable<IBaseTextureFilter> inputFilters)
-            where T : IShaderBase
-        {
-            return shader.ApplyTo(inputFilters.ToArray());
-        }
-
-        public static ITextureFilter Apply<T>(this ITextureFilter filter, T shader)
-            where T : IShaderBase
-        {
-            return shader.ApplyTo(filter);
         }
     }
 

@@ -60,7 +60,7 @@ namespace Mpdn.Extensions.RenderScripts
                 TargetSize = () => Renderer.TargetSize;
 
                 Passes = 2;
-                LinearLight = false;
+                LinearLight = true;
                 OverSharp = 0.0f;
                 Locality = 4.0f;
 

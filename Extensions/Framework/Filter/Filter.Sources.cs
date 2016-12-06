@@ -18,30 +18,15 @@ using System.Collections.Generic;
 
 namespace Mpdn.Extensions.Framework.Filter
 {
-    public abstract class BaseSourceFilter<TOutput> : Filter<IFilterOutput, TOutput>
+    public class SourceFilter<TOutput> : Filter<IFilterOutput, TOutput>
         where TOutput : class, IFilterOutput
     {
-        protected BaseSourceFilter()
+        public SourceFilter(TOutput output)
+           : base(output)
         {
             Tag.Insert(ProcessTag.BOTTOM);
         }
 
         protected override void Render(IList<IFilterOutput> inputs) { }
-    }
-
-    public class SourceFilter<TOutput> : BaseSourceFilter<TOutput>
-        where TOutput : class, IFilterOutput
-    {
-        private readonly TOutput m_Output;
-
-        public SourceFilter(TOutput output)
-        {
-            m_Output = output;
-        }
-
-        protected override TOutput DefineOutput()
-        {
-            return m_Output;
-        }
     }
 }
