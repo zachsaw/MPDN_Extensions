@@ -26,14 +26,14 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class FullScreenTextPainter : PlayerExtension
     {
+        private const int WINDOWED_MODE_SEEKBAR_HEIGHT = 35; // Should probably be added to Player Extension API.
         private const int TEXT_HEIGHT = 20;
         private Timer m_Timer;
         private IText m_Text;
         private volatile bool m_FullScreenMode;
-        private volatile bool m_SeekBarShown;
+        private volatile bool m_SeekBarHover;
         private long m_Position;
         private long m_Duration;
-        private Size m_ScreenSize;
 
         public override ExtensionUiDescriptor Descriptor
         {
@@ -56,6 +56,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_Timer.Start();
 
             Gui.VideoBox.MouseMove += MouseMove;
+            
             Player.PaintOverlay += OnPaintOverlay;
             Player.FullScreenMode.Entered += EnteredFullScreenMode;
             Player.FullScreenMode.Exited += ExitedFullScreenMode;
@@ -79,19 +80,32 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private void EnteredFullScreenMode(object sender, EventArgs e)
         {
-            m_ScreenSize = Gui.VideoBox.Size;
             m_FullScreenMode = true;
+        }
+
+        private int SeekBarTop
+        {
+            get { return m_FullScreenMode ? Gui.FullScreenSeekBarHeight : WINDOWED_MODE_SEEKBAR_HEIGHT - SeekBarBottom; }
+        }
+
+        private int SeekBarBottom
+        {
+            get { return Player.Config.Settings.GeneralSettings.AutoHideControlBar ? 0 : WINDOWED_MODE_SEEKBAR_HEIGHT; }
         }
 
         private void MouseMove(object sender, MouseEventArgs e)
         {
-            m_SeekBarShown = e.Y > Gui.VideoBox.Height - Gui.FullScreenSeekBarHeight;
+            m_SeekBarHover = e.Y > Gui.VideoBox.Height - SeekBarTop;
         }
 
         private void TimerOnTick(object sender, EventArgs eventArgs)
         {
             if (Player.State == PlayerState.Closed)
                 return;
+
+            m_SeekBarHover =
+                    Gui.VideoBox.PointToClient(Cursor.Position).Y > Gui.VideoBox.Height - SeekBarTop
+                 && Gui.VideoBox.PointToClient(Cursor.Position).Y < Gui.VideoBox.Height + SeekBarBottom;
 
             AtomicWrite(ref m_Position, Media.Position);
             AtomicWrite(ref m_Duration, Media.Duration);
@@ -117,25 +131,19 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             // Warning: This is called from a foreign thread
 
-            if (!m_FullScreenMode)
-            {
-                m_Text.Hide();
-                return;
-            }
-
-            if (m_SeekBarShown)
+            if (m_SeekBarHover && (m_FullScreenMode || !PlayerControl.PlayerSettings.GeneralSettings.ShowStatusBar))
             {
                 var position = AtomicRead(m_Position);
                 var duration = AtomicRead(m_Duration);
                 var text = string.Format("{0} / {1}", GetTimeString(position), GetTimeString(duration));
                 var width = m_Text.MeasureWidth(text);
-                var size = m_ScreenSize;
-                var seekBarHeight = Gui.FullScreenSeekBarHeight; // Note: This property is thread safe
+                var size = Gui.VideoBox.Size; // Note: Should be fine, probably
+                var seekBarHeight = SeekBarTop;
                 const int rightOffset = 12;
                 const int bottomOffset = 1;
                 var location =
                     new Point(size.Width - width - rightOffset,
-                              size.Height - seekBarHeight - TEXT_HEIGHT - bottomOffset);
+                              size.Height - seekBarHeight  - TEXT_HEIGHT - bottomOffset);
                 m_Text.Show(text, location, Color.FromArgb(255, 0xBB, 0xBB, 0xBB),
                     Color.FromArgb(255*60/100, Color.Black), new Padding(5, 0, rightOffset, bottomOffset));
             }
