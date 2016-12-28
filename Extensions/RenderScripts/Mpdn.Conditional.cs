@@ -59,7 +59,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             public override ITextureFilter Process(ITextureFilter input)
             {
-                if (   string.IsNullOrWhiteSpace(Condition) 
+                if (string.IsNullOrWhiteSpace(Condition) 
                     || !RenderScriptEngine.Eval(input, GetScript(), GetType().Name))
                     return input;
 

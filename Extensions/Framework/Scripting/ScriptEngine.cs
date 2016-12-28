@@ -42,12 +42,12 @@ namespace Mpdn.Extensions.Framework.Scripting
         {
             FilterTypeNames = new HashSet<string>();
             EnumTypeNames = new HashSet<string>();
-            Engine = new JScriptEngine(WindowsScriptEngineFlags.EnableDebugging) {AllowReflection = true};
+            Engine = new JScriptEngine {AllowReflection = true};
             Engine.AddHostType("Debug", typeof (Debug));
 
             AddEnumTypes(Assembly.GetAssembly(typeof (IScript)));
-            foreach (var asm in (Extension.Scripts.Select(s => s.GetType().Assembly)
-                .Concat(new[] {typeof (TChain).Assembly})).Distinct())
+            foreach (var asm in Extension.Scripts.Select(s => s.GetType().Assembly)
+                .Concat(new[] {typeof (TChain).Assembly}).Distinct())
             {
                 AddScriptTypes(asm);
                 AddEnumTypes(asm);
