@@ -26,6 +26,6 @@ float4 args0 : register(c3);
 #define PostProcessing(y)	float4(y[0], y[1] - sqr(y[0]), 0, 0)
 
 #define pi acos(-1)
-#define Kernel(x) cos(0.5*pi*x)
-#define taps 2
+#define taps 2.0
+#define Kernel(x) (cos(pi*(x)/taps)) // Hann kernel
 #include "../SSimDownscaler/Scalers/Downscaler.hlsl"

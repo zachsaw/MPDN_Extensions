@@ -26,7 +26,7 @@ float  power  : register(c5);
 // -- Convenience --
 #define sqr(x) dot(x,x)
 #define bitnoise (1.0/(2.0*255.0))
-#define noise (0.05)//(5*bitnoise)
+#define noise  0.05//(5*bitnoise)
 
 #define chromaSize size1
 
@@ -35,9 +35,10 @@ float  power  : register(c5);
 #define chromaOffset (chromaParams.xy)
 
 #define factor (dxdy/ddxddy)
-// #define Kernel(x) saturate(0.5 + (0.5 - abs(x)) * 2)
 #define pi acos(-1)
+#define taps 2.0
 #define Kernel(x) (cos(pi*(x)/taps)) // Hann kernel
+// #define Kernel(x) exp(-0.5*dot(x,x)/sqr(2.0/3.0))
 
 #include "../Common/ColourProcessing.hlsl"
 
@@ -52,18 +53,18 @@ float  power  : register(c5);
 // #define radius 1
 // #define localVar sqr(0.15)
 
-// #define C(i,j) (rsqrt(localVar + X[i].w + X[j].w) * exp(-0.5*(sqr(X[i].x - X[j].x)/(localVar + X[i].w + X[j].w) + sqr((coords[i] - coords[j])/radius))))
-// #define c(i) (rsqrt(localVar + X[i].w) * exp(-0.5*(sqr(X[i].x - c0.x)/(localVar + X[i].w) + sqr((coords[i] - offset)/radius))))
+#define C(i,j) (rsqrt(1 + (X[i].w + X[j].w)/localVar) * exp(-0.5*(sqr(X[i].x - X[j].x)/(localVar + X[i].w + X[j].w) + sqr((coords[i] - coords[j])/radius))) + 0.25 * (X[i].x - c0.x) * (X[j].x - c0.x) / localVar)
+#define c(i) (rsqrt(1 + X[i].w/localVar) * exp(-0.5*(sqr(X[i].x - c0.x)/(localVar + X[i].w) + sqr((coords[i] - offset)/radius))))
 
 // #define C(i,j) (exp(-0.5*(sqr(X[i].x - X[j].x)/localVar + sqr((coords[i] - coords[j])/radius))))
 // #define c(i) (exp(-0.5*(sqr(X[i].x - c0.x)/localVar + sqr((coords[i] - offset)/radius))))
 
-#define C(i,j) (1 / (1 + 0.5*(sqr(X[i].x - X[j].x)/localVar + sqr((coords[i] - coords[j])/radius))))
-#define c(i) (1 / (1 + 0.5*(sqr(X[i].x - c0.x)/localVar + sqr((coords[i] - offset)/radius))))
+// #define C(i,j) (1 / (1 + 0.5*(sqr(X[i].x - X[j].x)/localVar + sqr((coords[i] - coords[j])/radius))) + 0.5 * (X[i].x - c0.x) * (X[j].x - c0.x) / localVar)
+// #define c(i) (1 / (1 + 0.5*(sqr(X[i].x - c0.x)/localVar + sqr((coords[i] - offset)/radius))))
 
-#define KernelRadius 3
-#define taps KernelRadius
-#define N (KernelRadius*KernelRadius - 1)
+#define KernelSize 3
+#define taps KernelSize
+#define N (KernelSize*KernelSize - 1)
 
 struct ChromaValues {
     float2 coordinates[N+1];
@@ -100,16 +101,16 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
     const ChromaValues chroma = getValues(pos);
     
     float4 total = 0;
-    [unroll] for (int i=0; i<N+1; i++) {
-        float2 w = Kernel(coords[i] - offset);//saturate(1.5 - abs(coords[i] - offset));
+    [loop] for (int i=0; i<N+1; i++) {
+        float2 w = saturate(1.5 - abs(coords[i] - offset));//Kernel(coords[i] - offset);//saturate(1.5 - abs(coords[i] - offset));
         total += w.x*w.y*float4(X[i].x, X[i].x*X[i].x, X[i].w, 1);
     }
-    total /= total.w;
-    float localVar = sqr(noise) + saturate(total.y - total.x*total.x) + sqr(c0.x - total.x) + total.z;
-    // float radius = lerp(1, 2, sqr(noise) / localVar);
-    float radius = lerp(1, 2, (localVar - total.z) / localVar);
+    total.xyz /= total.w;
+    float localVar = sqr(noise) + max(0, (total.y - total.x*total.x) + sqr(c0.x - total.x) + total.z);
+    // float radius = lerp(2.0/3.0, 2, sqr(noise) / localVar);
+    float radius = 1.5;//lerp(2.0/3.0, 2, (localVar - total.z) / (total.z + sqr(noise)));
 
-    // return float4(radius / 2, 0.5, 0.5, 1);
+    // return float4(localVar / sqr(noise), 0.5, 0.5, 1);
     
     #define M(i,j) Mx[min(i,j)*8 + max(i,j) - (min(i,j)*(min(i,j)+1))/2]
     #define b(i)   bx[i]
