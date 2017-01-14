@@ -84,27 +84,27 @@ namespace Mpdn.Extensions.Framework.Config
 
         public bool SaveToString(out string result)
         {
-            return ScriptConfig.SaveToString(out result);
+            return m_ScriptConfig.SaveToString(out result);
         }
 
         public bool LoadFromString(string input)
         {
-            return ScriptConfig.LoadFromString(input);
+            return m_ScriptConfig.LoadFromString(input);
         }
 
         #region Implementation
 
-        private IScriptSettings<TSettings> ScriptConfig { get; set; }
+        private IScriptSettings<TSettings> m_ScriptConfig;
 
         protected ExtensionUi()
         {
-            ScriptConfig = new MemConfig<TSettings>();
+            m_ScriptConfig = new MemConfig<TSettings>();
         }
 
         public TSettings Settings
         {
-            get { return ScriptConfig.Config; }
-            set { ScriptConfig = new MemConfig<TSettings>(value); }
+            get { return m_ScriptConfig.Config; }
+            set { m_ScriptConfig = new MemConfig<TSettings>(value); }
         }
 
         public bool HasConfigDialog()
@@ -114,19 +114,19 @@ namespace Mpdn.Extensions.Framework.Config
 
         public virtual void Initialize()
         {
-            ScriptConfig = new PersistentConfig<TExtensionClass, TSettings>(ConfigFileName);
+            m_ScriptConfig = new PersistentConfig<TExtensionClass, TSettings>(ConfigFileName);
         }
 
         public virtual void Destroy()
         {
-            ScriptConfig.Save();
+            m_ScriptConfig.Save();
         }
 
         public virtual bool ShowConfigDialog(IWin32Window owner)
         {
             using (var dialog = new TDialog())
             {
-                dialog.Setup(ScriptConfig.Config);
+                dialog.Setup(m_ScriptConfig.Config);
                 return dialog.ShowDialog(owner) == DialogResult.OK;
             }
         }
