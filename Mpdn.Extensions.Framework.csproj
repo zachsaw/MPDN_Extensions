@@ -168,7 +168,7 @@
     <Compile Include="Extensions\Framework\RenderChain\TextureFilter\Interface.cs" />
     <Compile Include="Extensions\Framework\RenderChain\TextureFilter\Chroma.cs" />
     <Compile Include="Extensions\Framework\RenderChain\TextureFilter\ShaderFilterSettings.cs" />
-    <Compile Include="Extensions\Framework\RenderChain\Shader\Shader.cs" />
+    <Compile Include="Extensions\Framework\RenderChain\Shader\ShaderConfig.cs" />
     <Compile Include="Extensions\Framework\RenderChain\TextureFilter\TextureFilter.cs" />
     <Compile Include="Extensions\Framework\RenderChain\TextureFilter\Shaders.cs" />
     <Compile Include="Extensions\Framework\RenderChain\TextureFilter\Sources.cs" />

@@ -82,7 +82,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ITextureFilter SetSize(TextureSize outputSize)
         {
-            return Rebuild(targetSize: outputSize).Tagged(Tag); ;
+            return Rebuild(targetSize: outputSize).Tagged(Tag);
         }
 
         public ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null, ICompositionFilter fallback = null)
