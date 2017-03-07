@@ -26,7 +26,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 {
     public class FullScreenTextPainter : PlayerExtension
     {
-        private const int WINDOWED_MODE_SEEKBAR_HEIGHT = 35; // Should probably be added to Player Extension API.
+        private const int WINDOWED_MODE_SEEKBAR_HEIGHT = 34; // Should probably be added to Player Extension API.
         private const int TEXT_HEIGHT = 20;
         private Timer m_Timer;
         private IText m_Text;
@@ -103,9 +103,12 @@ namespace Mpdn.Extensions.PlayerExtensions
             if (Player.State == PlayerState.Closed)
                 return;
 
+            var pos = Gui.VideoBox.PointToClient(Cursor.Position);
             m_SeekBarHover =
-                    Gui.VideoBox.PointToClient(Cursor.Position).Y > Gui.VideoBox.Height - SeekBarTop
-                 && Gui.VideoBox.PointToClient(Cursor.Position).Y < Gui.VideoBox.Height + SeekBarBottom;
+                   pos.X >= 0
+                && pos.X < Gui.VideoBox.Width
+                && pos.Y >=Gui.VideoBox.Height - SeekBarTop
+                && pos.Y < Gui.VideoBox.Height + SeekBarBottom;
 
             AtomicWrite(ref m_Position, Media.Position);
             AtomicWrite(ref m_Duration, Media.Duration);

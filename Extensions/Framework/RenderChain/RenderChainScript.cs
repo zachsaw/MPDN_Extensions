@@ -67,6 +67,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         protected override ITextureFilter MakeInitialFilter()
         {
+            DisposeHelper.Dispose(ref m_SourceFilter);
             m_SourceFilter = new VideoSourceFilter(this);
 
             if (Renderer.InputFormat.IsYuv() 

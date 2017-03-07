@@ -19,5 +19,5 @@
 
 #define sqr(x)	pow((x),2)
 #define Get(pos)	float4(GetFrom(s0, pos).xyz, GetFrom(s0, pos).w + sqr(Luma(GetFrom(s0, pos))))
-#define PostProcessing(x) float4(x.xyz, x[3] - sqr(Luma(x)))
+#define PostProcessing(x) float4(x.xyz, (x[3] - sqr(Luma(x))))
 #include "../SSimDownscaler/Scalers/Downscaler.hlsl"

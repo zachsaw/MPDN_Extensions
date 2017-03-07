@@ -26,7 +26,7 @@ float4 sizeOutput : register(c4);
 #define spreadH (spread)
 
 #if MODE == 0
-	#define spreadL (0.01)
+	#define spreadL (1e-3)
 #else
 	#define spreadL (spread)
 #endif
@@ -41,9 +41,6 @@ float4 sizeOutput : register(c4);
 
 // -- Main code --
 float4 main(float2 tex : TEXCOORD0) : COLOR {
-    float4 c0 = tex2D(s0, tex);
-    float4 c1 = tex2D(s1, tex);
-
 	float4 meanH = 0;
 	float4 meanL = 0;
 	for (int X=-1; X<=1; X++)

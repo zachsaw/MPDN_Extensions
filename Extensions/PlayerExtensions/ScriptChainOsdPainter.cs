@@ -72,6 +72,7 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.Loaded -= OnPlayerLoaded;
             m_Timer.Tick -= TimerOnTick;
 
+            m_Timer.Dispose();
             m_Text.Dispose();
 
             base.Destroy();

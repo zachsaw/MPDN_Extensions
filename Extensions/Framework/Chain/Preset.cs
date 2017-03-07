@@ -135,11 +135,6 @@ namespace Mpdn.Extensions.Framework.Chain
             Script.Destroy();
         }
 
-        public void Dispose()
-        {
-            Script.Dispose();
-        }
-
         #endregion
 
         public override string ToString()

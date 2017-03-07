@@ -20,7 +20,7 @@ using YAXLib;
 
 namespace Mpdn.Extensions.Framework.Chain
 {
-    public interface IChainUi<T, out TScript> : IScriptUi<TScript>, IDisposable
+    public interface IChainUi<T, out TScript> : IScriptUi<TScript>
         where TScript : class, IScript
     {
         Chain<T> Chain { get; }
@@ -94,34 +94,10 @@ namespace Mpdn.Extensions.Framework.Chain
             Settings = new TChain();
         }
 
-        #region Implementation
-
         [YAXDontSerialize]
         public Chain<T> Chain
         {
             get { return Settings; }
         }
-
-        #endregion Implementation
-
-        #region GarbageCollecting
-
-        ~ChainUi()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public virtual void Dispose(bool disposing)
-        {
-            DisposeHelper.Dispose(Settings);
-        }
-
-        #endregion
     }
 }

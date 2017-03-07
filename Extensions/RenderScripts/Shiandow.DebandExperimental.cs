@@ -29,7 +29,9 @@ namespace Mpdn.Extensions.RenderScripts
         {
             public DebandExperimental()
             {
-                Power = 0.25f;
+                MaxBitDepth = 8;
+                Power = 0.5f;
+                PreserveDetail = true;
             }
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)
@@ -53,7 +55,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var Deband = new Shader(FromFile("Deband.hlsl", macroDefinitions: PreserveDetail ? "PRESERVE_DETAIL=1" : ""))
                 {
                     Arguments = consts,
-                    PerTextureLinearSampling = new[] {true, false, true},
+                    LinearSampling = false,
                     SizeIndex = 1
                 };
 
