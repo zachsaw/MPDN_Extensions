@@ -142,7 +142,7 @@ namespace Mpdn.Extensions.Framework
 
     public static class PresetHelper
     {
-        public static Preset<T, TScript> MakeNewPreset<T, TScript>(this IChainUi<T, TScript> renderScript, string name = null)
+        public static Preset<T, TScript> MakeEmptyPreset<T, TScript>(this IChainUi<T, TScript> renderScript, string name = null)
             where TScript : class, IScript
         {
             return renderScript.CreateNew().ToPreset();
