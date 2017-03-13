@@ -44,7 +44,7 @@ namespace Mpdn.Extensions.RenderScripts
                     return new ScriptChainScript
                     {
                         Settings = this
-                    }.MakeNewPreset();
+                    }.ToPreset();
                 }
                 set
                 {
