@@ -196,7 +196,7 @@ namespace Mpdn.Extensions.Framework.Controls
 
         private void AddScripts(IEnumerable<IChainUi<T, TScript>> renderScripts, int index = -1)
         {
-            AddPresets(renderScripts.Select(script => script.MakeNewPreset()), index);
+            AddPresets(renderScripts.Select(script => script.MakeEmptyPreset()), index);
         }
 
         private void AddScript(IChainUi<T, TScript> renderScript, int index = -1)
@@ -649,7 +649,7 @@ namespace Mpdn.Extensions.Framework.Controls
         private void MenuChainGroupClicked(object sender, ToolStripItemClickedEventArgs e)
         {
             var script = (IChainUi<T, TScript>)e.ClickedItem.Tag;
-            var grouppreset = script.MakeNewPreset();
+            var grouppreset = script.MakeEmptyPreset();
             var group = (PresetCollection<T, TScript>)grouppreset.Chain;
             int index = (listViewChain.SelectedItems.Count > 0)
                 ? listViewChain.SelectedItems[0].Index
