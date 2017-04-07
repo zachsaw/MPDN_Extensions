@@ -27,7 +27,7 @@ using Mpdn.Extensions.PlayerExtensions.Playlist;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
-    public class OnScreenDisplay : PlayerExtension
+    public class OnScreenDisplay : PlayerExtension<OnScreenDisplaySettings, OnScreenDisplayConfigDialog>
     {
         private const int OSD_DURATION = 10 * 3;
 
@@ -62,13 +62,17 @@ namespace Mpdn.Extensions.PlayerExtensions
         private volatile bool m_PrevBtnHover;
         private volatile bool m_NextBtnHover;
 
-        private volatile bool m_showOsd;
+        private volatile bool m_showOsd = true;
 
         private long m_Position;
         private long m_Duration;
 
         private int m_osdDuration = 0;
         private int m_osdAlpha = 255;
+
+        private Point m_lastMousePos;
+
+        private Boolean m_isEnabled;
 
         public override ExtensionUiDescriptor Descriptor
         {
@@ -85,6 +89,15 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public override void Initialize()
         {
+            base.Initialize();
+
+            m_isEnabled = Settings.EnableOnScreenDisplay;
+
+            if (!m_isEnabled)
+            {
+                return;
+            }
+
             m_titleText = Player.CreateText("Tahoma", 30, TextFontStyle.Bold);
             m_durationText = Player.CreateText("Tahoma", 28, TextFontStyle.Regular);
             m_chapterText = Player.CreateText("Tahoma", 25, TextFontStyle.Regular);
@@ -106,6 +119,13 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         public override void Destroy()
         {
+            base.Destroy();
+
+            if (!m_isEnabled)
+            {
+                return;
+            }
+
             m_titleText.Dispose();
             m_durationText.Dispose();
             m_chapterText.Dispose();
@@ -132,8 +152,9 @@ namespace Mpdn.Extensions.PlayerExtensions
 
                 var playlist = Extension.PlayerExtensions.FirstOrDefault(t => t.Descriptor.Guid == s_PlaylistGuid);
 
-                if (playlist == null)
+                if (playlist == null) {
                     throw new Exception("OnScreenDisplay requires the Playlist extension for previous and next buttons");
+                }
 
                 m_PlaylistInstance = (Playlist.Playlist)playlist;
                 return m_PlaylistInstance.GetPlaylistForm;
@@ -206,8 +227,9 @@ namespace Mpdn.Extensions.PlayerExtensions
             m_PrevBtnHover = e.X >= m_PrevBtnPos.X - m_PrevNextBtnPadding.Left && e.X <= m_PrevBtnPos.X + m_PrevNextBtnPadding.Horizontal + 7 &&
                              e.Y >= m_PrevBtnPos.Y - m_PrevNextBtnPadding.Top && e.Y <= m_PrevBtnPos.Y + m_PrevNextBtnPadding.Vertical + 16;
 
-            if (!m_showOsd)
+            if (!m_showOsd && e.Location != m_lastMousePos)
             {
+                m_lastMousePos = e.Location;
                 ShowOsd();
             }
         }
@@ -307,5 +329,15 @@ namespace Mpdn.Extensions.PlayerExtensions
                 }
             }
         }
+    }
+
+    public class OnScreenDisplaySettings
+    {
+        public OnScreenDisplaySettings()
+        {
+            EnableOnScreenDisplay = false;
+        }
+
+        public bool EnableOnScreenDisplay { get; set; }
     }
 }
