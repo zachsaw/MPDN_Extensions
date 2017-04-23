@@ -140,6 +140,12 @@
     <Compile Include="Extensions\PlayerExtensions\CustomSourceFilter.cs" />
     <Compile Include="Extensions\PlayerExtensions\DvdSourceProvider.cs" />
     <Compile Include="Extensions\PlayerExtensions\DynamicDirectShowFilter.cs" />
+    <Compile Include="Extensions\PlayerExtensions\OnScreenDisplay.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\PlayerExtensions\OnScreenDisplay.ConfigDialog.Designer.cs">
+      <DependentUpon>OnScreenDisplay.ConfigDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\PlayerExtensions\OnScreenDisplay.cs" />
     <Compile Include="Extensions\PlayerExtensions\RarFileSourceProvider.cs" />
     <Compile Include="Extensions\PlayerExtensions\YouTubeSourceProvider.cs" />
