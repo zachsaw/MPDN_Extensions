@@ -118,7 +118,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var HQDownscaler = (IScaler)new Bicubic(0.75f, false);
 
                 // Calculate Sizes
-                var inputSize = original.Output.Size;
+                var inputSize = original.Size();
                 var targetSize = TargetSize();
 
                 string macroDefinitions = "";

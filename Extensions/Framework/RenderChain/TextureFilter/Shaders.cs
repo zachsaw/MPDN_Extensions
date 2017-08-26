@@ -41,7 +41,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
                 throw new IndexOutOfRangeException(string.Format("No valid input filter at index {0}", settings.SizeIndex));
             }
 
-            return settings.Transform(inputFilters[settings.SizeIndex].Output.Size);
+            return settings.Transform(inputFilters[settings.SizeIndex].Size());
         }
 
         protected GenericShaderFilter(IShaderFilterSettings<T> settings, params IBaseTextureFilter[] inputFilters)

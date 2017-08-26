@@ -63,9 +63,8 @@ namespace Mpdn.Extensions.RenderScripts
                 var pyramid = new Stack<ITextureFilter>();
 
                 // Build gaussian pyramid
-                pyramid.Push(deband);
-                while (pyramid.Peek().Output.Size.Width  >= 2
-                    && pyramid.Peek().Output.Size.Height >= 2)
+                while (pyramid.Peek().Size().Width >= 2
+                    && pyramid.Peek().Size().Height >= 2)
                     pyramid.Push(Downscale.ApplyTo(pyramid.Peek()));
 
                 var result = pyramid.Peek();

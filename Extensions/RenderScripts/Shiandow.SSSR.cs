@@ -131,7 +131,7 @@ namespace Mpdn.Extensions.RenderScripts
                 ITextureFilter result;
 
                 // Calculate Sizes
-                var inputSize = original.Output.Size;
+                var inputSize = original.Size();
                 var targetSize = TargetSize();
 
                 // Compile Shaders

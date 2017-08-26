@@ -83,7 +83,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var shaderPass2 = LoadShader11(GetShaderFileName(Neurons2));
                 var interleave = CompileShader("Interleave.hlsl").Configure(transform: transform);
 
-                var sourceSize = input.Output.Size;
+                var sourceSize = input.Size();
                 if (!IsUpscalingFrom(sourceSize))
                     return input;
 

@@ -42,7 +42,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private bool UseNedi(ITextureFilter input)
             {
-                var size = input.Output.Size;
+                var size = input.Size();
                 if (size.IsEmpty)
                     return false;
 

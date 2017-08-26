@@ -96,12 +96,12 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
             {
-                if (sourceFilter.Output.Size == Renderer.TargetSize)
+                if (sourceFilter.Size() == Renderer.TargetSize)
                     return sourceFilter;
 
                 try
                 {
-                    m_DxvaHd = Renderer.CreateDxvaHd((Size) sourceFilter.Output.Size, TextureFormat.Unorm8,
+                    m_DxvaHd = Renderer.CreateDxvaHd((Size) sourceFilter.Size(), TextureFormat.Unorm8,
                         Renderer.TargetSize, TextureFormat.Unorm8, Quality);
                 }
                 catch (DxvaHdException)

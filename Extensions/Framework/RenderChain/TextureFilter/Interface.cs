@@ -237,6 +237,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     #region Helpers
 
+    public static class TextureFilterHelper
+    {
+        public static TextureSize Size(this IBaseTextureFilter filter)
+        {
+            return filter.Output.Size;
+        }
+
+        public static TextureFormat Format(this IBaseTextureFilter filter)
+        {
+            return filter.Output.Format;
+        }
+    }
+
     public static class TransformationHelper
     {
         public static ITextureFilter ConvertToRgb(this ITextureFilter filter)
@@ -268,7 +281,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public static ITextureFilter Convolve(this ITextureFilter<ITexture2D> inputFilter, IScaler convolver, TextureChannels? channels = null, Vector2? offset = null, IScaler upscaler = null, IScaler downscaler = null, TextureFormat ? outputFormat = null)
         {
-            return new ResizeFilter(inputFilter, inputFilter.Output.Size, channels ?? TextureChannels.All, offset ?? Vector2.Zero, upscaler, downscaler, convolver, outputFormat);
+            return new ResizeFilter(inputFilter, inputFilter.Size(), channels ?? TextureChannels.All, offset ?? Vector2.Zero, upscaler, downscaler, convolver, outputFormat);
         }
 
         public static ITextureFilter SetSize(this IFilter<ITextureOutput<ITexture2D>> filter, TextureSize size, bool tagged = false)
@@ -287,7 +300,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             private readonly Func<ITextureFilter, ITextureFilter> m_Transformation;
 
             public TransformedResizeableFilter(Func<ITextureFilter, ITextureFilter> transformation, IResizeableFilter inputFilter)
-                : base(inputFilter.Output.Size, inputFilter.Output.Format, inputFilter)
+                : base(inputFilter.Size(), inputFilter.Output.Format, inputFilter)
             {
                 m_InputFilter = inputFilter;
                 m_Transformation = transformation;
@@ -297,7 +310,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             {
                 var result = m_Transformation(m_InputFilter);
 
-                if (m_InputFilter.Output.Size != result.Output.Size)
+                if (m_InputFilter.Size() != result.Size())
                     throw new InvalidOperationException("Transformation is not allowed to change the size.");
 
                 return m_Transformation(m_InputFilter);
