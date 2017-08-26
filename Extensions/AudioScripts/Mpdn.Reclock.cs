@@ -23,7 +23,7 @@ namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn
     {
-        public class Reclock : AudioFilter
+        public class Reclock : AudioFilterBase
         {
             private const double MAX_PERCENT_ADJUST = 3; // automatically reclock if the difference is less than 3%
             private const double SANEAR_OVERSHOOT = 5;
@@ -41,7 +41,7 @@ namespace Mpdn.Extensions.AudioScripts
             private int m_SampleIndex = -8*RATIO_ADJUST_INTERVAL;
             private double m_Ratio = 1;
 
-            public override bool Process(IAudioOutput input, IAudioOutput output)
+            protected override bool Process(IAudioOutput input, IAudioOutput output)
             {
                 if (!CalculateRatio(input))
                 {
@@ -156,11 +156,6 @@ namespace Mpdn.Extensions.AudioScripts
                 Player.StateChanged -= PlayerStateChanged;
 
                 base.Dispose(disposing);
-            }
-
-            protected override void Process(float[,] samples, short channels, int sampleCount)
-            {
-                throw new InvalidOperationException();
             }
 
             private void PlayerStateChanged(object sender, PlayerStateEventArgs e)

@@ -22,17 +22,12 @@ namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Gargle : AudioFilter
+        public class Gargle : CpuAudioFilter
         {
             private const int GARGLE_RATE = 5;
             private const int SHAPE = 0; // 0=Triangle, 1=Sqaure
 
             private int m_Phase;
-
-            protected override bool CpuOnly
-            {
-                get { return true; }
-            }
 
             protected override void Process(float[,] samples, short channels, int sampleCount)
             {

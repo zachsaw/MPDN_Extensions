@@ -27,41 +27,33 @@ namespace Mpdn.Extensions.Framework.AudioChain
 {
     public interface IAudioFilter : IFilter<IAudioOutput> { }
 
-    public abstract class AudioFilter : PinFilter<IAudioOutput>, IAudioFilter
+    public abstract class AudioFilterBase : PinFilter<IAudioOutput>, IAudioFilter
     {
+        protected IAudioOutput Input { get { return InputFilter.Output; } }
+
+        protected virtual void OnLoadAudioKernel() { }
+
+        protected abstract bool Process(IAudioOutput input, IAudioOutput output);
+
+        #region Implementation
+
         private readonly IPinAudioOutput m_PinOutput;
 
-        public AudioFilter() : this(new PinAudioOutput()) { }
-        
-        protected AudioFilter(IPinAudioOutput output) : base(output)
+        public AudioFilterBase() : this(new PinAudioOutput()) { }
+
+        protected AudioFilterBase(IPinAudioOutput output) : base(output)
         {
             m_PinOutput = output;
         }
 
-        protected abstract void Process(float[,] samples, short channels, int sampleCount);
-
         protected override void Initialize()
         {
-            m_PinOutput.SetPin(Pin);
+            m_PinOutput.SetPin(InputFilter);
             base.Initialize();
 
             try
             {
                 OnLoadAudioKernel();
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex);
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            try
-            {
-                m_SampleFormat = AudioSampleFormat.Unknown;
-                DisposeGpuResources();
             }
             catch (Exception ex)
             {
@@ -77,122 +69,153 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 AudioHelpers.CopySample(inputs.First().Sample, Output.Sample, true);
         }
 
-        private bool Process(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
+        #endregion
+    }
+
+    namespace Internal
+    {
+        public abstract class GenericAudioFilter : AudioFilterBase
         {
-            UpdateSampleFormat(sampleFormat);
-            return m_ProcessFunc(samples, channels, length, output);
+            protected abstract Func<IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat);
+
+            #region Implementation
+
+            protected sealed override bool Process(IAudioOutput input, IAudioOutput output)
+            {
+                if (input.Format.IsBitStreaming())
+                    return false;
+
+                // WARNING: We assume input and output formats are the same
+
+                // passthrough from input to output
+                AudioHelpers.CopySample(input.Sample, output.Sample, false);
+
+                IntPtr samples;
+                input.Sample.GetPointer(out samples);
+                var format = input.Format;
+                var bytesPerSample = format.wBitsPerSample / 8;
+                var length = input.Sample.GetActualDataLength() / bytesPerSample;
+                var channels = format.nChannels;
+                var sampleFormat = format.SampleFormat();
+
+                return Process(sampleFormat, samples, channels, length, output.Sample);
+            }
+
+            #endregion
+
+            #region Audio Rendering
+
+            private AudioSampleFormat m_SampleFormat = AudioSampleFormat.Unknown;
+            private Func<IntPtr, short, int, IMediaSample, bool> m_ProcessFunc;
+
+            private bool Process(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
+            {
+                UpdateSampleFormat(sampleFormat);
+                return m_ProcessFunc(samples, channels, length, output);
+            }
+
+            private void UpdateSampleFormat(AudioSampleFormat sampleFormat)
+            {
+                if (m_SampleFormat != AudioSampleFormat.Unknown && (m_SampleFormat == sampleFormat))
+                    return;
+
+                m_ProcessFunc = GetProcessFunc(sampleFormat);
+                m_SampleFormat = sampleFormat;
+
+                DisposeGpuResources();
+            }
+
+            private object m_DevInputSamples;
+            private object m_DevOutputSamples;
+            private float[,] m_DevNormSamples;
+            private int m_Length;
+
+            protected GPGPU Gpu { get { return AudioProc.Gpu; } }
+
+            protected void UpdateGpuResources(int length)
+            {
+                if (m_Length == length)
+                    return;
+
+                DisposeGpuResources();
+                m_Length = length;
+            }
+
+            protected T[] GetDevInputSamples<T>(int length) where T : struct
+            {
+                return (T[])(m_DevInputSamples ?? (m_DevInputSamples = Gpu.Allocate<T>(length)));
+            }
+
+            protected T[] GetDevOutputSamples<T>(int length) where T : struct
+            {
+                return (T[])(m_DevOutputSamples ?? (m_DevOutputSamples = Gpu.Allocate<T>(length)));
+            }
+
+            protected float[,] GetDevNormSamples(int channels, int sampleCount)
+            {
+                return m_DevNormSamples ?? (m_DevNormSamples = Gpu.Allocate<float>(channels, sampleCount));
+            }
+
+            private void DisposeGpuResources()
+            {
+                DisposeDevInputSamples();
+                DisposeDevOutputSamples();
+                DisposeDevNormSamples();
+                m_Length = 0;
+            }
+
+            private void DisposeDevNormSamples()
+            {
+                if (m_DevNormSamples == null)
+                    return;
+
+                Gpu.Free(m_DevNormSamples);
+                m_DevNormSamples = null;
+            }
+
+            private void DisposeDevOutputSamples()
+            {
+                if (m_DevOutputSamples == null)
+                    return;
+
+                Gpu.Free(m_DevOutputSamples);
+                m_DevOutputSamples = null;
+            }
+
+            private void DisposeDevInputSamples()
+            {
+                if (m_DevInputSamples == null)
+                    return;
+
+                Gpu.Free(m_DevInputSamples);
+                m_DevInputSamples = null;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                try
+                {
+                    m_SampleFormat = AudioSampleFormat.Unknown;
+                    DisposeGpuResources();
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex);
+                }
+            }
+
+            #endregion
         }
+    }
 
-        public virtual bool Process(IAudioOutput input, IAudioOutput output)
-        {
-            if (input.Format.IsBitStreaming())
-                return false;
+    public abstract class AudioFilter : Internal.GenericAudioFilter
+    {
+        protected abstract void Process(float[,] samples, short channels, int sampleCount);
 
-            // WARNING: We assume input and output formats are the same
+        #region Implementation
 
-            // passthrough from input to output
-            AudioHelpers.CopySample(input.Sample, output.Sample, false);
-
-            IntPtr samples;
-            input.Sample.GetPointer(out samples);
-            var format = input.Format;
-            var bytesPerSample = format.wBitsPerSample / 8;
-            var length = input.Sample.GetActualDataLength() / bytesPerSample;
-            var channels = format.nChannels;
-            var sampleFormat = format.SampleFormat();
-
-            return Process(sampleFormat, samples, channels, length, output.Sample);
-        }
-
-        #region Audio Rendering
-
-        private AudioSampleFormat m_SampleFormat = AudioSampleFormat.Unknown;
-        private Func<IntPtr, short, int, IMediaSample, bool> m_ProcessFunc;
-
-        private object m_DevInputSamples;
-        private object m_DevOutputSamples;
-        private float[,] m_DevNormSamples;
-        private int m_Length;
-
-        protected IAudioOutput Input { get { return Pin.Output; } }
-
-        protected GPGPU Gpu { get { return AudioProc.Gpu; } }
-
-        protected virtual bool CpuOnly { get { return false; } }
-
-        protected virtual void OnLoadAudioKernel() { }
-
-        private void UpdateSampleFormat(AudioSampleFormat sampleFormat)
-        {
-            if (m_SampleFormat != AudioSampleFormat.Unknown && (m_SampleFormat == sampleFormat))
-                return;
-
-            m_ProcessFunc = CpuOnly ? GetProcessCpuFunc(sampleFormat) : GetProcessFunc(sampleFormat);
-            m_SampleFormat = sampleFormat;
-
-            DisposeGpuResources();
-        }
-
-        private void UpdateGpuResources(int length)
-        {
-            if (m_Length == length)
-                return;
-
-            DisposeGpuResources();
-            m_Length = length;
-        }
-
-        private void DisposeGpuResources()
-        {
-            DisposeDevInputSamples();
-            DisposeDevOutputSamples();
-            DisposeDevNormSamples();
-            m_Length = 0;
-        }
-
-        private void DisposeDevNormSamples()
-        {
-            if (m_DevNormSamples == null)
-                return;
-
-            Gpu.Free(m_DevNormSamples);
-            m_DevNormSamples = null;
-        }
-
-        private void DisposeDevOutputSamples()
-        {
-            if (m_DevOutputSamples == null)
-                return;
-
-            Gpu.Free(m_DevOutputSamples);
-            m_DevOutputSamples = null;
-        }
-
-        private void DisposeDevInputSamples()
-        {
-            if (m_DevInputSamples == null)
-                return;
-
-            Gpu.Free(m_DevInputSamples);
-            m_DevInputSamples = null;
-        }
-
-        private T[] GetDevInputSamples<T>(int length) where T : struct
-        {
-            return (T[])(m_DevInputSamples ?? (m_DevInputSamples = Gpu.Allocate<T>(length)));
-        }
-
-        private T[] GetDevOutputSamples<T>(int length) where T : struct
-        {
-            return (T[])(m_DevOutputSamples ?? (m_DevOutputSamples = Gpu.Allocate<T>(length)));
-        }
-
-        private float[,] GetDevNormSamples(int channels, int sampleCount)
-        {
-            return m_DevNormSamples ?? (m_DevNormSamples = Gpu.Allocate<float>(channels, sampleCount));
-        }
-
-        private Func<IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat)
+        protected sealed override Func<IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat)
         {
             switch (sampleFormat)
             {
@@ -240,7 +263,16 @@ namespace Mpdn.Extensions.Framework.AudioChain
             return true;
         }
 
-        private Func<IntPtr, short, int, IMediaSample, bool> GetProcessCpuFunc(AudioSampleFormat sampleFormat)
+        #endregion
+    }
+
+    public abstract class CpuAudioFilter : Internal.GenericAudioFilter
+    {
+        protected abstract void Process(float[,] samples, short channels, int sampleCount);
+
+        #region Implementation
+
+        protected sealed override Func<IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat)
         {
             switch (sampleFormat)
             {

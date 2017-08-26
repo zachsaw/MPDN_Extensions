@@ -30,17 +30,30 @@ namespace Mpdn.Extensions.Framework.Filter
     public abstract class PinFilter<TOutput> : Filter<TOutput, TOutput>, IPinFilter<IFilter<TOutput>> 
         where TOutput : class, IFilterOutput
     {
-        protected IFilter<TOutput> Pin { get { return InputFilters[0]; } }
+        private readonly FilterPin m_Pin;
 
-        protected PinFilter(TOutput output) : base(output, new FilterPin()) { }
+        protected IFilter<TOutput> InputFilter { get; private set; }
+
+        protected PinFilter(TOutput output) : this(output, new FilterPin()) { }
+
+        private PinFilter(TOutput output, FilterPin pin) : base(output, pin)
+        {
+            m_Pin = pin;
+        }
 
         public void ConnectPinTo(IFilter<TOutput> filter)
         {
-            var filterPin = Pin as FilterPin;
-            if (filterPin == null)
-                throw new InvalidOperationException("Can't reconnect pin when already compiled.");
+            m_Pin.ConnectTo(filter);
 
-            filterPin.ConnectTo(filter);
+            InputFilter = filter;
+        }
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+
+            if (!m_Pin.Connected)
+                throw new InvalidOperationException("Attempting to use PinFilter with unconnected input.");            
         }
 
         protected class FilterPin : Filter<IFilterOutput, TOutput>
@@ -50,9 +63,11 @@ namespace Mpdn.Extensions.Framework.Filter
             // WARNING: Output undefined until compiled
             public FilterPin() : base(null) { }
 
+            public bool Connected { get { return m_PinInput != null; } }
+
             public void ConnectTo(IFilter<TOutput> input)
             {
-                if (m_PinInput != null)
+                if (Connected)
                     throw new InvalidOperationException("Pin can only be connected once.");
 
                 m_PinInput = input;
@@ -65,10 +80,9 @@ namespace Mpdn.Extensions.Framework.Filter
 
             protected override IFilter<TOutput> Optimize()
             {
-                if (m_PinInput == null)
+                if (!Connected)
                     throw new InvalidOperationException("Pin Hasn't been connected yet.");
 
-                Tag.AddPrefix(m_PinInput.Tag);
                 return m_PinInput.Compile();
             }
         }
