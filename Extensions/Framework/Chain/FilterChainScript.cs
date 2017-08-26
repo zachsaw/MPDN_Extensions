@@ -50,14 +50,32 @@ namespace Mpdn.Extensions.Framework.Chain
 
         public void Update()
         {
+            UpdateFilter();
+
+            UpdateStatus();
+        }
+
+        public void UpdateFilter()
+        {
             var oldFilter = m_Filter;
+            DisposeHelper.Dispose(ref m_SourceFilter);
+
             try
             {
-                DisposeHelper.Dispose(ref m_SourceFilter);
+                var input = MakeInitialFilter()
+                    .MakeTagged();
 
-                m_Filter = CreateOutputFilter();
-
-                UpdateStatus();
+                m_Filter = m_Chain
+                    .Process(input)
+                    .Apply(FinalizeOutput)
+                    .GetTag(out m_Tag)
+                    .Compile()
+                    .InitializeFilter();
+            }
+            catch (Exception ex)
+            {
+                m_Tag = ErrorMessage(ex);
+                m_Filter = HandleError(ex).Compile().InitializeFilter();
             }
             finally
             {
@@ -93,27 +111,6 @@ namespace Mpdn.Extensions.Framework.Chain
         #endregion
 
         #region Error Handling
-
-        public IFilter<TOutput> CreateOutputFilter()
-        {
-            try
-            {
-                var input = MakeInitialFilter()
-                    .MakeTagged();
-
-                return m_Chain
-                    .Process(input)
-                    .Apply(FinalizeOutput)
-                    .GetTag(out m_Tag)
-                    .Compile()
-                    .InitializeFilter();
-            }
-            catch (Exception ex)
-            {
-                m_Tag = ErrorMessage(ex);
-                return HandleError(ex).Compile().InitializeFilter();
-            }
-        }
 
         protected static Exception InnerMostException(Exception e)
         {

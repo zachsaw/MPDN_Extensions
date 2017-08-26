@@ -47,9 +47,6 @@ namespace Mpdn.Extensions.Framework.Chain
             }
         }
 
-        [YAXAttributeForClass]
-        public Guid Guid { get; set; }
-
         public IChainUi<T, TScript> Script
         {
             get { return m_Script ?? ChainUi<T, TScript>.IDENTITY; }
@@ -65,11 +62,6 @@ namespace Mpdn.Extensions.Framework.Chain
         #endregion
 
         #region Chain implementation
-
-        public Preset()
-        {
-            Guid = Guid.NewGuid();
-        }
 
         public override T Process(T input)
         {
@@ -140,13 +132,6 @@ namespace Mpdn.Extensions.Framework.Chain
         public override string ToString()
         {
             return Name;
-        }
-
-        public static Preset<T, TScript> Make<S>(string name = null)
-            where S : IChainUi<T, TScript>, new()
-        {
-            var script = new S();
-            return new Preset<T, TScript> { Name = (name ?? script.Descriptor.Name), Script = script };
         }
     }
 }

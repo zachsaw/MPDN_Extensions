@@ -63,23 +63,17 @@ namespace Mpdn.Extensions.Framework.Chain
             }
         }
 
-        [YAXDontSerialize]
-        public Preset<T, TScript> SelectedOption
+        public ScriptGroup()
         {
-            get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) ?? Options.LastOrDefault() : null; }
+            SelectedIndex = 0;
         }
 
         #endregion
 
-        public ScriptGroup()
+        [YAXDontSerialize]
+        public Preset<T, TScript> SelectedOption
         {
-            SelectedIndex = 0;
-            m_HotkeyGuid = Guid.NewGuid();
-        }
-
-        public int GetPresetIndex(Guid guid)
-        {
-            return Options.FindIndex(o => o.Guid == guid);
+            get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) ?? Options.LastOrDefault() : null; }
         }
 
         public override T Process(T input)
@@ -91,7 +85,7 @@ namespace Mpdn.Extensions.Framework.Chain
 
         #region Hotkey Handling
 
-        private readonly Guid m_HotkeyGuid;
+        private readonly Guid m_HotkeyGuid = Guid.NewGuid();
         private string m_Hotkey;
 
         private void RegisterHotkey()

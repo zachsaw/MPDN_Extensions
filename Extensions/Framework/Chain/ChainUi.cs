@@ -32,7 +32,7 @@ namespace Mpdn.Extensions.Framework.Chain
         public static bool IsIdentity<T, TScript>(this IChainUi<T, TScript> chainUi)
             where TScript : class, IScript
         {
-            return chainUi is ChainUi<T, TScript>.IdentityRenderChainUi;
+            return chainUi == ChainUi<T, TScript>.IDENTITY;
         }
     }
 
@@ -41,12 +41,12 @@ namespace Mpdn.Extensions.Framework.Chain
     {
         public static readonly IChainUi<T, TScript> IDENTITY = new IdentityRenderChainUi();
 
-        public class IdentityRenderChain : StaticChain<T>
+        private class IdentityRenderChain : StaticChain<T>
         {
             public IdentityRenderChain() : base(x => x) { }
         }
 
-        public class IdentityRenderChainUi : ChainUi<T, TScript, IdentityRenderChain>
+        private class IdentityRenderChainUi : ChainUi<T, TScript, IdentityRenderChain>
         {
             public override string Category
             {
