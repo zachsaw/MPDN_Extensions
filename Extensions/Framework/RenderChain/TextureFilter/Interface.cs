@@ -286,9 +286,14 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public static ITextureFilter SetSize(this IFilter<ITextureOutput<ITexture2D>> filter, TextureSize size, bool tagged = false)
         {
+            ITextureFilter textureFilter;
+            if (filter.Size() == size && (textureFilter = filter as ITextureFilter) != null)
+                return textureFilter;
+
             var resizeable = (filter as IResizeableFilter) ?? new ResizeFilter(filter);
             if (tagged)
                 resizeable.EnableTag();
+
             return resizeable.SetSize(size);
         }
 
