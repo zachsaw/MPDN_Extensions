@@ -55,6 +55,7 @@ namespace Mpdn.Extensions.Framework.Config
             throw new NotImplementedException("SaveSettings undefined (should be overriden).");
         }
 
+        // Checks if DialogResult is OK, and if so saves the settings. Remember to set the DialogResult.
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             base.OnFormClosed(e);
@@ -70,6 +71,8 @@ namespace Mpdn.Extensions.Framework.Config
         where TSettings : class, new()
         where TDialog : IScriptConfigDialog<TSettings>, new()
     {
+        public event EventHandler<EventArgs> SettingsChanged;
+
         public int Version
         {
             get { return Extension.InterfaceVersion; }
@@ -127,8 +130,20 @@ namespace Mpdn.Extensions.Framework.Config
             using (var dialog = new TDialog())
             {
                 dialog.Setup(m_ScriptConfig.Config);
-                return dialog.ShowDialog(owner) == DialogResult.OK;
+                if (dialog.ShowDialog(owner) == DialogResult.OK)
+                {
+                    RaiseSettingsChanged();
+                    return true;
+                }
+
+                return false;
             }
+        }
+
+        protected virtual void RaiseSettingsChanged()
+        {
+            if (SettingsChanged != null)
+                SettingsChanged(this, new EventArgs());
         }
 
         #endregion
