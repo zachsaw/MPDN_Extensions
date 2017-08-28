@@ -224,6 +224,8 @@ namespace Mpdn.Extensions.Framework.Filter
 
         #region Resource Management
 
+        protected bool IsDisposed { get; private set; }
+
         ~Filter()
         {
             Dispose(false);
@@ -237,12 +239,14 @@ namespace Mpdn.Extensions.Framework.Filter
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposing)
+            if (!disposing || IsDisposed)
                 return;
 
             DisposeHelper.DisposeElements(m_InputFilters);
             DisposeHelper.DisposeElements(ref m_CompiledFilters);
             DisposeHelper.Dispose(m_Output);
+
+            IsDisposed = true;
         }
 
         #endregion
