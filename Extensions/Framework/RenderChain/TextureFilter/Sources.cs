@@ -193,10 +193,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public TextureSourceFilter(ITextureOutput<TTexture> output)
             : base(output)
-        {
-            /* Don't connect to bottom label */
-            Tag.Purge(ProcessTag.BOTTOM);
-        }
+        { }
     }
     
     public sealed class NullFilter : SourceFilter<ITextureOutput<ITexture2D>>, ITextureFilter
@@ -226,7 +223,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ITextureFilter GetYuv()
         {
-            return new VideoSourceFilter(m_TrueSource, Output.Size, true).Tagged(Tag);
+            return new VideoSourceFilter(m_TrueSource, Output.Size, true);
         }
 
         public ScriptInterfaceDescriptor Descriptor
@@ -234,14 +231,14 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             get { return m_TrueSource.Descriptor; }
         }
 
-        public static void InsertScaleDescription(ProcessTag tag, TextureSize size)
+        public static IEnumerable<string> ScaleDescription(TextureSize size)
         {
             var chromaConvolver = Renderer.ChromaOffset.IsZero ? null : Renderer.ChromaUpscaler;
             var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, size, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, chromaConvolver);
             var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, size, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
 
-            tag.Insert(chromastatus.PrependToDescription("Chroma: "));
-            tag.Insert(lumastatus.PrependToDescription("Luma: "));
+            yield return chromastatus.PrependToDescription("Chroma: ");
+            yield return lumastatus.PrependToDescription("Luma: ");
         }
 
         public VideoSourceFilter(IRenderScript script) : this(new TrueSourceFilter(script)) { } 
@@ -278,7 +275,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public ITextureFilter SetSize(TextureSize outputSize)
         {
-            return new VideoSourceFilter(m_TrueSource, outputSize, m_WantYuv).Tagged(Tag);
+            return new VideoSourceFilter(m_TrueSource, outputSize, m_WantYuv);
         }
 
         private sealed class TrueSourceFilter : SourceFilter<ITextureOutput<ITexture2D>>, ITextureFilter
@@ -297,7 +294,8 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
             {
                 base.Initialize();
 
-                InsertScaleDescription(Tag, Output.Size);
+                foreach (var label in ScaleDescription(Output.Size))
+                    this.AddLabel(label);
             }
 
             public bool IsYuv()

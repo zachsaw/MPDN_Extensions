@@ -36,7 +36,6 @@ namespace Mpdn.Extensions.Framework.Chain
 
         private IFilter<TOutput> m_SourceFilter;
         private IFilter<TOutput> m_Filter;
-        private ProcessTag m_Tag;
 
         private readonly Chain<TFilter> m_Chain;
 
@@ -68,14 +67,13 @@ namespace Mpdn.Extensions.Framework.Chain
                 m_Filter = m_Chain
                     .Process(input)
                     .Apply(FinalizeOutput)
-                    .GetTag(out m_Tag)
                     .Compile()
                     .InitializeFilter();
             }
             catch (Exception ex)
             {
-                m_Tag = ErrorMessage(ex);
                 m_Filter = HandleError(ex).Compile().InitializeFilter();
+                m_Filter.AddLabel(ErrorMessage(ex));
             }
             finally
             {
@@ -85,7 +83,7 @@ namespace Mpdn.Extensions.Framework.Chain
 
         private void UpdateStatus()
         {
-            Status = m_Tag != null ? m_Tag.CreateString() : "Status Invalid";
+            Status = m_Filter != null ? m_Filter.ProcessData.CreateString() : "Status Invalid";
         }
 
         public virtual bool Execute()

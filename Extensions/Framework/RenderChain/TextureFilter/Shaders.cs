@@ -53,7 +53,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
                 .ToArray();
 
             Args = settings.Arguments;
-            Tag.Insert(new StringTag(settings.Name, 50));
+            this.AddLabel(settings.Name, 50);
         }
 
         protected abstract void SetTextureConstant(int index, IBaseTexture texture, bool linearSampling);
