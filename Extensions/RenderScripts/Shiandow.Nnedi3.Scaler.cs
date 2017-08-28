@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3.Filters;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -94,7 +95,8 @@ namespace Mpdn.Extensions.RenderScripts
                 m_Filter2 = NNedi3Helpers.CreateFilter(shaderPass2, resultY, Neurons2, Structured);
                 var luma = interleave.ApplyTo(resultY, m_Filter2);
 
-                var result = ChromaScaler.MakeChromaFilter(luma, yuv, chromaOffset: new Vector2(-0.25f, -0.25f));
+                var result = ChromaScaler.ScaleChroma(
+                    new CompositionFilter(luma, yuv, targetSize: luma.Size(), chromaOffset: new Vector2(-0.25f, -0.25f)));
 
                 return result.Convolve(null, offset: new Vector2(0.5f, 0.5f));
             }

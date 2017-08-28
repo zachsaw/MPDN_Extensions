@@ -223,7 +223,8 @@ namespace Mpdn.Extensions.RenderScripts
                     new TextureSize(nnedi3H.Size().Width, nnedi3H.Size().Height), 
                     localWorkSizes, nnedi3H);
 
-                var result = ChromaScaler.MakeChromaFilter(nnedi3V, yuv, chromaOffset: new Vector2(-0.25f, -0.25f));
+                var result = ChromaScaler.ScaleChroma(
+                    new CompositionFilter(nnedi3V, yuv, targetSize: nnedi3V.Size(), chromaOffset: new Vector2(-0.25f, -0.25f)));
 
                 return new ResizeFilter(result, result.Size(), new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }

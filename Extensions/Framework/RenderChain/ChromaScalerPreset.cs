@@ -1,16 +1,14 @@
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Config;
-using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
 using Mpdn.RenderScript;
-using SharpDX;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
     public class ChromaScalerPreset : Preset<ITextureFilter, IRenderScript>, IChromaScaler
     {
-        public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+        public ITextureFilter ScaleChroma(ICompositionFilter composition)
         {
-            return new CompositionFilter(lumaInput, chromaInput, null, targetSize, chromaOffset) + Chain;
+            return composition + Chain;
         }
     }
 

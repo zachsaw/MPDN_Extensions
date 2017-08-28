@@ -26,7 +26,7 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Mpdn.OclNNedi3.Chroma
     {
-        public class OclNNedi3Chroma : RenderChain, IChromaScaler
+        public class OclNNedi3Chroma : ChromaChain
         {
             #region Settings
 
@@ -54,11 +54,6 @@ namespace Mpdn.Extensions.RenderScripts
             };
             private static readonly int[] s_NeuronCount = { 16, 32, 64, 128, 256 };
 
-            protected override ITextureFilter CreateFilter(ITextureFilter input)
-            {
-                return this.MakeChromaFilter(input);
-            }
-
             public override string Description
             {
                 get
@@ -79,7 +74,7 @@ namespace Mpdn.Extensions.RenderScripts
                     string.Format("-cl-fast-relaxed-math -D {0}", u ? "CHROMA_U=1" : "CHROMA_V=1"));
             }
 
-            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public override ITextureFilter ScaleChroma(ICompositionFilter composition)
             {
                 DisposeHelper.Dispose(ref m_Buffer1);
                 DisposeHelper.Dispose(ref m_Buffer2);
@@ -87,7 +82,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if (!Renderer.IsOpenClAvail || Renderer.RenderQuality.PerformanceMode())
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
-                    return null; // OpenCL is not available; fallback
+                    return composition; // OpenCL is not available; fallback
                 }
 
                 var lumaSize = composition.Luma.Size();
@@ -120,19 +115,19 @@ namespace Mpdn.Extensions.RenderScripts
                 var localWorkSizes = new[] { 8, 8 };
                 var nnedi3Uh = new NNedi3HKernelFilter(shaderUh, m_Buffer1, neuronCount1,
                     new TextureSize(chromaSize.Width, chromaSize.Height),
-                    localWorkSizes, chromaInput);
+                    localWorkSizes, composition.Chroma);
                 var nnedi3Uv = new NNedi3VKernelFilter(shaderUv, m_Buffer2, neuronCount2, differentWeights,
-                    new TextureSize(nnedi3Uh.Output.Size.Width, nnedi3Uh.Output.Size.Height),
+                    new TextureSize(nnedi3Uh.Size().Width, nnedi3Uh.Size().Height),
                     localWorkSizes, nnedi3Uh);
 
                 var nnedi3Vh = new NNedi3HKernelFilter(shaderVh, m_Buffer1, neuronCount1,
                     new TextureSize(chromaSize.Width, chromaSize.Height),
-                    localWorkSizes, chromaInput);
+                    localWorkSizes, composition.Chroma);
                 var nnedi3Vv = new NNedi3VKernelFilter(shaderVv, m_Buffer2, neuronCount2, differentWeights,
-                    new TextureSize(nnedi3Vh.Output.Size.Width, nnedi3Vh.Output.Size.Height),
+                    new TextureSize(nnedi3Vh.Size().Width, nnedi3Vh.Size().Height),
                     localWorkSizes, nnedi3Vh);
 
-                return lumaInput.MergeWith(nnedi3Uv, nnedi3Vv).ConvertToRgb();
+                return composition.Luma.MergeWith(nnedi3Uv, nnedi3Vv).ConvertToRgb();
             }
         }
 

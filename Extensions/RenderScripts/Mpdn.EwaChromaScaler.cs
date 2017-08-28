@@ -37,16 +37,25 @@ namespace Mpdn.Extensions.RenderScripts
 
             protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
-                return this.MakeChromaFilter(input);
+                var composition = input as ICompositionFilter;
+                if (composition == null)
+                    return input;
+
+                return ScaleChroma(composition);
             }
 
-            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public ITextureFilter ScaleChroma(ICompositionFilter composition)
             {
-                var chromaSize = chromaInput.Output.Size;
+                var chromaSize = composition.Chroma.Size();
+                var targetSize = composition.TargetSize;
+
+                // Fall back to default when downscaling is needed
+                if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
+                    return composition;
 
                 CreateWeights(chromaSize, targetSize);
 
-                var offset = chromaOffset + new Vector2(0.5f, 0.5f);
+                var offset = composition.ChromaOffset + new Vector2(0.5f, 0.5f);
                 int lobes = TapCount.ToInt()/2;
                 var shader = CompileShader("EwaScaler.hlsl",
                     macroDefinitions:
@@ -58,13 +67,9 @@ namespace Mpdn.Extensions.RenderScripts
                         linearSampling: true
                     );
 
-                // Fall back to default when downscaling is needed
-                if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
-                    return null;
+                var resizedLuma = composition.Luma.SetSize(targetSize, tagged: true);
 
-                var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
-
-                return GetEwaFilter(shader, new[] { resizedLuma, chromaInput }).ConvertToRgb();
+                return GetEwaFilter(shader, new[] { resizedLuma, composition.Chroma }).ConvertToRgb();
             }
         }
 

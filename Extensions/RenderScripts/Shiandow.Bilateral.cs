@@ -30,7 +30,7 @@ namespace Mpdn.Extensions.RenderScripts
             Krig=1
         }
 
-        public class Bilateral : RenderChain, IChromaScaler
+        public class Bilateral : ChromaChain
         {
             #region Settings
 
@@ -62,31 +62,29 @@ namespace Mpdn.Extensions.RenderScripts
                 return YUV;
             }
 
-            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public override ITextureFilter ScaleChroma(ICompositionFilter composition)
             {
-                float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
-                var chromaSize = chromaInput.Output.Size;
-                var lumaSize = lumaInput.Output.Size;
+                var lumaSize = composition.Luma.Size();
+                var chromaSize = composition.Chroma.Size();
+                var targetSize = composition.TargetSize;
 
-                Vector2 adjointOffset = -chromaOffset * lumaSize / chromaSize;
+                float[] yuvConsts = Renderer.Colorimetric.GetYuvConsts();
+                var chromaOffset = composition.ChromaOffset;
+
+                // Fall back to default when downscaling is needed
+                if (!(chromaSize <= targetSize) || chromaSize == targetSize)
+                    return composition;
+
+                Vector2 adjointOffset = -(chromaOffset * lumaSize) / chromaSize;
 
                 var crossBilateral = CompileShader((Mode == BilateralMode.Legacy) ? "CrossBilateral.hlsl" : "KrigBilateral.hlsl");
                 crossBilateral["chromaParams"] = new Vector4(chromaOffset.X, chromaOffset.Y, yuvConsts[0], yuvConsts[1] );
                 crossBilateral["power"] = Strength;
 
-                // Fall back to default when downscaling is needed
-                if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
-                    return null;
-
-                var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
-                var lowresYuv = DownscaleLuma(lumaInput, chromaInput, chromaSize, adjointOffset);
+                var resizedLuma = composition.Luma.SetSize(composition.TargetSize, tagged: true);
+                var lowresYuv = DownscaleLuma(composition.Luma, composition.Chroma, chromaSize, adjointOffset);
 
                 return crossBilateral.ApplyTo(resizedLuma, lowresYuv).ConvertToRgb();
-            }
-
-            protected override ITextureFilter CreateFilter(ITextureFilter input)
-            {
-                return this.MakeChromaFilter(input);
             }
         }
         

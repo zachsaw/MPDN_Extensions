@@ -39,7 +39,7 @@ namespace Mpdn.Extensions.RenderScripts
 
         #endregion
 
-        public class BicubicChroma : RenderChain, IChromaScaler
+        public class BicubicChroma : ChromaChain
         {
             #region Settings
 
@@ -87,25 +87,21 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "ChromaScaler"; }
             }
 
-            protected override ITextureFilter CreateFilter(ITextureFilter input)
+            public override ITextureFilter ScaleChroma(ICompositionFilter composition)
             {
-                return this.MakeChromaFilter(input);
-            }
-
-            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
-            {
-                var chromaSize = chromaInput.Output.Size;
+                var chromaSize = composition.Chroma.Size();
+                var targetSize = composition.TargetSize;
 
                 // Fall back to default when downscaling is needed
-                if (targetSize.Width < chromaSize.Width || targetSize.Height < chromaSize.Height)
-                    return null;
+                if (!(chromaSize <= targetSize) || chromaSize == targetSize)
+                    return composition;
 
-                Vector2 offset = chromaOffset + new Vector2(0.5f, 0.5f);
+                Vector2 offset = composition.ChromaOffset + new Vector2(0.5f, 0.5f);
                 var chromaShader = CompileShader("Chroma.hlsl").Configure(arguments: new[] { B, C, offset[0], offset[1] });
 
-                var resizedLuma = lumaInput.SetSize(targetSize, tagged: true);
+                var resizedLuma = composition.Luma.SetSize(targetSize, tagged: true);
 
-                return chromaShader.ApplyTo(resizedLuma, chromaInput).ConvertToRgb();
+                return chromaShader.ApplyTo(resizedLuma, composition.Chroma).ConvertToRgb();
             }
         }
 

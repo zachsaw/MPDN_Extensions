@@ -37,8 +37,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         ITextureFilter Chroma { get; }
         TextureSize TargetSize { get; }
         Vector2 ChromaOffset { get; }
-
-        ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null, ICompositionFilter fallback = null);
     }
 
     public interface IShaderFilterSettings<T>
@@ -74,7 +72,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public interface IChromaScaler
     {
-        ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset);
+        ITextureFilter ScaleChroma(ICompositionFilter composition);
     }
 
     #endregion
@@ -231,6 +229,20 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
 
         #endregion
+    }
+
+    public abstract class ChromaChain : RenderChain, IChromaScaler
+    {
+        public abstract ITextureFilter ScaleChroma(ICompositionFilter composition);
+
+        protected sealed override ITextureFilter CreateFilter(ITextureFilter input)
+        {
+            var composition = input as ICompositionFilter;
+            if (composition == null)
+                return input;
+
+            return ScaleChroma(composition);
+        }
     }
 
     #endregion
@@ -396,25 +408,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             where TTexture : class, IBaseTexture
         {
             return new TextureSourceFilter<TTexture>(texture.GetLease());
-        }
-    }
-
-    public static class ChromaHelper
-    {
-        public static ITextureFilter MakeChromaFilter(this IChromaScaler chromaScaler, ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize? targetSize = null, Vector2? chromaOffset = null)
-        {
-            return new CompositionFilter(lumaInput, chromaInput, chromaScaler, targetSize, chromaOffset);
-        }
-
-        public static ITextureFilter MakeChromaFilter<TChromaScaler>(this TChromaScaler scaler, ITextureFilter input)
-            where TChromaScaler : RenderChain, IChromaScaler
-        {
-            var compositionFilter = input as ICompositionFilter;
-            if (compositionFilter == null)
-                return input;
-
-            return compositionFilter
-                .Rebuild(scaler, fallback: compositionFilter);
         }
     }
 
