@@ -209,24 +209,23 @@ namespace Mpdn.Extensions.RenderScripts
                     buffer2 = Renderer.CreateClBuffer(weights2);
                 }
 
-                var sourceSize = input.Output.Size;
-                if (!IsUpscalingFrom(sourceSize))
+                var sourceSize = input.Size();
+                if (!(Renderer.TargetSize > sourceSize))
                     return input;
 
                 var yuv = input.ConvertToYuv();
 
                 var localWorkSizes = new[] {8, 8};
                 var nnedi3H = new NNedi3HKernelFilter(shaderH, buffer1, neuronCount1,
-                    new TextureSize(yuv.Output.Size.Width, yuv.Output.Size.Height), 
+                    new TextureSize(yuv.Size().Width, yuv.Size().Height), 
                     localWorkSizes, yuv);
                 var nnedi3V = new NNedi3VKernelFilter(shaderV, buffer2, neuronCount2, differentWeights,
-                    new TextureSize(nnedi3H.Output.Size.Width, nnedi3H.Output.Size.Height), 
+                    new TextureSize(nnedi3H.Size().Width, nnedi3H.Size().Height), 
                     localWorkSizes, nnedi3H);
 
                 var result = ChromaScaler.MakeChromaFilter(nnedi3V, yuv, chromaOffset: new Vector2(-0.25f, -0.25f));
 
-                return new ResizeFilter(result, result.Output.Size, new Vector2(0.5f, 0.5f),
-                    Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+                return new ResizeFilter(result, result.Size(), new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
             }
         }
 

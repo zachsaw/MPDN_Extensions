@@ -90,11 +90,11 @@ namespace Mpdn.Extensions.RenderScripts
                     return null; // OpenCL is not available; fallback
                 }
 
-                var lumaSize = lumaInput.Output.Size;
-                var chromaSize = chromaInput.Output.Size;
+                var lumaSize = composition.Luma.Size();
+                var chromaSize = composition.Chroma.Size();
 
-                if (lumaSize.Width != 2*chromaSize.Width || lumaSize.Height != 2*chromaSize.Height)
-                    return null; // Chroma shouldn't be doubled; fallback
+                if (lumaSize.Width != 2 * chromaSize.Width || lumaSize.Height != 2 * chromaSize.Height)
+                    return composition; // Chroma shouldn't be doubled; fallback
 
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2 * s.Width, s.Height);
                 Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2 * s.Height);

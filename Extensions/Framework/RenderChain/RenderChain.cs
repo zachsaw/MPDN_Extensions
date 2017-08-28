@@ -98,43 +98,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
 
         #endregion
-
-        #region Size Calculations
-
-        public bool IsDownscalingFrom(TextureSize size, TextureSize? targetSize = null)
-        {
-            var otherSize = targetSize ?? Renderer.TargetSize;
-            return otherSize.Width < size.Width && otherSize.Height < size.Height;
-        }
-
-        public bool IsNotScalingFrom(TextureSize size, TextureSize? targetSize = null)
-        {
-            var otherSize = targetSize ?? Renderer.TargetSize;
-            return size == otherSize;
-        }
-
-        public bool IsUpscalingFrom(TextureSize size, TextureSize? targetSize = null)
-        {
-            var otherSize = targetSize ?? Renderer.TargetSize;
-            return otherSize.Width > size.Width && otherSize.Height > size.Height;
-        }
-
-        public bool IsDownscalingFrom(ITextureFilter chain, TextureSize? targetSize = null)
-        {
-            return IsDownscalingFrom(chain.Output.Size, targetSize);
-        }
-
-        public bool IsNotScalingFrom(ITextureFilter chain, TextureSize? targetSize = null)
-        {
-            return IsNotScalingFrom(chain.Output.Size, targetSize);
-        }
-
-        public bool IsUpscalingFrom(ITextureFilter chain, TextureSize? targetSize = null)
-        {
-            return IsUpscalingFrom(chain.Output.Size, targetSize);
-        }
-
-        #endregion
     }
 
     public class RenderScriptChain : ScriptChain<ITextureFilter, IRenderScript> { }

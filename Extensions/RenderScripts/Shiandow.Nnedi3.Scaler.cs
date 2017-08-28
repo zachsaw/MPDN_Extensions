@@ -84,7 +84,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var interleave = CompileShader("Interleave.hlsl").Configure(transform: transform);
 
                 var sourceSize = input.Size();
-                if (!IsUpscalingFrom(sourceSize))
+                if (!(sourceSize > Renderer.TargetSize))
                     return input;
 
                 var yuv = input.ConvertToYuv();

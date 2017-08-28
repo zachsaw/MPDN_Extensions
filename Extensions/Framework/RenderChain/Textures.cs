@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -30,7 +31,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public bool Is3D
         {
-            get { return Depth != 1; }
+            get { return Depth > 1; }
         }
 
         public bool IsEmpty
@@ -44,6 +45,8 @@ namespace Mpdn.Extensions.Framework.RenderChain
             Height = height;
             Depth = depth;
         }
+
+        #region Comparison Operators
 
         public static bool operator ==(TextureSize a, TextureSize b)
         {
@@ -68,16 +71,38 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return obj is TextureSize && Equals((TextureSize)obj);
         }
 
-        public override int GetHashCode()
+        private IEnumerable<int> CompareTo(TextureSize b)
         {
-            unchecked
-            {
-                var hashCode = Width;
-                hashCode = (hashCode * 397) ^ Height;
-                hashCode = (hashCode * 397) ^ Depth;
-                return hashCode;
-            }
+            yield return Width.CompareTo(b.Width);
+            yield return Height.CompareTo(b.Height);
+
+            if (Is3D || b.Is3D)
+                yield return Depth.CompareTo(b.Depth);
         }
+
+        public static bool operator <(TextureSize a, TextureSize b)
+        {
+            return a.CompareTo(b).All(c => c < 0);
+        }
+
+        public static bool operator >(TextureSize a, TextureSize b)
+        {
+            return a.CompareTo(b).All(c => c > 0);
+        }
+
+        public static bool operator <=(TextureSize a, TextureSize b)
+        {
+            return a.CompareTo(b).All(c => c <= 0);
+        }
+
+        public static bool operator >=(TextureSize a, TextureSize b)
+        {
+            return a.CompareTo(b).All(c => c >= 0);
+        }
+
+        #endregion
+
+        #region Conversions
 
         public static implicit operator TextureSize(Size size)
         {
@@ -92,6 +117,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
         public static implicit operator Vector2(TextureSize size)
         {
             return new Vector2(size.Width, size.Height);
+        }
+
+        #endregion
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Width;
+                hashCode = (hashCode * 397) ^ Height;
+                hashCode = (hashCode * 397) ^ Depth;
+                return hashCode;
+            }
         }
     }
 

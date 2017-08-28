@@ -54,8 +54,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var pass2 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 2;" + fastToggle).Configure(arguments: arguments);
 
                 // Skip if downscaling
-                if (Renderer.TargetSize.Width  <= input.Size().Width 
-                 && Renderer.TargetSize.Height <= input.Size().Height)
+                if (!(Renderer.TargetSize.Width > input.Size())
                     return input;
 
                 ITextureFilter xbr = input

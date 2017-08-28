@@ -71,7 +71,7 @@ namespace Mpdn.Extensions.RenderScripts
                 ITextureFilter H = input, Sh, L, M, R;
                 var targetSize = Renderer.TargetSize;
 
-                if (!IsDownscalingFrom(input))
+                if (!(Renderer.TargetSize > input.Size()))
                     return input;
 
                 var Calc = CompileShader("calc.hlsl");
