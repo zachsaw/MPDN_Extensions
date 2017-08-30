@@ -23,6 +23,25 @@ using SharpDX;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
+    public class ListOfBool : List<bool>
+    {
+        /// <summary>
+        /// Returns whether all elements are true.
+        /// </summary>
+        public bool All
+        {
+            get { return this.All(x => x); }
+        }
+
+        /// <summary>
+        /// Returns whether any element is true.
+        /// </summary>
+        public bool Any
+        {
+            get { return this.Any(x => x); }
+        }
+    }
+
     public struct TextureSize
     {
         public readonly int Width;
@@ -80,24 +99,24 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 yield return Depth.CompareTo(b.Depth);
         }
 
-        public static bool operator <(TextureSize a, TextureSize b)
+        public static ListOfBool operator <(TextureSize a, TextureSize b)
         {
-            return a.CompareTo(b).All(c => c < 0);
+            return (ListOfBool) a.CompareTo(b).Select(c => c < 0);
         }
 
-        public static bool operator >(TextureSize a, TextureSize b)
+        public static ListOfBool operator >(TextureSize a, TextureSize b)
         {
-            return a.CompareTo(b).All(c => c > 0);
+            return (ListOfBool) a.CompareTo(b).Select(c => c > 0);
         }
 
-        public static bool operator <=(TextureSize a, TextureSize b)
+        public static ListOfBool operator <=(TextureSize a, TextureSize b)
         {
-            return a.CompareTo(b).All(c => c <= 0);
+            return (ListOfBool) a.CompareTo(b).Select(c => c <= 0);
         }
 
-        public static bool operator >=(TextureSize a, TextureSize b)
+        public static ListOfBool operator >=(TextureSize a, TextureSize b)
         {
-            return a.CompareTo(b).All(c => c >= 0);
+            return (ListOfBool) a.CompareTo(b).Select(c => c >= 0);
         }
 
         #endregion

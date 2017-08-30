@@ -72,7 +72,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var chromaOffset = composition.ChromaOffset;
 
                 // Fall back to default when downscaling is needed
-                if (!(chromaSize <= targetSize) || chromaSize == targetSize)
+                if ((chromaSize > targetSize).Any || chromaSize == targetSize)
                     return composition;
 
                 Vector2 adjointOffset = -(chromaOffset * lumaSize) / chromaSize;

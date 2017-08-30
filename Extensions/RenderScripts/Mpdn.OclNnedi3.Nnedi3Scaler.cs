@@ -210,7 +210,7 @@ namespace Mpdn.Extensions.RenderScripts
                 }
 
                 var sourceSize = input.Size();
-                if (!(Renderer.TargetSize > sourceSize))
+                if ((Renderer.TargetSize <= sourceSize).Any)
                     return input;
 
                 var yuv = input.ConvertToYuv();

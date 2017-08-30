@@ -150,7 +150,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Diff["oversharp"] = OverSharp;
 
                 // Skip if downscaling
-                if (!(targetSize > inputSize))
+                if ((targetSize <= inputSize).Any)
                     return original;
 
                 // Initial scaling

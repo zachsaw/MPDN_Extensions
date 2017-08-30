@@ -93,7 +93,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var targetSize = composition.TargetSize;
 
                 // Fall back to default when downscaling is needed
-                if (!(chromaSize <= targetSize) || chromaSize == targetSize)
+                if ((chromaSize > targetSize).Any || chromaSize == targetSize)
                     return composition;
 
                 Vector2 offset = composition.ChromaOffset + new Vector2(0.5f, 0.5f);

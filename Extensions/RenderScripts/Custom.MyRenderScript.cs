@@ -52,12 +52,12 @@ namespace Mpdn.RenderScript
                 // Use NEDI once only.
                 // Note: To use NEDI as many times as required to get the image past target size,
                 //       Change the following *if* to *while*
-                if (Renderer.TargetSize > input.Size()) // See TextureSize for other comparer methods
+                if ((Renderer.TargetSize > input.Size()).All) // See TextureSize for other comparer methods
                 {
                     input += new Nedi { AlwaysDoubleImage = true };
                 }
 
-                if (Renderer.TargetSize < input.Size())
+                if ((Renderer.TargetSize < input.Size()).All)
                 {
                     // Use linear light for downscaling
                     input += new ImageProcessor { ShaderFileNames = ToLinear }

@@ -144,7 +144,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var LinearToLab = CompileShader("../Common/LinearToLab.hlsl");
 
                 // Skip if downscaling
-                if (!(targetSize > inputSize))
+                if ((targetSize <= inputSize).Any)
                     return original;
 
                 // Initial scaling

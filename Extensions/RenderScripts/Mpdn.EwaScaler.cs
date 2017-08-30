@@ -78,7 +78,7 @@ namespace Mpdn.Extensions.RenderScripts
             protected override ITextureFilter CreateFilter(ITextureFilter input)
             {
                 var sourceSize = input.Size();
-                if (!(Renderer.TargetSize > sourceSize))
+                if ((Renderer.TargetSize <= sourceSize).Any)
                     return input;
 
                 var targetSize = Renderer.TargetSize;
