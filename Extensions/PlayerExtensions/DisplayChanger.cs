@@ -56,7 +56,6 @@ namespace Mpdn.Extensions.PlayerExtensions
 
             Player.StateChanged += PlayerStateChanged;
             Player.Closed += FormClosed;
-
             foreach (var screen in Screen.AllScreens)
             {
                 m_AllRefreshRates.Add(GetRefreshRate(screen));

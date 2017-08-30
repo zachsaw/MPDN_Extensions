@@ -53,7 +53,7 @@ namespace Mpdn.Extensions.RenderScripts
                     .Configure(arguments: consts, perTextureLinearSampling: new[] { true, false });
 
                 ITextureFilter yuv = input.ConvertToYuv();
-                var inputsize = yuv.Output.Size;
+                var inputsize = yuv.Size();
 
                 var deband = yuv;
                 double factor = 2.0;// 0.5 * Math.Sqrt(5) + 0.5;

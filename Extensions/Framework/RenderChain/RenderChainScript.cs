@@ -70,9 +70,9 @@ namespace Mpdn.Extensions.Framework.RenderChain
             DisposeHelper.Dispose(ref m_SourceFilter);
             m_SourceFilter = new VideoSourceFilter(this);
 
-            if (Renderer.InputFormat.IsYuv() 
+            if (Renderer.InputFormat.IsYuv()
                 && (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height))
-                return new InternalChromaScaler(m_SourceFilter).MakeChromaFilter(new YSourceFilter(), new ChromaSourceFilter());
+                return new CompositionFilter(new YSourceFilter(), new ChromaSourceFilter(), fallback: m_SourceFilter);
 
             return m_SourceFilter;
         }

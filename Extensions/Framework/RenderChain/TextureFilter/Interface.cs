@@ -37,8 +37,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         ITextureFilter Chroma { get; }
         TextureSize TargetSize { get; }
         Vector2 ChromaOffset { get; }
-
-        ICompositionFilter Rebuild(IChromaScaler chromaScaler = null, TextureSize? targetSize = null, Vector2? chromaOffset = null, ICompositionFilter fallback = null);
     }
 
     public interface IShaderFilterSettings<T>
@@ -74,7 +72,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public interface IChromaScaler
     {
-        ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset);
+        ITextureFilter ScaleChroma(ICompositionFilter composition);
     }
 
     #endregion
@@ -233,9 +231,36 @@ namespace Mpdn.Extensions.Framework.RenderChain
         #endregion
     }
 
+    public abstract class ChromaChain : RenderChain, IChromaScaler
+    {
+        public abstract ITextureFilter ScaleChroma(ICompositionFilter composition);
+
+        protected sealed override ITextureFilter CreateFilter(ITextureFilter input)
+        {
+            var composition = input as ICompositionFilter;
+            if (composition == null)
+                return input;
+
+            return ScaleChroma(composition);
+        }
+    }
+
     #endregion
 
     #region Helpers
+
+    public static class TextureFilterHelper
+    {
+        public static TextureSize Size(this IBaseTextureFilter filter)
+        {
+            return filter.Output.Size;
+        }
+
+        public static TextureFormat Format(this IBaseTextureFilter filter)
+        {
+            return filter.Output.Format;
+        }
+    }
 
     public static class TransformationHelper
     {
@@ -268,14 +293,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public static ITextureFilter Convolve(this ITextureFilter<ITexture2D> inputFilter, IScaler convolver, TextureChannels? channels = null, Vector2? offset = null, IScaler upscaler = null, IScaler downscaler = null, TextureFormat ? outputFormat = null)
         {
-            return new ResizeFilter(inputFilter, inputFilter.Output.Size, channels ?? TextureChannels.All, offset ?? Vector2.Zero, upscaler, downscaler, convolver, outputFormat);
+            return new ResizeFilter(inputFilter, inputFilter.Size(), channels ?? TextureChannels.All, offset ?? Vector2.Zero, upscaler, downscaler, convolver, outputFormat);
         }
 
         public static ITextureFilter SetSize(this IFilter<ITextureOutput<ITexture2D>> filter, TextureSize size, bool tagged = false)
         {
+            ITextureFilter textureFilter;
+            if (filter.Size() == size && (textureFilter = filter as ITextureFilter) != null)
+                return textureFilter;
+
             var resizeable = (filter as IResizeableFilter) ?? new ResizeFilter(filter);
             if (tagged)
                 resizeable.EnableTag();
+
             return resizeable.SetSize(size);
         }
 
@@ -287,7 +317,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             private readonly Func<ITextureFilter, ITextureFilter> m_Transformation;
 
             public TransformedResizeableFilter(Func<ITextureFilter, ITextureFilter> transformation, IResizeableFilter inputFilter)
-                : base(inputFilter.Output.Size, inputFilter.Output.Format, inputFilter)
+                : base(inputFilter.Size(), inputFilter.Output.Format, inputFilter)
             {
                 m_InputFilter = inputFilter;
                 m_Transformation = transformation;
@@ -297,7 +327,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             {
                 var result = m_Transformation(m_InputFilter);
 
-                if (m_InputFilter.Output.Size != result.Output.Size)
+                if (m_InputFilter.Size() != result.Size())
                     throw new InvalidOperationException("Transformation is not allowed to change the size.");
 
                 return m_Transformation(m_InputFilter);
@@ -378,25 +408,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             where TTexture : class, IBaseTexture
         {
             return new TextureSourceFilter<TTexture>(texture.GetLease());
-        }
-    }
-
-    public static class ChromaHelper
-    {
-        public static ITextureFilter MakeChromaFilter(this IChromaScaler chromaScaler, ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize? targetSize = null, Vector2? chromaOffset = null)
-        {
-            return new CompositionFilter(lumaInput, chromaInput, chromaScaler, targetSize, chromaOffset);
-        }
-
-        public static ITextureFilter MakeChromaFilter<TChromaScaler>(this TChromaScaler scaler, ITextureFilter input)
-            where TChromaScaler : RenderChain, IChromaScaler
-        {
-            var compositionFilter = input as ICompositionFilter;
-            if (compositionFilter == null)
-                return input;
-
-            return compositionFilter
-                .Rebuild(scaler, fallback: compositionFilter);
         }
     }
 

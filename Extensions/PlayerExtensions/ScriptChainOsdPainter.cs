@@ -158,9 +158,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static string GetInternalScalerDesc()
         {
-            ProcessTag tag = new EmptyTag();
-            VideoSourceFilter.InsertScaleDescription(tag, Renderer.TargetSize);
-            return tag.CreateString();
+            return String.Join("\n", VideoSourceFilter.ScaleDescription(Renderer.TargetSize));
         }
     }
 

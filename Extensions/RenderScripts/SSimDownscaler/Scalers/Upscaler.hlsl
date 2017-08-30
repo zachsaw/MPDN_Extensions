@@ -18,17 +18,17 @@
 #ifndef Initialized
 	sampler s0:	register(s0);
 	float4 p0 : register(c0);
-	float2 p1 : register(c1);
+	float4 p1 : register(c1);
 	float4 size0 : register(c2);
 
 	#define Initialized 1
 #endif
 
-#define dxdy (p1.xy)
+#define dxdy (OutputSize.xy)
 #define ddxddy (InputSize.zw)
 
 // -- Definitions --
-#define factor ((ddxddy*p0.xy)[axis])
+#define factor ((ddxddy*OutputSize.xy)[axis])
 #define GetFrom(s, pos) (tex2D(s, pos, 0, 0))
 
 // -- Handles --
@@ -38,6 +38,10 @@
 
 #ifndef InputSize
 	#define InputSize size0
+#endif
+
+#ifndef OutputSize
+	#define OutputSize float4(p0.xy, p1.xy)
 #endif
 
 #ifndef axis
@@ -81,8 +85,8 @@ OutputFormat EntryPoint(float2 tex : TEXCOORD0
 #endif
 ) : COLOR{
     // Calculate bounds
-	int low  = floor(tex * InputSize.xy - 0.5*taps - (offset) + 0.5)[axis];
-	int high = floor(tex * InputSize.xy + 0.5*taps - (offset) + 0.5)[axis];
+	int low  = ceil (tex * InputSize.xy - 0.5*taps - (offset) - 0.5)[axis];
+	int high = floor(tex * InputSize.xy + 0.5*taps - (offset) - 0.5)[axis];
 
 	float W = 0;
 	AverageFormat avg = 0;
@@ -90,14 +94,14 @@ OutputFormat EntryPoint(float2 tex : TEXCOORD0
     Initialization;
 
 	#ifndef maxtaps
-    	int maxtaps = high - low;
+    	int maxtaps = high + 1 - low;
     	[loop]
     #else
     	[unroll]
     #endif
     for (int k = 0; k < maxtaps; k++) {
-		pos[axis] = ddxddy[axis] * (k + low + 0.5);
-		float rel = (pos[axis] - tex[axis])*InputSize[axis] + (offset)[axis];
+		pos[axis] = ddxddy[axis] * (k + low - (offset)[axis] + 0.5);
+		float rel = (pos[axis] - tex[axis])*InputSize[axis];
 		float w = Kernel(rel);
 		
 		avg += w*(Get(pos));

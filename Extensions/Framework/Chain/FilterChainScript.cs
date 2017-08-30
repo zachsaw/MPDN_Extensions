@@ -36,7 +36,6 @@ namespace Mpdn.Extensions.Framework.Chain
 
         private IFilter<TOutput> m_SourceFilter;
         private IFilter<TOutput> m_Filter;
-        private ProcessTag m_Tag;
 
         private readonly Chain<TFilter> m_Chain;
 
@@ -50,14 +49,31 @@ namespace Mpdn.Extensions.Framework.Chain
 
         public void Update()
         {
+            UpdateFilter();
+
+            UpdateStatus();
+        }
+
+        public void UpdateFilter()
+        {
             var oldFilter = m_Filter;
+            DisposeHelper.Dispose(ref m_SourceFilter);
+
             try
             {
-                DisposeHelper.Dispose(ref m_SourceFilter);
+                var input = MakeInitialFilter()
+                    .MakeTagged();
 
-                m_Filter = CreateOutputFilter();
-
-                UpdateStatus();
+                m_Filter = m_Chain
+                    .Process(input)
+                    .Apply(FinalizeOutput)
+                    .Compile()
+                    .InitializeFilter();
+            }
+            catch (Exception ex)
+            {
+                m_Filter = HandleError(ex).Compile().InitializeFilter();
+                m_Filter.AddLabel(ErrorMessage(ex));
             }
             finally
             {
@@ -67,7 +83,7 @@ namespace Mpdn.Extensions.Framework.Chain
 
         private void UpdateStatus()
         {
-            Status = m_Tag != null ? m_Tag.CreateString() : "Status Invalid";
+            Status = m_Filter != null ? m_Filter.ProcessData.CreateString() : "Status Invalid";
         }
 
         public virtual bool Execute()
@@ -93,27 +109,6 @@ namespace Mpdn.Extensions.Framework.Chain
         #endregion
 
         #region Error Handling
-
-        public IFilter<TOutput> CreateOutputFilter()
-        {
-            try
-            {
-                var input = MakeInitialFilter()
-                    .MakeTagged();
-
-                return m_Chain
-                    .Process(input)
-                    .Apply(FinalizeOutput)
-                    .GetTag(out m_Tag)
-                    .Compile()
-                    .InitializeFilter();
-            }
-            catch (Exception ex)
-            {
-                m_Tag = ErrorMessage(ex);
-                return HandleError(ex).Compile().InitializeFilter();
-            }
-        }
 
         protected static Exception InnerMostException(Exception e)
         {

@@ -36,7 +36,7 @@ namespace Mpdn.Extensions.Framework.Chain
             if (output == input)
                 return input;
 
-            output.AddJunction(Description, input);
+            output.AddLabel(Description, start: input);
 
             return output;
         }

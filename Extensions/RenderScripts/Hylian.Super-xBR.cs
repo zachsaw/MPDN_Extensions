@@ -54,8 +54,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var pass2 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 2;" + fastToggle).Configure(arguments: arguments);
 
                 // Skip if downscaling
-                if (Renderer.TargetSize.Width  <= input.Output.Size.Width 
-                 && Renderer.TargetSize.Height <= input.Output.Size.Height)
+                if ((Renderer.TargetSize <= input.Size()).Any)
                     return input;
 
                 ITextureFilter xbr = input
@@ -64,7 +63,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 return ThirdPass
                     ? (ITextureFilter) xbr.Apply(pass2)
-                    : xbr.Resize(xbr.Output.Size, offset: new Vector2(0.5f, 0.5f));
+                    : xbr.Resize(xbr.Size(), offset: new Vector2(0.5f, 0.5f));
             }
 
             protected override string ShaderPath

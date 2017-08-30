@@ -131,7 +131,7 @@ namespace Mpdn.Extensions.RenderScripts
                 ITextureFilter result;
 
                 // Calculate Sizes
-                var inputSize = original.Output.Size;
+                var inputSize = original.Size();
                 var targetSize = TargetSize();
 
                 // Compile Shaders
@@ -150,7 +150,7 @@ namespace Mpdn.Extensions.RenderScripts
                 Diff["oversharp"] = OverSharp;
 
                 // Skip if downscaling
-                if (targetSize.Width <= inputSize.Width || targetSize.Height <= inputSize.Height)
+                if ((targetSize <= inputSize).Any)
                     return original;
 
                 // Initial scaling

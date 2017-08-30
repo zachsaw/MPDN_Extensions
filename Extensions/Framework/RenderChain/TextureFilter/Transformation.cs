@@ -185,14 +185,14 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         {
             var result = new ResizeFilter(InputFilter, targetSize, m_Channels, m_Offset, m_Upscaler, m_Downscaler, m_Convolver, Output.Format);
             if (m_Tagged) result.EnableTag();
-            return result.Tagged(Tag);
+            return result;
         }
 
         protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
         {
             if (InputFilter.Output.Size == m_OutputSize && m_Convolver == null)
                 return InputFilter;
-            return this.Tagged(new StringTag(Description(), m_Tagged ? 0 : 10));
+            return this.Labeled(Description(), m_Tagged ? 0 : 10);
         }
 
         public string Description()

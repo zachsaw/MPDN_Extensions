@@ -31,7 +31,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
         { }
 
         public ShaderFilter(IShaderHandle shader, params IFilter<ITextureOutput<IBaseTexture>>[] inputFilters)
-            : base(shader.CalcSize(inputFilters.Select(f => f.Output.Size).ToList()), shader.OutputFormat, inputFilters)
+            : base(shader.CalcSize(inputFilters.Select(f => f.Size()).ToList()), shader.OutputFormat, inputFilters)
         {
             Shader = shader;
         }

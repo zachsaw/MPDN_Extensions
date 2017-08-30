@@ -193,3 +193,6 @@ ModelManifest.xml
 
 # MPDN
 MPDN/
+
+# Ignore Visual Studio temp files
+.vs/

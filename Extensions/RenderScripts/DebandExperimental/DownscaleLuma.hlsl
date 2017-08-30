@@ -1,4 +1,4 @@
-﻿// This file is a part of MPDN Extensions.
+// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -14,17 +14,17 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-using System.Collections.Generic;
+#define main Downscale
+#include "Downscale.hlsl"
+#undef main
 
-namespace Mpdn.Extensions.Framework.Filter
-{
-    public class SourceFilter<TOutput> : Filter<IFilterOutput, TOutput>
-        where TOutput : class, IFilterOutput
-    {
-        public SourceFilter(TOutput output)
-           : base(output)
-        { }
+sampler s1   : register(s1);
 
-        protected override void Render(IList<IFilterOutput> inputs) { }
-    }
+float4 main(float2 tex : TEXCOORD0) : COLOR{
+	float4 result = Downscale(tex);
+
+	// Copy Chroma
+	result.yz = tex2D(s1, tex).yz;
+
+	return result;
 }

@@ -100,7 +100,7 @@ namespace Mpdn.Extensions.RenderScripts
 
             private ITextureFilter DownscaleAndDiff(ITextureFilter input, ITextureFilter original, TextureSize targetSize)
             {
-                var HDownscaler = CompileShader("../SSimDownscaler/Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
+                var HDownscaler = CompileShader("Downscale.hlsl", macroDefinitions: "axis = 0;")
                     .Configure(transform: s => new TextureSize(targetSize.Width, s.Height));
                 var VDownscaleAndDiff = CompileShader("DownscaleAndDiff.hlsl", macroDefinitions: "axis = 1;")
                     .Configure(transform: s => new TextureSize(s.Width, targetSize.Height))
@@ -118,7 +118,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var HQDownscaler = (IScaler)new Bicubic(0.75f, false);
 
                 // Calculate Sizes
-                var inputSize = original.Output.Size;
+                var inputSize = original.Size();
                 var targetSize = TargetSize();
 
                 string macroDefinitions = "";
@@ -144,7 +144,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var LinearToLab = CompileShader("../Common/LinearToLab.hlsl");
 
                 // Skip if downscaling
-                if (targetSize.Width <= inputSize.Width && targetSize.Height <= inputSize.Height)
+                if ((targetSize <= inputSize).Any)
                     return original;
 
                 // Initial scaling
@@ -158,7 +158,7 @@ namespace Mpdn.Extensions.RenderScripts
                     result = initial.SetSize(targetSize).Apply(GammaToLinear);
                 }
                 else
-                    result = original.Apply(GammaToLinear).Resize(targetSize);
+                    result = original.Apply(GammaToLinear).Resize(targetSize, tagged: true);
 
                 for (int i = 1; i <= Passes; i++)
                 {

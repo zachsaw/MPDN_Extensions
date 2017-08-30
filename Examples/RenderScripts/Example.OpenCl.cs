@@ -46,7 +46,7 @@ namespace Mpdn.Extensions.RenderScripts
                 var blueTint = CompileClKernel("BlueTint.cl", "BlueTint")
                     .Configure(arguments: new[] {0.25f, 0.5f, 0.75f});
 
-                var outputSize = sourceFilter.Output.Size;
+                var outputSize = sourceFilter.Size();
                 return new ClKernelFilter(blueTint, new[] {outputSize.Width, outputSize.Height}, sourceFilter);
             }
         }

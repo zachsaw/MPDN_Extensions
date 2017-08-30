@@ -24,7 +24,7 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.NNedi3.Chroma
     {
-        public class NNedi3Chroma : RenderChain, IChromaScaler
+        public class NNedi3Chroma : ChromaChain
         {
             #region Settings
 
@@ -46,11 +46,6 @@ namespace Mpdn.Extensions.RenderScripts
             private static readonly int[] s_NeuronCount = {16, 32, 64, 128, 256};
             private static readonly string[] s_CodePath = {"A", "B", "C", "D", "E"};
 
-            protected override ITextureFilter CreateFilter(ITextureFilter input)
-            {
-                return this.MakeChromaFilter(input);
-            }
-
             public override string Description
             {
                 get
@@ -71,19 +66,19 @@ namespace Mpdn.Extensions.RenderScripts
                     Structured ? "_S" : string.Empty, u ? "u" : "v");
             }
 
-            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
+            public override ITextureFilter ScaleChroma(ICompositionFilter composition)
             {
                 if (!Renderer.IsDx11Avail)
                 {
                     Renderer.FallbackOccurred = true; // Warn user via player stats OSD
-                    return null; // DX11 is not available; fallback
+                    return composition; // DX11 is not available; fallback
                 }
 
-                var lumaSize = lumaInput.Output.Size;
-                var chromaSize = chromaInput.Output.Size;
+                var lumaSize = composition.Luma.Size();
+                var chromaSize = composition.Chroma.Size();
 
-                if (lumaSize.Width != 2*chromaSize.Width || lumaSize.Height != 2*chromaSize.Height)
-                    return null; // Chroma shouldn't be doubled; fallback
+                if (lumaSize.Width != 2 * chromaSize.Width || lumaSize.Height != 2 * chromaSize.Height)
+                    return composition; // Chroma shouldn't be doubled; fallback
 
                 Func<TextureSize, TextureSize> transform = s => new TextureSize(2 * s.Height, s.Width);
 
@@ -94,17 +89,17 @@ namespace Mpdn.Extensions.RenderScripts
                 var interleaveU = CompileShader("Interleave.hlsl", macroDefinitions: "CHROMA_U=1").Configure(transform: transform);
                 var interleaveV = CompileShader("Interleave.hlsl", macroDefinitions: "CHROMA_V=1").Configure(transform: transform);
 
-                var uFilter1 = NNedi3Helpers.CreateFilter(shaderUPass1, chromaInput, Neurons1, Structured);
-                var resultU = interleaveU.ApplyTo(chromaInput, uFilter1);
+                var uFilter1 = NNedi3Helpers.CreateFilter(shaderUPass1, composition.Chroma, Neurons1, Structured);
+                var resultU = interleaveU.ApplyTo(composition.Chroma, uFilter1);
                 var uFilter2 = NNedi3Helpers.CreateFilter(shaderUPass2, resultU, Neurons2, Structured);
                 var u = interleaveU.ApplyTo(resultU, uFilter2);
 
-                var vFilter1 = NNedi3Helpers.CreateFilter(shaderVPass1, chromaInput, Neurons1, Structured);
-                var resultV = interleaveV.ApplyTo(chromaInput, vFilter1);
+                var vFilter1 = NNedi3Helpers.CreateFilter(shaderVPass1, composition.Chroma, Neurons1, Structured);
+                var resultV = interleaveV.ApplyTo(composition.Chroma, vFilter1);
                 var vFilter2 = NNedi3Helpers.CreateFilter(shaderVPass2, resultV, Neurons2, Structured);
                 var v = interleaveV.ApplyTo(resultV, vFilter2);
 
-                return lumaInput.MergeWith(u, v).ConvertToRgb();
+                return composition.Luma.MergeWith(u, v).ConvertToRgb();
             }
         }
 

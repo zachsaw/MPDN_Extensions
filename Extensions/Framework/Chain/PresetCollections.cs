@@ -34,19 +34,19 @@ namespace Mpdn.Extensions.Framework.Chain
     }
 
     public class ScriptChain<T, TScript> : PresetCollection<T, TScript>
-        where T : ITagged
+        where T : ITaggedProcess
         where TScript : class, IScript
     {
         public override T Process(T input)
         {
             var result = Options.Aggregate(input, (temp, chain) => temp + chain);
-            result.AddJunction(new StringTag(Description, 10), input);
+            result.AddLabel(Description, 10, input);
             return result;
         }
     }
 
     public class ScriptGroup<T, TScript> : PresetCollection<T, TScript>
-        where T : ITagged
+        where T : ITaggedProcess
         where TScript : class, IScript
     {
         #region Settings
@@ -63,35 +63,29 @@ namespace Mpdn.Extensions.Framework.Chain
             }
         }
 
+        public ScriptGroup()
+        {
+            SelectedIndex = 0;
+        }
+
+        #endregion
+
         [YAXDontSerialize]
         public Preset<T, TScript> SelectedOption
         {
             get { return Options != null ? Options.ElementAtOrDefault(SelectedIndex) ?? Options.LastOrDefault() : null; }
         }
 
-        #endregion
-
-        public ScriptGroup()
-        {
-            SelectedIndex = 0;
-            m_HotkeyGuid = Guid.NewGuid();
-        }
-
-        public int GetPresetIndex(Guid guid)
-        {
-            return Options.FindIndex(o => o.Guid == guid);
-        }
-
         public override T Process(T input)
         {
             var result = (SelectedOption != null ? input + SelectedOption : input);
-            result.AddJunction(new StringTag(Description, 10), input);
+            result.AddLabel(Description, 10, input);
             return result;
         }
 
         #region Hotkey Handling
 
-        private readonly Guid m_HotkeyGuid;
+        private readonly Guid m_HotkeyGuid = Guid.NewGuid();
         private string m_Hotkey;
 
         private void RegisterHotkey()

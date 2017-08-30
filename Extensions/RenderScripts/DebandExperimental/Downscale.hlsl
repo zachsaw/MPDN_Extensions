@@ -14,21 +14,23 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-sampler s0 : register(s0);
-float4  p0 : register(c0);
-float4 args0 : register(c2);
-float4 size0 : register(c3);
-float4 sizeOutput : register(c5);
+sampler s0   : register(s0);
+float4  p0   : register(c0);
+float4 size0 : register(c2);
+float4 args0 : register(c3);
+float4 sizeOutput : register(c4);
+float  iteration  : register(c5);
+
+#define range args0[0]
+#define power args0[1]
 
 #define dxdy size0.zw
 
-#define acuity 255.0//args0[0]
-#define power  args0[1]
-
 #define pi acos(-1)
+#define phi ((1+sqrt(5))/2)
 #define sqr(x) ((x)*(x))
 
-#define factor ((size0.xy / sizeOutput.xy))
+#define factor (size0.xy / sizeOutput.xy)
 
 #define Kernel(x) saturate(0.5 + (0.5 - abs(x)) / factor)
 
@@ -43,15 +45,18 @@ float4 main(float2 tex : TEXCOORD0) : COLOR{
 
 	float totalWeight = 0;
 	float4 total = 0;
+
 	for (int X=-1; X<=1; X++)
 	for (int Y=-1; Y<=1; Y++) {
 		float2 kernel = Kernel(float2(X,Y) - offset);
 		float weight = kernel.x * kernel.y;
+		float4 sample = Get(X,Y);
 
-		total += weight * Get(X,Y);
+		total += weight * sample;
 		totalWeight += weight;
 	}
 	total /= totalWeight;
+	// total.w = totalVar;
 
 	return total;
 }

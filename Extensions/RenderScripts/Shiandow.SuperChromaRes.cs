@@ -26,7 +26,7 @@ namespace Mpdn.Extensions.RenderScripts
 {
     namespace Shiandow.SuperRes
     {
-        public class SuperChromaRes : RenderChain, IChromaScaler
+        public class SuperChromaRes : ChromaChain
         {
             #region Settings
 
@@ -70,18 +70,15 @@ namespace Mpdn.Extensions.RenderScripts
                 return diff;
             }
 
-            protected override ITextureFilter CreateFilter(ITextureFilter input)
+            public override ITextureFilter ScaleChroma(ICompositionFilter composition)
             {
-                var compositionFilter = input as ICompositionFilter;
-                if (compositionFilter == null)
-                    return input;
-
+                ITextureFilter input = composition;
                 if (Prescaler)
-                    input = compositionFilter + (new Bilateral.Bilateral());
+                    input = composition + (new Bilateral.Bilateral());
 
-                var chromaSize = compositionFilter.Chroma.Output.Size;
-                var lumaSize = compositionFilter.Luma.Output.Size;
-                var chromaOffset = compositionFilter.ChromaOffset;
+                var chromaSize = composition.Chroma.Size();
+                var lumaSize = composition.Luma.Size();
+                var chromaOffset = composition.ChromaOffset;
 
                 var downscaler = new Bicubic(0.75f, false);
 
@@ -114,21 +111,16 @@ namespace Mpdn.Extensions.RenderScripts
                     if (LegacyDownscaling)
                     {
                         var lores = hiRes.Resize(chromaSize, TextureChannels.ChromaOnly, adjointOffset, null, downscaler);
-                        diff = Diff.ApplyTo(lores, compositionFilter.Chroma);
+                        diff = Diff.ApplyTo(lores, composition.Chroma);
                     }
                     else
-                    { diff = DownscaleAndDiff(hiRes, compositionFilter.Chroma, chromaSize, adjointOffset); }
+                        diff = DownscaleAndDiff(hiRes, composition.Chroma, chromaSize, adjointOffset);
 
                     // Update result
                     hiRes = SuperRes.ApplyTo(hiRes, diff);
                 }
 
                 return hiRes.ConvertToRgb();
-            }
-
-            public ITextureFilter CreateChromaFilter(ITextureFilter lumaInput, ITextureFilter chromaInput, TextureSize targetSize, Vector2 chromaOffset)
-            {
-                return this.MakeChromaFilter(lumaInput, chromaInput, targetSize, chromaOffset);
             }
         }
 

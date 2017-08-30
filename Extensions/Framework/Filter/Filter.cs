@@ -28,7 +28,7 @@ namespace Mpdn.Extensions.Framework.Filter
         void EnableTag();
     }
 
-    public interface IFilter<out TOutput> : IDisposable, ITagged
+    public interface IFilter<out TOutput> : IDisposable, ITaggedProcess
         where TOutput : class, IFilterOutput
     {
         TOutput Output { get; }
@@ -93,7 +93,8 @@ namespace Mpdn.Extensions.Framework.Filter
 
             m_Output = output;
 
-            m_Tag = new EmptyTag();
+            m_ProcessData = new ProcessData();
+            ProcessData.AddInputs(InputFilters.Select(f => f.ProcessData));
         }
 
         protected abstract void Render(IList<TInput> inputs);
@@ -104,7 +105,6 @@ namespace Mpdn.Extensions.Framework.Filter
         private IFilter<TInput>[] m_CompiledFilters;
 
         private readonly TOutput m_Output;
-        private readonly ProcessTag m_Tag;
 
         private bool m_Updated;
         private bool m_Initialized;
@@ -120,8 +120,6 @@ namespace Mpdn.Extensions.Framework.Filter
                 return m_Output;
             }
         }
-
-        public ProcessTag Tag { get { return m_Tag; } }
 
         public int LastDependentIndex { get; private set; }
 
@@ -150,6 +148,7 @@ namespace Mpdn.Extensions.Framework.Filter
                 filter.Initialize(m_FilterIndex);
             }
 
+            ProcessData.Rank = m_FilterIndex;
             LastDependentIndex++;
             m_Initialized = true;
         }
@@ -169,10 +168,8 @@ namespace Mpdn.Extensions.Framework.Filter
                 .Select(x => x.Compile())
                 .ToArray();
 
-            var inputTag = new HubTag(m_InputFilters.Select(f => f.Tag).ToArray());
-            Tag.AddPrefix(inputTag);
-
             m_CompilationResult = Optimize();
+            ProcessData.AddInputs(new[] { m_CompilationResult.ProcessData });
             return m_CompilationResult;
         }
 
@@ -217,7 +214,17 @@ namespace Mpdn.Extensions.Framework.Filter
 
         #endregion
 
+        #region ITaggedProcess Implementation
+
+        private readonly IProcessData m_ProcessData;
+
+        public IProcessData ProcessData { get { return m_ProcessData; } }
+
+        #endregion
+
         #region Resource Management
+
+        protected bool IsDisposed { get; private set; }
 
         ~Filter()
         {
@@ -232,12 +239,14 @@ namespace Mpdn.Extensions.Framework.Filter
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposing)
+            if (!disposing || IsDisposed)
                 return;
 
             DisposeHelper.DisposeElements(m_InputFilters);
             DisposeHelper.DisposeElements(ref m_CompiledFilters);
             DisposeHelper.Dispose(m_Output);
+
+            IsDisposed = true;
         }
 
         #endregion

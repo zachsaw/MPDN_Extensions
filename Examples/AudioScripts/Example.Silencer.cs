@@ -22,14 +22,9 @@ namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Silencer : AudioFilter
+        public class Silencer : CpuAudioFilter
         {
             private const int CHANNEL_TO_SILENT = 0;
-
-            protected override bool CpuOnly
-            {
-                get { return true; }
-            }
 
             protected override void Process(float[,] samples, short channels, int sampleCount)
             {
