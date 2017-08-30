@@ -118,7 +118,7 @@ namespace Mpdn.Extensions.Framework
         #endregion
     }
 
-    public struct ProcessTag
+    public class ProcessTag
     {
         public string Label { get; private set; }
 
