@@ -15,6 +15,7 @@
 // License along with this library.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
@@ -23,14 +24,21 @@ using SharpDX;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public class ListOfBool : List<bool>
+    public struct Bools : IEnumerable<bool>
     {
+        private readonly IEnumerable<bool> m_Source;
+
+        public Bools(IEnumerable<bool> source)
+        {
+            m_Source = source;
+        }
+
         /// <summary>
         /// Returns whether all elements are true.
         /// </summary>
         public bool All
         {
-            get { return this.All(x => x); }
+            get { return m_Source.All(x => x); }
         }
 
         /// <summary>
@@ -38,7 +46,17 @@ namespace Mpdn.Extensions.Framework.RenderChain
         /// </summary>
         public bool Any
         {
-            get { return this.Any(x => x); }
+            get { return m_Source.Any(x => x); }
+        }
+
+        public IEnumerator<bool> GetEnumerator()
+        {
+            return m_Source.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 
@@ -99,24 +117,24 @@ namespace Mpdn.Extensions.Framework.RenderChain
                 yield return Depth.CompareTo(b.Depth);
         }
 
-        public static ListOfBool operator <(TextureSize a, TextureSize b)
+        public static Bools operator <(TextureSize a, TextureSize b)
         {
-            return (ListOfBool) a.CompareTo(b).Select(c => c < 0);
+            return new Bools(a.CompareTo(b).Select(c => c < 0));
         }
 
-        public static ListOfBool operator >(TextureSize a, TextureSize b)
+        public static Bools operator >(TextureSize a, TextureSize b)
         {
-            return (ListOfBool) a.CompareTo(b).Select(c => c > 0);
+            return new Bools(a.CompareTo(b).Select(c => c > 0));
         }
 
-        public static ListOfBool operator <=(TextureSize a, TextureSize b)
+        public static Bools operator <=(TextureSize a, TextureSize b)
         {
-            return (ListOfBool) a.CompareTo(b).Select(c => c <= 0);
+            return new Bools(a.CompareTo(b).Select(c => c <= 0));
         }
 
-        public static ListOfBool operator >=(TextureSize a, TextureSize b)
+        public static Bools operator >=(TextureSize a, TextureSize b)
         {
-            return (ListOfBool) a.CompareTo(b).Select(c => c >= 0);
+            return new Bools(a.CompareTo(b).Select(c => c >= 0));
         }
 
         #endregion
