@@ -14,268 +14,46 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
+using Shiandow.Lending;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Mpdn.Extensions.Framework.Filter
 {
-    using IBaseFilter = IFilter<IFilterOutput>;
+    using static FilterBaseHelper;
 
-    public interface ITaggableFilter<out TOutput> : IFilter<TOutput>
-        where TOutput : class, IFilterOutput
+    public interface IFilter<out TOutput, out TValue> : IFilterBase<IFilterOutput<TOutput, TValue>>, IFilterDescription<TOutput>
     {
-        void EnableTag();
+        new TOutput Output { get; }
     }
 
-    public interface IFilter<out TOutput> : IDisposable, ITaggedProcess
-        where TOutput : class, IFilterOutput
+    public class Filter<TOutput, TValue> : FilterBase<IFilterOutput<TOutput, TValue>>, IFilter<TOutput, TValue>
     {
-        TOutput Output { get; }
+        new public TOutput Output { get { return base.Output.Output; } }
 
-        int LastDependentIndex { get; }
-        void Render();
-        void Reset();
-        void Initialize(int time = 1);
-        IFilter<TOutput> Compile();
-    }
-
-    public interface IFilterOutput : IDisposable
-    {
-        void Initialize();
-        void Allocate();
-        void Deallocate();
-    }
-
-    public abstract class FilterOutput : IFilterOutput
-    {
-        public virtual void Initialize() { }
-
-        public abstract void Allocate();
-
-        public abstract void Deallocate();
-
-        #region Resource Management
-
-        ~FilterOutput()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            Deallocate();
-        }
-
-        #endregion
-    }
-
-    public abstract class Filter<TInput, TOutput> : IFilter<TOutput>
-        where TOutput : class, IFilterOutput
-        where TInput : class, IFilterOutput
-    {
-        protected Filter(TOutput output, params IFilter<TInput>[] inputFilters)
-        {
-            if (inputFilters == null || inputFilters.Any(f => f == null))
-            {
-                throw new ArgumentNullException("inputFilters");
-            }
-
-            m_Initialized = false;
-            m_CompilationResult = null;
-            m_InputFilters = inputFilters;
-
-            m_Output = output;
-
-            m_ProcessData = new ProcessData();
-            ProcessData.AddInputs(InputFilters.Select(f => f.ProcessData));
-        }
-
-        protected abstract void Render(IList<TInput> inputs);
-
-        #region IFilter Implementation
-
-        private readonly IFilter<TInput>[] m_InputFilters;
-        private IFilter<TInput>[] m_CompiledFilters;
-
-        private readonly TOutput m_Output;
-
-        private bool m_Updated;
-        private bool m_Initialized;
-        private int m_FilterIndex;
-        private IFilter<TOutput> m_CompilationResult;
-
-        public IFilter<TInput>[] InputFilters { get { return m_CompiledFilters ?? m_InputFilters; } }
-
-        public TOutput Output
-        {
-            get
-            {
-                return m_Output;
-            }
-        }
-
-        public int LastDependentIndex { get; private set; }
-
-        public void Initialize(int time = 1)
-        {
-            LastDependentIndex = time;
-
-            if (m_Initialized)
-                return;
-
-            if (m_CompilationResult != this)
-                throw new InvalidOperationException("Uncompiled Filter.");
-
-            foreach (var f in InputFilters)
-            {
-                f.Initialize(LastDependentIndex);
-                LastDependentIndex = f.LastDependentIndex;
-            }
-
-            Initialize();
-
-            m_FilterIndex = LastDependentIndex;
-
-            foreach (var filter in InputFilters)
-            {
-                filter.Initialize(m_FilterIndex);
-            }
-
-            ProcessData.Rank = m_FilterIndex;
-            LastDependentIndex++;
-            m_Initialized = true;
-        }
-
-        // Called if the filter is actually used, but before it is used.
-        protected virtual void Initialize()
-        {
-            Output.Initialize();
-        }
-
-        public IFilter<TOutput> Compile()
-        {
-            if (m_CompilationResult != null)
-                return m_CompilationResult;
-
-            m_CompiledFilters = m_InputFilters
-                .Select(x => x.Compile())
-                .ToArray();
-
-            m_CompilationResult = Optimize();
-            ProcessData.AddInputs(new[] { m_CompilationResult.ProcessData });
-            return m_CompilationResult;
-        }
-
-        protected virtual IFilter<TOutput> Optimize()
-        {
-            return this;
-        }
-
-        public void Render()
-        {
-            if (m_Updated)
-                return;
-
-            m_Updated = true;
-
-            foreach (var filter in InputFilters)
-            {
-                filter.Render();
-            }
-
-            var inputs =
-                InputFilters
-                    .Select(f => f.Output)
-                    .ToList();
-
-            Output.Allocate();
-
-            Render(inputs);
-
-            foreach (var filter in InputFilters.Where(filter => filter.LastDependentIndex <= m_FilterIndex))
-            {
-                filter.Reset();
-            }
-        }
-
-        public virtual void Reset()
-        {
-            m_Updated = false;
-
-            Output.Deallocate();
-        }
-
-        #endregion
-
-        #region ITaggedProcess Implementation
-
-        private readonly IProcessData m_ProcessData;
-
-        public IProcessData ProcessData { get { return m_ProcessData; } }
-
-        #endregion
-
-        #region Resource Management
-
-        protected bool IsDisposed { get; private set; }
-
-        ~Filter()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposing || IsDisposed)
-                return;
-
-            DisposeHelper.DisposeElements(m_InputFilters);
-            DisposeHelper.DisposeElements(ref m_CompiledFilters);
-            DisposeHelper.Dispose(m_Output);
-
-            IsDisposed = true;
-        }
-
-        #endregion
+        public Filter(IFilterBase<IFilterOutput<TOutput, TValue>> filterBase)
+            : base(filterBase)
+        { }
     }
 
     public static class FilterHelper
     {
-        public static TFilter InitializeFilter<TFilter>(this TFilter filter)
-            where TFilter: IBaseFilter
+        public static IFilter<A,X> Return<A,X>(IFilterBase<IFilterOutput<A, X>> filterBase)
         {
-            filter.Initialize();
-            return filter;
+            return new Filter<A,X>(filterBase);
         }
 
-        public static TOther Apply<TFilter, TOther>(this TFilter filter, Func<TFilter, TOther> map)
-            where TFilter : IBaseFilter
-            where TOther : IBaseFilter
+        public static IFilter<IEnumerable<A>, IEnumerable<X>> Fold<A, X>(this IEnumerable<IFilter<A, X>> filters)
         {
-            return map(filter);
+            return Return(from values in FilterBaseHelper.Fold(filters)
+                          let descriptions = filters.Select(x => x.Output)
+                          select FilterOutputHelper.Return(descriptions, values.Fold()));
         }
 
-        public static TFilter MakeTagged<TFilter>(this TFilter filter)
-            where TFilter : IFilter<IFilterOutput>
+        public static void Extract<X>(this IFilterBase<ILendable<X>> filter, Action<X> callback)
         {
-            var taggableFilter = filter as ITaggableFilter<IFilterOutput>;
-            if (taggableFilter != null)
-                taggableFilter.EnableTag();
-
-            return filter;
+            filter.Output.Extract(callback);
         }
     }
 }

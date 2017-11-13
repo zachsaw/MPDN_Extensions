@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
+using System;
 using System.IO;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Chain.Dialogs;
-using System;
+using Mpdn.Extensions.Framework.RenderChain.Shaders;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 

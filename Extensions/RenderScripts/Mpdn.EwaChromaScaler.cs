@@ -56,16 +56,15 @@ namespace Mpdn.Extensions.RenderScripts
                 CreateWeights(chromaSize, targetSize);
 
                 var offset = composition.ChromaOffset + new Vector2(0.5f, 0.5f);
-                int lobes = TapCount.ToInt()/2;
-                var shader = CompileShader("EwaScaler.hlsl",
-                    macroDefinitions:
-                        string.Format("LOBES = {0}; AR = {1}; CHROMA = 1;",
-                            lobes, AntiRingingEnabled ? 1 : 0))
-                    .Configure(
-                        transform: size => targetSize,
-                        arguments: new[] {AntiRingingStrength, offset.X, offset.Y},
-                        linearSampling: true
-                    );
+                int lobes = TapCount.ToInt() / 2;
+                var shader = new Shader(FromFile("EwaScaler.hlsl",
+                    compilerOptions:
+                        string.Format("LOBES = {0}; AR = {1}; CHROMA = 1;", lobes, AntiRingingEnabled ? 1 : 0)))
+                    {
+                        Transform = size => targetSize,
+                        Arguments = new[] { AntiRingingStrength, offset.X, offset.Y },
+                        LinearSampling = true
+                    };
 
                 var resizedLuma = composition.Luma.SetSize(targetSize, tagged: true);
 

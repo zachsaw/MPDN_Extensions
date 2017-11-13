@@ -21,27 +21,30 @@ using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public abstract class AudioConfigDialog<TFilter> : ScriptConfigDialog<AudioChain<TFilter>> 
-        where TFilter : PinFilter<IAudioOutput>, IAudioFilter, new()
+    public abstract class AudioConfigDialog<TProcess> : ScriptConfigDialog<AudioChain<TProcess>> 
+        where TProcess : class, IAudioProcess, new()
     {
-        new protected TFilter Settings { get { return base.Settings.FilterSettings; } }
+        new protected TProcess Settings { get { return base.Settings.FilterProcess; } }
     }
 
     public interface IAudioChainUi : IAudioScriptUi, IChainUi<IAudioFilter, IAudioScript> { }
 
-    public abstract class AudioChainUi<TFilter> : AudioChainUi<TFilter, ScriptConfigDialog<AudioChain<TFilter>>>
-        where TFilter : PinFilter<IAudioOutput>, IAudioFilter, new()
+    public abstract class AudioChainUi<TProcess> : AudioChainUi<TProcess, ScriptConfigDialog<AudioChain<TProcess>>>
+        where TProcess : class, IAudioProcess, new()
     { }
 
-    public abstract class AudioChainUi<TFilter, TDialog> :
-            GeneralAudioChainUI<AudioChain<TFilter>, TDialog>, 
+    public abstract class AudioChainUi<TProcess, TDialog> :
+            GeneralAudioChainUI<AudioChain<TProcess>, TDialog>, 
             IAudioChainUi
-        where TFilter : PinFilter<IAudioOutput>, IAudioFilter, new()
-        where TDialog : IScriptConfigDialog<AudioChain<TFilter>>, new()
+        where TProcess : class, IAudioProcess, new()
+        where TDialog : IScriptConfigDialog<AudioChain<TProcess>>, new()
     {
-        protected AudioChainUi()
+        public override void Initialize()
         {
+            base.Initialize();
+
             CudafyInitializer.Init();
+            AudioProc.AsyncInitialize();
         }
     }
 

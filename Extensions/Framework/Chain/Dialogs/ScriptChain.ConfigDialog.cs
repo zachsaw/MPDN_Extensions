@@ -19,7 +19,7 @@ using Mpdn.Extensions.Framework.Config;
 namespace Mpdn.Extensions.Framework.Chain.Dialogs
 {
     public partial class ScriptChainDialog<T, TScript> : ScriptChainDialogBase<T, TScript>
-        where T : ITaggedProcess
+        where T : ITagged
         where TScript : class, IScript
     {
         public ScriptChainDialog()
@@ -39,7 +39,7 @@ namespace Mpdn.Extensions.Framework.Chain.Dialogs
     }
 
     public class ScriptChainDialogBase<T, TScript> : ScriptConfigDialog<ScriptChain<T, TScript>> 
-        where T : ITaggedProcess
+        where T : ITagged
         where TScript : class, IScript
     { }
 }

@@ -21,7 +21,10 @@ using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public class SourceAudioOutput : FilterOutput, IAudioOutput
+    using static FilterBaseHelper;
+    using static FilterOutputHelper;
+
+    public class SourceAudioOutput : FilterOutput<IAudioOutput>, IAudioOutput
     {
         private readonly IAudio m_Audio;
 
@@ -45,13 +48,20 @@ namespace Mpdn.Extensions.Framework.AudioChain
             get { return m_Audio.Input; }
         }
 
-        public override void Allocate() { }
+        public IAudioDescription Output { get { return this; } }
 
-        public override void Deallocate() { }
+        protected override IAudioOutput Value { get { return this; } }
+
+        protected override void Allocate() { }
+        protected override void Deallocate() { }
     }
 
-    public class AudioSource : SourceFilter<IAudioOutput>, IAudioFilter
+    public class AudioSource : AudioFilter
     {
-        public AudioSource(IAudio audio) : base(new SourceAudioOutput(audio)) { }
+        public AudioSource(IAudio audio) : this(new SourceAudioOutput(audio)) { }
+
+        private AudioSource(IAudioOutput audioOutput)
+            : base(Return(Return(audioOutput, audioOutput)))
+        { }
     }
 }

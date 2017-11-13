@@ -65,7 +65,7 @@ namespace Mpdn.Extensions.Framework
         {
             get { return 9; }
         }
-
+    
         public static IList<IExtensionUi> Scripts
         {
             get { return RenderScripts.Concat(AudioScripts.Cast<IExtensionUi>()).ToArray(); }

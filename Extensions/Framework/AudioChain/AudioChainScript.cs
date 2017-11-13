@@ -24,8 +24,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
     {
         private IAudio m_Audio;
 
-        public AudioChainScript(Chain<IAudioFilter> chain) : base(chain)
-        { }
+        public AudioChainScript(Chain<IAudioFilter> chain) : base(chain) { }
 
         public void Update(IAudio audio)
         {

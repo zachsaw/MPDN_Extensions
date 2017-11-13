@@ -22,22 +22,22 @@ namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Gargle : CpuAudioFilter
+        public class Gargle : CpuAudioProcess
         {
             private const int GARGLE_RATE = 5;
             private const int SHAPE = 0; // 0=Triangle, 1=Sqaure
 
             private int m_Phase;
 
-            protected override void Process(float[,] samples, short channels, int sampleCount)
+            protected override void Process(IAudioDescription input, float[,] samples, short channels, int sampleCount)
             {
                 // Note: This runs on CPU only (in .NET) but it can just as easily be ported to run on OpenCL
-                GargleSamples(samples, SHAPE == 0);
+                GargleSamples(input, samples, SHAPE == 0);
             }
 
-            private void GargleSamples(float[,] samples, bool triangle)
+            private void GargleSamples(IAudioDescription input, float[,] samples, bool triangle)
             {
-                int period = Input.Format.nSamplesPerSec/GARGLE_RATE;
+                int period = input.Format.nSamplesPerSec/GARGLE_RATE;
 
                 var channels = samples.GetLength(0);
                 var length = samples.GetLength(1);

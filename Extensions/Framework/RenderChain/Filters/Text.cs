@@ -23,7 +23,7 @@ using SharpDX;
 using Color = System.Drawing.Color;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
+namespace Mpdn.Extensions.Framework.RenderChain.Filters
 {
     public class TextFilter : TextureSourceFilter<ITexture2D>, ITextureFilter
     {
@@ -31,9 +31,13 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         private readonly ISourceTexture m_SourceTexture;
 
         public TextFilter(string text)
-            : base(Renderer.CreateTexture(Renderer.TargetSize), true)
+            : this(text, Renderer.CreateTexture(Renderer.TargetSize))
+        { }
+
+        private TextFilter(string text, ISourceTexture texture)
+            : base(texture)
         {
-            m_SourceTexture = (ISourceTexture)Output.Texture;
+            m_SourceTexture = texture;
             DrawText(text);
         }
 
@@ -105,8 +109,8 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
             DisposeHelper.Dispose(ref m_Font);
+            base.Dispose(disposing);
         }
 
         #endregion

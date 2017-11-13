@@ -496,7 +496,6 @@
     <None Include="Extensions\RenderScripts\NNEDI3\Interleave.hlsl" />
     <None Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
-    <None Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
     <None Include="Extensions\RenderScripts\SSimDownscaler\SoftDownscaler.hlsl" />
     <None Include="Extensions\RenderScripts\SSSR\GammaToLinear.hlsl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />

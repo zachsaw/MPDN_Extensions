@@ -20,7 +20,7 @@ using Mpdn.Extensions.Framework.Filter;
 namespace Mpdn.Extensions.Framework.Chain
 {
     public abstract class FilterChain<TFilter> : Chain<TFilter>
-        where TFilter : class, IFilter<IFilterOutput>
+        where TFilter : class, IFilterBase
     {
         protected abstract TFilter CreateFilter(TFilter input);
 

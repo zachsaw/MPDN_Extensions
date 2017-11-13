@@ -24,14 +24,14 @@ namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Gain : AudioFilter
+        public class Gain : AudioProcess
         {
             protected override void OnLoadAudioKernel()
             {
                 Gpu.LoadAudioKernel(typeof (Gain));
             }
 
-            protected override void Process(float[,] samples, short channels, int sampleCount)
+            protected override void Process(IAudioDescription input, float[,] samples, short channels, int sampleCount)
             {
                 const int threadCount = 512;
 

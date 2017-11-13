@@ -20,11 +20,10 @@ using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.Framework.Chain
 {
-    public abstract class FilterChainScript<TFilter, TOutput> : IScript, IDisposable
-        where TFilter : IFilter<TOutput>
-        where TOutput : class, IFilterOutput
+    public abstract class FilterChainScript<TFilter, TValue> : IScript, IDisposable
+        where TFilter : IFilterBase<IFilterOutput<TValue>>
     {
-        protected abstract void OutputResult(TOutput result);
+        protected abstract void OutputResult(TValue result);
 
         protected abstract TFilter MakeInitialFilter();
 
@@ -34,8 +33,8 @@ namespace Mpdn.Extensions.Framework.Chain
 
         #region Implementation
 
-        private IFilter<TOutput> m_SourceFilter;
-        private IFilter<TOutput> m_Filter;
+        private TFilter m_SourceFilter;
+        private TFilter m_Filter;
 
         private readonly Chain<TFilter> m_Chain;
 
@@ -61,18 +60,12 @@ namespace Mpdn.Extensions.Framework.Chain
 
             try
             {
-                var input = MakeInitialFilter()
-                    .MakeTagged();
-
-                m_Filter = m_Chain
-                    .Process(input)
-                    .Apply(FinalizeOutput)
-                    .Compile()
-                    .InitializeFilter();
+                var input = MakeInitialFilter();
+                m_Filter = FinalizeOutput(m_Chain.Process(input));
             }
             catch (Exception ex)
             {
-                m_Filter = HandleError(ex).Compile().InitializeFilter();
+                m_Filter = HandleError(ex);
                 m_Filter.AddLabel(ErrorMessage(ex));
             }
             finally
@@ -83,17 +76,16 @@ namespace Mpdn.Extensions.Framework.Chain
 
         private void UpdateStatus()
         {
-            Status = m_Filter != null ? m_Filter.ProcessData.CreateString() : "Status Invalid";
+            Status = "Status Invalid";
+            if (m_Filter != null)
+                Status = m_Filter.ProcessData.CreateString();
         }
 
         public virtual bool Execute()
         {
             try
             {
-                m_Filter.Render();
-                OutputResult(m_Filter.Output);
-
-                m_Filter.Reset();
+                m_Filter.Extract(OutputResult);
 
                 return true;
             }

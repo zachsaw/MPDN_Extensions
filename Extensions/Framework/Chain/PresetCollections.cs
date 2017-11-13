@@ -34,19 +34,19 @@ namespace Mpdn.Extensions.Framework.Chain
     }
 
     public class ScriptChain<T, TScript> : PresetCollection<T, TScript>
-        where T : ITaggedProcess
+        where T : ITagged
         where TScript : class, IScript
     {
         public override T Process(T input)
         {
-            var result = Options.Aggregate(input, (temp, chain) => temp + chain);
-            result.AddLabel(Description, 10, input);
-            return result;
+            return Options
+                .Aggregate(input, (temp, chain) => temp + chain)
+                .Labeled(Description, 10, input);
         }
     }
 
     public class ScriptGroup<T, TScript> : PresetCollection<T, TScript>
-        where T : ITaggedProcess
+        where T : ITagged
         where TScript : class, IScript
     {
         #region Settings
@@ -78,9 +78,10 @@ namespace Mpdn.Extensions.Framework.Chain
 
         public override T Process(T input)
         {
-            var result = (SelectedOption != null ? input + SelectedOption : input);
-            result.AddLabel(Description, 10, input);
-            return result;
+            return (SelectedOption != null 
+                    ? input + SelectedOption 
+                    : input)
+                .Labeled(Description, 10, input);
         }
 
         #region Hotkey Handling

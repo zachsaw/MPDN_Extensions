@@ -20,18 +20,24 @@ using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 using SharpDX;
 
-namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
+namespace Mpdn.Extensions.Framework.RenderChain.Filters
 {
     public class DefaultChromaScaler : IChromaScaler
     {
+        public static ITextureFilter ScaleChroma(ITextureFilter luma, ITextureFilter chroma, TextureSize targetSize, Vector2 chromaOffset)
+        {
+            var fullSizeChroma = new ResizeFilter(chroma, targetSize, TextureChannels.ChromaOnly, chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+
+            return luma
+                .SetSize(targetSize, tagged: true)
+                .MergeWith(fullSizeChroma)
+                .ConvertToRgb()
+                .Labeled(fullSizeChroma.ScaleDescription.PrependToDescription("Chroma: "));
+        }
+
         public ITextureFilter ScaleChroma(ICompositionFilter composition)
         {
-            var fullSizeChroma = new ResizeFilter(composition.Chroma, composition.TargetSize, TextureChannels.ChromaOnly,
-                composition.ChromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
-
-            return new MergeFilter(composition.Luma.SetSize(composition.TargetSize, tagged: true), fullSizeChroma)
-                .ConvertToRgb()
-                .Labeled(fullSizeChroma.Description().PrependToDescription("Chroma: "));
+            return ScaleChroma(composition.Luma, composition.Chroma, composition.TargetSize, composition.ChromaOffset);
         }
     }
 
@@ -40,17 +46,10 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         public ITextureFilter Luma { get; private set; }
         public ITextureFilter Chroma { get; private set; }
 
-        public TextureSize TargetSize { get { return Target.Size; } }
+        public TextureSize TargetSize { get { return Output.Size; } }
         public Vector2 ChromaOffset { get; private set; }
 
         protected readonly ITextureFilter Fallback;
-
-        protected override IFilter<ITextureOutput<ITexture2D>> Optimize()
-        {
-            return Fallback
-                .SetSize(TargetSize)
-                .Compile();
-        }
 
         public ITextureFilter SetSize(TextureSize outputSize)
         {
@@ -59,13 +58,8 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
         public void EnableTag() { }
 
-        protected override void Render(IList<ITextureOutput<IBaseTexture>> inputs)
-        {
-            throw new NotImplementedException("Uncompiled Filter.");
-        }
-
-        public CompositionFilter(ITextureFilter luma, ITextureFilter chroma, TextureSize? targetSize = null, Vector2? chromaOffset = null, ITextureFilter fallback = null)
-            : base(targetSize ?? (fallback != null ? fallback.Size() : luma.Size()), luma, chroma)
+        private CompositionFilter(ITextureFilter luma, ITextureFilter chroma, ITextureFilter fallback, TextureSize targetSize, Vector2 chromaOffset)
+            : base(fallback ?? DefaultChromaScaler.ScaleChroma(luma, chroma, targetSize, chromaOffset))
         {
             if (luma == null)
                 throw new ArgumentNullException("luma");
@@ -74,9 +68,12 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
 
             Luma = luma;
             Chroma = chroma;
-
-            ChromaOffset = chromaOffset ?? Renderer.ChromaOffset;
-            Fallback = fallback ?? new DefaultChromaScaler().ScaleChroma(this);
         }
+
+        public CompositionFilter(ITextureFilter luma, ITextureFilter chroma, TextureSize? targetSize = null, Vector2? chromaOffset = null, ITextureFilter fallback = null)
+            : this(luma, chroma, fallback, 
+                  targetSize ?? (fallback != null ? fallback.Size() : luma.Size()), 
+                  chromaOffset ?? Renderer.ChromaOffset)
+        { }
     }
 }
