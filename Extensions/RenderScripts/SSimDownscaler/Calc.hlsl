@@ -17,10 +17,9 @@
 sampler sL:	register(s0);
 sampler sM:	register(s1);
 sampler sR:	register(s2);
-float4 p0 : register(c0);
-float2 p1 : register(c1);
-float4 size0 : register(c2);
-float strength : register(c3);
+float4 sizeOutput : register(c0);
+float4 size0 : register(c1);
+float strength : register(c2);
 
 #define Initialized 1
 

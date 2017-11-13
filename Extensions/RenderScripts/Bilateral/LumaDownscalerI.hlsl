@@ -15,7 +15,7 @@
 // License along with this library.
 // 
 // -- Misc --
-float4 args0 : register(c3);
+float4 args0 : register(c2);
 
 #define sqr(x) pow(x, 2)
 #define offset args0.xy

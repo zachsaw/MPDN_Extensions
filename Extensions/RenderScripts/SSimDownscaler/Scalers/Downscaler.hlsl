@@ -17,9 +17,8 @@
 // -- Misc --
 #ifndef Initialized
 	sampler s0:	register(s0);
-	float4 p0 : register(c0);
-	float4 p1 : register(c1);
-	float4 size0 : register(c2);
+	float4 sizeOutput : register(c0);
+	float4 size0 : register(c1);
 
 	#define Initialized 1
 #endif
@@ -41,7 +40,7 @@
 #endif
 
 #ifndef OutputSize
-	#define OutputSize float4(p0.xy, p1.xy)
+	#define OutputSize sizeOutput
 #endif
 
 #ifndef axis

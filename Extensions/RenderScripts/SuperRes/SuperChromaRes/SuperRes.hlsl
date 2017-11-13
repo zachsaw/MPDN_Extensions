@@ -27,22 +27,19 @@
 sampler s0 	  : register(s0);
 sampler sDiff : register(s1);
 
-float4 p0	  : register(c0);
-float2 p1	  : register(c1);
-float4 size1  : register(c2);
-float4 args0  : register(c3);
-float4 args1  : register(c4);
+float4 sizeOutput : register(c0);
+float4 size1  : register(c1);
+float4 args0  : register(c2);
+float4 args1  : register(c3);
 
 // -- Skip threshold --
 #define threshold 1
 #define skip (1==0)//(c0.a < threshold/255.0);
 
 // -- Size handling --
-#define width  (p0[0])
-#define height (p0[1])
 #define chromaSize size1
 
-#define dxdy (p1.xy)
+#define dxdy (sizeOutput.zw)
 #define ddxddy (chromaSize.zw)
 #define chromaOffset (args1.xy)
 

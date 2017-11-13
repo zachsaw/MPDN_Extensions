@@ -15,11 +15,10 @@
 // License along with this library.
 
 sampler s0   : register(s0);
-float4  p0   : register(c0);
-float4 size0 : register(c2);
-float4 args0 : register(c3);
-float4 sizeOutput : register(c4);
-float  iteration  : register(c5);
+float4 size0 : register(c0);
+float4 args0 : register(c1);
+float4 sizeOutput : register(c2);
+float  iteration  : register(c3);
 
 #define range args0[0]
 #define power args0[1]
