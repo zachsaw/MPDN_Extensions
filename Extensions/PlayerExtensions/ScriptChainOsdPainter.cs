@@ -21,7 +21,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
+using Mpdn.Extensions.Framework.RenderChain.Filters;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.PlayerExtensions
@@ -158,7 +158,7 @@ namespace Mpdn.Extensions.PlayerExtensions
 
         private static string GetInternalScalerDesc()
         {
-            return String.Join("\n", VideoSourceFilter.ScaleDescription(Renderer.TargetSize));
+            return String.Join("\n", VideoSourceFilter.ChromaScaleDescription(Renderer.TargetSize), VideoSourceFilter.LumaScaleDescription(Renderer.TargetSize));
         }
     }
 

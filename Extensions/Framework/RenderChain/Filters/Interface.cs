@@ -44,38 +44,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         Vector2 ChromaOffset { get; }
     }
 
-    [Obsolete]
-    public interface IShaderFilterSettings<T>
-        where T : IShaderBase
-    {
-        T Shader { get; set; }
-        bool LinearSampling { get; set; }
-        bool[] PerTextureLinearSampling { get; set; }
-        TransformFunc Transform { get; set; }
-        TextureFormat Format { get; set; }
-        int SizeIndex { get; set; }
-        ArgumentList Arguments { get; set; }
-        ArgumentList.Entry this[string identifier] { get; set; }
-        string Name { get; set; }
-
-        IShaderFilterSettings<T> Configure(
-            bool? linearSampling = null,
-            ArgumentList arguments = null,
-            TransformFunc transform = null,
-            int? sizeIndex = null,
-            TextureFormat? format = null,
-            IEnumerable<bool> perTextureLinearSampling = null,
-            string name = null);
-    }
-
-    /*public interface IManagedTexture<out TTexture> : IDisposable
-        where TTexture : class, IBaseTexture
-    {
-        ITextureOutput<TTexture> GetLease();
-        void RevokeLease();
-        bool Valid { get; }
-    }*/
-
     public interface IManagedTexture<out TTexture> : ILendable<ITextureOutput<TTexture>>
         where TTexture : IBaseTexture
     {

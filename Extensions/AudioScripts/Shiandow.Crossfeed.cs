@@ -19,14 +19,14 @@ using Mpdn.Extensions.Framework.AudioChain;
 
 namespace Mpdn.Extensions.AudioScripts.Shiandow
 {
-    public class Crossfeed : CpuAudioFilter
+    public class Crossfeed : CpuAudioProcess
     {
-        protected override void Process(float[,] samples, short channels, int sampleCount)
+        protected override void Process(IAudioDescription input, float[,] samples, short channels, int sampleCount)
         {
             if (channels != 2)
                 return;
 
-            Apply(samples, Output.Format.nSamplesPerSec);
+            Apply(samples, input.Format.nSamplesPerSec);
         }
         
         const int crossfeedOrder = 16;
