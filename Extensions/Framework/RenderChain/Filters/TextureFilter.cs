@@ -1,4 +1,4 @@
-﻿// This file is a part of MPDN Extensions.
+// This file is a part of MPDN Extensions.
 // https://github.com/zachsaw/MPDN_Extensions
 //
 // This library is free software; you can redistribute it and/or
@@ -14,17 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-using System.Collections.Generic;
+using Mpdn.Extensions.Framework.Filter;
 
-namespace Mpdn.Extensions.Framework.Filter
+namespace Mpdn.Extensions.Framework.RenderChain.Filters
 {
-    public class SourceFilter<TOutput> : Filter<IFilterOutput, TOutput>
-        where TOutput : class, IFilterOutput
+    public class TextureFilter : Filter<ITextureDescription, ITexture2D>, ITextureFilter
     {
-        public SourceFilter(TOutput output)
-           : base(output)
+        public TextureFilter(IFilterBase<IFilterOutput<ITextureDescription, ITexture2D>> filterBase) 
+            : base(filterBase)
         { }
-
-        protected override void Render(IList<IFilterOutput> inputs) { }
     }
 }

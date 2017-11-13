@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
+using Mpdn.Extensions.Framework.RenderChain.Filters;
 using Mpdn.Extensions.RenderScripts.Shiandow.NNedi3.Filters;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -53,12 +53,9 @@ namespace Mpdn.Extensions.RenderScripts
             private static readonly int[] s_NeuronCount = {16, 32, 64, 128, 256};
             private static readonly string[] s_CodePath = {"A", "B", "C", "D", "E"};
 
-            private Nnedi3Filter m_Filter1;
-            private Nnedi3Filter m_Filter2;
-
             private IChromaScaler ChromaScaler
             {
-                get { return ChromaScalers.FirstOrDefault(s => s.Script.Descriptor.Guid == ChromaScalerGuid); }
+                get { return ChromaScalers.FirstOrDefault(s => s.Script.Descriptor.Guid == ChromaScalerGuid) ?? (IChromaScaler)new DefaultChromaScaler(); }
             }
 
             public override string Description
@@ -80,21 +77,17 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Func<TextureSize, TextureSize> transform = s => new TextureSize(2 * s.Height, s.Width);
 
-                var shaderPass1 = LoadShader11(GetShaderFileName(Neurons1));
-                var shaderPass2 = LoadShader11(GetShaderFileName(Neurons2));
-                var interleave = CompileShader("Interleave.hlsl").Configure(transform: transform);
+                var shaderPass1 = GetShader(Neurons1);
+                var shaderPass2 = GetShader(Neurons2);
+                var interleave = new Shader(FromFile("Interleave.hlsl")) { Transform = transform };
 
-                var sourceSize = input.Size();
-
-                if ((Renderer.TargetSize <= sourceSize).Any)
+                if ((Renderer.TargetSize <= input.Size()).Any)
                     return input;
 
                 var yuv = input.ConvertToYuv();
 
-                m_Filter1 = NNedi3Helpers.CreateFilter(shaderPass1, yuv, Neurons1, Structured);
-                var resultY = interleave.ApplyTo(yuv, m_Filter1);
-                m_Filter2 = NNedi3Helpers.CreateFilter(shaderPass2, resultY, Neurons2, Structured);
-                var luma = interleave.ApplyTo(resultY, m_Filter2);
+                var resultY = interleave.ApplyTo(yuv    , shaderPass1.ApplyTo(yuv));
+                var luma    = interleave.ApplyTo(resultY, shaderPass2.ApplyTo(resultY));
 
                 var result = ChromaScaler.ScaleChroma(
                     new CompositionFilter(luma, yuv, targetSize: luma.Size(), chromaOffset: new Vector2(-0.25f, -0.25f)));
@@ -102,10 +95,17 @@ namespace Mpdn.Extensions.RenderScripts
                 return result.Convolve(null, offset: new Vector2(0.5f, 0.5f));
             }
 
-            private string GetShaderFileName(NNedi3Neurons neurons)
+            private NNedi3Shader GetShader(NNedi3Neurons neurons)
             {
-                return string.Format("NNEDI3_{0}_{1}{2}.cso", s_NeuronCount[(int) neurons], s_CodePath[(int) CodePath],
+                var filename = string.Format("NNEDI3_{0}_{1}{2}.cso", 
+                    s_NeuronCount[(int) neurons], 
+                    s_CodePath[(int) CodePath],
                     Structured ? "_S" : string.Empty);
+                return new NNedi3Shader(FromByteCode(filename))
+                {
+                    Neurons = neurons,
+                    Structured = Structured
+                };
             }
         }
 

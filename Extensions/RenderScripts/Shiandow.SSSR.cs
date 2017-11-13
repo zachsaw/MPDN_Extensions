@@ -111,14 +111,17 @@ namespace Mpdn.Extensions.RenderScripts
 
             private ITextureFilter Downscale(ITextureFilter input, ITextureFilter original, TextureSize targetSize)
             {
-                var HDownscaler = CompileShader("./Downscale.hlsl", macroDefinitions: "axis = 0;")
-                    .Configure(
-                        transform: s => new TextureSize(targetSize.Width, s.Height),
-                        format: TextureFormat.Float16);
-                var VDownscaler = CompileShader("./DownscaleII.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(
-                        transform: s => new TextureSize(s.Width, targetSize.Height),
-                        format: TextureFormat.Float16);
+                var HDownscaler = new Shader(FromFile("./Downscale.hlsl", compilerOptions: "axis = 0;"))
+                {
+                    Transform = s => new TextureSize(targetSize.Width, s.Height),
+                    Format = TextureFormat.Float16
+                };
+
+                var VDownscaler = new Shader(FromFile("./DownscaleII.hlsl", compilerOptions: "axis = 1;"))
+                {
+                    Transform = s => new TextureSize(s.Width, targetSize.Height),
+                    Format = TextureFormat.Float16
+                };
 
                 var hMean = HDownscaler.ApplyTo(input);
                 var output = VDownscaler.ApplyTo(hMean, original);
@@ -135,13 +138,13 @@ namespace Mpdn.Extensions.RenderScripts
                 var targetSize = TargetSize();
 
                 // Compile Shaders
-                var SharpDiff = CompileShader("Diff.hlsl", macroDefinitions: "MODE = 0;")
-                    .Configure(format: TextureFormat.Float16);
-                var Diff = CompileShader("Diff.hlsl", macroDefinitions: String.Format("MODE = {0};", Mode == SSSRMode.Sharp ? 0 : 1))
-                    .Configure(format: TextureFormat.Float16);
-                var SuperRes = CompileShader("SuperRes.hlsl");
-                var FinalSuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: "FinalPass = 1;" + (LinearLight ? "LinearLight = 1;" : "" ));
-                var GammaToLinear = CompileShader("GammaToLinear.hlsl");
+                var SharpDiff = new Shader(FromFile("Diff.hlsl", compilerOptions: "MODE = 0;"))
+                    { Format = TextureFormat.Float16 };
+                var Diff = new Shader(FromFile("Diff.hlsl", compilerOptions: String.Format("MODE = {0};", Mode == SSSRMode.Sharp ? 0 : 1)))
+                    { Format = TextureFormat.Float16 };
+                var SuperRes = new Shader(FromFile("SuperRes.hlsl"));
+                var FinalSuperRes = new Shader(FromFile("SuperRes.hlsl", compilerOptions: "FinalPass = 1;" + (LinearLight ? "LinearLight = 1;" : "" )));
+                var GammaToLinear = new Shader(FromFile("GammaToLinear.hlsl"));
 
                 SharpDiff["spread"] = 1 / Locality;
                 SharpDiff["oversharp"] = OverSharp;

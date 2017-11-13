@@ -41,14 +41,14 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void DownscaleAndCalcVar(ITextureFilter input, TextureSize targetSize, out ITextureFilter mean, out ITextureFilter var)
             {
-                var HDownscaler = CompileShader(SoftDownscaling ? "SoftDownscaler.hlsl" : "./Scalers/Downscaler.hlsl", macroDefinitions: "axis = 0;")
-                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
-                var VDownscaler = CompileShader(SoftDownscaling ? "SoftDownscaler.hlsl" : "./Scalers/Downscaler.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.Output.Format);
-                var HVar = CompileShader("DownscaledVarI.hlsl", macroDefinitions: "axis = 0;")
-                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height), format: input.Output.Format);
-                var VVar = CompileShader("DownscaledVarII.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height), format: input.Output.Format);
+                var HDownscaler = new Shader(FromFile(SoftDownscaling ? "SoftDownscaler.hlsl" : "./Scalers/Downscaler.hlsl", compilerOptions: "axis = 0;"))
+                    { Transform = s => new TextureSize(targetSize.Width, s.Height), Format = input.Output.Format };
+                var VDownscaler = new Shader(FromFile(SoftDownscaling ? "SoftDownscaler.hlsl" : "./Scalers/Downscaler.hlsl", compilerOptions: "axis = 1;"))
+                    { Transform = s => new TextureSize(s.Width, targetSize.Height), Format = input.Output.Format };
+                var HVar = new Shader(FromFile("DownscaledVarI.hlsl", compilerOptions: "axis = 0;"))
+                    { Transform = s => new TextureSize(targetSize.Width, s.Height), Format = input.Output.Format };
+                var VVar = new Shader(FromFile("DownscaledVarII.hlsl", compilerOptions: "axis = 1;"))
+                    { Transform = s => new TextureSize(s.Width, targetSize.Height), Format = input.Output.Format };
 
                 var hMean = HDownscaler.ApplyTo(input);
                 mean = VDownscaler.ApplyTo(hMean);
@@ -59,8 +59,8 @@ namespace Mpdn.Extensions.RenderScripts
 
             private void ConvolveAndCalcR(ITextureFilter input, ITextureFilter sh, out ITextureFilter mean, out ITextureFilter r)
             {
-                var Convolver = CompileShader("SinglePassConvolver.hlsl").Configure(format: input.Output.Format);
-                var CalcR = CompileShader("CalcR.hlsl").Configure(format: TextureFormat.Float16);
+                var Convolver = new Shader(FromFile("SinglePassConvolver.hlsl")) { Format = input.Output.Format };
+                var CalcR = new Shader(FromFile("CalcR.hlsl")) { Format = TextureFormat.Float16 };
 
                 mean = input.Apply(Convolver);
                 r = CalcR.ApplyTo(input, mean, sh);
@@ -74,7 +74,7 @@ namespace Mpdn.Extensions.RenderScripts
                 if ((Renderer.TargetSize >= input.Size()).Any)
                     return input;
 
-                var Calc = CompileShader("calc.hlsl");
+                var Calc = new Shader(FromFile("calc.hlsl"));
                 Calc["strength"] = Strength;
 
                 DownscaleAndCalcVar(H, targetSize, out L, out Sh);

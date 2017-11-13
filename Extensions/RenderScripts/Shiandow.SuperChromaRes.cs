@@ -56,13 +56,17 @@ namespace Mpdn.Extensions.RenderScripts
 
             private ITextureFilter DownscaleAndDiff(ITextureFilter input, ITextureFilter original, TextureSize targetSize, Vector2 adjointOffset)
             {
-                var HDownscaler = CompileShader("ChromaDownscaler.hlsl", macroDefinitions: "axis = 0;").Configure(
-                        transform: s => new TextureSize(targetSize.Width, s.Height),
-                        arguments: new ArgumentList { adjointOffset });
-                var VDownscaleAndDiff = CompileShader("DownscaleAndDiff.hlsl", macroDefinitions: "axis = 1;").Configure(
-                        transform: s => new TextureSize(s.Width, targetSize.Height),
-                        arguments: new ArgumentList { adjointOffset },
-                        format: TextureFormat.Float16);
+                var HDownscaler = new Shader(FromFile("ChromaDownscaler.hlsl", compilerOptions: "axis = 0;"))
+                {
+                    Transform = s => new TextureSize(targetSize.Width, s.Height),
+                    Arguments = new ArgumentList { adjointOffset }
+                };
+                var VDownscaleAndDiff = new Shader(FromFile("DownscaleAndDiff.hlsl", compilerOptions: "axis = 1;"))
+                {
+                    Transform = s => new TextureSize(s.Width, targetSize.Height),
+                    Arguments = new ArgumentList { adjointOffset },
+                    Format = TextureFormat.Float16
+                };
 
                 var hMean = HDownscaler.ApplyTo(input);
                 var diff = VDownscaleAndDiff.ApplyTo(hMean, original);
@@ -95,10 +99,10 @@ namespace Mpdn.Extensions.RenderScripts
 
                 var configArgs = yuvConsts.Concat(new[] { chromaOffset.X, chromaOffset.Y }).ToArray();
 
-                var Diff = CompileShader("Diff.hlsl", macroDefinitions: diffMacros)
-                    .Configure(arguments: configArgs, format: TextureFormat.Float16);
-                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: superResMacros)
-                    .Configure(arguments: (new[] { Strength, Softness }).Concat(configArgs).ToArray());
+                var Diff = new Shader(FromFile("Diff.hlsl", compilerOptions: diffMacros))
+                    { Arguments = configArgs, Format = TextureFormat.Float16 };
+                var SuperRes = new Shader(FromFile("SuperRes.hlsl", compilerOptions: superResMacros))
+                    { Arguments = (new[] { Strength, Softness }).Concat(configArgs).ToArray() };
 
                 if (Passes == 0 || Strength == 0.0f) return input;
 

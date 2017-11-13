@@ -17,7 +17,7 @@
 using System.IO;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Chain.Dialogs;
-using Mpdn.Extensions.Framework.RenderChain.Shader;
+using System;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 
@@ -29,7 +29,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
         {
             ShaderCache.Load();
         }
-
+    
         #region Shader Compilation
 
         protected virtual string ShaderPath
@@ -42,59 +42,19 @@ namespace Mpdn.Extensions.Framework.RenderChain
             get { return Path.Combine(ShaderCache.ShaderPathRoot, ShaderPath); }
         }
 
-        protected ShaderFromFile FromFile(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
+        protected ShaderFromFile FromFile(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string compilerOptions = null)
         {
-            return new ShaderFromFile(Path.Combine(ShaderDataFilePath, shaderFileName), profile, entryPoint, macroDefinitions);
+            return DefinitionHelper.FromFile(Path.Combine(ShaderDataFilePath, shaderFileName), profile, entryPoint, compilerOptions);
+        }
+
+        protected ShaderFromString FromString(string shadercode, string profile = "ps_3_0", string entryPoint = "main", string compilerOptions = null)
+        {
+            return DefinitionHelper.FromString(shadercode, profile, entryPoint, compilerOptions);
         }
 
         protected ShaderFromByteCode FromByteCode(string bytecodeFileName)
         {
-            return new ShaderFromByteCode(Path.Combine(ShaderDataFilePath, bytecodeFileName));
-        }
-
-        protected ShaderFromString FromString(string shadercode, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
-        {
-            return new ShaderFromString(shadercode, profile, entryPoint, macroDefinitions);
-        }
-
-        protected IShaderFilterSettings<IShader> CompileShader(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
-        {
-            return ShaderCache.CompileShader(Path.Combine(ShaderDataFilePath, shaderFileName), profile, entryPoint, macroDefinitions).Configure(name: shaderFileName);
-        }
-
-        protected IShaderFilterSettings<IShader11> CompileShader11(string shaderFileName, string profile, string entryPoint = "main", string macroDefinitions = null)
-        {
-            return ShaderCache.CompileShader11(Path.Combine(ShaderDataFilePath, shaderFileName), profile, entryPoint, macroDefinitions).Configure(name: shaderFileName);
-        }
-
-        protected IShaderFilterSettings<IKernel> CompileClKernel(string sourceFileName, string entryPoint, string options = null)
-        {
-            return ShaderCache.CompileClKernel(Path.Combine(ShaderDataFilePath, sourceFileName), entryPoint, options).Configure(name: sourceFileName);
-        }
-
-        protected IShaderFilterSettings<IShader> CompileShaderFromString(string code, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
-        {
-            return Renderer.CompileShaderFromString(code, entryPoint, profile, macroDefinitions).Configure();
-        }
-
-        protected IShaderFilterSettings<IShader11> CompileShader11FromString(string code, string profile, string entryPoint = "main", string macroDefinitions = null)
-        {
-            return Renderer.CompileShader11FromString(code, entryPoint, profile, macroDefinitions).Configure();
-        }
-
-        protected IShaderFilterSettings<IKernel> CompileClKernelFromString(string code, string entryPoint, string options = null)
-        {
-            return Renderer.CompileClKernelFromString(code, entryPoint, options).Configure();
-        }
-
-        protected IShaderFilterSettings<IShader> LoadShader(string shaderFileName)
-        {
-            return ShaderCache.LoadShader(Path.Combine(ShaderDataFilePath, shaderFileName)).Configure(name: shaderFileName);
-        }
-
-        protected IShaderFilterSettings<IShader11> LoadShader11(string shaderFileName)
-        {
-            return ShaderCache.LoadShader11(Path.Combine(ShaderDataFilePath, shaderFileName)).Configure(name: shaderFileName);
+            return DefinitionHelper.FromByteCode(Path.Combine(ShaderDataFilePath, bytecodeFileName));
         }
 
         #endregion

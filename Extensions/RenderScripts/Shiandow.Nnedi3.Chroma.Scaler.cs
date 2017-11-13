@@ -60,10 +60,15 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return typeof (NNedi3).Name; }
             }
 
-            private string GetShaderFileName(NNedi3Neurons neurons, bool u)
+            private NNedi3Shader GetShader(NNedi3Neurons neurons, bool u)
             {
-                return string.Format("NNEDI3_{3}_{0}_{1}{2}.cso", s_NeuronCount[(int) neurons], s_CodePath[(int) CodePath],
+                var filename = string.Format("NNEDI3_{3}_{0}_{1}{2}.cso", s_NeuronCount[(int) neurons], s_CodePath[(int) CodePath],
                     Structured ? "_S" : string.Empty, u ? "u" : "v");
+                return new NNedi3Shader(FromByteCode(filename))
+                {
+                    Neurons = neurons,
+                    Structured = Structured
+                };
             }
 
             public override ITextureFilter ScaleChroma(ICompositionFilter composition)
@@ -74,32 +79,32 @@ namespace Mpdn.Extensions.RenderScripts
                     return composition; // DX11 is not available; fallback
                 }
 
-                var lumaSize = composition.Luma.Size();
-                var chromaSize = composition.Chroma.Size();
+                var luma = composition.Luma;
+                var chroma = composition.Chroma;
+
+                var lumaSize = luma.Size();
+                var chromaSize = chroma.Size();
 
                 if (lumaSize.Width != 2 * chromaSize.Width || lumaSize.Height != 2 * chromaSize.Height)
                     return composition; // Chroma shouldn't be doubled; fallback
 
                 Func<TextureSize, TextureSize> transform = s => new TextureSize(2 * s.Height, s.Width);
 
-                var shaderUPass1 = LoadShader11(GetShaderFileName(Neurons1, true));
-                var shaderUPass2 = LoadShader11(GetShaderFileName(Neurons2, true));
-                var shaderVPass1 = LoadShader11(GetShaderFileName(Neurons1, false));
-                var shaderVPass2 = LoadShader11(GetShaderFileName(Neurons2, false));
-                var interleaveU = CompileShader("Interleave.hlsl", macroDefinitions: "CHROMA_U=1").Configure(transform: transform);
-                var interleaveV = CompileShader("Interleave.hlsl", macroDefinitions: "CHROMA_V=1").Configure(transform: transform);
+                var shaderUPass1 = GetShader(Neurons1, true);
+                var shaderUPass2 = GetShader(Neurons2, true);
+                var shaderVPass1 = GetShader(Neurons1, false);
+                var shaderVPass2 = GetShader(Neurons2, false);
 
-                var uFilter1 = NNedi3Helpers.CreateFilter(shaderUPass1, composition.Chroma, Neurons1, Structured);
-                var resultU = interleaveU.ApplyTo(composition.Chroma, uFilter1);
-                var uFilter2 = NNedi3Helpers.CreateFilter(shaderUPass2, resultU, Neurons2, Structured);
-                var u = interleaveU.ApplyTo(resultU, uFilter2);
+                var interleaveU = new Shader(FromFile("Interleave.hlsl", compilerOptions: "CHROMA_U=1")) { Transform = transform };
+                var interleaveV = new Shader(FromFile("Interleave.hlsl", compilerOptions: "CHROMA_V=1")) { Transform = transform };
 
-                var vFilter1 = NNedi3Helpers.CreateFilter(shaderVPass1, composition.Chroma, Neurons1, Structured);
-                var resultV = interleaveV.ApplyTo(composition.Chroma, vFilter1);
-                var vFilter2 = NNedi3Helpers.CreateFilter(shaderVPass2, resultV, Neurons2, Structured);
-                var v = interleaveV.ApplyTo(resultV, vFilter2);
+                var resultU = interleaveU.ApplyTo(chroma , chroma .Apply(shaderUPass1));
+                var u       = interleaveU.ApplyTo(resultU, resultU.Apply(shaderUPass2));
 
-                return composition.Luma.MergeWith(u, v).ConvertToRgb();
+                var resultV = interleaveV.ApplyTo(chroma , chroma .Apply(shaderVPass1));
+                var v       = interleaveV.ApplyTo(resultV, resultU.Apply(shaderVPass2));
+
+                return luma.MergeWith(u, v).ConvertToRgb();
             }
         }
 

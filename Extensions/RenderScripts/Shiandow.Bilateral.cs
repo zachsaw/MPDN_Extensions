@@ -47,14 +47,18 @@ namespace Mpdn.Extensions.RenderScripts
 
             private ITextureFilter DownscaleLuma(ITextureFilter luma, ITextureFilter chroma, TextureSize targetSize, Vector2 adjointOffset)
             {
-                var HDownscaler = CompileShader("LumaDownscalerI.hlsl", macroDefinitions: "axis = 0;").Configure(
-                        transform: s => new TextureSize(targetSize.Width, s.Height),
-                        arguments: new ArgumentList { adjointOffset },
-                        format: TextureFormat.Float16_RG);
-                var VDownscaler = CompileShader("LumaDownscalerII.hlsl", macroDefinitions: "axis = 1;").Configure(
-                        transform: s => new TextureSize(s.Width, targetSize.Height),
-                        arguments: new ArgumentList { adjointOffset },
-                        format: TextureFormat.Float16);
+                var HDownscaler = new Shader(FromFile("LumaDownscalerI.hlsl", compilerOptions: "axis = 0;"))
+                {
+                    Transform = s => new TextureSize(targetSize.Width, s.Height),
+                    Arguments = new ArgumentList { adjointOffset },
+                    Format = TextureFormat.Float16_RG
+                };
+                var VDownscaler = new Shader(FromFile("LumaDownscalerII.hlsl", compilerOptions: "axis = 1;"))
+                {
+                    Transform = s => new TextureSize(s.Width, targetSize.Height),
+                    Arguments = new ArgumentList { adjointOffset },
+                    Format = TextureFormat.Float16
+                };
 
                 var Y = HDownscaler.ApplyTo(luma);
                 var YUV = VDownscaler.ApplyTo(Y, chroma);
@@ -77,7 +81,7 @@ namespace Mpdn.Extensions.RenderScripts
 
                 Vector2 adjointOffset = -(chromaOffset * lumaSize) / chromaSize;
 
-                var crossBilateral = CompileShader((Mode == BilateralMode.Legacy) ? "CrossBilateral.hlsl" : "KrigBilateral.hlsl");
+                var crossBilateral = new Shader(FromFile((Mode == BilateralMode.Legacy) ? "CrossBilateral.hlsl" : "KrigBilateral.hlsl"));
                 crossBilateral["chromaParams"] = new Vector4(chromaOffset.X, chromaOffset.Y, yuvConsts[0], yuvConsts[1] );
                 crossBilateral["power"] = Strength;
 

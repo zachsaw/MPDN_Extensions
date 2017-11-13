@@ -17,8 +17,10 @@
 using System;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
+using Mpdn.Extensions.Framework.RenderChain.Shaders;
 
-namespace Mpdn.Extensions.Framework.RenderChain.Shader
+// ReSharper disable once CheckNamespace
+namespace Mpdn.Extensions.Framework.RenderChain
 {
     public interface IShaderConfig
     {
@@ -98,7 +100,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
         public int ThreadGroupY { get; set; }
         public int ThreadGroupZ { get; set; }
 
-        public ComputeShader(IShaderDefinition<IShader11> definition, int threadGroupX, int threadGroupY, int threadGroupZ) : base(definition)
+        public ComputeShader(IShaderDefinition<IShader11> definition, int threadGroupX = 32, int threadGroupY = 32, int threadGroupZ = 1) : base(definition)
         {
             ThreadGroupX = threadGroupX;
             ThreadGroupY = threadGroupY;
@@ -123,7 +125,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
         public int[] GlobalWorkSizes { get; set; }
         public int[] LocalWorkSizes { get; set; }
 
-        public ClKernel(IShaderDefinition<IKernel> definition, int[] globalWorkSizes, int[] localWorkSizes) : base(definition)
+        public ClKernel(IShaderDefinition<IKernel> definition, int[] globalWorkSizes, int[] localWorkSizes = null) : base(definition)
         {
             GlobalWorkSizes = globalWorkSizes;
             LocalWorkSizes = localWorkSizes;

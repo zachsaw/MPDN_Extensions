@@ -41,12 +41,16 @@ namespace Mpdn.Extensions.RenderScripts
                 sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
 
                 // apply our blue tint
-                var blueTint =
-                    CompileShader11("BlueTintDirectCompute.hlsl", "cs_5_0")
-                        .Configure(arguments: new[] {0.25f, 0.5f, 0.75f});
                 var width = sourceFilter.Size().Width;
                 var height = sourceFilter.Size().Height;
-                return new DirectComputeFilter(blueTint, width/32 + 1, height/32 + 1, 1, sourceFilter);
+                var blueTint =
+                    new ComputeShader(FromFile("BlueTintDirectCompute.hlsl", "cs_5_0"))
+                    {
+                        ThreadGroupX = width / 32 + 1,
+                        ThreadGroupY = height / 32 + 1,
+                        Arguments = new[] { 0.25f, 0.5f, 0.75f }
+                    };
+                return sourceFilter.Apply(blueTint);
             }
         }
 

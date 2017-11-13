@@ -100,11 +100,13 @@ namespace Mpdn.Extensions.RenderScripts
 
             private ITextureFilter DownscaleAndDiff(ITextureFilter input, ITextureFilter original, TextureSize targetSize)
             {
-                var HDownscaler = CompileShader("Downscale.hlsl", macroDefinitions: "axis = 0;")
-                    .Configure(transform: s => new TextureSize(targetSize.Width, s.Height));
-                var VDownscaleAndDiff = CompileShader("DownscaleAndDiff.hlsl", macroDefinitions: "axis = 1;")
-                    .Configure(transform: s => new TextureSize(s.Width, targetSize.Height))
-                    .Configure(format: TextureFormat.Float16);
+                var HDownscaler = new Shader(FromFile("Downscale.hlsl", compilerOptions: "axis = 0;"))
+                    { Transform = s => new TextureSize(targetSize.Width, s.Height) };
+                var VDownscaleAndDiff = new Shader(FromFile("DownscaleAndDiff.hlsl", compilerOptions: "axis = 1;"))
+                {
+                    Transform = s => new TextureSize(s.Width, targetSize.Height),
+                    Format = TextureFormat.Float16
+                };
 
                 var hMean = HDownscaler.ApplyTo(input);
                 var diff = VDownscaleAndDiff.ApplyTo(hMean, original);
@@ -128,20 +130,20 @@ namespace Mpdn.Extensions.RenderScripts
                     return initial;
 
                 // Compile Shaders
-                var Diff = CompileShader("Diff.hlsl")
-                    .Configure(format: TextureFormat.Float16);
+                var Diff = new Shader(FromFile("Diff.hlsl"))
+                    { Format = TextureFormat.Float16 };
 
-                var SuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: macroDefinitions)
-                    .Configure(arguments: new[] { Strength, Softness });
-                var FinalSuperRes = CompileShader("SuperRes.hlsl", macroDefinitions: macroDefinitions + "FinalPass = 1;")
-                    .Configure(arguments: new[] { Strength });
+                var SuperRes = new Shader(FromFile("SuperRes.hlsl", compilerOptions: macroDefinitions))
+                    { Arguments = new[] { Strength, Softness } };
+                var FinalSuperRes = new Shader(FromFile("SuperRes.hlsl", compilerOptions: macroDefinitions + "FinalPass = 1;"))
+                    { Arguments= new[] { Strength } };
 
-                var GammaToLab = CompileShader("../Common/GammaToLab.hlsl");
-                var LabToGamma = CompileShader("../Common/LabToGamma.hlsl");
-                var LinearToGamma = CompileShader("../Common/LinearToGamma.hlsl");
-                var GammaToLinear = CompileShader("../Common/GammaToLinear.hlsl");
-                var LabToLinear = CompileShader("../Common/LabToLinear.hlsl");
-                var LinearToLab = CompileShader("../Common/LinearToLab.hlsl");
+                var GammaToLab = new Shader(FromFile("../Common/GammaToLab.hlsl"));
+                var LabToGamma = new Shader(FromFile("../Common/LabToGamma.hlsl"));
+                var LinearToGamma = new Shader(FromFile("../Common/LinearToGamma.hlsl"));
+                var GammaToLinear = new Shader(FromFile("../Common/GammaToLinear.hlsl"));
+                var LabToLinear = new Shader(FromFile("../Common/LabToLinear.hlsl"));
+                var LinearToLab = new Shader(FromFile("../Common/LinearToLab.hlsl"));
 
                 // Skip if downscaling
                 if ((targetSize <= inputSize).Any)

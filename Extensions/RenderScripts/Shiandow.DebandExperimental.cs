@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.Framework.RenderChain.Shader;
 using Mpdn.RenderScript;
-using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
+using Mpdn.Extensions.Framework.RenderChain.Filters;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -64,7 +63,7 @@ namespace Mpdn.Extensions.RenderScripts
                 };
                 DownscaleLuma["iteration"] = 0;
 
-                var Deband = new Shader(FromFile("Deband.hlsl", macroDefinitions: PreserveDetail ? "PRESERVE_DETAIL=1" : ""))
+                var Deband = new Shader(FromFile("Deband.hlsl", compilerOptions: PreserveDetail ? "PRESERVE_DETAIL=1" : ""))
                 {
                     Arguments = consts,
                     LinearSampling = false,
