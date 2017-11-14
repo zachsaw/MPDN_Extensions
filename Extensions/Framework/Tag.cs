@@ -15,9 +15,10 @@
 // License along with this library.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+using Shiandow.Merging;
 
 namespace Mpdn.Extensions.Framework
 {
@@ -25,113 +26,6 @@ namespace Mpdn.Extensions.Framework
     {
         IProcessData ProcessData { get; }
     }
-
-    #region Mergeable Data structures
-
-    public interface IMergeable<in T>
-    {
-        void MergeWith(T data);
-    }
-
-    public interface IUnionFind<TData> : IMergeable<IUnionFind<TData>>, IMergeable<TData>
-    {
-        TData Data { get; }
-
-        int Depth { get; set; }
-        IUnionFind<TData> Root { get; set; }
-    }
-
-    public static class MergeableHelper
-    {
-        public static void Add<T>(this IMergeable<IEnumerable<T>> mergeable, T data)
-        {
-            mergeable.MergeWith(new[] { data });
-        }
-    }
-
-    public class MergeableCollection<TValue> : Collection<TValue>, IMergeable<IEnumerable<TValue>>
-    {
-        public void MergeWith(IEnumerable<TValue> data)
-        {
-            foreach (var x in data) Add(x);
-        }
-    }
-
-    public class UnionFind<IData, TData> : IUnionFind<IData>
-        where TData : class, IData, IMergeable<IData>, new()
-    {
-        // Union-find structure augmented with data
-
-        #region IUnionFind Implementation
-       
-        public IData Data { get { return (m_Root == this) ? (m_Data ?? (m_Data = new TData())) : Root.Data; } }
-
-        public int Depth { get; set; }
-
-        public IUnionFind<IData> Root
-        {
-            get
-            {
-                if (m_Root != this)
-                    m_Root = m_Root.Root;
-                return m_Root;
-            }
-
-            set
-            {
-                if (value != m_Root && m_Data != null)
-                {
-                    value.MergeWith(m_Data);
-                    m_Data = null;
-                }
-                m_Root = value;
-            }
-        }
-
-        public void MergeWith(IUnionFind<IData> tree)
-        {
-            MergeRoots(Root, tree.Root);
-        }
-
-        public void MergeWith(IData data)
-        {
-            if (Root != this)
-                Root.MergeWith(data);
-            else
-                m_Data.MergeWith(data);
-        }
-
-        #endregion
-
-        #region Implementation
-
-        private IUnionFind<IData> m_Root;
-
-        private TData m_Data;
-
-        private static void MergeRoots(IUnionFind<IData> x, IUnionFind<IData> y)
-        {
-            if (x == y)
-                return;
-            if (x.Depth < y.Depth)
-                x.Root = y;
-            else if (x.Depth > y.Depth)
-                y.Root = x;
-            else
-            {
-                y.Root = x;
-                x.Depth += 1;
-            }
-        }
-
-        public UnionFind() { m_Root = this; }
-
-        #endregion
-    }
-
-    public class UnionCollection<TValue> : UnionFind<IEnumerable<TValue>, MergeableCollection<TValue>> { }
-
-    #endregion
 
     public struct ProcessInterval
     {
@@ -143,6 +37,8 @@ namespace Mpdn.Extensions.Framework
             Min = low;
             Max = high;
         }
+
+        #region Helper Methods
 
         public bool Contains(ProcessInterval x)
         {
@@ -158,6 +54,14 @@ namespace Mpdn.Extensions.Framework
         {
             return String.Format("({0}, {1}]", Min, Max);
         }
+
+        #endregion
+    }
+
+    public interface IProcessData : IProcessRange, IUnionFind<IEnumerable<IProcessTag>>
+    {
+        void AddInput(IProcessData process);
+        IEnumerable<IProcessData> Enumerate(ISet<IProcessData> visited);
     }
 
     public interface IProcessRange
@@ -165,27 +69,23 @@ namespace Mpdn.Extensions.Framework
         ProcessInterval Range(IDictionary<IProcessRange, ProcessInterval> cache);
     }
 
-    public interface IProcessTag : IProcessRange
+    public interface IProcessTag : IProcessRange 
     {
         string Label { get; }
-        int Verbosity { get; }       
-    }
-
-    public interface IProcessData : IProcessRange, IUnionFind<IEnumerable<IProcessTag>>
-    {
-        int Rank { set; }
-        void AddInput(IProcessData process);
+        int Verbosity { get; }
     }
 
     public class ProcessRange : IProcessRange
     {
         public ProcessRange(IProcessRange start, IProcessRange end)
         {
-            m_Start = start;
-            m_End = end ?? start;
+            if (start == null)
+                throw new ArgumentNullException("start");
+            if (end == null)
+                throw new ArgumentNullException("end");
 
-            if (m_End == null)
-                throw new ArgumentNullException("Either 'start' or 'end' needs to be non-null.");
+            m_Start = start;
+            m_End = end;
         }
 
         #region IProcessRange Implementation
@@ -195,11 +95,10 @@ namespace Mpdn.Extensions.Framework
 
         public ProcessInterval Range(IDictionary<IProcessRange, ProcessInterval> cache)
         {
-            return new ProcessInterval(
-                (m_Start != null)
-                    ? m_Start.Range(cache).Max
-                    : m_End.Range(cache).Min,
-                m_End.Range(cache).Max);
+            ProcessInterval interval = cache.TryGetValue(this, out interval)
+                ? interval
+                : cache[this] = new ProcessInterval(m_Start.Range(cache).Max, m_End.Range(cache).Max);
+            return interval;
         }
 
         #endregion
@@ -211,21 +110,15 @@ namespace Mpdn.Extensions.Framework
 
         public abstract int Verbosity { get; }
 
-        public ProcessTagBase(IProcessRange range)
-        {
-            m_Range = range;
-        }
-
-        public override string ToString() { return Label; }
-
         #region IProcessRange Implementation
 
-        private IProcessRange m_Range;
+        private readonly IProcessRange m_Range;
 
-        public ProcessInterval Range(IDictionary<IProcessRange, ProcessInterval> cache)
-        {
-            return m_Range.Range(cache);
-        }
+        public ProcessTagBase(IProcessRange range) { m_Range = range; }
+
+        public ProcessInterval Range(IDictionary<IProcessRange, ProcessInterval> cache) { return m_Range.Range(cache); } 
+
+        public override string ToString() { return Label; }
 
         #endregion
     }
@@ -282,27 +175,9 @@ namespace Mpdn.Extensions.Framework
 
     public class ProcessData : UnionCollection<IProcessTag>, IProcessData
     {
-        public int Rank { private get; set; }
-
         #region Implementation
 
-        private IList<IProcessData> m_InputProcesses = new List<IProcessData>();
-
-        public ProcessInterval Range(IDictionary<IProcessRange, ProcessInterval> cache)
-        {
-            if (Rank > 0)
-                return new ProcessInterval(Rank, Rank+1);
-
-            ProcessInterval interval;
-            if (cache.TryGetValue(this, out interval))
-                return interval;
-
-            int max = -1;
-            foreach (var process in m_InputProcesses)
-                max = Math.Max(max, process.Range(cache).Max);
-
-            return (cache[this] = new ProcessInterval(max, max));
-        }
+        private readonly IList<IProcessData> m_InputProcesses = new List<IProcessData>();
 
         public void AddInput(IProcessData process)
         {
@@ -313,7 +188,29 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
-        public ProcessData() { Rank = -1; }
+        public ProcessInterval Range(IDictionary<IProcessRange, ProcessInterval> cache)
+        {
+            ProcessInterval interval;
+            if (cache.TryGetValue(this, out interval))
+                return interval;
+            
+            int rank = m_InputProcesses
+                .Select(x => x.Range(cache).Max)
+                .Concat(new[] { -1 })
+                .Max();
+            return cache[this] = new ProcessInterval(rank, rank);
+        }
+
+        public IEnumerable<IProcessData> Enumerate(ISet<IProcessData> visited)
+        {
+            if (visited.Contains(this))
+                yield break;
+
+            visited.Add(this);
+            foreach (var child in m_InputProcesses.SelectMany(p => p.Enumerate(visited)))
+                yield return child;
+            yield return this;
+        }
 
         #endregion
     }
@@ -322,7 +219,7 @@ namespace Mpdn.Extensions.Framework
     {
         public static void AddTag(this ITagged tagged, IProcessTag tag)
         {
-            //tagged.ProcessData.Add(tag);
+            tagged.ProcessData.Add(tag);
         }
 
         public static void AddLabel(this ITagged tagged, string label, int verbosity = 0, ITagged start = null)
@@ -353,12 +250,13 @@ namespace Mpdn.Extensions.Framework
 
         public static string CreateString(this IProcessData process, int verbosity = DefaultVerbosity)
         {
+            var processes = process.Enumerate(new HashSet<IProcessData>()).ToList();
             var tags = process.Data.Where(t => (t.Verbosity <= verbosity)).ToList();
 
-            var rangecache = new Dictionary<IProcessRange, ProcessInterval>();
-            var range = tags.ToDictionary(
-                tag => tag,
-                tag => tag.Range(rangecache));
+            var cache = processes
+                .Select((p, k) => new { Key = (IProcessRange)p, Value = new ProcessInterval(k, k + 1) })
+                .ToDictionary(x => x.Key, x => x.Value);
+            var range = tags.ToDictionary(tag => tag, tag => tag.Range(cache));
 
             tags = (from tag in tags
                     where range[tag].NonEmpty()
