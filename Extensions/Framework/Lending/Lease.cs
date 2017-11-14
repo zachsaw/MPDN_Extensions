@@ -65,14 +65,14 @@ namespace Shiandow.Lending
 
         private struct Folded<TValue> : ILease<IEnumerable<TValue>>
         {
-            public Folded(params ILease<TValue>[] leases)
+            public Folded(IEnumerable<ILease<TValue>> leases)
             {
-                m_Leases = leases;
+                m_Leases = leases.ToList();
             }
 
             #region Lease Implementation
 
-            private readonly ILease<TValue>[] m_Leases;
+            private readonly IReadOnlyList<ILease<TValue>> m_Leases;
 
             public IEnumerable<TValue> Value { get { return m_Leases.Select(x => x.Value).ToList(); } }
 
@@ -116,7 +116,7 @@ namespace Shiandow.Lending
 
         public static ILease<IEnumerable<A>> Fold<A>(this IEnumerable<ILease<A>> leases)
         {
-            return new Folded<A>(leases.ToArray());
+            return new Folded<A>(leases);
         }
 
         #endregion

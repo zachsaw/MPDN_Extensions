@@ -19,7 +19,6 @@ using System.IO;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Chain.Dialogs;
 using Mpdn.Extensions.Framework.RenderChain.Shaders;
-using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain

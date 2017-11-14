@@ -87,20 +87,6 @@ namespace Mpdn.Extensions.Framework.Filter
 
             public IProcessData ProcessData { get { return m_ProcessData; } }
 
-            #region Monad Implementation
-
-            public IFilterBase<TOther> Bind<TOther>(Func<TOutput, IFilterBase<TOther>> f)
-            {
-                return new Bound<TOther>(f(m_Output), this);
-            }
-
-            public void Bind(Action<TOutput> f)
-            {
-                f(m_Output);
-            }
-
-            #endregion
-
             #region Resource Management
 
             ~Just() { Dispose(false); }
@@ -122,14 +108,15 @@ namespace Mpdn.Extensions.Framework.Filter
             #endregion
         }
 
-        private class Bound<TOutput> : Just<IFilterBase<TOutput>>, IFilterBase<TOutput>
+        private struct Bound<TOutput> : IFilterBase<TOutput>
         {
             private readonly IReadOnlyCollection<IFilterBase> m_Inputs;
             private readonly IFilterBase<TOutput> m_Output;
 
             public Bound(IFilterBase<TOutput> output, params IFilterBase[] inputs)
-                : base(output)
             {
+                m_Disposed = false;
+
                 m_Inputs = inputs;
                 m_Output = output;
 
@@ -137,20 +124,27 @@ namespace Mpdn.Extensions.Framework.Filter
                     ProcessData.AddInput(filter.ProcessData);
             }
 
+            #region IFilterBase Implementation
+
+            public IProcessData ProcessData { get { return m_Output.ProcessData; } }
+
             TOutput IFilterBase<TOutput>.Output { get { return m_Output.Output; } }
 
             #region Resource Management
 
-            private bool m_Disposed = false;
+            private bool m_Disposed;
 
-            protected override void Dispose(bool disposing)
+            public void Dispose()
             {
-                if (m_Disposed || !disposing)
+                if (m_Disposed)
                     return;
 
                 m_Disposed = true;
+                m_Output.Dispose();
                 DisposeHelper.DisposeElements(m_Inputs);
             }
+
+            #endregion
 
             #endregion
         }
@@ -190,18 +184,9 @@ namespace Mpdn.Extensions.Framework.Filter
 
         public static IFilterBase<C> SelectMany<A, B, C>(this IFilterBase<A> filter, Func<A, IFilterBase<B>> bind, Func<A, B, C> select)
         {
-            return filter.SelectMany(
-                (a) => bind(a).Select(
-                    (b) => select(a, b)));
-        }
-
-        #endregion
-
-        #region Makers
-
-        public static IFilterBase<A> MakeFilter<A>(this A value)
-        {
-            return Return(value);
+            return filter
+                .Bind((a) => bind(a)
+                .Map((b) => select(a, b)));
         }
 
         #endregion

@@ -47,8 +47,8 @@ namespace Mpdn.Extensions.Framework.Filter
         public static IFilter<IEnumerable<A>, IEnumerable<X>> Fold<A, X>(this IEnumerable<IFilter<A, X>> filters)
         {
             return Return(from values in FilterBaseHelper.Fold(filters)
-                          let descriptions = filters.Select(x => x.Output)
-                          select FilterOutputHelper.Return(descriptions, values.Fold()));
+                          let outputs = filters.Select(x => x.Output)
+                          select FilterOutputHelper.Return(outputs, values.Fold()));
         }
 
         public static void Extract<X>(this IFilterBase<ILendable<X>> filter, Action<X> callback)
