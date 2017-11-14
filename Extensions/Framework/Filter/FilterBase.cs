@@ -186,7 +186,7 @@ namespace Mpdn.Extensions.Framework.Filter
         {
             return filter
                 .Bind((a) => bind(a)
-                .Map((b) => select(a, b)));
+                 .Map((b) => select(a, b)));
         }
 
         #endregion
@@ -195,7 +195,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
         public static IFilterBase<IEnumerable<A>> Fold<A>(this IEnumerable<IFilterBase<A>> filters)
         {
-            return new Bound<IEnumerable<A>>(Return(filters.Select(x => x.Output)), filters.ToArray());
+            return new Bound<IEnumerable<A>>(Return(filters.Select(x => x.Output).ToList()), filters.ToArray());
         }
 
         #endregion

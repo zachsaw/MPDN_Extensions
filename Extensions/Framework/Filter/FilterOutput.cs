@@ -68,16 +68,16 @@ namespace Mpdn.Extensions.Framework.Filter
 
         #endregion
 
-        #region Helper Methods
+        #region Rendering Methods
 
         private static ILease<Y> Do<X, Y>(this ILendable<Y> output, Action<X, Y> render, ILease<X> lease)
         {
-            using (lease)
+            return lease.Extract(value =>
             {
                 var target = output.GetLease();
-                render(lease.Value, target.Value);
+                render(value, target.Value);
                 return target;
-            }
+            });
         }
 
         private static ILendable<Y> Do<X, Y>(this ILendable<Y> output, Action<X, Y> render, ILendable<X> input)
@@ -85,12 +85,9 @@ namespace Mpdn.Extensions.Framework.Filter
             return input.BindLease(lease => new Lazy<Y>(() => output.Do(render, lease)));
         }
 
-        public static IFilterOutput<B, Y> Do<B, X, Y>(this IFilterOutput<B, Y> output, Action<X, Y> render, ILendable<X> input)
-        {
-            return Return(output.Output, output.Do<X,Y>(render, input));
-        }
-
         #endregion
+
+        #region Extension Methods
 
         public static IFilterOutput<A, X> Return<A, X>(A description, ILendable<X> value)
         {
@@ -110,6 +107,11 @@ namespace Mpdn.Extensions.Framework.Filter
                 }));
         }
 
+        public static IFilterOutput<B, Y> Do<B, X, Y>(this IFilterOutput<B, Y> output, Action<X, Y> render, ILendable<X> input)
+        {
+            return Return(output.Output, output.Do<X, Y>(render, input));
+        }
+
         public static IFilterOutput<IEnumerable<A>, IEnumerable<X>> Fold<A,X>(IEnumerable<IFilterOutput<A,X>> outputs)
         {
             return Return(outputs.Select(x => x.Output), outputs.Fold<X>());
@@ -119,5 +121,7 @@ namespace Mpdn.Extensions.Framework.Filter
         {
             LendableHelper.Extract(output, callback);
         }
+
+        #endregion
     }
 }

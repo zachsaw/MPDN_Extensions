@@ -63,18 +63,18 @@ namespace Shiandow.Lending
             #endregion
         }
 
-        private struct Folded<TValue> : ILease<IEnumerable<TValue>>
+        private struct Folded<TValue> : ILease<IReadOnlyList<TValue>>
         {
+            private readonly IReadOnlyList<ILease<TValue>> m_Leases;
+
             public Folded(IEnumerable<ILease<TValue>> leases)
             {
                 m_Leases = leases.ToList();
             }
 
-            #region Lease Implementation
+            #region ILease Implementation
 
-            private readonly IReadOnlyList<ILease<TValue>> m_Leases;
-
-            public IEnumerable<TValue> Value { get { return m_Leases.Select(x => x.Value).ToList(); } }
+            public IReadOnlyList<TValue> Value { get { return m_Leases.Select(x => x.Value).ToList(); } }
 
             public void Dispose()
             {
@@ -109,12 +109,18 @@ namespace Shiandow.Lending
                 callback(lease.Value);
         }
 
+        public static B Extract<A, B>(this ILease<A> lease, Func<A, B> callback)
+        {
+            using (lease)
+                return callback(lease.Value);
+        }
+
         public static void ExtractAll<A>(this IEnumerable<ILease<A>> leases, Action<IEnumerable<A>> action)
         {
             leases.Fold().Extract(action);
         }
 
-        public static ILease<IEnumerable<A>> Fold<A>(this IEnumerable<ILease<A>> leases)
+        public static ILease<IReadOnlyList<A>> Fold<A>(this IEnumerable<ILease<A>> leases)
         {
             return new Folded<A>(leases);
         }

@@ -55,5 +55,10 @@ namespace Mpdn.Extensions.Framework.Filter
         {
             filter.Output.Extract(callback);
         }
+
+        public static Y Extract<X,Y>(this IFilterBase<ILendable<X>> filter, Func<X,Y> callback)
+        {
+            return filter.Output.Extract(callback);
+        }
     }
 }

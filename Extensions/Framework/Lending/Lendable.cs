@@ -143,23 +143,11 @@ namespace Shiandow.Lending
             }
         }
 
-        private class Folded<TValue> : ILendable<IEnumerable<TValue>>
+        private class Folded<TValue> : Deferred<IReadOnlyList<TValue>>
         {
-            private readonly ILendable<TValue>[] m_Lendables;
-
-            public Folded(IEnumerable<ILendable<TValue>> lendables)
-            {
-                m_Lendables = lendables.ToArray();
-            }
-
-            #region ILendable Implementation
-
-            public ILease<IEnumerable<TValue>> GetLease()
-            {
-                return m_Lendables.Select(x => x.GetLease()).Fold();
-            }
-
-            #endregion
+            public Folded(IReadOnlyList<ILendable<TValue>> lendables)
+                : base(() => lendables.Select(x => x.GetLease()).Fold())
+            { }
         }
 
         public class Just<TValue> : ILendable<TValue>
@@ -223,6 +211,11 @@ namespace Shiandow.Lending
             lendable.GetLease().Extract(callback);
         }
 
+        public static B Extract<A, B>(this ILendable<A> lendable, Func<A, B> callback)
+        {
+            return lendable.GetLease().Extract(callback);
+        }
+
         public static void ExtractAll<A>(this IEnumerable<ILendable<A>> lendables, Action<IEnumerable<A>> action)
         {
             lendables
@@ -230,9 +223,9 @@ namespace Shiandow.Lending
                 .ExtractAll(action);
         }
 
-        public static ILendable<IEnumerable<A>> Fold<A>(this IEnumerable<ILendable<A>> lendables)
+        public static ILendable<IReadOnlyList<A>> Fold<A>(this IEnumerable<ILendable<A>> lendables)
         {
-            return new Folded<A>(lendables);
+            return new Folded<A>(lendables.ToList());
         }
 
         #endregion

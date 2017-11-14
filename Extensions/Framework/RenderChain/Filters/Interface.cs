@@ -10,9 +10,6 @@ using SharpDX;
 // ReSharper disable once CheckNamespace
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    using TransformFunc = Func<TextureSize, TextureSize>;
-    using static Shiandow.Lending.LendableHelper;
-
     #region Interfaces
 
     public interface ITaggableFilter
@@ -64,18 +61,16 @@ namespace Mpdn.Extensions.Framework.RenderChain
         private readonly IDictionary<string, Entry> m_Arguments;
 
         public ArgumentList()
-        {
-            m_Arguments = new Dictionary<string, Entry>();
-        }
+            : this(new Dictionary<string, Entry>())
+        { }
+
+        public ArgumentList(IEnumerable<KeyValuePair<string, Entry>> arguments)
+            : this(arguments.ToDictionary(x => x.Key, x => x.Value))
+        { }
 
         public ArgumentList(IDictionary<string, Entry> arguments)
         {
             m_Arguments = arguments;
-        }
-
-        public ArgumentList(ArgumentList argumentList)
-        {
-            m_Arguments = argumentList.ToDictionary(x => x.Key, x => x.Value);
         }
 
         #region Implementation 
@@ -87,13 +82,11 @@ namespace Mpdn.Extensions.Framework.RenderChain
             set { m_Arguments[identifier] = value; }
         }
 
-        public ArgumentList Merge(ArgumentList other)
-        {
-            var dict = new Dictionary<String, Entry>(m_Arguments);
-            foreach (var pair in other)
-                dict[pair.Key] = pair.Value;
+        private int m_NKeys = 0;
 
-            return dict;
+        private string NextKey()
+        {
+            return string.Format("args{0}", m_NKeys++);
         }
 
         public IEnumerator<KeyValuePair<string, Entry>> GetEnumerator()
@@ -104,13 +97,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        private int m_NKeys = 0;
-
-        private string NextKey()
-        {
-            return string.Format("args{0}", m_NKeys++);
         }
 
         #endregion
@@ -129,7 +115,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
         public static implicit operator ArgumentList(Dictionary<string, Entry> arguments)
         {
-            return new ArgumentList((IDictionary<string, Entry>)arguments);
+            return new ArgumentList(arguments);
         }
 
         public static implicit operator ArgumentList(Dictionary<string, Vector4> arguments)
@@ -254,11 +240,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
             return ColorimetricHelper.ConvertToYuv(filter);
         }
 
-        public static IResizeableFilter Transform(this IResizeableFilter filter, Func<ITextureFilter, ITextureFilter> transformation)
-        {
-            return new TransformedResizeableFilter(transformation, filter);
-        }
-
         public static IResizeableFilter Resize(this ITextureFilter inputFilter, TextureSize outputSize, TextureChannels? channels = null, Vector2? offset = null, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null, bool tagged =  false)
         {
             var result = new ResizeFilter(inputFilter, outputSize, channels ?? TextureChannels.All, offset ?? Vector2.Zero, upscaler, downscaler, convolver, outputFormat);
@@ -284,33 +265,6 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
             return resizeable.SetSize(size);
         }
-
-        #region Auxilary class(es)
-
-        private sealed class TransformedResizeableFilter : TextureFilter, IResizeableFilter
-        {
-            private readonly IResizeableFilter m_InputFilter;
-            private readonly Func<ITextureFilter, ITextureFilter> m_Transformation;
-
-            public TransformedResizeableFilter(Func<ITextureFilter, ITextureFilter> transformation, IResizeableFilter inputFilter)
-                : base(transformation(inputFilter))
-            {
-                m_InputFilter = inputFilter;
-                m_Transformation = transformation;
-            }
-
-            public void EnableTag()
-            {
-                m_InputFilter.EnableTag();
-            }
-
-            public ITextureFilter SetSize(TextureSize outputSize)
-            {
-                return new TransformedResizeableFilter(m_Transformation, m_InputFilter);
-            }
-        }
-
-        #endregion
     }
 
     public static class ShaderFilterHelper
