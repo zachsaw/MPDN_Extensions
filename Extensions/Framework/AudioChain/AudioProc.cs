@@ -17,6 +17,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Cudafy;
 using Cudafy.Host;
 using Mpdn.OpenCl;
@@ -35,7 +36,19 @@ namespace Mpdn.Extensions.Framework.AudioChain
             get { return s_Gpu; }
         }
 
+        private static Task<bool> s_InitTask;
+
+        public static Task<bool> AsyncInitialize()
+        {
+            return s_InitTask ?? (s_InitTask = Task.Run((Func<bool>)Init));
+        }
+
         public static bool Initialize()
+        {
+            return AsyncInitialize().Result;
+        }
+
+        private static bool Init()
         {
             if (s_Gpu != null)
                 return true;

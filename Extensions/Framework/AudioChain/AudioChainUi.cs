@@ -43,7 +43,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             base.Initialize();
 
-            CudafyInitializer.Init();
+            //CudafyInitializer.Init();
             AudioProc.AsyncInitialize();
         }
     }

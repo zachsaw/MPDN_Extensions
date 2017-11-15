@@ -49,7 +49,9 @@ namespace Mpdn.Extensions.Framework.AudioChain
         {
             try
             {
-                OnLoadAudioKernel();
+                // Gpu may not yet be defined if we're just loading settings
+                if (AudioProc.Gpu != null)
+                    OnLoadAudioKernel();
             }
             catch (Exception ex)
             {

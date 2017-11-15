@@ -25,7 +25,7 @@ using Cudafy;
 using Cudafy.Host;
 using Cudafy.Translator;
 using DirectShowLib;
-using Mono.Cecil;
+//using Mono.Cecil;
 using Mpdn.AudioScript;
 
 namespace Mpdn.Extensions.Framework
@@ -41,7 +41,7 @@ namespace Mpdn.Extensions.Framework
         Pcm32
     }
 
-    public static class CudafyInitializer
+    /*public static class CudafyInitializer
     {
         private static bool s_Initialized;
 
@@ -84,7 +84,7 @@ namespace Mpdn.Extensions.Framework
                 }
             }
         }
-    }
+    }*/
 
     public static class AudioHelpers
     {
