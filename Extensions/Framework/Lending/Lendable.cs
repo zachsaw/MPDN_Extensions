@@ -19,6 +19,8 @@ using System.Linq;
 
 namespace Shiandow.Lending
 {
+    using static LeaseHelper;
+
     /// <summary>
     /// Represents a value that can be 'leased'
     /// </summary>
@@ -150,7 +152,7 @@ namespace Shiandow.Lending
             { }
         }
 
-        public class Just<TValue> : ILendable<TValue>
+        public struct Just<TValue> : ILendable<TValue>
         {
             private readonly TValue m_Value;
 
@@ -165,43 +167,6 @@ namespace Shiandow.Lending
             }
         }
 
-        public class Lazy<TValue> : Lendable<TValue>
-        {
-            private readonly Func<ILease<TValue>> m_Func;
-
-            public Lazy(ILendable<TValue> lendable)
-                : this(() => lendable.GetLease())
-            { }
-
-            public Lazy(Func<ILease<TValue>> func)
-            {
-                m_Func = func;
-            }
-
-            #region Lendable Implementation
-
-            private ILease<TValue> m_Lease;
-
-            protected sealed override TValue Value
-            {
-                get
-                {
-                    m_Lease = m_Lease ?? m_Func();
-                    return m_Lease.Value;
-                }
-            }
-
-            protected sealed override void Allocate() { }
-
-            protected sealed override void Deallocate()
-            {
-                using (m_Lease)
-                    m_Lease = null;
-            }
-
-            #endregion
-        }
-
         #endregion
 
         #region Extension Methods
@@ -214,13 +179,6 @@ namespace Shiandow.Lending
         public static B Extract<A, B>(this ILendable<A> lendable, Func<A, B> callback)
         {
             return lendable.GetLease().Extract(callback);
-        }
-
-        public static void ExtractAll<A>(this IEnumerable<ILendable<A>> lendables, Action<IEnumerable<A>> action)
-        {
-            lendables
-                .Select(x => x.GetLease())
-                .ExtractAll(action);
         }
 
         public static ILendable<IReadOnlyList<A>> Fold<A>(this IEnumerable<ILendable<A>> lendables)
@@ -289,17 +247,12 @@ namespace Shiandow.Lending
 
         public static ILendable<A> MakeLazy<A>(this ILendable<A> lendable)
         {
-            return new Lazy<A>(lendable);
+            return new Deferred<A>(() => new Lazy<A>(() => lendable.GetLease()));
         }
 
-        public static ILendable<A> MakeLazy<A>(this Func<A> func)
+        public static ILendable<A> MakeDeferred<A>(this Func<A> f)
         {
-            return new Lazy<A>(() => LeaseHelper.Return(func()));
-        }
-
-        public static ILendable<A> MakeDeferred<A>(this Func<A> func)
-        {
-            return new Deferred<A>(() => LeaseHelper.Return(func()));
+            return new Deferred<A>(() => LeaseHelper.Return(f()));
         }
 
         #endregion

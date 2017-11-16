@@ -32,16 +32,56 @@ namespace Shiandow.Lending
     {
         #region Classes
 
+        public struct Just<TValue> : ILease<TValue>
+        {
+            private readonly TValue m_Value;
+
+            public Just(TValue value)
+            {
+                m_Value = value;
+            }
+
+            #region ILease Implementation
+
+            public TValue Value { get { return m_Value; } }
+
+            public void Dispose() { }
+
+            #endregion
+        }
+
+        public struct Lazy<TValue> : ILease<TValue>
+        {
+            private readonly Func<ILease<TValue>> m_Func;
+
+            public Lazy(Func<ILease<TValue>> func)
+            {
+                m_Func = func;
+                m_Lease = null;
+            }
+
+            #region ILease Implementation
+
+            private ILease<TValue> m_Lease;
+            private ILease<TValue> Lease { get { return m_Lease ?? (m_Lease = m_Func()); } }
+
+            public TValue Value { get { return Lease.Value; } }
+
+            public void Dispose()
+            {
+                using (Lease)
+                    m_Lease = null;
+            }
+
+            #endregion
+        }
+
         private struct Bound<TInput, TOutput> : ILease<TOutput>
         {
-            private ILease<TInput> m_Input;
-            private ILease<TOutput> m_Output;
+            private readonly ILease<TInput> m_Input;
+            private readonly ILease<TOutput> m_Output;
 
-            public Bound(ILease<TInput> input, Func<TInput, ILease<TOutput>> f)
-                : this(input, f(input.Value))
-            { }
-
-            private Bound(ILease<TInput> input, ILease<TOutput> output)
+            public Bound(ILease<TInput> input, ILease<TOutput> output)
             {
                 m_Input = input;
                 m_Output = output;
@@ -85,20 +125,6 @@ namespace Shiandow.Lending
             #endregion
         }
 
-        public struct Just<TValue> : ILease<TValue>
-        {
-            private readonly TValue m_Value;
-
-            public Just(TValue value)
-            {
-                m_Value = value;
-            }
-
-            public TValue Value { get { return m_Value; } }
-
-            public void Dispose() { }
-        }
-
         #endregion
 
         #region Extension Methods
@@ -113,11 +139,6 @@ namespace Shiandow.Lending
         {
             using (lease)
                 return callback(lease.Value);
-        }
-
-        public static void ExtractAll<A>(this IEnumerable<ILease<A>> leases, Action<IEnumerable<A>> action)
-        {
-            leases.Fold().Extract(action);
         }
 
         public static ILease<IReadOnlyList<A>> Fold<A>(this IEnumerable<ILease<A>> leases)
@@ -136,7 +157,7 @@ namespace Shiandow.Lending
 
         public static ILease<B> Bind<A, B>(this ILease<A> lease, Func<A, ILease<B>> f)
         {
-            return new Bound<A, B>(lease, f);
+            return new Bound<A, B>(lease, f(lease.Value));
         }
 
         public static ILease<B> Map<A, B>(this ILease<A> lease, Func<A, B> f)

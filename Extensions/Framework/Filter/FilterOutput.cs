@@ -21,6 +21,7 @@ using System.Linq;
 
 namespace Mpdn.Extensions.Framework.Filter
 {
+    using static LeaseHelper;
     using static LendableHelper;
 
     public interface IFilterOutput<out TValue> : ILendable<TValue> { }
@@ -82,7 +83,7 @@ namespace Mpdn.Extensions.Framework.Filter
 
         private static ILendable<Y> Do<X, Y>(this ILendable<Y> output, Action<X, Y> render, ILendable<X> input)
         {
-            return input.BindLease(lease => new Lazy<Y>(() => output.Do(render, lease)));
+            return input.MapLease(lease => new Lazy<Y>(() => output.Do(render, lease)));
         }
 
         #endregion
