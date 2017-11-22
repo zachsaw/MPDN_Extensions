@@ -157,8 +157,7 @@ namespace Mpdn.Extensions.RenderScripts
             public NNedi3Handle(float[,,] weights1, float[,,] weights2, float[,] weightsSum, INnedi3Parameters parameters, IShaderDefinition<IShader11> definition) 
                 : base(parameters, definition)
             {
-                // TODO: Fix constant buffer version
-                Structured = true;// parameters.Structured;
+                Structured = parameters.Structured;
 
                 if (Structured)
                     CreateWeightsStruct(
@@ -172,7 +171,7 @@ namespace Mpdn.Extensions.RenderScripts
                     TSum wSum = new TSum();
 
                     w1.Load(weights1);
-                    w2.Load(weights1);
+                    w2.Load(weights2);
                     wSum.Load(weightsSum);
 
                     CreateWeightsConst(w1, w2, wSum);
