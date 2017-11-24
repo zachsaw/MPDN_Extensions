@@ -23,14 +23,14 @@ namespace Mpdn.Extensions.Framework.Filter
 {
     using static FilterBaseHelper;
 
-    public interface IFilter<out TOutput, out TValue> : IFilterBase<IFilterOutput<TOutput, TValue>>, IFilterDescription<TOutput>
+    public interface IFilter<out TOutput, out TValue> : IFilterBase<IFilterOutput<TOutput, TValue>>
     {
         new TOutput Output { get; }
     }
 
     public class Filter<TOutput, TValue> : FilterBase<IFilterOutput<TOutput, TValue>>, IFilter<TOutput, TValue>
     {
-        new public TOutput Output { get { return base.Output.Output; } }
+        new public TOutput Output { get { return base.Output.Description; } }
 
         public Filter(IFilterBase<IFilterOutput<TOutput, TValue>> filterBase)
             : base(filterBase)

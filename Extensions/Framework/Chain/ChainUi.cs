@@ -39,14 +39,14 @@ namespace Mpdn.Extensions.Framework.Chain
     public static class ChainUi<T, TScript>
         where TScript : class, IScript
     {
-        public static readonly IChainUi<T, TScript> IDENTITY = new IdentityRenderChainUi();
+        public static readonly IChainUi<T, TScript> IDENTITY = new IdentityChainUi();
 
-        private class IdentityRenderChain : StaticChain<T>
+        private class IdentityChain : StaticChain<T>
         {
-            public IdentityRenderChain() : base(x => x) { }
+            public IdentityChain() : base(x => x) { }
         }
 
-        private class IdentityRenderChainUi : ChainUi<T, TScript, IdentityRenderChain>
+        private class IdentityChainUi : ChainUi<T, TScript, IdentityChain>
         {
             public override string Category
             {

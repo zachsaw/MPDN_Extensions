@@ -424,7 +424,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
             get { return m_Sample; }
         }
 
-        public IAudioDescription Output
+        public IAudioDescription Description
         {
             get { return this; }
         }

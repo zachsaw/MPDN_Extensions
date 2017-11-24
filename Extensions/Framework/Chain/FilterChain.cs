@@ -29,16 +29,9 @@ namespace Mpdn.Extensions.Framework.Chain
             get { return GetType().Name; }
         }
 
-        public override TFilter Process(TFilter input)
+        public sealed override TFilter Process(TFilter input)
         {
-            TFilter output = CreateFilter(input);
-            
-            if (output == input)
-                return input;
-
-            output.AddLabel(Description, start: input);
-
-            return output;
+            return CreateFilter(input).Labeled(Description, start: input);
         }
     }
 }

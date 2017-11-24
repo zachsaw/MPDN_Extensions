@@ -48,7 +48,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
             get { return m_Audio.Input; }
         }
 
-        public IAudioDescription Output { get { return this; } }
+        public IAudioDescription Description { get { return this; } }
 
         protected override IAudioOutput Value { get { return this; } }
 

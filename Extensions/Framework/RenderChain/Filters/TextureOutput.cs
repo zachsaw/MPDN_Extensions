@@ -81,7 +81,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
         private ITargetTexture m_Texture;
 
-        public override ITextureDescription Output
+        public override ITextureDescription Description
         {
             get { return this; }
         }

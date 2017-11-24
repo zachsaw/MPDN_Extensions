@@ -27,46 +27,49 @@ namespace Mpdn.Extensions.Framework.RenderChain
         IShaderHandle GetHandle();
     }
 
-    public abstract class GenericShaderConfig<TShader> : IShaderConfig, IShaderParameters
-        where TShader : IShaderBase
+    namespace Shaders
     {
-        public IShaderDefinition<TShader> Definition { get; set; }
-
-        public bool LinearSampling { get; set; }
-        public bool[] PerTextureLinearSampling { get; set; }
-        public Func<TextureSize, TextureSize> Transform { get; set; }
-        public TextureFormat Format { get; set; }
-        public int SizeIndex { get; set; }
-        public ArgumentList Arguments { get; set; }
-        public ArgumentList.Entry this[string identifier]
+        public abstract class GenericShaderConfig<TShader> : IShaderConfig, IShaderParameters
+            where TShader : IShaderBase
         {
-            get { return Arguments[identifier]; }
-            set { Arguments[identifier] = value; }
-        }
+            public IShaderDefinition<TShader> Definition { get; set; }
 
-        public abstract IShaderHandle GetHandle();
+            public bool LinearSampling { get; set; }
+            public bool[] PerTextureLinearSampling { get; set; }
+            public Func<TextureSize, TextureSize> Transform { get; set; }
+            public TextureFormat Format { get; set; }
+            public int SizeIndex { get; set; }
+            public ArgumentList Arguments { get; set; }
+            public ArgumentList.Entry this[string identifier]
+            {
+                get { return Arguments[identifier]; }
+                set { Arguments[identifier] = value; }
+            }
 
-        protected GenericShaderConfig(IShaderDefinition<TShader> definition)
-        {
-            Definition = definition;
-            LinearSampling = false;
-            PerTextureLinearSampling = new bool[0];
-            Transform = (s => s);
-            Format = Renderer.RenderQuality.GetTextureFormat();
-            SizeIndex = 0;
-            Arguments = new ArgumentList();
-        }
+            public abstract IShaderHandle GetHandle();
 
-        protected GenericShaderConfig(GenericShaderConfig<TShader> config)
-        {
-            Definition = config.Definition;
-            Transform = config.Transform;
-            LinearSampling = config.LinearSampling;
-            PerTextureLinearSampling = config.PerTextureLinearSampling;
-            Transform = config.Transform;
-            Format = config.Format;
-            SizeIndex = config.SizeIndex;
-            Arguments = config.Arguments;
+            protected GenericShaderConfig(IShaderDefinition<TShader> definition)
+            {
+                Definition = definition;
+                LinearSampling = false;
+                PerTextureLinearSampling = new bool[0];
+                Transform = (s => s);
+                Format = Renderer.RenderQuality.GetTextureFormat();
+                SizeIndex = 0;
+                Arguments = new ArgumentList();
+            }
+
+            protected GenericShaderConfig(GenericShaderConfig<TShader> config)
+            {
+                Definition = config.Definition;
+                Transform = config.Transform;
+                LinearSampling = config.LinearSampling;
+                PerTextureLinearSampling = config.PerTextureLinearSampling;
+                Transform = config.Transform;
+                Format = config.Format;
+                SizeIndex = config.SizeIndex;
+                Arguments = config.Arguments;
+            }
         }
     }
 

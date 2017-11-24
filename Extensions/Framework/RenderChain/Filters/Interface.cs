@@ -25,7 +25,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public interface IResizeableFilter : ITextureFilter, ITaggableFilter
     {
-        ITextureFilter SetSize(TextureSize outputSize);
+        ITextureFilter ResizeTo(TextureSize outputSize);
     }
 
     public interface IOffsetFilter : ITextureFilter
@@ -217,12 +217,12 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public static class TextureFilterHelper
     {
-        public static TextureSize Size(this IFilterDescription<ITextureDescription> filter)
+        public static TextureSize Size<TValue>(this IFilter<ITextureDescription, TValue> filter)
         {
             return filter.Output.Size;
         }
 
-        public static TextureFormat Format(this IFilterDescription<ITextureDescription> filter)
+        public static TextureFormat Format<TValue>(this IFilter<ITextureDescription, TValue> filter)
         {
             return filter.Output.Format;
         }
@@ -263,7 +263,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (tagged)
                 resizeable.EnableTag();
 
-            return resizeable.SetSize(size);
+            return resizeable.ResizeTo(size);
         }
     }
 

@@ -39,7 +39,13 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
         }
     }
 
-    public class UndoFilter<TProcess> : TextureFilter
+    public interface ICanUndo<TProcess>
+        where TProcess : IProcess<ITextureFilter, ITextureFilter>
+    {
+        ITextureFilter Undo();
+    }
+
+    public class UndoFilter<TProcess> : TextureFilter, ICanUndo<TProcess>
         where TProcess : IProcess<ITextureFilter, ITextureFilter>
     {
         private readonly ITextureFilter m_InputFilter;
@@ -95,7 +101,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
     {
         public static ITextureFilter ConvertToRgb(ITextureFilter filter)
         {
-            var yuv = filter as UndoFilter<YuvProcess>;
+            var yuv = filter as ICanUndo<YuvProcess>;
             if (yuv != null)
                 return yuv.Undo();
 
@@ -104,7 +110,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
         public static ITextureFilter ConvertToYuv(ITextureFilter filter)
         {
-            var rgb = filter as UndoFilter<RgbProcess>;
+            var rgb = filter as ICanUndo<RgbProcess>;
             if (rgb != null)
                 return rgb.Undo();
 
@@ -250,7 +256,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
             return ReDo(m_Process.ForceOffsetCorrection());
         }
 
-        public ITextureFilter SetSize(TextureSize targetSize)
+        public ITextureFilter ResizeTo(TextureSize targetSize)
         {
             return ReDo(m_Process.ReSize(targetSize)); ;
         }

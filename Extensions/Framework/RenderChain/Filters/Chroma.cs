@@ -51,7 +51,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
         protected readonly ITextureFilter Fallback;
 
-        public ITextureFilter SetSize(TextureSize outputSize)
+        public ITextureFilter ResizeTo(TextureSize outputSize)
         {
             return new CompositionFilter(Luma, Chroma, outputSize, ChromaOffset);
         }

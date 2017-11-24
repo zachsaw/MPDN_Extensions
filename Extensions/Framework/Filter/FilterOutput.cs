@@ -26,18 +26,16 @@ namespace Mpdn.Extensions.Framework.Filter
 
     public interface IFilterOutput<out TValue> : ILendable<TValue> { }
 
-    public interface IFilterDescription<out TDescription>
+    public interface IFilterOutput<out TDescription, out TValue> : IFilterOutput<TValue>
     {
-        TDescription Output { get; }
+        TDescription Description { get; }
     }
-
-    public interface IFilterOutput<out TDescription, out TValue> : IFilterDescription<TDescription>, IFilterOutput<TValue> { }
 
     public abstract class FilterOutput<TValue> : Lendable<TValue> { }
 
     public abstract class FilterOutput<TDescription, TValue> : FilterOutput<TValue>, IFilterOutput<TDescription, TValue>
     {
-        public abstract TDescription Output { get; }
+        public abstract TDescription Description { get; }
     }
 
     public static class FilterOutputHelper
@@ -48,16 +46,16 @@ namespace Mpdn.Extensions.Framework.Filter
         {
             public Result(TDescription description, ILendable<TValue> value)
             {
-                m_Output = description;
+                m_Description = description;
                 m_Value = value;
             }
 
             #region Implementation
 
-            private readonly TDescription m_Output;
+            private readonly TDescription m_Description;
             private readonly ILendable<TValue> m_Value;
 
-            public TDescription Output { get { return m_Output; } }
+            public TDescription Description { get { return m_Description; } }
 
             public ILease<TValue> GetLease()
             {
@@ -110,12 +108,12 @@ namespace Mpdn.Extensions.Framework.Filter
 
         public static IFilterOutput<B, Y> Do<B, X, Y>(this IFilterOutput<B, Y> output, Action<X, Y> render, ILendable<X> input)
         {
-            return Return(output.Output, output.Do<X, Y>(render, input));
+            return Return(output.Description, output.Do<X, Y>(render, input));
         }
 
         public static IFilterOutput<IEnumerable<A>, IEnumerable<X>> Fold<A,X>(IEnumerable<IFilterOutput<A,X>> outputs)
         {
-            return Return(outputs.Select(x => x.Output), outputs.Fold<X>());
+            return Return(outputs.Select(x => x.Description), outputs.Fold<X>());
         }
 
         public static void Extract<A>(this ILendable<A> output, Action<A> callback)

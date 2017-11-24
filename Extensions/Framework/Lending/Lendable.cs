@@ -58,7 +58,7 @@ namespace Shiandow.Lending
 
             #region Resource Management
 
-            private bool m_Disposed; // To detect redundant calls
+            private bool m_Disposed; // It's important we only dispose once
 
             public void Dispose()
             {
@@ -98,6 +98,21 @@ namespace Shiandow.Lending
     {
         #region Classes
 
+        public class Just<TValue> : ILendable<TValue>
+        {
+            private readonly TValue m_Value;
+
+            public Just(TValue value)
+            {
+                m_Value = value;
+            }
+
+            public ILease<TValue> GetLease()
+            {
+                return LeaseHelper.Return(m_Value);
+            }
+        }
+
         public class Deferred<TOutput> : Lendable<TOutput>
         {
             private readonly Func<ILease<TOutput>> m_Func;
@@ -133,16 +148,11 @@ namespace Shiandow.Lending
             { }
         }
 
-        private class Bound<TInput, TOutput> : Mapped<TInput, ILendable<TOutput>>, ILendable<TOutput>
+        private class Bound<TInput, TOutput> : Mapped<TInput, TOutput>
         {
             public Bound(ILendable<TInput> lendable, Func<ILease<TInput>, ILease<ILendable<TOutput>>> func) 
-                : base(lendable, func)
+                : base(lendable, lease => func(lease).Bind(x => x.GetLease()))
             { }
-
-            ILease<TOutput> ILendable<TOutput>.GetLease()
-            {
-                return GetLease().Bind(x => x.GetLease());
-            }
         }
 
         private class Folded<TValue> : Deferred<IReadOnlyList<TValue>>
@@ -150,21 +160,6 @@ namespace Shiandow.Lending
             public Folded(IReadOnlyList<ILendable<TValue>> lendables)
                 : base(() => lendables.Select(x => x.GetLease()).Fold())
             { }
-        }
-
-        public struct Just<TValue> : ILendable<TValue>
-        {
-            private readonly TValue m_Value;
-
-            public Just(TValue value)
-            {
-                m_Value = value;
-            }
-
-            public ILease<TValue> GetLease()
-            {
-                return LeaseHelper.Return(m_Value);
-            }
         }
 
         #endregion
@@ -200,19 +195,14 @@ namespace Shiandow.Lending
             return new Bound<A, B>(lendable, f);
         }
 
-        public static ILendable<B> BindLease<A, B>(this ILendable<A> lendable, Func<ILease<A>, ILendable<B>> f)
+        public static ILendable<B> MapLease<A, B>(this ILendable<A> lendable, Func<ILease<A>, ILease<B>> f)
         {
-            return new Bound<A, B>(lendable, x => LeaseHelper.Return(f(x)));
+            return new Mapped<A, B>(lendable, f);
         }
 
         public static ILendable<B> Bind<A, B>(this ILendable<A> lendable, Func<A, ILendable<B>> f)
         {
             return new Bound<A, B>(lendable, x => x.Map(f));
-        }
-
-        public static ILendable<B> MapLease<A, B>(this ILendable<A> lendable, Func<ILease<A>, ILease<B>> f)
-        {
-            return new Mapped<A, B>(lendable, f);
         }
 
         public static ILendable<B> Map<A, B>(this ILendable<A> lendable, Func<A, B> f)
