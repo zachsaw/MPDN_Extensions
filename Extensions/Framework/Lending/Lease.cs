@@ -21,7 +21,7 @@ namespace Shiandow.Lending
 {
     /// <summary>
     /// Represents the (temporary) right to view a particular value
-    /// Disposing returns that right, allowing resources to be freed
+    /// Disposing revokes that right, allowing resources to be freed
     /// </summary>
     public interface ILease<out TValue> : IDisposable
     {
@@ -69,7 +69,7 @@ namespace Shiandow.Lending
 
             public void Dispose()
             {
-                using (Lease)
+                using (m_Lease)
                     m_Lease = null;
             }
 
