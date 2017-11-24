@@ -175,6 +175,10 @@ namespace Mpdn.Extensions.Framework
 
     public class ProcessData : UnionCollection<IProcessTag>, IProcessData
     {
+#if DEBUG
+        public string DebugDescription { get { return this.CreateString(10); } }
+#endif
+
         #region Implementation
 
         private readonly IList<IProcessData> m_InputProcesses = new List<IProcessData>();
@@ -222,7 +226,7 @@ namespace Mpdn.Extensions.Framework
             tagged.ProcessData.Add(tag);
         }
 
-        public static void AddLabel(this ITagged tagged, string label, int verbosity = 0, ITagged start = null)
+        public static void AddLabel(this ITagged tagged, string label, int verbosity = 1, ITagged start = null)
         {
             tagged.AddTag(new ProcessTag(label, String.IsNullOrEmpty(label) ? 1000 : verbosity, 
                 (start == null) 
@@ -246,7 +250,7 @@ namespace Mpdn.Extensions.Framework
 
         #region String Generation
     
-        private const int DefaultVerbosity = 0;
+        private const int DefaultVerbosity = 1;
 
         public static string CreateString(this IProcessData process, int verbosity = DefaultVerbosity)
         {
@@ -264,11 +268,14 @@ namespace Mpdn.Extensions.Framework
                     select tag)
                     .ToList();
 
+            var ranges = new List<ProcessInterval>();
             var depth = tags.ToDictionary(
                 tag => tag,
-                tag => tags
-                    .TakeWhile(t => range[t].Max > range[tag].Max)
-                    .Count(t => range[t].Contains(range[tag])));
+                tag => (ranges = ranges
+                    .Where(r => r.Min <= range[tag].Min)
+                    .Concat(new[] { range[tag] })
+                    .ToList())
+                    .Count() - 1);
             tags.Reverse();
 
             return string.Join("\n",

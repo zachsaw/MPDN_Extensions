@@ -49,8 +49,7 @@ namespace Mpdn.Extensions.Framework.Chain
         public void Update()
         {
             UpdateFilter();
-
-            UpdateStatus();
+            Status = null;
         }
 
         public void UpdateFilter()
@@ -86,6 +85,9 @@ namespace Mpdn.Extensions.Framework.Chain
             try
             {
                 m_Filter.Extract(OutputResult);
+
+                if (Status == null)
+                    UpdateStatus();
 
                 return true;
             }

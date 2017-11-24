@@ -93,19 +93,6 @@ namespace Mpdn.Extensions.Framework.Filter
             return new Result<A, X>(description, value);
         }
 
-        public static IFilterOutput<B, Y> SafeReturn<A, B, Y>(A description, Func<IFilterOutput<B, Y>> f)
-            where A : B, IEquatable<B>
-        {
-            return Return<B,Y>(
-                description,
-                f.MakeDeferred().Bind(result =>
-                {
-                    if (!description.Equals(result.Output))
-                        throw new InvalidOperationException("Generated output does not match description.");
-                    return result;
-                }));
-        }
-
         public static IFilterOutput<B, Y> Do<B, X, Y>(this IFilterOutput<B, Y> output, Action<X, Y> render, ILendable<X> input)
         {
             return Return(output.Description, output.Do<X, Y>(render, input));

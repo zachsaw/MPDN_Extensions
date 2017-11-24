@@ -70,11 +70,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
             DisposeHelper.Dispose(ref m_SourceFilter);
             m_SourceFilter = new VideoSourceFilter(this);
 
-            if (Renderer.InputFormat.IsYuv()
-                && (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height))
-                return m_SourceFilter.Composition;
+            if (Renderer.InputFormat.IsYuv() && ((TextureSize)Renderer.ChromaSize < Renderer.LumaSize).Any)
+                return m_SourceFilter;
 
-            return m_SourceFilter;
+            return m_SourceFilter.Decompose();
         }
 
         protected override ITextureFilter FinalizeOutput(ITextureFilter output)

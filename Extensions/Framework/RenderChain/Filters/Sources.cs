@@ -23,6 +23,7 @@ using Size = System.Drawing.Size;
 
 namespace Mpdn.Extensions.Framework.RenderChain.Filters
 {
+    using static FilterHelper;
     using static FilterBaseHelper;
     using static FilterOutputHelper;
 
@@ -41,7 +42,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
         public virtual TextureSize Size { get { return m_Texture.GetSize(); } }
         public virtual TextureFormat Format { get { return m_Texture.Format; } }
 
-        public ITextureDescription Output { get { return this; } }
+        public ITextureDescription Description { get { return this; } }
 
         ILease<TTexture> ILendable<TTexture>.GetLease()
         {
@@ -84,7 +85,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
             }
         }
 
-        public ITextureDescription Output { get { return this; } }
+        public ITextureDescription Description { get { return this; } }
 
         public TextureSize Size
         {
@@ -134,16 +135,17 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
         public VSourceFilter() : base(new DeferredTextureOutput<ITexture2D>(() => Renderer.TextureV, Renderer.ChromaSize)) { }
     }
 
-    public interface ISouceCompositionFilter : ISourceFilter, ICompositionFilter { }
-
     public interface ISourceFilter : IResizeableFilter
     {
-        ISouceCompositionFilter Composition { get; }
-        ISourceFilter GetYuv();
-        new ISourceFilter SetSize(TextureSize outputSize);
+        ITextureFilter GetYuv();
     }
 
-    public sealed class VideoSourceFilter : TextureFilter, ISourceFilter
+    public interface ISouceCompositionFilter : ISourceFilter, ICompositionFilter
+    {
+        ISourceFilter Decompose();
+    }
+
+    public sealed class VideoSourceFilter : TextureFilter, ISouceCompositionFilter
     {
         private readonly bool m_WantYuv;
         private readonly TrueSourceFilter m_TrueSource;
@@ -154,25 +156,16 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
         public void EnableTag() { }
 
-        public ISouceCompositionFilter Composition { get { return m_Composition = m_Composition ?? new CompositionSource(this); } }
-
-        public ISourceFilter GetYuv()
+        public ITextureFilter GetYuv()
         {
             return new VideoSourceFilter(m_TrueSource, Output.Size, true);
         }
 
-        public ISourceFilter SetSize(TextureSize outputSize)
+        public ITextureFilter ResizeTo(TextureSize outputSize)
         {
             return new VideoSourceFilter(m_TrueSource, outputSize, m_WantYuv);
         }
-
-        ITextureFilter IResizeableFilter.SetSize(TextureSize outputSize)
-        {
-            return SetSize(outputSize);
-        }
-
-        void ITaggableFilter.EnableTag() { }
-
+        
         #endregion
 
         #region Labeling
@@ -182,26 +175,37 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
             var chromaConvolver = Renderer.ChromaOffset.IsZero ? null : Renderer.ChromaUpscaler;
             var chromastatus = StatusHelpers.ScaleDescription(Renderer.ChromaSize, size, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler, chromaConvolver);
 
-            return chromastatus.PrependToDescription("Chroma: ");
+            return chromastatus.AddPrefixToDescription("Chroma: ");
         }
 
         public static string LumaScaleDescription(TextureSize size)
         {
             var lumastatus = StatusHelpers.ScaleDescription(Renderer.VideoSize, size, Renderer.LumaUpscaler, Renderer.LumaDownscaler);
 
-            return lumastatus.PrependToDescription("Luma: ");
+            return lumastatus.AddPrefixToDescription("Luma: ");
         }
 
         #endregion
 
         #region Composition Handling
 
-        private ISouceCompositionFilter m_Composition;
+        private ICompositionFilter SourceComposition { get { return m_TrueSource.Composition; } }
 
-        private class CompositionSource : TextureFilter, ISouceCompositionFilter
+        // Note: accesing any of these disables internal scalers
+        public ITextureFilter Luma { get { return SourceComposition.Luma; } }
+        public ITextureFilter Chroma { get { return SourceComposition.Chroma; } }
+        public TextureSize TargetSize { get { return SourceComposition.TargetSize; } }
+        public Vector2 ChromaOffset { get { return SourceComposition.ChromaOffset; } }
+
+        public ISourceFilter Decompose()
         {
-            public CompositionSource(VideoSourceFilter source)
-                : base(source.m_TrueSource.Composition)
+            return new DecomposedSource(this);
+        }
+
+        private class DecomposedSource : TextureFilter, ISourceFilter
+        {
+            public DecomposedSource(VideoSourceFilter source)
+                : base(source)
             {
                 m_Source = source;
             }
@@ -210,39 +214,25 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
             private readonly VideoSourceFilter m_Source;
 
-            public ISouceCompositionFilter Composition { get { return this; } }
-
-            public ISourceFilter GetYuv()
+            private ITextureFilter Decompose(ITextureFilter filter)
             {
-                return m_Source.GetYuv().Composition;
+                return (filter as ISouceCompositionFilter).Decompose();
             }
 
-            public ISourceFilter SetSize(TextureSize outputSize)
+            public ITextureFilter GetYuv()
             {
-                return m_Source.SetSize(outputSize).Composition;
+                return Decompose(m_Source.GetYuv());
             }
 
-            ITextureFilter IResizeableFilter.SetSize(TextureSize outputSize)
+            public ITextureFilter ResizeTo(TextureSize outputSize)
             {
-                return SetSize(outputSize);
+                return Decompose(m_Source.ResizeTo(outputSize));
             }
 
             public void EnableTag()
             {
                 m_Source.EnableTag();
             }
-
-            #endregion
-
-            #region ICompositionFilter Implementation
-
-            private ICompositionFilter SourceComposition { get { return m_Source.m_TrueSource.Composition; } }
-
-            // Note: accesing any of these disables internal scalers
-            public ITextureFilter Luma { get { return SourceComposition.Luma; } }
-            public ITextureFilter Chroma { get { return SourceComposition.Chroma; } }
-            public TextureSize TargetSize { get { return SourceComposition.TargetSize; } }
-            public Vector2 ChromaOffset { get { return SourceComposition.ChromaOffset; } }
 
             #endregion
         }
@@ -262,23 +252,19 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
         private VideoSourceFilter(TrueSourceFilter trueSource, TextureSize outputSize, bool wantYuv)
             : base(from source in trueSource
-                   let resized = trueSource.Resize(outputSize)
-                   from result in resized
-                   from yuv in resized.ConvertToYuv()
-                   from rgb in resized.ConvertToRgb()
-                   select SafeReturn(new TextureDescription(outputSize), () =>
+                   from result in Compile(new TextureDescription(outputSize), () =>
                    {
-                       if (!trueSource.Descriptor.Prescale)
-                           throw new InvalidOperationException("Attempting to read prescaled source with Prescaling disabled.");
+                       var resized = trueSource.SetSize(outputSize);
 
                        if (trueSource.IsYuv() && !wantYuv)
-                           return rgb;
+                           return resized.ConvertToYuv();
 
                        if (!trueSource.IsYuv() && wantYuv)
-                           return yuv;
+                           return resized.ConvertToRgb();
 
-                       return result;
-                   }))
+                       return resized;
+                   })
+                   select result)
         {
             m_TrueSource = trueSource;
             m_WantYuv = wantYuv;
@@ -294,10 +280,17 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
             public bool IsYuv() { return m_RenderScript.Descriptor.WantYuv; }
 
             public bool WantYuv { private get; set; }
-
             public TextureSize? PrescaleSize { private get; set; }
 
-            public ICompositionFilter Composition { get { return m_Composition = m_Composition ?? (m_Composition = SourceComposition()); } }
+            public ICompositionFilter Composition
+            {
+                get
+                {
+                    m_Composition = m_Composition ?? (m_Composition = SourceComposition());
+                    m_Composition = m_Composition.SetSize(Descriptor.PrescaleSize) as ICompositionFilter;
+                    return m_Composition;
+                }
+            }
 
             public ScriptInterfaceDescriptor Descriptor
             {
@@ -322,14 +315,42 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
                 return new CompositionFilter(new YSourceFilter(), new ChromaSourceFilter());
             }
 
+            private class UnsafeTextureDescription : ITextureDescription, IEquatable<ITextureDescription>
+            {
+                private Func<Size> m_Size;
+
+                public UnsafeTextureDescription(Func<Size> func)
+                {
+                    m_Size = func;
+                }
+
+                public TextureSize Size { get { return m_Size(); } }
+                public TextureFormat Format { get { throw new NotImplementedException(); } }
+
+                public bool Equals(ITextureDescription other) { return m_Size() == other.Size; }
+            }
+
             public TrueSourceFilter(IRenderScript script)
-                : base(Return(new DeferredTextureOutput<ITexture2D>(
-                            () => Renderer.InputRenderTarget,
-                            () => script.Descriptor.PrescaleSize)))
+                : base(Compile(
+                    new UnsafeTextureDescription(() => script.Descriptor.PrescaleSize), 
+                    () =>
+                    {
+                        if (script.Descriptor.Prescale)
+                            return new TextureFilter(Return(
+                                new DeferredTextureOutput<ITexture2D>(
+                                    () => Renderer.InputRenderTarget,
+                                    () => script.Descriptor.PrescaleSize)))
+                                    .Labeled(ChromaScaleDescription(script.Descriptor.PrescaleSize).AddPostfixToDescription(" (internal)"))
+                                    .Labeled(  LumaScaleDescription(script.Descriptor.PrescaleSize).AddPostfixToDescription(" (internal)"));
+
+                        var fallback = SourceComposition().SetSize(script.Descriptor.PrescaleSize);
+                        return script.Descriptor.WantYuv
+                            ? fallback.ConvertToYuv()
+                            : fallback;
+                    }))
             {
                 m_RenderScript = script;
-                this.AddTag(new DeferredTag(() => ChromaScaleDescription(Descriptor.PrescaleSize), ProcessData));
-                this.AddTag(new DeferredTag(() => LumaScaleDescription(Descriptor.PrescaleSize), ProcessData));
+                WantYuv = false;
             }
 
             #endregion
