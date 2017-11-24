@@ -15,8 +15,6 @@
 // License along with this library.
 
 using System;
-using System.Collections.Generic;
-using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 using SharpDX;
 
@@ -26,13 +24,13 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
     {
         public static ITextureFilter ScaleChroma(ITextureFilter luma, ITextureFilter chroma, TextureSize targetSize, Vector2 chromaOffset)
         {
-            var fullSizeChroma = new ResizeFilter(chroma, targetSize, TextureChannels.ChromaOnly, chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+            var resizedChroma = new ResizeFilter(chroma, targetSize, TextureChannels.ChromaOnly, chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+            resizedChroma.AddLabel(resizedChroma.ScaleDescription.AddPrefixToDescription("Chroma: "));
 
             return luma
                 .SetSize(targetSize, tagged: true)
-                .MergeWith(fullSizeChroma)
-                .ConvertToRgb()
-                .Labeled(fullSizeChroma.ScaleDescription.PrependToDescription("Chroma: "));
+                .MergeWith(resizedChroma)
+                .ConvertToRgb();
         }
 
         public ITextureFilter ScaleChroma(ICompositionFilter composition)
@@ -41,15 +39,19 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
         }
     }
 
-    public class CompositionFilter : TextureFilter, ICompositionFilter
+    public class CompositionFilter : TextureFilter, ICompositionFilter, ICanUndo<RgbProcess>
     {
         public ITextureFilter Luma { get; private set; }
         public ITextureFilter Chroma { get; private set; }
-
-        public TextureSize TargetSize { get { return Output.Size; } }
         public Vector2 ChromaOffset { get; private set; }
 
-        protected readonly ITextureFilter Fallback;
+        public TextureSize TargetSize { get { return Output.Size; } }
+
+        public CompositionFilter(ITextureFilter luma, ITextureFilter chroma, TextureSize? targetSize = null, Vector2? chromaOffset = null)
+            : this(luma, chroma, targetSize ?? luma.Size(), chromaOffset ?? Renderer.ChromaOffset)
+        { }
+
+        #region IResizeable Implementation
 
         public ITextureFilter ResizeTo(TextureSize outputSize)
         {
@@ -58,8 +60,23 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
         public void EnableTag() { }
 
+        #endregion
+
+        #region Implementation
+
+        private readonly ITextureFilter m_Fallback;
+
+        ITextureFilter ICanUndo<RgbProcess>.Undo()
+        {
+            return m_Fallback.ConvertToYuv();
+        }
+
+        private CompositionFilter(ITextureFilter luma, ITextureFilter chroma, TextureSize targetSize, Vector2 chromaOffset)
+            : this(luma, chroma, DefaultChromaScaler.ScaleChroma(luma, chroma, targetSize, chromaOffset), targetSize, chromaOffset)
+        { }
+
         private CompositionFilter(ITextureFilter luma, ITextureFilter chroma, ITextureFilter fallback, TextureSize targetSize, Vector2 chromaOffset)
-            : base(fallback ?? DefaultChromaScaler.ScaleChroma(luma, chroma, targetSize, chromaOffset))
+            : base(fallback)
         {
             if (luma == null)
                 throw new ArgumentNullException("luma");
@@ -68,12 +85,11 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
             Luma = luma;
             Chroma = chroma;
+            m_Fallback = fallback;
+
+            ChromaOffset = chromaOffset;
         }
 
-        public CompositionFilter(ITextureFilter luma, ITextureFilter chroma, TextureSize? targetSize = null, Vector2? chromaOffset = null, ITextureFilter fallback = null)
-            : this(luma, chroma, fallback, 
-                  targetSize ?? (fallback != null ? fallback.Size() : luma.Size()), 
-                  chromaOffset ?? Renderer.ChromaOffset)
-        { }
+        #endregion
     }
 }
