@@ -39,7 +39,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
         }
     }
 
-    public interface ICanUndo<TProcess>
+    public interface ICanUndo<TProcess> : ITextureFilter
         where TProcess : IProcess<ITextureFilter, ITextureFilter>
     {
         ITextureFilter Undo();

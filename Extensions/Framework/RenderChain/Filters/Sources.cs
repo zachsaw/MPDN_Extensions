@@ -310,7 +310,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
             private readonly IRenderScript m_RenderScript;
             private ICompositionFilter m_Composition;
 
-            public static ICompositionFilter SourceComposition()
+            public static CompositionFilter SourceComposition()
             {
                 return new CompositionFilter(new YSourceFilter(), new ChromaSourceFilter());
             }
@@ -343,10 +343,9 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
                                     .Labeled(ChromaScaleDescription(script.Descriptor.PrescaleSize).AddPostfixToDescription(" (internal)"))
                                     .Labeled(  LumaScaleDescription(script.Descriptor.PrescaleSize).AddPostfixToDescription(" (internal)"));
 
-                        var fallback = SourceComposition().SetSize(script.Descriptor.PrescaleSize);
-                        return script.Descriptor.WantYuv
-                            ? fallback.ConvertToYuv()
-                            : fallback;
+                        ICanUndo<RgbProcess> source = SourceComposition();
+                        return (script.Descriptor.WantYuv ? source.Undo() : source)
+                            .SetSize(script.Descriptor.PrescaleSize);
                     }))
             {
                 m_RenderScript = script;
