@@ -135,9 +135,27 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
         }
     }
 
-    public class ResizeFilter : UndoFilter<ResizeFilter.Process>, IResizeableFilter, IOffsetFilter
+    public class ResizeFilter : UndoFilter<ResizeFilter.IProcess>, IResizeableFilter, IOffsetFilter
     {
-        public class Process : TextureProcess<ITexture2D>
+        public ResizeFilter(ITextureFilter inputFilter, TextureSize outputSize, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+            : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver, outputFormat)
+        { }
+
+        public ResizeFilter(ITextureFilter inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
+            : this(inputFilter, new Process(outputSize, channels, offset, upscaler, downscaler, convolver, outputFormat))
+        { }
+
+        private ResizeFilter(ITextureFilter inputFilter, Process process)
+            : base(inputFilter, process)
+        {
+            m_Process = process;
+        }
+
+        #region Process Definition
+
+        public interface IProcess : ITextureProcess<ITextureFilter<ITexture2D>> { }
+
+        private class Process : TextureProcess<ITexture2D>, IProcess
         {
             public Process(TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
             {
@@ -202,27 +220,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
             #endregion
         }
 
-        public ResizeFilter(ITextureFilter inputFilter, TextureSize outputSize, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
-            : this(inputFilter, outputSize, TextureChannels.All, Vector2.Zero, upscaler, downscaler, convolver, outputFormat)
-        { }
-
-        public ResizeFilter(ITextureFilter inputFilter, TextureSize outputSize, TextureChannels channels, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
-            : this(inputFilter, outputSize, channels, Vector2.Zero, upscaler, downscaler, convolver, outputFormat)
-        { }
-
-        public ResizeFilter(ITextureFilter inputFilter, TextureSize outputSize, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
-            : this(inputFilter, outputSize, TextureChannels.All, offset, upscaler, downscaler, convolver, outputFormat)
-        { }
-
-        public ResizeFilter(ITextureFilter inputFilter, TextureSize outputSize, TextureChannels channels, Vector2 offset, IScaler upscaler = null, IScaler downscaler = null, IScaler convolver = null, TextureFormat? outputFormat = null)
-            : this(inputFilter, new Process(outputSize, channels, offset, upscaler, downscaler, convolver, outputFormat))
-        { }
-
-        public ResizeFilter(ITextureFilter inputFilter, Process process)
-            : base(inputFilter, process)
-        {
-            m_Process = process;
-        }
+        #endregion
 
         #region Implementation
 

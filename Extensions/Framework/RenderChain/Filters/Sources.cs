@@ -142,7 +142,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
     public interface ISouceCompositionFilter : ISourceFilter, ICompositionFilter
     {
-        ISourceFilter Decompose();
+        ISourceFilter FixComposition();
     }
 
     public sealed class VideoSourceFilter : TextureFilter, ISouceCompositionFilter
@@ -197,14 +197,14 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
         public TextureSize TargetSize { get { return SourceComposition.TargetSize; } }
         public Vector2 ChromaOffset { get { return SourceComposition.ChromaOffset; } }
 
-        public ISourceFilter Decompose()
+        public ISourceFilter FixComposition()
         {
-            return new DecomposedSource(this);
+            return new FixedSource(this);
         }
 
-        private class DecomposedSource : TextureFilter, ISourceFilter
+        private class FixedSource : TextureFilter, ISourceFilter
         {
-            public DecomposedSource(VideoSourceFilter source)
+            public FixedSource(VideoSourceFilter source)
                 : base(source)
             {
                 m_Source = source;
@@ -216,7 +216,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
             private ITextureFilter Decompose(ITextureFilter filter)
             {
-                return (filter as ISouceCompositionFilter).Decompose();
+                return (filter as ISouceCompositionFilter).FixComposition();
             }
 
             public ITextureFilter GetYuv()
@@ -251,18 +251,18 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
         { }
 
         private VideoSourceFilter(TrueSourceFilter trueSource, TextureSize outputSize, bool wantYuv)
-            : base(from source in trueSource
+            : base(from _ in trueSource
                    from result in Compile(new TextureDescription(outputSize), () =>
                    {
-                       var resized = trueSource.SetSize(outputSize);
+                       ITextureFilter source = trueSource;
 
                        if (trueSource.IsYuv() && !wantYuv)
-                           return resized.ConvertToYuv();
+                           source = source.ConvertToYuv();
 
                        if (!trueSource.IsYuv() && wantYuv)
-                           return resized.ConvertToRgb();
+                           source = source.ConvertToRgb();
 
-                       return resized;
+                       return source.SetSize(outputSize);
                    })
                    select result)
         {
@@ -274,6 +274,10 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
             m_TrueSource.PrescaleSize = Output.Size; // Try change source size, always use latest value
         }
+
+        #endregion
+
+        #region TrueSourceFilter Class
 
         private sealed class TrueSourceFilter : TextureFilter
         {
@@ -287,7 +291,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
                 get
                 {
                     m_Composition = m_Composition ?? (m_Composition = SourceComposition());
-                    m_Composition = m_Composition.SetSize(Descriptor.PrescaleSize) as ICompositionFilter;
+                    m_Composition = (ICompositionFilter)m_Composition.SetSize(Descriptor.PrescaleSize);
                     return m_Composition;
                 }
             }

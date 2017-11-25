@@ -73,7 +73,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             if (Renderer.InputFormat.IsYuv() && ((TextureSize)Renderer.ChromaSize < Renderer.LumaSize).Any)
                 return m_SourceFilter;
 
-            return m_SourceFilter.Decompose();
+            return m_SourceFilter.FixComposition();
         }
 
         protected override ITextureFilter FinalizeOutput(ITextureFilter output)
