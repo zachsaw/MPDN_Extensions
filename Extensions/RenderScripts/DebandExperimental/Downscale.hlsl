@@ -29,7 +29,7 @@ float  iteration  : register(c3);
 #define phi ((1+sqrt(5))/2)
 #define sqr(x) ((x)*(x))
 
-#define factor (size0.xy / sizeOutput.xy)
+#define factor (sizeOutput.xy / size0.xy)
 
 #define Kernel(x) saturate(0.5 + (0.5 - abs(x)) / factor)
 
@@ -37,25 +37,55 @@ float  iteration  : register(c3);
 #define GetXY(xy) 	(tex2D(s0,dxdy*(pos + 0.5 + (xy))))
 #define Get(x,y)  	(GetXY(float2(x,y)))
 
-float4 main(float2 tex : TEXCOORD0) : COLOR{
+#define FromMask(m) (dot(m, float4(1,2,4,0))/7.0)
+#define ToMask(x) (frac((x) * (7.0/8.0) * float4(4,2,1,0)) > 7.0/16.0 ? 1 : 0)
+
+#ifdef FirstPass
+#define ToMask(x) float4(1,1,1,1)
+#endif
+
+float4 median(float2 tex) {
+	float2 pos = tex * size0.xy - 0.5;
+	float2 offset = pos - floor(pos);
+	pos -= offset;
+
+	float4x4 X = float4x4(Get(0,0), Get(0,1), Get(1,0), Get(1,1));
+	float4x4 M = float4x4(ToMask(X[0].a), ToMask(X[1].a), ToMask(X[2].a), ToMask(X[3].a));
+	float4 m = M[0] + M[1] + M[2] + M[3];
+
+	float4 lo = min(min(X[0]*M[0], X[1]*M[1]), min(X[2]*M[2], X[3]*M[3]));
+	float4 hi = max(max(X[0]*M[0], X[1]*M[1]), max(X[2]*M[2], X[3]*M[3]));
+
+	return m > 3
+		? (X[0]*M[0] + X[1]*M[1] + X[2]*M[2] + X[3]*M[3] - lo - hi) / (m - 2.0)
+		: (X[0]*M[0] + X[1]*M[1] + X[2]*M[2] + X[3]*M[3]) / m;
+}
+
+float4 main(float2 tex : TEXCOORD0) : COLOR {
 	float2 pos = tex * size0.xy - 0.5;
 	float2 offset = pos - round(pos);
 	pos -= offset;
 
-	float totalWeight = 0;
+	float4 mid = median(tex);
+
 	float4 total = 0;
+	float4 totalWeight = 0;
 
 	for (int X=-1; X<=1; X++)
-	for (int Y=-1; Y<=1; Y++) {
+	for (int Y=-1; Y<=1; Y++)
+	{
 		float2 kernel = Kernel(float2(X,Y) - offset);
-		float weight = kernel.x * kernel.y;
 		float4 sample = Get(X,Y);
+		float4 weight = kernel.x * kernel.y * saturate(1 - 10 * (range * abs(sample - mid) - 1));// * ToMask(sample.a);
+		// float  weight = kernel.x * kernel.y * saturate(1 - dot(10, max(0, range * abs(sample - mid) - 1))) * sample.a;
 
 		total += weight * sample;
 		totalWeight += weight;
 	}
-	total /= totalWeight;
-	// total.w = totalVar;
 
-	return total;
+	// float4 result = (totalWeight == 0 ? saturate(1000 * (1 - mid)) : total / totalWeight);
+	float4 result = (totalWeight == 0 ? mid : total / totalWeight);
+	result.a = FromMask(totalWeight == 0 ? 0 : 1);
+
+	return result;
 }
