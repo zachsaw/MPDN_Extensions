@@ -162,6 +162,8 @@
     <Compile Include="Extensions\Framework\Lending\Lease.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
     <Compile Include="Extensions\Framework\Lending\Lendable.cs" />
+    <Compile Include="Extensions\Framework\Merging\UnionFind.cs" />
+    <Compile Include="Extensions\Framework\Merging\Mergeable.cs" />
     <Compile Include="Extensions\Framework\PlayerExtension.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filters\TextureOutput.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filters\TextureProcess.cs" />

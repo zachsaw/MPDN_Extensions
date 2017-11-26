@@ -129,6 +129,7 @@
     <Compile Include="Extensions\AudioScripts\Mpdn.Reclock.cs" />
     <Compile Include="Extensions\AudioScripts\Mpdn.ScriptChain.cs" />
     <Compile Include="Extensions\AudioScripts\Mpdn.ScriptGroup.cs" />
+    <Compile Include="Extensions\AudioScripts\Shiandow.Crossfeed.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />
