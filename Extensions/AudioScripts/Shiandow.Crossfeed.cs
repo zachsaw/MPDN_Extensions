@@ -28,146 +28,170 @@ namespace Mpdn.Extensions.AudioScripts.Shiandow
 
             Apply(samples, input.Format.nSamplesPerSec);
         }
-        
-        const int crossfeedOrder = 16;
-        float[,] crossfeed = new float[2, crossfeedOrder];
 
-        const int echoOrder = 12;
-        float[,] echo = new float[2, echoOrder];
+        #region Effects
+
+        private interface IEffect
+        {
+            void Render(float[] input, float[] output = null);
+        }
+
+        private class BilinearGammaEffect : IEffect
+        {
+            private int m_Order;
+            private float m_strength;
+            private float m_volume;
+
+            private float m_prevL = 0.0f;
+            private float m_prevR = 0.0f;
+
+            private float[,] m_cache;
+
+            private bool m_Cross;
+
+            public BilinearGammaEffect(int frequency, float delay, float volume, int order, bool cross = true)
+            {
+                m_Cross = cross;
+                m_Order = order;
+                m_volume = volume;
+
+                float a = m_Order / (delay * frequency);
+                m_strength = (2 - a) / (2 + a);
+
+                m_cache = new float[2, m_Order];
+            }
+
+            public void Render(float[] input, float[] output = null)
+            {
+                output = output ?? input;
+                float L = input[0];
+                float R = input[1];
+
+                for (int j = 0; j < m_Order; j++)
+                {
+                    L = (1 - m_strength) * (L + m_prevL) / 2.0f + m_strength * m_cache[0, j];
+                    R = (1 - m_strength) * (R + m_prevR) / 2.0f + m_strength * m_cache[1, j];
+
+                    m_prevL = m_cache[0, j];
+                    m_prevR = m_cache[1, j];
+
+                    m_cache[0, j] = L;
+                    m_cache[1, j] = R;
+                }
+
+                m_prevL = input[0];
+                m_prevR = input[1];
+
+                output[0] = (output[0] + m_volume * (m_Cross ? R : L)) / (1 + m_volume);
+                output[1] = (output[1] + m_volume * (m_Cross ? L : R)) / (1 + m_volume);
+            }
+        }
+
+        private class ZeroPoleGammaEffect : IEffect
+        {
+            private int m_Order;
+            private float m_strength;
+            private float m_volume;
+
+            private float[,] m_cache;
+
+            private bool m_Echo;
+
+            public ZeroPoleGammaEffect(int frequency, float delay, float volume, int order, bool echo = false)
+            {
+                m_Echo = echo;
+                m_Order = order;
+                m_volume = volume;
+
+                float a = m_Order / (delay * frequency);
+
+                float spread = ((delay / m_Order) * frequency) / 1000000;
+                m_strength = (float)Math.Exp(-1 / spread);
+
+                m_cache = new float[2, m_Order];
+            }
+
+            public void Render(float[] input, float[] output = null)
+            {
+                float L, R;
+                output = output ?? input;
+
+                if (m_Echo)
+                {
+                    L = (1 - m_volume) * input[0] + m_volume * m_cache[1, m_Order - 1];
+                    R = (1 - m_volume) * input[1] + m_volume * m_cache[0, m_Order - 1];
+
+                    output[0] = (1 - m_volume) * output[0] + m_volume * m_cache[1, m_Order - 1];
+                    output[1] = (1 - m_volume) * output[1] + m_volume * m_cache[0, m_Order - 1];
+                }
+                else
+                {
+                    L = input[0];
+                    R = input[1];
+                }
+
+                // Zero-Pole mapping ((1 - e^-a z^-1)^-k) of Laplace transform ((a + s)^-k) of gamma distribution (x^(k-1) e^(-ax))
+                for (int j = 0; j < m_Order; j++)
+                {
+                    L = (1 - m_strength) * L + m_strength * m_cache[0, j];
+                    R = (1 - m_strength) * R + m_strength * m_cache[1, j];
+
+                    m_cache[0, j] = L;
+                    m_cache[1, j] = R;
+                }
+
+                if (!m_Echo)
+                {
+                    output[0] = (output[0] + m_volume * R) / (1 + m_volume);
+                    output[1] = (output[1] + m_volume * L) / (1 + m_volume);
+                }
+            }
+        }
+
+        #endregion
+
+        private IEffect crossfeed;
+        private IEffect acoustics;
 
         public void Apply(float[,] samples, int frequency)
         {
+            if (crossfeed == null || acoustics == null)
+            {
+                double angle = 45 * (Math.PI / 180); // w.r.t. bisector
+                double head = 0.15;
+                double v = 340.0;
+
+                float crossfeedMode = (float)((Math.Sin(angle) + angle) * (head / 2) / v);
+                float acousticsMode =  (float)(Math.PI * (head / 2) / v);
+
+                int crossfeedOrder = 12;
+                int acousticsOrder = 8;
+
+                float crossfeedVolume = (float)(0.5 * (1 + Math.Cos(angle)) / 2);
+                float acousticsVolume = (float)(0.25 * (1 + Math.Cos(angle)) / 2);
+
+                crossfeedVolume /= (1 + acousticsVolume);
+
+                crossfeed = new BilinearGammaEffect(frequency, crossfeedMode, crossfeedVolume, crossfeedOrder);
+                acoustics = new BilinearGammaEffect(frequency, acousticsMode, acousticsVolume, acousticsOrder);
+            }
+
             int length = samples.GetLength(1);
-
-            float crossfeedDelay = 450f;
-            float echoDelay = 1200f;// crossfeedDelay * (float) (Math.PI / Math.Sqrt(2.0));
-
-            float crossfeedAttenuation = -3.5f;
-            float echoAttenuation = -8.0f;
-
-            float volume = (float) Math.Pow(10, crossfeedAttenuation / 10);
-            float a = (1000000 * (crossfeedOrder - 1)) / (crossfeedDelay * frequency);
-            float strength = (2 - a) / (2 + a);
-
             for (int i = 0; i < length; i++)
             {
-                float L = samples[0, i];
-                float R = samples[1, i];
+                float[] input = new float[2];
+                float[] output = new float[2];
+                input[0] = samples[0, i];
+                input[1] = samples[1, i];
+                output[0] = samples[0, i];
+                output[1] = samples[1, i];
 
-                float prevL = crossfeed[0, 0];
-                float prevR = crossfeed[1, 0];
+                acoustics.Render(input, output);
+                crossfeed.Render(input, output);
 
-                crossfeed[0, 0] = L;
-                crossfeed[1, 0] = R;
-
-                // Bilinear transform of Laplace transform ((a + s)^-k) of gamma distribution (x^(k-1) e^(-ax))
-                for (int j = 1; j < crossfeedOrder; j++)
-                {
-                    L = (1 - strength) * (L + prevL) / 2.0f + strength * crossfeed[0, j];
-                    R = (1 - strength) * (R + prevR) / 2.0f + strength * crossfeed[1, j];
-
-                    prevL = crossfeed[0, j];
-                    prevR = crossfeed[1, j];
-
-                    crossfeed[0, j] = L;
-                    crossfeed[1, j] = R;
-                }
-
-                samples[0, i] = (samples[0, i] + volume * R) / (1 + volume);
-                samples[1, i] = (samples[1, i] + volume * L) / (1 + volume);
+                samples[0, i] = output[0];
+                samples[1, i] = output[1];
             }
-
-            /*
-            //float spread = ((crossfeedDelay / crossfeedOrder) * frequency) / 1000000;
-            //float strength = (float) Math.Exp(-1 / spread);
-            float strength = crossfeedDelay * frequency / (crossfeedOrder * 1000000 + crossfeedDelay * frequency); // Correct delay (at 0 hz)
-
-            for (int i = 0; i < length; i++)
-            {
-                float L = samples[0, i];
-                float R = samples[1, i];
-
-                // Zero-Pole mapping ((1 - e^-a z^-1)^-k) of Laplace transform ((a + s)^-k) of gamma distribution (x^(k-1) e^(-ax))
-                for (int j = 0; j < crossfeedOrder; j++)
-                {
-                    L = (1 - strength) * L + strength * crossfeed[0, j];
-                    R = (1 - strength) * R + strength * crossfeed[1, j];
-
-                    crossfeed[0, j] = L;
-                    crossfeed[1, j] = R;
-                }
-
-                samples[0, i] = (samples[0, i] + volume * R) / (1 + volume);
-                samples[1, i] = (samples[1, i] + volume * L) / (1 + volume);
-            }*/
-
-            volume = (float) Math.Pow(10, echoAttenuation / 10);
-            a = (1000000 * (echoOrder - 1)) / (echoDelay * frequency);
-            strength = (2 - a) / (2 + a);
-
-            for (int i = 0; i < length; i++)
-            {
-                /*float L = (samples[0, i] + volume * echo[1, echoOrder - 1]);// / (1 + volume);
-                float R = (samples[1, i] + volume * echo[0, echoOrder - 1]);// / (1 + volume);
-
-                float prevL = echo[0, 0];
-                float prevR = echo[1, 0];
-
-                echo[0, 0] = L;
-                echo[1, 0] = R;
-
-                samples[0, i] = L * (1 - volume);
-                samples[1, i] = R * (1 - volume);*/
-
-                float L = samples[0, i];
-                float R = samples[1, i];
-
-                float prevL = echo[0, 0];
-                float prevR = echo[1, 0];
-
-                echo[0, 0] = L;
-                echo[1, 0] = R;
-
-                // Bilinear transform of Laplace transform ((a + s)^-k) of gamma distribution (x^(k-1) e^(-ax))
-                for (int j = 1; j < echoOrder; j++)
-                {
-                    L = (1 - strength) * (L + prevL) / 2.0f + strength * echo[0, j];
-                    R = (1 - strength) * (R + prevR) / 2.0f + strength * echo[1, j];
-
-                    prevL = echo[0, j];
-                    prevR = echo[1, j];
-
-                    echo[0, j] = L;
-                    echo[1, j] = R;
-                }
-
-                samples[0, i] = (samples[0, i] + volume * R) / (1 + volume);
-                samples[1, i] = (samples[1, i] + volume * L) / (1 + volume);
-            }
-
-            /*
-            float spread = ((echoDelay / echoOrder) * frequency) / 1000000;
-            strength = (float)Math.Exp(-1 / spread);
-            //strength = echoDelay * frequency / (echoOrder * 1000000 + echoDelay * frequency); // Correct delay (at 0 hz)
-
-            for (int i = 0; i < length; i++)
-            {
-                float L = (samples[0, i] + volume * echo[1, echoOrder - 1]);// / (1 + volume);
-                float R = (samples[1, i] + volume * echo[0, echoOrder - 1]);// / (1 + volume);
-
-                samples[0, i] = L * (1 - volume);
-                samples[1, i] = R * (1 - volume);
-
-                // Zero-Pole mapping ((1 - e^-a z^-1)^-k) of Laplace transform ((a + s)^-k) of gamma distribution (x^(k-1) e^(-ax))
-                for (int j = 0; j < echoOrder; j++)
-                {
-                    L = (1 - strength) * L + strength * echo[0, j];
-                    R = (1 - strength) * R + strength * echo[1, j];
-
-                    echo[0, j] = L;
-                    echo[1, j] = R;
-                }
-            }*/
         }
     }
 
