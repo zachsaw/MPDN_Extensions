@@ -82,7 +82,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
             m_Initialized = true;
             Initialize();
 
-            return new AudioFilter(from _ in FilterBaseHelper.Return(this)
+            return new AudioFilter(from _ in FilterBaseHelper.Bind(this)
                                    from value in input                                   
                                    select Allocate(input.Output).Do(Render, value));
         }

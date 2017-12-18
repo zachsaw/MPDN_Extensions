@@ -70,7 +70,12 @@ namespace Mpdn.Extensions.Framework.Filter
     {
         #region Classes
 
-        public class Just<TOutput> : IFilterBase<TOutput>
+        private interface IBound<TOutput> : IFilterBase<TOutput>
+        {
+            IFilterBase<TOutput> Rebind(params IFilterBase[] inputs);
+        }
+
+        public struct Just<TOutput> : IFilterBase<TOutput>
         {
             public TOutput Output { get { return m_Output; } }
 
@@ -87,43 +92,39 @@ namespace Mpdn.Extensions.Framework.Filter
 
             public IProcessData ProcessData { get { return m_ProcessData; } }
 
-            #region Resource Management
-
-            ~Just() { Dispose(false); }
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            protected virtual void Dispose(bool disposing)
-            {
-                if (disposing)
-                    DisposeHelper.Dispose(m_Output);
-            }
-
-            #endregion
+            public void Dispose() { }
 
             #endregion
         }
 
-        private struct Bound<TOutput> : IFilterBase<TOutput>
+        private class Bound<TOutput> : IFilterBase<TOutput>, IBound<TOutput>
         {
-            private readonly IReadOnlyCollection<IFilterBase> m_Inputs;
+            private readonly IReadOnlyCollection<IDisposable> m_Inputs;
             private readonly IFilterBase<TOutput> m_Output;
 
+            public IFilterBase<TOutput> Rebind(params IFilterBase[] inputs)
+            {
+                foreach (var filter in inputs)
+                    ProcessData.AddInput(filter.ProcessData);
+
+                return new Bound<TOutput>(m_Output, m_Inputs.Concat(inputs).ToArray());
+            }
+
             public Bound(IFilterBase<TOutput> output, params IFilterBase[] inputs)
+                : this(output, (IDisposable[])inputs)
+            {
+                foreach (var filter in inputs)
+                    ProcessData.AddInput(filter.ProcessData);
+            }
+
+            public Bound(IFilterBase<TOutput> output, params IDisposable[] inputs)
             {
                 m_Disposed = false;
 
                 m_Inputs = inputs;
                 m_Output = output;
-
-                foreach (var filter in m_Inputs)
-                    ProcessData.AddInput(filter.ProcessData);
             }
-
+            
             #region IFilterBase Implementation
 
             public IProcessData ProcessData { get { return m_Output.ProcessData; } }
@@ -134,21 +135,31 @@ namespace Mpdn.Extensions.Framework.Filter
 
             private bool m_Disposed;
 
+            ~Bound() { Dispose(false); }
+
             public void Dispose()
             {
-                if (m_Disposed)
-                    return;
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing && !m_Disposed)
+                {
+                    foreach (var input in m_Inputs)
+                        input.Dispose();
+                    m_Output.Dispose();
+                }
 
                 m_Disposed = true;
-                m_Output.Dispose();
-                DisposeHelper.DisposeElements(m_Inputs);
             }
 
             #endregion
 
             #endregion
         }
-
+        
         #endregion
 
         #region Monad Implementation
@@ -158,9 +169,21 @@ namespace Mpdn.Extensions.Framework.Filter
             return new Just<A>(value);
         }
 
+        public static IFilterBase<A> Bind<A>(this A value)
+            where A : IDisposable
+        {
+            return new Bound<A>(Return(value), value);
+        }
+
         public static IFilterBase<B> Bind<A, B>(this IFilterBase<A> filter, Func<A, IFilterBase<B>> f)
         {
-            return new Bound<B>(f(filter.Output), filter);
+            var result = f(filter.Output);
+
+            var bound = result as IBound<B>;
+            if (bound != null)
+                return bound.Rebind(filter);
+
+            return new Bound<B>(result, filter);
         }
 
         public static IFilterBase<B> Map<A, B>(this IFilterBase<A> filter, Func<A, B> f)

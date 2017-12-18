@@ -326,7 +326,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
             { }
 
             private ManagedTextureFilter(ILease<ITextureOutput<TTexture>> lease)
-                : base(FilterBaseHelper.Return(lease).Map(x => x.Value))
+                : base(FilterBaseHelper.Bind(lease).Map(x => x.Value))
             { }
         }
 

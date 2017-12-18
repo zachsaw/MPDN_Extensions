@@ -85,7 +85,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shaders
         {
             var folded = inputs.Fold();
             return new TextureFilter(
-                from _ in FilterBaseHelper.Return(this)
+                from _ in FilterBaseHelper.Bind(this)
                 from values in folded
                 select Allocate(folded.Output).Do(Render, values));
         }
