@@ -114,10 +114,6 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
             if (rgb != null)
                 return rgb.Undo();
 
-            var sourceFilter = filter as VideoSourceFilter;
-            if (sourceFilter != null)
-                return sourceFilter.GetYuv();
-
             return new UndoFilter<YuvProcess>(filter, new YuvProcess());
         }
     }

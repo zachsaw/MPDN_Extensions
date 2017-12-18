@@ -135,10 +135,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
         public VSourceFilter() : base(new DeferredTextureOutput<ITexture2D>(() => Renderer.TextureV, Renderer.ChromaSize)) { }
     }
 
-    public interface ISourceFilter : IResizeableFilter
-    {
-        ITextureFilter GetYuv();
-    }
+    public interface ISourceFilter : IResizeableFilter, ICanUndo<RgbProcess> { }
 
     public interface ISouceCompositionFilter : ISourceFilter, ICompositionFilter
     {
@@ -156,7 +153,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
         public void EnableTag() { }
 
-        public ITextureFilter GetYuv()
+        ITextureFilter ICanUndo<RgbProcess>.Undo()
         {
             return new VideoSourceFilter(m_TrueSource, Output.Size, true);
         }
@@ -214,19 +211,19 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
             private readonly VideoSourceFilter m_Source;
 
-            private ITextureFilter Decompose(ITextureFilter filter)
+            private ITextureFilter FixComposition(ITextureFilter filter)
             {
                 return (filter as ISouceCompositionFilter).FixComposition();
             }
 
-            public ITextureFilter GetYuv()
+            ITextureFilter ICanUndo<RgbProcess>.Undo()
             {
-                return Decompose(m_Source.GetYuv());
+                return FixComposition(((ICanUndo<RgbProcess>)m_Source).Undo());
             }
 
             public ITextureFilter ResizeTo(TextureSize outputSize)
             {
-                return Decompose(m_Source.ResizeTo(outputSize));
+                return FixComposition(m_Source.ResizeTo(outputSize));
             }
 
             public void EnableTag()
