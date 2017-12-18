@@ -42,9 +42,6 @@ namespace Mpdn.Extensions.RenderScripts
                 int bits = Renderer.InputFormat.GetBitDepth();
                 if (bits > MaxBitDepth) return input;
 
-                var composition = input as ICompositionFilter;
-                var offset = new SharpDX.Vector2(0.0f, 0.0f); // TODO: process chroma offset properly
-
                 float[] consts = {
                     (1 << bits) - 1,
                     Power
@@ -55,14 +52,12 @@ namespace Mpdn.Extensions.RenderScripts
                     Transform = s => new TextureSize(s.Width / 2, s.Height / 2),
                     Arguments = consts
                 };
-
                 var DownscaleLuma = new Shader(FromFile("DownscaleLuma.hlsl"))
                 {
                     SizeIndex = 1,
                     Arguments = consts
                 };
                 DownscaleLuma["iteration"] = 0;
-
                 var Deband = new Shader(FromFile("Deband.hlsl", compilerOptions: PreserveDetail ? "PRESERVE_DETAIL=1" : ""))
                 {
                     Arguments = consts,
@@ -70,19 +65,17 @@ namespace Mpdn.Extensions.RenderScripts
                     SizeIndex = 1
                 };
 
-                ITextureFilter deband, chroma = null, luma = null;
                 var pyramid = new Stack<ITextureFilter>();
 
+                var composition = input as ICompositionFilter;
                 if (composition != null)
                 {
-                    deband = composition.Luma;
-                    pyramid.Push(deband);
+                    pyramid.Push(composition.Luma);
                     pyramid.Push(DownscaleLuma.ApplyTo(composition.Luma, composition.Chroma));
                 }
                 else
                 {
-                    deband = input.ConvertToYuv();
-                    pyramid.Push(deband);
+                    pyramid.Push(input.ConvertToYuv());
                 }
 
                 // Build gaussian pyramid
@@ -94,23 +87,22 @@ namespace Mpdn.Extensions.RenderScripts
                 }
 
                 // Process pyramid
-                var result = pyramid.Peek();
+                ITextureFilter chroma = null;
+                ITextureFilter result = pyramid.Peek();
                 while (pyramid.Count > 1)
                 {
-                    result = Deband.ApplyTo(pyramid.Pop(), pyramid.Peek(), result);
                     if (composition != null && pyramid.Count == 2)
                     {
                         chroma = result;
                         Deband.Format = TextureFormat.Unorm16_R;
                     }
+                    result = Deband.ApplyTo(pyramid.Pop(), pyramid.Peek(), result);
                 }
 
                 if (composition != null)
-                {
-                    luma = result;
-                    return new CompositionFilter(luma, chroma, composition.TargetSize, composition.ChromaOffset);
-                }
-                else return result.ConvertToRgb();
+                    return result.ComposeWith(chroma, copyParametersFrom: composition);
+                else
+                    return result.ConvertToRgb();
             }
         }
 

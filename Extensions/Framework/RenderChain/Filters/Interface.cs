@@ -343,6 +343,27 @@ namespace Mpdn.Extensions.Framework.RenderChain
         }
     }
 
+    public static class CompositionHelper
+    {
+        public static ICompositionFilter Decompose(this ITextureFilter filter)
+        {
+            var result = filter as ICompositionFilter;
+            if (result != null)
+                return result;
+
+            var yuv = filter.ConvertToYuv();
+            return new CompositionFilter(yuv, yuv, fallback: filter);
+        }
+
+        public static ICompositionFilter ComposeWith(this ITextureFilter luma, ITextureFilter chroma, ICompositionFilter copyParametersFrom = null, TextureSize? targetSize = null, Vector2? chromaOffset = null)
+        {
+            if (copyParametersFrom != null)
+                return new CompositionFilter(luma, chroma, targetSize ?? copyParametersFrom.TargetSize, chromaOffset ?? copyParametersFrom.ChromaOffset);
+
+            return new CompositionFilter(luma, chroma, targetSize, chromaOffset);
+        }
+    }
+
     public static class MergeHelper
     {
         public static ITextureFilter MergeWith(this ITextureFilter inputY, ITextureFilter inputUv)

@@ -24,12 +24,20 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
     {
         public static ITextureFilter ScaleChroma(ITextureFilter luma, ITextureFilter chroma, TextureSize targetSize, Vector2 chromaOffset)
         {
-            var resizedChroma = new ResizeFilter(chroma, targetSize, TextureChannels.ChromaOnly, chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
-            resizedChroma.AddLabel(resizedChroma.ScaleDescription.AddPrefixToDescription("Chroma: "));
+            luma = luma.SetSize(targetSize);
+            var resizedLuma = luma as ResizeFilter;
+            if (resizedLuma != null)
+                resizedLuma.AddLabel(resizedLuma.ScaleDescription.AddPrefixToDescription("Luma: "));
+
+            if (chroma.Size() != luma.Size())
+            {
+                var resizedChroma = new ResizeFilter(chroma, luma.Size(), TextureChannels.ChromaOnly, chromaOffset, Renderer.ChromaUpscaler, Renderer.ChromaDownscaler);
+                resizedChroma.AddLabel(resizedChroma.ScaleDescription.AddPrefixToDescription("Chroma: "));
+                chroma = resizedChroma;
+            }
 
             return luma
-                .SetSize(targetSize, tagged: true)
-                .MergeWith(resizedChroma)
+                .MergeWith(chroma)
                 .ConvertToRgb();
         }
 
@@ -47,8 +55,8 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
 
         public TextureSize TargetSize { get { return Output.Size; } }
 
-        public CompositionFilter(ITextureFilter luma, ITextureFilter chroma, TextureSize? targetSize = null, Vector2? chromaOffset = null)
-            : this(luma, chroma, targetSize ?? luma.Size(), chromaOffset ?? Renderer.ChromaOffset)
+        public CompositionFilter(ITextureFilter luma, ITextureFilter chroma, TextureSize? targetSize = null, Vector2? chromaOffset = null, ITextureFilter fallback = null)
+            : this(luma, chroma, targetSize ?? luma.Size(), chromaOffset ?? Renderer.ChromaOffset, fallback)
         { }
 
         #region IResizeable Implementation
@@ -71,8 +79,8 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
             return m_Fallback.ConvertToYuv();
         }
 
-        private CompositionFilter(ITextureFilter luma, ITextureFilter chroma, TextureSize targetSize, Vector2 chromaOffset)
-            : this(luma, chroma, DefaultChromaScaler.ScaleChroma(luma, chroma, targetSize, chromaOffset), targetSize, chromaOffset)
+        private CompositionFilter(ITextureFilter luma, ITextureFilter chroma, TextureSize targetSize, Vector2 chromaOffset, ITextureFilter fallback = null)
+            : this(luma, chroma, fallback ?? DefaultChromaScaler.ScaleChroma(luma, chroma, targetSize, chromaOffset), targetSize, chromaOffset)
         { }
 
         private CompositionFilter(ITextureFilter luma, ITextureFilter chroma, ITextureFilter fallback, TextureSize targetSize, Vector2 chromaOffset)

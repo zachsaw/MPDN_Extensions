@@ -85,12 +85,13 @@ namespace Mpdn.Extensions.RenderScripts
                     return input;
 
                 var yuv = input.ConvertToYuv();
+                var composition = input.Decompose();
 
-                var resultY = interleave.ApplyTo(yuv    , shaderPass1.ApplyTo(yuv));
-                var luma    = interleave.ApplyTo(resultY, shaderPass2.ApplyTo(resultY));
+                var resultY = interleave.ApplyTo(composition.Luma, shaderPass1.ApplyTo(yuv));
+                var luma    = interleave.ApplyTo(resultY         , shaderPass2.ApplyTo(resultY));
 
-                var result = ChromaScaler.ScaleChroma(
-                    new CompositionFilter(luma, yuv, targetSize: luma.Size(), chromaOffset: new Vector2(-0.25f, -0.25f)));
+                composition = luma.ComposeWith(composition.Chroma, chromaOffset: new Vector2(-0.25f, -0.25f));
+                var result = ChromaScaler.ScaleChroma(composition);
 
                 return result.Convolve(null, offset: new Vector2(0.5f, 0.5f));
             }

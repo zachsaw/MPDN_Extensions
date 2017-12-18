@@ -219,13 +219,13 @@ namespace Mpdn.Extensions.RenderScripts
                 if ((Renderer.TargetSize <= sourceSize).Any)
                     return input;
 
-                var yuv = input.ConvertToYuv();
+                var composition = input.Decompose();
 
-                var nnedi3H = shaderH.ApplyTo(yuv);
+                var nnedi3H = shaderH.ApplyTo(composition.Luma);
                 var nnedi3V = shaderV.ApplyTo(nnedi3H);
 
-                var result = ChromaScaler.ScaleChroma(
-                    new CompositionFilter(nnedi3V, yuv, targetSize: nnedi3V.Size(), chromaOffset: new Vector2(-0.25f, -0.25f)));
+                composition = nnedi3V.ComposeWith(composition.Chroma, chromaOffset: new Vector2(-0.25f, -0.25f));
+                var result = ChromaScaler.ScaleChroma(composition);
 
                 return result.Convolve(null, offset: new Vector2(0.5f, 0.5f));
             }
