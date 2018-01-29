@@ -248,8 +248,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
         { }
 
         private VideoSourceFilter(TrueSourceFilter trueSource, TextureSize outputSize, bool wantYuv)
-            : base(from _ in trueSource
-                   from result in Compile(new TextureDescription(outputSize), () =>
+            : base(Compile(new TextureDescription(outputSize), () =>
                    {
                        ITextureFilter source = trueSource;
 
@@ -260,8 +259,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
                            source = source.ConvertToRgb();
 
                        return source.SetSize(outputSize);
-                   })
-                   select result)
+                   }))
         {
             m_TrueSource = trueSource;
             m_WantYuv = wantYuv;

@@ -89,11 +89,6 @@ namespace Mpdn.Extensions.Framework.Chain
 
         public abstract TScript CreateScript();
 
-        protected ChainUi()
-        {
-            Settings = new TChain();
-        }
-
         [YAXDontSerialize]
         public Chain<T> Chain
         {

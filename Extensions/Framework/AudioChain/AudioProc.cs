@@ -37,18 +37,17 @@ namespace Mpdn.Extensions.Framework.AudioChain
             get { return s_Gpu; }
         }
 
-        private static Task<bool> s_InitTask = null;
-        private static object s_TaskLock = new object();
+        private static Lazy<bool> s_Init = new Lazy<bool>(Init);
+        private static Lazy<Task<bool>> s_InitAsync = new Lazy<Task<bool>>(() => Task.Run(() => s_Init.Value));
 
         public static Task<bool> AsyncInitialize()
         {
-            lock (s_TaskLock)
-                return s_InitTask = (s_InitTask ?? Task.Run((Func<bool>)Init));
+            return s_InitAsync.Value;
         }
 
         public static bool Initialize()
         {
-            return AsyncInitialize().Result;
+            return s_Init.Value;
         }
 
         private static bool Init()

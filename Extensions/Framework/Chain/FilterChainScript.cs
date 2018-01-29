@@ -17,6 +17,7 @@
 using System;
 using System.Diagnostics;
 using Mpdn.Extensions.Framework.Filter;
+using System.Threading.Tasks;
 
 namespace Mpdn.Extensions.Framework.Chain
 {
@@ -33,7 +34,6 @@ namespace Mpdn.Extensions.Framework.Chain
 
         #region Implementation
 
-        private TFilter m_SourceFilter;
         private TFilter m_Filter;
 
         private readonly Chain<TFilter> m_Chain;
@@ -55,7 +55,6 @@ namespace Mpdn.Extensions.Framework.Chain
         public void UpdateFilter()
         {
             var oldFilter = m_Filter;
-            DisposeHelper.Dispose(ref m_SourceFilter);
 
             try
             {
@@ -75,9 +74,9 @@ namespace Mpdn.Extensions.Framework.Chain
 
         private void UpdateStatus()
         {
-            Status = "Status Invalid";
+            Status = "Status loading...";
             if (m_Filter != null)
-                Status = m_Filter.ProcessData.CreateString();
+                Task.Run(() => Status = m_Filter.ProcessData.CreateString());
         }
 
         public virtual bool Execute()
@@ -139,7 +138,6 @@ namespace Mpdn.Extensions.Framework.Chain
         protected virtual void Dispose(bool disposing)
         {
             DisposeHelper.Dispose(m_Filter);
-            DisposeHelper.Dispose(ref m_SourceFilter);
         }
 
         #endregion

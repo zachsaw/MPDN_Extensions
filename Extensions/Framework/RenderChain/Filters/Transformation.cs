@@ -121,8 +121,10 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
     public sealed class ChromaSourceFilter : TextureFilter
     {
         public ChromaSourceFilter()
-            : base(GetShader().GetHandle().ApplyTo(new USourceFilter(), new VSourceFilter()))
+            : base(MergeShader.ApplyTo(new USourceFilter(), new VSourceFilter()))
         { }
+
+        private static IShaderHandle MergeShader = GetShader().GetHandle();
 
         private static IShaderConfig GetShader()
         {

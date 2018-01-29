@@ -21,8 +21,6 @@ namespace Mpdn.Extensions.PlayerExtensions.Subtitles
 {
     public partial class OpenSubtitlesConfigDialog : OpenSubtitlesConfigBase
     {
-
-
         public OpenSubtitlesConfigDialog()
         {
             InitializeComponent();

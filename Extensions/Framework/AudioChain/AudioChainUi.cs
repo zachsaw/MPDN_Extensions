@@ -17,7 +17,6 @@
 using Mpdn.AudioScript;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Config;
-using Mpdn.Extensions.Framework.Filter;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
