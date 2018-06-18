@@ -38,22 +38,23 @@ namespace Mpdn.Extensions.AudioScripts.Shiandow
 
         private class BilinearGammaEffect : IEffect
         {
-            private int m_Order;
-            private float m_strength;
-            private float m_volume;
+            private readonly int m_Order;
+            private readonly float m_strength;
+            private readonly float m_volume;
+
+            private readonly bool m_Cross;
+            private readonly bool m_PreserveMid;
 
             private float m_prevL = 0.0f;
             private float m_prevR = 0.0f;
-
             private float[,] m_cache;
 
-            private bool m_Cross;
-
-            public BilinearGammaEffect(int frequency, float delay, float volume, int order, bool cross = true)
+            public BilinearGammaEffect(int frequency, float delay, float volume, int order, bool cross = true, bool preserveMid = false)
             {
                 m_Cross = cross;
                 m_Order = order;
                 m_volume = volume;
+                m_PreserveMid = preserveMid;
 
                 float a = m_Order / (delay * frequency);
                 m_strength = (2 - a) / (2 + a);
@@ -82,8 +83,16 @@ namespace Mpdn.Extensions.AudioScripts.Shiandow
                 m_prevL = input[0];
                 m_prevR = input[1];
 
-                output[0] = (output[0] + m_volume * (m_Cross ? R : L)) / (1 + m_volume);
-                output[1] = (output[1] + m_volume * (m_Cross ? L : R)) / (1 + m_volume);
+                if (m_PreserveMid)
+                {
+                    output[0] = (output[0] + m_volume * (m_Cross ? R - L : L - R)/2.0f) / (1 + m_volume);
+                    output[1] = (output[1] + m_volume * (m_Cross ? L - R : R - L)/2.0f) / (1 + m_volume);
+                }
+                else
+                {
+                    output[0] = (output[0] + m_volume * (m_Cross ? R : L)) / (1 + m_volume);
+                    output[1] = (output[1] + m_volume * (m_Cross ? L : R)) / (1 + m_volume);
+                }
             }
         }
 
@@ -110,7 +119,7 @@ namespace Mpdn.Extensions.AudioScripts.Shiandow
 
                 m_cache = new float[2, m_Order];
             }
-
+        
             public void Render(float[] input, float[] output = null)
             {
                 float L, R;
@@ -158,22 +167,25 @@ namespace Mpdn.Extensions.AudioScripts.Shiandow
             if (crossfeed == null || acoustics == null)
             {
                 double angle = 45 * (Math.PI / 180); // w.r.t. bisector
-                double head = 0.15;
+                double head = 0.175;
                 double v = 340.0;
 
-                float crossfeedMode = (float)((Math.Sin(angle) + angle) * (head / 2) / v);
-                float acousticsMode =  (float)(Math.PI * (head / 2) / v);
+                float crossfeedDelay = (float)((Math.Sin(angle) + angle) * (head / 2) / v);
+                float acousticsDelay =  (float)(Math.PI * (head / 2) / v);
 
-                int crossfeedOrder = 12;
-                int acousticsOrder = 8;
+                int crossfeedOrder = 16;
+                int acousticsOrder = 4;
 
-                float crossfeedVolume = (float)(0.5 * (1 + Math.Cos(angle)) / 2);
-                float acousticsVolume = (float)(0.25 * (1 + Math.Cos(angle)) / 2);
+                //float crossfeedVolume = (float)(1.0 * (1 + Math.Cos(angle)) / 2);
+                float xfeed = 0.25f;
+                float crossfeedVolume = (float)(((1 + xfeed) - (1 - xfeed) * Math.Cos(angle)) / ((1 + xfeed) + (1 - xfeed) * Math.Cos(angle)));
+                float acousticsVolume = 0.01f;
 
-                crossfeedVolume /= (1 + acousticsVolume);
+                //crossfeedVolume /= (1 + acousticsVolume);
+                //acousticsVolume /= (1 + crossfeedVolume);
 
-                crossfeed = new BilinearGammaEffect(frequency, crossfeedMode, crossfeedVolume, crossfeedOrder);
-                acoustics = new BilinearGammaEffect(frequency, acousticsMode, acousticsVolume, acousticsOrder);
+                crossfeed = new BilinearGammaEffect(frequency, crossfeedDelay, crossfeedVolume, crossfeedOrder);
+                acoustics = new BilinearGammaEffect(frequency, acousticsDelay, acousticsVolume, acousticsOrder);
             }
 
             int length = samples.GetLength(1);
@@ -186,8 +198,8 @@ namespace Mpdn.Extensions.AudioScripts.Shiandow
                 output[0] = samples[0, i];
                 output[1] = samples[1, i];
 
-                acoustics.Render(input, output);
                 crossfeed.Render(input, output);
+                //acoustics.Render(output, output);
 
                 samples[0, i] = output[0];
                 samples[1, i] = output[1];
