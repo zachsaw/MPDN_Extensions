@@ -282,7 +282,7 @@ namespace Mpdn.Extensions.Framework.RenderChain
 
     public static class ManagedTextureHelpers
     {
-        private class ManagedTexture<TTexture> : Lendable<JustTextureOutput<TTexture>>, IManagedTexture<TTexture>
+        private class ManagedTexture<TTexture> : Lendable<JustTextureOutput<TTexture>>, IManagedTexture<TTexture>, IDisposable
             where TTexture : IBaseTexture
         {
             public ManagedTexture(TTexture value)
@@ -300,19 +300,32 @@ namespace Mpdn.Extensions.Framework.RenderChain
             #region Lendable Implementation
 
             private readonly JustTextureOutput<TTexture> m_TextureOutput;
-            private bool m_Disposed = false;
 
             protected override JustTextureOutput<TTexture> Value { get { return m_TextureOutput; } }
 
             protected override void Allocate() { }
 
-            protected override void Deallocate()
+            protected override void Deallocate() { Dispose(); }
+
+            #endregion
+
+            #region Resource Management
+
+            private bool m_Disposed = false;
+
+            ~ManagedTexture()
             {
-                if (!m_Disposed)
-                {
-                    Value.Dispose();
-                    m_Disposed = true;
-                }
+                Dispose();
+            }
+
+            public void Dispose()
+            {
+                if (m_Disposed)
+                    return;
+                
+                m_Disposed = true;
+                Value.Dispose();
+                GC.SuppressFinalize(this);
             }
 
             #endregion
