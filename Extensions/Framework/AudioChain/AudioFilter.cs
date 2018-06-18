@@ -18,11 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Cudafy.Host;
 using DirectShowLib;
 using Mpdn.Extensions.Framework.Filter;
-using Shiandow.Lending;
+using Onsyn.Lending;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
@@ -43,20 +44,10 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         protected abstract bool Process(IAudioOutput input, IAudioOutput output);
 
-        protected virtual void Initialize() { }
-
-        public AudioProcessBase()
+        protected virtual void Initialize()
         {
-            try
-            {
-                // Gpu may not yet be defined if we're just loading settings
-                if (AudioProc.Gpu != null)
-                    OnLoadAudioKernel();
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex);
-            }
+            m_LoadAudioKernel = new Lazy<bool>(OnLoadAudioKernelInternal);
+            Task.Run(() => m_LoadAudioKernel.Value);
         }
 
         #region IProcess Implementation
@@ -70,7 +61,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
 
         public void Render(IAudioOutput input, IAudioOutput output)
         {
-            if (!Process(input, output))
+            if (!AudioKernelLoaded || !Process(input, output))
                 AudioHelpers.CopySample(input.Sample, output.Sample, true);
         }
 
@@ -85,6 +76,33 @@ namespace Mpdn.Extensions.Framework.AudioChain
             return new AudioFilter(from _ in FilterBaseHelper.Bind(this)
                                    from value in input                                   
                                    select Allocate(input.Output).Do(Render, value));
+        }
+
+        #endregion
+
+        #region Initialisation
+
+        private Lazy<bool> m_LoadAudioKernel;
+
+        protected bool AudioKernelLoaded { get { return m_LoadAudioKernel.Value; } }
+
+        private bool OnLoadAudioKernelInternal()
+        {
+            try
+            {
+                // Gpu may not yet be defined if we're just loading settings
+                if (AudioProc.Gpu != null)
+                {
+                    OnLoadAudioKernel();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex);
+            }
+
+            return false;
         }
 
         #endregion
