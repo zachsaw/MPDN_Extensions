@@ -16,6 +16,9 @@
 // 
 
 using System;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Mpdn.Extensions.Framework.Config
@@ -67,6 +70,38 @@ namespace Mpdn.Extensions.Framework.Config
         }
     }
 
+    public static class SettingsPrefetcher<TExtensionClass>
+    {
+        private static ConcurrentDictionary<string, IScriptSettings<object>> m_Settings = new ConcurrentDictionary<string, IScriptSettings<object>>();
+
+        public static IScriptSettings<TSettings> Load<TSettings>(string configFileName)
+            where TSettings : class, new()
+        {
+            return (IScriptSettings<TSettings>) m_Settings.GetOrAdd(configFileName, fname => new PersistentConfig<TExtensionClass, TSettings>(fname));
+        }
+
+        public static IScriptSettings<TSettings> Remove<TSettings>(string configFileName)
+            where TSettings : class, new()
+        {
+            IScriptSettings<object> result;
+            m_Settings.TryRemove(configFileName, out result);
+            return (IScriptSettings<TSettings>)result;
+        }
+
+        public static Task Prefetch<TSettings>(string configFileName)
+            where TSettings : class, new()
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    Load<TSettings>(configFileName);
+                }
+                catch { /* Ignore errors */ }
+            });
+        }
+    }
+
     public abstract class ExtensionUi<TExtensionClass, TSettings, TDialog> : IExtensionUi
         where TSettings : class, new()
         where TDialog : IScriptConfigDialog<TSettings>, new()
@@ -87,27 +122,39 @@ namespace Mpdn.Extensions.Framework.Config
 
         public bool SaveToString(out string result)
         {
-            return m_ScriptConfig.SaveToString(out result);
+            return ScriptConfig.SaveToString(out result);
         }
 
         public bool LoadFromString(string input)
         {
-            return m_ScriptConfig.LoadFromString(input);
+            return ScriptConfig.LoadFromString(input);
         }
 
         #region Implementation
 
-        private IScriptSettings<TSettings> m_ScriptConfig;
+        private Lazy<IScriptSettings<TSettings>> m_LoadScriptConfig;
+
+        private IScriptSettings<TSettings> ScriptConfig
+        {
+            get { return m_LoadScriptConfig.Value; }
+            set { LoadConfigLazy(() => value); }
+        }
+
+        private void LoadConfigLazy(Func<IScriptSettings<TSettings>> load)
+        {
+            m_LoadScriptConfig = new Lazy<IScriptSettings<TSettings>>(load);
+        }
 
         protected ExtensionUi()
         {
-            m_ScriptConfig = new MemConfig<TSettings>();
+            LoadConfigLazy(() => new MemConfig<TSettings>(new TSettings()));
+            SettingsPrefetcher<TExtensionClass>.Prefetch<TSettings>(ConfigFileName);
         }
 
         public TSettings Settings
         {
-            get { return m_ScriptConfig.Config; }
-            set { m_ScriptConfig = new MemConfig<TSettings>(value); }
+            get { return ScriptConfig.Config; }
+            set { ScriptConfig = new MemConfig<TSettings>(value); }
         }
 
         public bool HasConfigDialog()
@@ -117,19 +164,20 @@ namespace Mpdn.Extensions.Framework.Config
 
         public virtual void Initialize()
         {
-            m_ScriptConfig = new PersistentConfig<TExtensionClass, TSettings>(ConfigFileName);
+            LoadConfigLazy(() => SettingsPrefetcher<TExtensionClass>.Load<TSettings>(ConfigFileName));
         }
 
         public virtual void Destroy()
         {
-            m_ScriptConfig.Save();
+            ScriptConfig.Save();
+            SettingsPrefetcher<TExtensionClass>.Remove<TSettings>(ConfigFileName);
         }
 
         public virtual bool ShowConfigDialog(IWin32Window owner)
         {
             using (var dialog = new TDialog())
             {
-                dialog.Setup(m_ScriptConfig.Config);
+                dialog.Setup(ScriptConfig.Config);
                 if (dialog.ShowDialog(owner) == DialogResult.OK)
                 {
                     RaiseSettingsChanged();
