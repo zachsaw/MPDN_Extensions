@@ -34,6 +34,8 @@ namespace Mpdn.Extensions.PlayerExtensions
         private Size m_VideoBoxSize;
         private bool m_Resizing;
 
+        private IDisposable m_Hotkey;
+
         public override ExtensionUiDescriptor Descriptor
         {
             get
@@ -72,15 +74,16 @@ namespace Mpdn.Extensions.PlayerExtensions
             Player.Loaded -= OnPlayerLoaded;
             m_Timer.Tick -= TimerOnTick;
 
-            m_Timer.Dispose();
-            m_Text.Dispose();
+            DisposeHelper.Dispose(m_Timer);
+            DisposeHelper.Dispose(m_Text);
+            DisposeHelper.Dispose(m_Hotkey);
 
             base.Destroy();
         }
 
         private void OnPlayerLoaded(object sender, EventArgs eventArgs)
         {
-            HotkeyRegister.RegisterHotkey(Guid.NewGuid(), "Ctrl+K", () =>
+            m_Hotkey = HotkeyRegister.AddOrUpdateHotkey("Ctrl+K", () =>
             {
                 Settings.ShowOsd = !Settings.ShowOsd;
 

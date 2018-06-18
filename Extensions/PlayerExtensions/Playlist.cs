@@ -114,19 +114,32 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             Player.DragEnter -= OnDragEnter;
             Player.DragDrop -= OnDragDrop;
             Player.CommandLineFileOpen -= OnCommandLineFileOpen;
-            m_MpdnForm.Move -= OnMpdnFormMove;
-            m_MpdnForm.KeyDown -= OnMpdnFormKeyDown;
-            m_MpdnForm.MainMenuStrip.MenuActivate -= OnMpdnFormMainMenuActivated;
-            m_MpdnForm.SizeChanged -= OnMpdnFormSizeChanged;
-            m_MpdnForm.ResizeBegin -= OnMpdnFormResizeBegin;
-            m_MpdnForm.ResizeEnd -= OnMpdnFormResizeEnd;
-            m_Form.VisibleChanged -= OnFormVisibilityChanged;
-            m_Form.Move -= OnFormMove;
-            m_Form.SizeChanged -= OnFormSizeChanged;
+
+            if (m_MpdnForm != null)
+            {
+                m_MpdnForm.Move -= OnMpdnFormMove;
+                m_MpdnForm.KeyDown -= OnMpdnFormKeyDown;
+                m_MpdnForm.SizeChanged -= OnMpdnFormSizeChanged;
+                m_MpdnForm.ResizeBegin -= OnMpdnFormResizeBegin;
+                m_MpdnForm.ResizeEnd -= OnMpdnFormResizeEnd;
+
+                if (m_MpdnForm.MainMenuStrip != null)
+                    m_MpdnForm.MainMenuStrip.MenuActivate -= OnMpdnFormMainMenuActivated;
+            }
+
+            if (m_Form != null)
+            { 
+                m_Form.VisibleChanged -= OnFormVisibilityChanged;
+                m_Form.Move -= OnFormMove;
+                m_Form.SizeChanged -= OnFormSizeChanged;
+
+                m_Form.Dispose();
+            }
+
+            if (m_Timer != null)
+                m_Timer.Dispose();
 
             base.Destroy();
-            m_Timer.Dispose();
-            m_Form.Dispose();
         }
 
         public void Reinitialize()
@@ -298,8 +311,8 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (string.IsNullOrEmpty(Media.FilePath)) return;
             if (Player.State != PlayerState.Playing) return;
 
-            if (m_Form.CurrentItem != null && m_Form.CurrentItem.FilePath != Media.FilePath) m_Form.ActiveFile(Media.FilePath);
-            else if (m_Form.CurrentItem == null) m_Form.ActiveFile(Media.FilePath);
+            //if (m_Form.CurrentItem != null && m_Form.CurrentItem.FilePath != Media.FilePath) m_Form.ActiveFile(Media.FilePath);
+            //else if (m_Form.CurrentItem == null) m_Form.ActiveFile(Media.FilePath);
         }
 
         private void PlayNextInFolder()

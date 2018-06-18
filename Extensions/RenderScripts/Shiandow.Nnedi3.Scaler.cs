@@ -84,8 +84,8 @@ namespace Mpdn.Extensions.RenderScripts
                 if ((Renderer.TargetSize <= input.Size()).Any)
                     return input;
 
-                var yuv = input.ConvertToYuv();
                 var composition = input.Decompose();
+                var yuv = composition.ConvertToYuv();
 
                 var resultY = interleave.ApplyTo(composition.Luma, shaderPass1.ApplyTo(yuv));
                 var luma    = interleave.ApplyTo(resultY         , shaderPass2.ApplyTo(resultY));

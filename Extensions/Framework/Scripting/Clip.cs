@@ -30,11 +30,6 @@ namespace Mpdn.Extensions.Framework.Scripting
 
         #region Renderer Properties
 
-        public virtual string FileName
-        {
-            get { return Renderer.VideoFileName; }
-        }
-
         public virtual bool Interlaced
         {
             get { return Renderer.InterlaceFlags.HasFlag(InterlaceFlags.IsInterlaced); }
