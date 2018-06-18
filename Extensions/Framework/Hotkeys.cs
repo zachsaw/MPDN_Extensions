@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -6,53 +8,112 @@ using System.Windows.Forms;
 
 namespace Mpdn.Extensions.Framework
 {
-    public struct Hotkey
+    public class ConcurrentSet<T> : IEnumerable<T>
     {
-        public Keys Keys;
-        public Action Action;
+        private ConcurrentDictionary<T, bool> m_Dictionary;
 
-        public Hotkey(Keys keys, Action action)
+        private static KeyValuePair<T, bool> CreateEntry(T item)
         {
-            Keys = keys;
-            Action = action;
+            return new KeyValuePair<T, bool>(item, true);
+        }
+
+        public ConcurrentSet(IEnumerable<T> items)
+        {
+            m_Dictionary = new ConcurrentDictionary<T, bool>(items.Select(CreateEntry));
+        }
+
+        public bool TryAdd(T item)
+        {
+            return m_Dictionary.TryAdd(item, true);
+        }
+
+        public bool TryRemove(T item)
+        {
+            bool _;
+            return m_Dictionary.TryRemove(item, out _);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return m_Dictionary.ToArray().Select(x => x.Key).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 
     public static class HotkeyRegister
     {
-        public static event EventHandler HotkeysChanged;
+        public static EventHandler<PlayerControlEventArgs<KeyEventArgs>> OnKeyDown = OnKeyDownInternal;
 
-        private static readonly Dictionary<Guid, List<Hotkey>> s_Hotkeys = new Dictionary<Guid, List<Hotkey>>();
+        private static readonly ConcurrentDictionary<Keys, ConcurrentSet<Entry>> s_Hotkeys =
+            new ConcurrentDictionary<Keys, ConcurrentSet<Entry>>();
 
-        public static IEnumerable<Hotkey> Hotkeys
-        {
-            get { return s_Hotkeys.SelectMany(x => x.Value); }
-        }
-
-        public static void RegisterHotkey(Guid guid, string hotkey, Action action)
+        public static IDisposable AddOrUpdateHotkey(string keyString, Action action)
         {
             Keys keys;
-            if (!HotkeyHelper.TryDecodeKeyString(hotkey, out keys))
-                return;
+            if (!HotkeyHelper.TryDecodeKeyString(keyString, out keys))
+                return null;
 
-            List<Hotkey> list;
-            if (!s_Hotkeys.TryGetValue(guid, out list))
-                s_Hotkeys.Add(guid, list = new List<Hotkey>());
+            var entry = new Entry(action);
+            s_Hotkeys.AddOrUpdate(keys,
+                (_) => new ConcurrentSet<Entry>(new[] { entry }),
+                (_, set) => { set.TryAdd(entry); return set; });
 
-            list.Add(new Hotkey(keys, action));
-            OnHotkeysChanged();
+            return entry.GetReference();
         }
 
-        public static void DeregisterHotkey(Guid guid)
+        private static void OnKeyDownInternal(object sender, PlayerControlEventArgs<KeyEventArgs> e)
         {
-            s_Hotkeys.Remove(guid);
-            OnHotkeysChanged();
+            ConcurrentSet<Entry> hotkeys;
+            if (s_Hotkeys.TryGetValue(e.InputArgs.KeyData, out hotkeys))
+            {
+                foreach (var hotkey in hotkeys)
+                    if (!hotkey.DoAction())
+                        hotkeys.TryRemove(hotkey);
+                e.Handled = true;
+            }
         }
 
-        public static void OnHotkeysChanged()
+        private struct Entry
         {
-            if (HotkeysChanged != null)
-                HotkeysChanged(null, EventArgs.Empty);
+            private readonly Reference m_Reference;
+            private readonly Action m_Action;
+
+            public Entry(Action action)
+            {
+                m_Reference = new Reference();
+                m_Action = action;
+            }
+
+            public bool DoAction()
+            {
+                if (m_Reference.Disposed)
+                    return false;
+
+                m_Action();
+                return true;
+            }
+
+            public IDisposable GetReference() { return m_Reference; }
+
+            private sealed class Reference : IDisposable
+            {
+                public bool Disposed { get; private set; }
+
+                ~Reference()
+                {
+                    Dispose();
+                    GC.SuppressFinalize(this);
+                }
+
+                public void Dispose()
+                {
+                    Disposed = true;
+                }
+            }
         }
     }
 

@@ -86,17 +86,17 @@ namespace Mpdn.Extensions.Framework.Chain
 
         #region Hotkey Handling
 
-        private readonly Guid m_HotkeyGuid = Guid.NewGuid();
+        private IDisposable m_HotkeyEntry;
         private string m_Hotkey;
 
         private void RegisterHotkey()
         {
-            HotkeyRegister.RegisterHotkey(m_HotkeyGuid, Hotkey, IncrementSelection);
+            m_HotkeyEntry = HotkeyRegister.AddOrUpdateHotkey(Hotkey, IncrementSelection);
         }
 
         private void DeregisterHotkey()
         {
-            HotkeyRegister.DeregisterHotkey(m_HotkeyGuid);
+            DisposeHelper.Dispose(ref m_HotkeyEntry);
         }
 
         private void UpdateHotkey()
@@ -115,8 +115,8 @@ namespace Mpdn.Extensions.Framework.Chain
 
             Player.OsdText.Show(Name + ": " + SelectedOption.Name);
                 
-            // Refresh everything (TODO: only refresh relevant scripts)
-            Extension.RefreshRenderScript();
+            // Refresh Scripts
+            Extension.Refresh<TScript>();
         }
 
         #endregion

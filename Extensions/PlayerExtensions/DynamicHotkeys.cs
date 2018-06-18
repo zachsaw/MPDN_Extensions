@@ -29,34 +29,13 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             base.Initialize();
-            HotkeyRegister.HotkeysChanged += OnHotkeysChanged;
-            Player.KeyDown += PlayerKeyDown;
+            Player.KeyDown += HotkeyRegister.OnKeyDown;
         }
 
         public override void Destroy()
         {
-            Player.KeyDown -= PlayerKeyDown;
-            HotkeyRegister.HotkeysChanged -= OnHotkeysChanged;
+            Player.KeyDown -= HotkeyRegister.OnKeyDown;
             base.Destroy();
-        }
-
-        private void PlayerKeyDown(object sender, PlayerControlEventArgs<KeyEventArgs> e)
-        {
-            Action action;
-            if (m_Actions.TryGetValue(e.InputArgs.KeyData, out action))
-            {
-                action();
-                e.Handled = true;
-            }
-        }
-
-        public void OnHotkeysChanged(object sender, EventArgs e)
-        {
-            m_Actions = HotkeyRegister.Hotkeys
-                .GroupBy(hotkey => hotkey.Keys)
-                .ToDictionary(
-                    group => group.Key,
-                    group => group.Select(hotkey => hotkey.Action).Aggregate((a, b) => a + b));
         }
 
         public override ExtensionUiDescriptor Descriptor
