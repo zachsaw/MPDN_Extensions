@@ -253,10 +253,10 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
                        ITextureFilter source = trueSource;
 
                        if (trueSource.IsYuv() && !wantYuv)
-                           source = source.ConvertToYuv();
+                           source = source.ConvertToRgb();
 
                        if (!trueSource.IsYuv() && wantYuv)
-                           source = source.ConvertToRgb();
+                           source = source.ConvertToYuv();
 
                        return source.SetSize(outputSize);
                    }))
@@ -324,7 +324,16 @@ namespace Mpdn.Extensions.Framework.RenderChain.Filters
                 }
 
                 public TextureSize Size { get { return m_Size(); } }
-                public TextureFormat Format { get { throw new NotImplementedException(); } }
+
+                public TextureFormat Format
+                {
+                    get
+                    {
+                        if (Renderer.InputRenderTarget != null)
+                            return Renderer.InputRenderTarget.Format;
+                        throw new InvalidOperationException("Format not available at this time.");
+                    }
+                }
 
                 public bool Equals(ITextureDescription other) { return m_Size() == other.Size; }
             }
