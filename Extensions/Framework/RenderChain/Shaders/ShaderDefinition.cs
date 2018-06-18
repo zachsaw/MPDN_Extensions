@@ -112,12 +112,12 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shaders
 
         public void Compile(out IShader shader)
         {
-            shader = Renderer.LoadShader(BytecodeFilename);
+            shader = ShaderCache.LoadShader(BytecodeFilename);
         }
 
         public void Compile(out IShader11 shader)
         {
-            shader = Renderer.LoadShader11(BytecodeFilename);
+            shader = ShaderCache.LoadShader11(BytecodeFilename);
         }
     }
 

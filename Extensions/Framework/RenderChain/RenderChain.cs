@@ -16,6 +16,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Mpdn.Extensions.Framework.Chain;
 using Mpdn.Extensions.Framework.Chain.Dialogs;
 using Mpdn.Extensions.Framework.RenderChain.Shaders;
@@ -25,9 +26,20 @@ namespace Mpdn.Extensions.Framework.RenderChain
 {
     public abstract class RenderChain : FilterChain<ITextureFilter>
     {
+        private static Lazy<Task> Warmup = new Lazy<Task>(() => Task.Run(() =>
+        {
+            // Warm up basic functions
+            try
+            {
+                var _ = new Filters.ChromaSourceFilter();
+            }
+            catch { /* ignore any errors */};
+        }));
+
         protected RenderChain()
         {
-            ShaderCache.Load();
+            ShaderCache.Prefetch();
+            var _ = Warmup.Value;
         }
     
         #region Shader Compilation
