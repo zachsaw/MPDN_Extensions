@@ -16,7 +16,7 @@
 
 using System;
 using SharpDX;
-using Shiandow.Lending;
+using Onsyn.Lending;
 using Mpdn.Extensions.Framework.Filter;
 using Mpdn.RenderScript;
 using Size = System.Drawing.Size;

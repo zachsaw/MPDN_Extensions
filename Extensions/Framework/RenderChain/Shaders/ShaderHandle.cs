@@ -22,7 +22,7 @@ using Mpdn.RenderScript;
 using SharpDX;
 using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain.Filters;
-using Shiandow.Lending;
+using Onsyn.Lending;
 
 namespace Mpdn.Extensions.Framework.RenderChain.Shaders
 {

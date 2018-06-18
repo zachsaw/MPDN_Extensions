@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Shiandow.Lending;
+using Onsyn.Lending;
 using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain.Filters;
 using SharpDX;
