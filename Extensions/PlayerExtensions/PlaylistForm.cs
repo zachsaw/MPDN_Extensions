@@ -1294,8 +1294,10 @@ namespace Mpdn.Extensions.PlayerExtensions.Playlist
             if (index < 0 || index >= Playlist.Count)
                 return;
 
+            var currentItemIndex = Playlist.IndexOf(CurrentItem);
             Playlist.RemoveAt(index);
-            if (index == Playlist.Count) CloseMedia();
+
+            if (index == currentItemIndex) CloseMedia();
             PopulatePlaylist();
         }
 
