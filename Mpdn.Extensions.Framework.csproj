@@ -68,6 +68,9 @@
     <Reference Include="Mpdn.RenderScript">
       <HintPath>MPDN\Mpdn.RenderScript.dll</HintPath>
     </Reference>
+    <Reference Include="Onsyn, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Onsyn.0.1.2\lib\net45\Onsyn.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="SharpDX">
@@ -159,11 +162,7 @@
     <Compile Include="Extensions\Framework\Filter\FilterBase.cs" />
     <Compile Include="Extensions\Framework\Filter\FilterOutput.cs" />
     <Compile Include="Extensions\Framework\Filter\Process.cs" />
-    <Compile Include="Extensions\Framework\Lending\Lease.cs" />
     <Compile Include="Extensions\Framework\Helpers.cs" />
-    <Compile Include="Extensions\Framework\Lending\Lendable.cs" />
-    <Compile Include="Extensions\Framework\Merging\UnionFind.cs" />
-    <Compile Include="Extensions\Framework\Merging\Mergeable.cs" />
     <Compile Include="Extensions\Framework\PlayerExtension.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filters\TextureOutput.cs" />
     <Compile Include="Extensions\Framework\RenderChain\Filters\TextureProcess.cs" />
@@ -192,6 +191,9 @@
     <Compile Include="Extensions\Framework\Chain\Preset.cs" />
     <Compile Include="Extensions\Framework\Hotkeys.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
