@@ -16,11 +16,13 @@
 // 
 #include "NEDI-Common.hlsl"
 
+float4 size0 : register(c1);
+
 float4 main(float2 tex : TEXCOORD0) : COLOR {
     //Define window and directions
     float2 dir[4] =  {{-2,0},{1,0},{0,1},{0,-2}}; // doubled horizontally, luckily column parity is the same for all neighbours.
     float4x2 wind[4];
-    if (frac(tex.x*width/2.0)<0.5) {
+    if (frac(tex.x*sizeOutput.x/2.0)<0.5) {
         float4x2 temp[4] = {{{-1,0},{1,0},{0,1},{0,0}},{{-1,1},{1,-1},{2,1},{-2,0}},{{-1,-1},{1,1},{-2,1},{2,0}},{{-3,0},{3,0},{0,2},{0,-1}}};
         wind = temp;
     } else {

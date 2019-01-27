@@ -25,20 +25,16 @@ sampler s4    : register(s4);
 sampler s5    : register(s5);
 #endif
 
-float4  p0    : register(c0);
-float2  p1    : register(c1);
-float4  size0 : register(c2);
-float4  size1 : register(c3);
-float4  args0 : register(c4);
+float4  sizeOutput : register(c0);
+float4  size0 : register(c1);
+float4  size1 : register(c2);
+float4  args0 : register(c3);
 
 #if LOBES>2
     #define LOOP 1
 #else
     #define LOOP 0
 #endif
-
-#define width                   (p0[0])
-#define height                  (p0[1])
 
 #define imageTexelSize          (size0.zw)
 #define chromaTexelSize         (size1.zw)
@@ -52,9 +48,6 @@ float4  args0 : register(c4);
 #endif
 
 #define antiRingingStrength     (args0[0])
-
-#define px (p1[0])
-#define py (p1[1])
 
 #ifdef CHROMA
     #define color_t            float2

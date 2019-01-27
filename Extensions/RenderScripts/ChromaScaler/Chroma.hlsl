@@ -17,13 +17,9 @@
 sampler sY  : register(s0);
 sampler sUV : register(s1);
 
-float4 p0 :  register(c0);
-float2 p1 :  register(c1);
-float4 size1 : register(c2);
-float4 args0 : register(c3);
-
-#define width  (p0[0])
-#define height (p0[1])
+float4 sizeOutput : register(c0);
+float4 size1 : register(c1);
+float4 args0 : register(c2);
 
 #define ChromaSize  (size1.xy)
 #define BC (args0.xy)

@@ -161,11 +161,6 @@ namespace Mpdn.Extensions.Framework.Scripting
 
             #region Fake Renderer Properties
 
-            public override string FileName
-            {
-                get { return "C:\\MyVideoFolder\\AnotherSubFolder\\MyVideoFile.mkv"; }
-            }
-
             public override bool Interlaced
             {
                 get { return true; }

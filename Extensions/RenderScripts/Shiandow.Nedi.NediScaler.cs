@@ -58,10 +58,10 @@ namespace Mpdn.Extensions.RenderScripts
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2*s.Width, s.Height);
                 Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2*s.Height);
 
-                var nedi1Shader = CompileShader("NEDI-I.hlsl").Configure(arguments: LumaConstants);
-                var nedi2Shader = CompileShader("NEDI-II.hlsl").Configure(arguments: LumaConstants);
-                var nediHInterleaveShader = CompileShader("NEDI-HInterleave.hlsl").Configure(transform: transformWidth);
-                var nediVInterleaveShader = CompileShader("NEDI-VInterleave.hlsl").Configure(transform: transformHeight);
+                var nedi1Shader = new Shader(FromFile("NEDI-I.hlsl" )) { Arguments = LumaConstants };
+                var nedi2Shader = new Shader(FromFile("NEDI-II.hlsl")) { Arguments = LumaConstants };
+                var nediHInterleaveShader = new Shader(FromFile("NEDI-HInterleave.hlsl")) { Transform = transformWidth  };
+                var nediVInterleaveShader = new Shader(FromFile("NEDI-VInterleave.hlsl")) { Transform = transformHeight };
 
                 if (!UseNedi(input))
                     return input;

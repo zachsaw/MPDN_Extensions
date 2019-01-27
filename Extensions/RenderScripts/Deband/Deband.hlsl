@@ -16,11 +16,10 @@
 
 sampler s0 : register(s0);
 sampler s1 : register(s1);
-float4  p0 : register(c0);
-float4 args0 : register(c2);
-float4 size0 : register(c3);
-float4 size1 : register(c4);
-float4 sizeOutput : register(c5);
+float4 args0 : register(c0);
+float4 size0 : register(c1);
+float4 size1 : register(c2);
+float4 sizeOutput : register(c3);
 
 #define dxdy size0.zw
 #define ddxddy size1.zw

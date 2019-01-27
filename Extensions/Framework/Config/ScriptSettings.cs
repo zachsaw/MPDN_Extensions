@@ -29,18 +29,27 @@ namespace Mpdn.Extensions.Framework.Config
         public PersistentConfig(string configName)
         {
             m_ConfigName = configName;
-            if (Load()) 
+            if (Load())
                 return;
 
 #if DEBUG
             Trace.WriteLine(string.Format("Load Settings Failed!\r\n\r\n{0}", LastException));
-            MessageBox.Show(Gui.VideoBox,
-                "WARNING: Script settings have failed to load. This will cause user's config to be deleted (or become corrupted)",
-                "Load Settings Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            try
+            {
+                GuiThread.DoAsync(() =>
+                MessageBox.Show(Gui.VideoBox,
+                    "WARNING: Script settings have failed to load. This will cause user's config to be deleted (or become corrupted)",
+                    "Load Settings Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning));
+            } catch { /* Ignore errors */ }
 #endif
         }
 
-        public string ConfigFilePath
+        protected override IConfigProvider<TSettings> CreateConfigProvider()
+        {
+            return new PersistentConfigProvider<TSettings>(ConfigFilePath);
+        }
+
+        private string ConfigFilePath
         {
             get
             {
@@ -55,11 +64,6 @@ namespace Mpdn.Extensions.Framework.Config
         private string ScriptConfigFileName
         {
             get { return string.Format("{0}.config", m_ConfigName); }
-        }
-
-        protected override IConfigProvider<TSettings> CreateConfigProvider()
-        {
-            return new PersistentConfigProvider<TSettings>(ConfigFilePath);
         }
     }
 

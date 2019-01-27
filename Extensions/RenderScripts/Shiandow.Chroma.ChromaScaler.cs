@@ -97,7 +97,7 @@ namespace Mpdn.Extensions.RenderScripts
                     return composition;
 
                 Vector2 offset = composition.ChromaOffset + new Vector2(0.5f, 0.5f);
-                var chromaShader = CompileShader("Chroma.hlsl").Configure(arguments: new[] { B, C, offset[0], offset[1] });
+                var chromaShader = new Shader(FromFile("Chroma.hlsl")) { Arguments = new[] { B, C, offset[0], offset[1] } };
 
                 var resizedLuma = composition.Luma.SetSize(targetSize, tagged: true);
 

@@ -15,15 +15,11 @@
 // License along with this library.
 // 
 sampler s0 : register(s0);
-float4  p0 : register(c0);
-float2  p1 : register(c1);
-float4  args0 : register(c2);
+float4  sizeOutput : register(c0);
+float4  args0 : register(c1);
 
-#define width  (p0[0])
-#define height (p0[1])
-
-#define px (p1[0])
-#define py (p1[1])
+#define px (sizeOutput.z)
+#define py (sizeOutput.w)
 
 #define offset 0.5
 #define Value(xy)        (tex2D(s0,tex+float2(px,py)*(xy)))

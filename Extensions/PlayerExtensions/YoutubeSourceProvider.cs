@@ -279,6 +279,8 @@ namespace Mpdn.Extensions.PlayerExtensions
             var filename = e.Filename;
             if (!IsYouTubeSource(filename))
                 return;
+            if (e.CustomSourceFilter != null)
+                return;
 
             e.CustomSourceFilter = graph =>
             {

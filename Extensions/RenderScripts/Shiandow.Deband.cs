@@ -49,8 +49,11 @@ namespace Mpdn.Extensions.RenderScripts
                     Power
                 };
 
-                var Deband = CompileShader("Deband.hlsl", macroDefinitions: PreserveDetail ? "PRESERVE_DETAIL=1" : "")
-                    .Configure(arguments: consts, perTextureLinearSampling: new[] { true, false });
+                var Deband = new Shader(FromFile("Deband.hlsl", compilerOptions: PreserveDetail ? "PRESERVE_DETAIL=1" : ""))
+                {
+                    Arguments = consts,
+                    PerTextureLinearSampling = new[] { true, false }
+                };
 
                 ITextureFilter yuv = input.ConvertToYuv();
                 var inputsize = yuv.Size();
@@ -67,7 +70,8 @@ namespace Mpdn.Extensions.RenderScripts
                     if (size.Width == 0 || size.Height == 0) continue;
                     if (i == 0) size = inputsize;
 
-                    deband = Deband.Configure(transform: s => size).ApplyTo(yuv, deband);
+                    Deband.Transform = s => size;
+                    deband = Deband.ApplyTo(yuv, deband);
                 }
 
                 return deband.ConvertToRgb();

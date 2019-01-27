@@ -39,7 +39,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 CreateTextures();
 
-                var shader = CompileShader("CustomTextures.hlsl");
+                var shader = new Shader(FromFile("CustomTextures.hlsl"));
                 return shader.ApplyTo(sourceFilter, m_Texture1.ToFilter(), m_Texture2.ToFilter());
             }
 

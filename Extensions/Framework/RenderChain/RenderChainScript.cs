@@ -17,12 +17,12 @@
 using System;
 using System.Diagnostics;
 using Mpdn.Extensions.Framework.Chain;
-using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
+using Mpdn.Extensions.Framework.RenderChain.Filters;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.Framework.RenderChain
 {
-    public class RenderChainScript : FilterChainScript<ITextureFilter, ITextureOutput<ITexture2D>>, IRenderScript
+    public class RenderChainScript : FilterChainScript<ITextureFilter, ITexture2D>, IRenderScript
     {
         private VideoSourceFilter m_SourceFilter;
 
@@ -45,10 +45,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
             };
         }
 
-        protected override void OutputResult(ITextureOutput<ITexture2D> result)
+        protected override void OutputResult(ITexture2D result)
         {
-            if (Renderer.OutputRenderTarget != result.Texture)
-                Scale(Renderer.OutputRenderTarget, result.Texture);
+            if (Renderer.OutputRenderTarget != result)
+                Scale(Renderer.OutputRenderTarget, result);
         }
 
         public override bool Execute()
@@ -70,11 +70,10 @@ namespace Mpdn.Extensions.Framework.RenderChain
             DisposeHelper.Dispose(ref m_SourceFilter);
             m_SourceFilter = new VideoSourceFilter(this);
 
-            if (Renderer.InputFormat.IsYuv()
-                && (Renderer.ChromaSize.Width < Renderer.LumaSize.Width || Renderer.ChromaSize.Height < Renderer.LumaSize.Height))
-                return new CompositionFilter(new YSourceFilter(), new ChromaSourceFilter(), fallback: m_SourceFilter);
+            if (Renderer.InputFormat.IsYuv() && ((TextureSize)Renderer.ChromaSize < Renderer.LumaSize).Any)
+                return m_SourceFilter;
 
-            return m_SourceFilter;
+            return m_SourceFilter.FixComposition();
         }
 
         protected override ITextureFilter FinalizeOutput(ITextureFilter output)

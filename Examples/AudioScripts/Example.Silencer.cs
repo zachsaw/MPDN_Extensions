@@ -22,11 +22,11 @@ namespace Mpdn.Examples.AudioScripts
 {
     namespace Example
     {
-        public class Silencer : CpuAudioFilter
+        public class Silencer : CpuAudioProcess
         {
             private const int CHANNEL_TO_SILENT = 0;
 
-            protected override void Process(float[,] samples, short channels, int sampleCount)
+            protected override void Process(IAudioDescription input, float[,] samples, short channels, int sampleCount)
             {
                 for (int i = 0; i < sampleCount; i++)
                 {

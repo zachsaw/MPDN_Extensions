@@ -36,7 +36,7 @@ namespace Mpdn.Extensions.RenderScripts
             {
                 Create3DTexture();
 
-                var shader = CompileShader("Lut3D.hlsl").Configure(linearSampling: true);
+                var shader = new Shader(FromFile("Lut3D.hlsl")) { LinearSampling = true };
                 return shader.ApplyTo(sourceFilter, m_Texture3D.ToFilter());
             }
 

@@ -18,7 +18,7 @@ using System;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 
-namespace Mpdn.Extensions.Framework.RenderChain.Shader
+namespace Mpdn.Extensions.Framework.RenderChain.Shaders
 {
     public interface IShaderDefinition<TShader>
         where TShader : IShaderBase
@@ -35,6 +35,39 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
             definition.Compile(out shader);
             return shader;
         }
+
+        public static ShaderFromFile FromFile(string shaderFileName, string profile = "ps_3_0", string entryPoint = "main", string compilerOptions = null)
+        {
+            return new ShaderFromFile(shaderFileName, profile, entryPoint, compilerOptions);
+        }
+
+        public static ShaderFromString FromString(string shadercode, string profile = "ps_3_0", string entryPoint = "main", string compilerOptions = null)
+        {
+            return new ShaderFromString(shadercode, profile, entryPoint, compilerOptions);
+        }
+
+        public static ShaderFromByteCode FromByteCode(string bytecodeFileName)
+        {
+            return new ShaderFromByteCode(bytecodeFileName);
+        }
+    }
+
+    public class CachedDefinition<TShader> : IShaderDefinition<TShader>
+        where TShader : class, IShaderBase
+    {
+        private readonly IShaderDefinition<TShader> m_Definition;
+
+        private TShader m_CachedShader;
+
+        public CachedDefinition(IShaderDefinition<TShader> definition)
+        {
+            m_Definition = definition;
+        }
+
+        public void Compile(out TShader shader)
+        {
+            shader = m_CachedShader ?? (m_CachedShader = m_Definition.Compile());
+        }
     }
 
     public class ShaderFromFile : IShaderDefinition<IShader>, IShaderDefinition<IShader11>, IShaderDefinition<IKernel>
@@ -42,29 +75,29 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
         protected readonly string ShaderFilename;
         protected readonly string Profile;
         protected readonly string EntryPoint;
-        protected readonly string MacroDefinitions;
+        protected readonly string CompilerOptions;
 
-        public ShaderFromFile(string shaderFilename, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
+        public ShaderFromFile(string shaderFilename, string profile = "ps_3_0", string entryPoint = "main", string compilerOptions = null)
         {
             ShaderFilename = shaderFilename;
             Profile = profile;
             EntryPoint = entryPoint;
-            MacroDefinitions = macroDefinitions;
+            CompilerOptions = compilerOptions;
         }
 
         public void Compile(out IShader shader)
         {
-            shader = ShaderCache.CompileShader(ShaderFilename, Profile, EntryPoint, MacroDefinitions);
+            shader = ShaderCache.CompileShader(ShaderFilename, Profile, EntryPoint, CompilerOptions);
         }
 
         public void Compile(out IShader11 shader)
         {
-            shader = ShaderCache.CompileShader11(ShaderFilename, Profile, EntryPoint, MacroDefinitions);
+            shader = ShaderCache.CompileShader11(ShaderFilename, Profile, EntryPoint, CompilerOptions);
         }
 
         public void Compile(out IKernel kernel)
         {
-            kernel = ShaderCache.CompileClKernel(ShaderFilename, EntryPoint, MacroDefinitions);
+            kernel = ShaderCache.CompileClKernel(ShaderFilename, EntryPoint, CompilerOptions);
         }
     }
 
@@ -79,12 +112,12 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
 
         public void Compile(out IShader shader)
         {
-            shader = Renderer.LoadShader(BytecodeFilename);
+            shader = ShaderCache.LoadShader(BytecodeFilename);
         }
 
         public void Compile(out IShader11 shader)
         {
-            shader = Renderer.LoadShader11(BytecodeFilename);
+            shader = ShaderCache.LoadShader11(BytecodeFilename);
         }
     }
 
@@ -93,29 +126,29 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
         protected readonly string Shadercode;
         protected readonly string Profile;
         protected readonly string EntryPoint;
-        protected readonly string MacroDefinitions;
+        protected readonly string CompilerOptions;
 
-        public ShaderFromString(string shadercode, string profile = "ps_3_0", string entryPoint = "main", string macroDefinitions = null)
+        public ShaderFromString(string shadercode, string profile = "ps_3_0", string entryPoint = "main", string compilerOptions = null)
         {
             Shadercode = shadercode;
             Profile = profile;
             EntryPoint = entryPoint;
-            MacroDefinitions = macroDefinitions;
+            CompilerOptions = compilerOptions;
         }
 
         public void Compile(out IShader shader)
         {
-            shader = Renderer.CompileShaderFromString(Shadercode, EntryPoint, Profile, MacroDefinitions);
+            shader = Renderer.CompileShaderFromString(Shadercode, EntryPoint, Profile, CompilerOptions);
         }
 
         public void Compile(out IShader11 shader)
         {
-            shader = Renderer.CompileShader11FromString(Shadercode, EntryPoint, Profile, MacroDefinitions);
+            shader = Renderer.CompileShader11FromString(Shadercode, EntryPoint, Profile, CompilerOptions);
         }
 
         public void Compile(out IKernel kernel)
         {
-            kernel = Renderer.CompileClKernelFromString(Shadercode, Profile, MacroDefinitions);
+            kernel = Renderer.CompileClKernelFromString(Shadercode, Profile, CompilerOptions);
         }
     }
 }

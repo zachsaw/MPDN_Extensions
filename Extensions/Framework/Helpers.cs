@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -109,8 +110,7 @@ namespace Mpdn.Extensions.Framework
         {
             get
             {
-                return Path.Combine(GetDirectoryName(Assembly.GetAssembly(typeof(IPlayerExtension)).Location),
-                    "Extensions");
+                return Path.Combine(GetDirectoryName(Assembly.GetAssembly(typeof(IPlayerExtension)).Location), "Extensions");
             }
         }
     }
@@ -355,11 +355,18 @@ namespace Mpdn.Extensions.Framework
 
     public static class StatusHelpers
     {
-        public static string PrependToDescription(this string status, string prefix)
+        public static string AddPrefixToDescription(this string status, string prefix)
         {
             return (string.IsNullOrEmpty(status))
                 ? status
                 : prefix + status;
+        }
+
+        public static string AddPostfixToDescription(this string status, string postfix)
+        {
+            return (string.IsNullOrEmpty(status))
+                ? status
+                : status + postfix;
         }
 
         public static string ScaleDescription(TextureSize inputSize, TextureSize outputSize, IScaler upscaler, IScaler downscaler, IScaler convolver = null)
@@ -370,8 +377,8 @@ namespace Mpdn.Extensions.Framework
             if (xDesc == yDesc)
                 return xDesc;
 
-            xDesc = xDesc.PrependToDescription("X: ");
-            yDesc = yDesc.PrependToDescription("Y: ");
+            xDesc = xDesc.AddPrefixToDescription("X: ");
+            yDesc = yDesc.AddPrefixToDescription("Y: ");
 
             if (xDesc == "")
                 return yDesc;

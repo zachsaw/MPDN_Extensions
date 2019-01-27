@@ -17,9 +17,7 @@
 // -- Misc --
 sampler s0 : register(s0);
 sampler sUV : register(s1);
-float4 p0 :  register(c0);
-float2 p1 :  register(c1);
-float4 args0 : register(c2);
+float4 args0 : register(c0);
 
 // -- Colour space Processing --
 #define Kb args0[0]

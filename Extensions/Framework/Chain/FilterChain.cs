@@ -20,7 +20,7 @@ using Mpdn.Extensions.Framework.Filter;
 namespace Mpdn.Extensions.Framework.Chain
 {
     public abstract class FilterChain<TFilter> : Chain<TFilter>
-        where TFilter : class, IFilter<IFilterOutput>
+        where TFilter : class, IFilterBase
     {
         protected abstract TFilter CreateFilter(TFilter input);
 
@@ -29,16 +29,9 @@ namespace Mpdn.Extensions.Framework.Chain
             get { return GetType().Name; }
         }
 
-        public override TFilter Process(TFilter input)
+        public sealed override TFilter Process(TFilter input)
         {
-            TFilter output = CreateFilter(input);
-            
-            if (output == input)
-                return input;
-
-            output.AddLabel(Description, start: input);
-
-            return output;
+            return CreateFilter(input).Labeled(Description, start: input);
         }
     }
 }

@@ -18,190 +18,173 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Onsyn.Merging;
 
 namespace Mpdn.Extensions.Framework
 {
-    public interface ITaggedProcess
+    public interface ITagged
     {
         IProcessData ProcessData { get; }
     }
 
-    public interface IUnionTree<TData> : IEnumerable<TData>
+    public struct ProcessInterval
     {
-        ISet<TData> Set { get; }
+        public readonly int Min;
+        public readonly int Max;
 
-        int Depth { get; set; }
-        IUnionTree<TData> Root { get; set; }
-
-        void MergeWith(IUnionTree<TData> tree);
-    }
-
-    public interface IProcessData
-    {
-        IUnionTree<ProcessTag> TagTree { get; }
-        ISet<ProcessTag> Tags { get; } // => TagTree.Set
-
-        int InputRank { get; }
-        int Rank { get; set; }
-
-        void AddInputs(IEnumerable<IProcessData> inputProcesses);
-    }
-
-    public class UnionTree<TData> : IUnionTree<TData>
-    {
-        public ISet<TData> Set { get { return (m_Root == this) ? (m_Set ?? (m_Set = new HashSet<TData>())) : Root.Set; } }
-
-        public int Depth { get; set; }
-
-        public IUnionTree<TData> Root
+        public ProcessInterval(int low, int high)
         {
-            get
-            {
-                if (m_Root != this)
-                    m_Root = m_Root.Root;
-                return m_Root;
-            }
-
-            set
-            {
-                if (value != m_Root && m_Set != null)
-                {
-                    value.Set.UnionWith(m_Set);
-                    m_Set = null;
-                }
-                m_Root = value;
-            }
+            Min = low;
+            Max = high;
         }
 
-        public void MergeWith(IUnionTree<TData> tree)
+        #region Helper Methods
+
+        public bool Contains(ProcessInterval x)
         {
-            MergeRoots(Root, tree.Root);
+            return (Min <= x.Min) && (x.Max <= Max);
         }
 
-        #region Implementation
-
-        private IUnionTree<TData> m_Root;
-
-        private ISet<TData> m_Set;
-
-        private static void MergeRoots(IUnionTree<TData> x, IUnionTree<TData> y)
+        public bool NonEmpty()
         {
-            if (x == y)
-                return;
-
-            if (x.Depth < y.Depth)
-                x.Root = y;
-            else if (x.Depth > y.Depth)
-                y.Root = x;
-            else
-            {
-                y.Root = x;
-                x.Depth += 1;
-            }
+            return Min < Max;
         }
-
-        public IEnumerator<TData> GetEnumerator()
-        {
-            return Set.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public UnionTree()
-        {
-            m_Root = this;
-        }
-
-        #endregion
-    }
-
-    public class ProcessTag
-    {
-        public string Label { get; private set; }
-
-        public int Verbosity { get; private set; }
-
-        public Tuple<int, int> Range()
-        {
-            if (m_Start != null)
-                return new Tuple<int, int>(m_Start.Rank, m_End.Rank);
-            else
-                return new Tuple<int, int>(m_End.InputRank, m_End.Rank);
-        }
-
-        #region Implementation
-
-        private IProcessData m_Start;
-
-        private IProcessData m_End;
 
         public override string ToString()
         {
-            return Label;
-        }
-
-        public ProcessTag(string label, int verbostiy, IProcessData start, IProcessData end)
-        {
-            Label = label;
-            Verbosity = verbostiy;
-            m_Start = start;
-            m_End = end ?? start;
-
-            if (m_End == null)
-                throw new ArgumentNullException("Either 'start' or 'end' needs to be non-null.");
+            return String.Format("({0}, {1}]", Min, Max);
         }
 
         #endregion
     }
 
-    public class ProcessData : IProcessData
+    public interface IProcessData : IProcessRange, IUnionFind<IEnumerable<IProcessTag>>
     {
-        public IUnionTree<ProcessTag> TagTree { get; private set; }
+        void AddInput(IProcessData process);
+        IEnumerable<IProcessData> Enumerate(ISet<IProcessData> visited);
+    }
 
-        public ISet<ProcessTag> Tags { get { return TagTree.Set; } }
+    public interface IProcessRange
+    {
+        ProcessInterval Range(IDictionary<IProcessRange, ProcessInterval> cache);
+    }
 
-        public int InputRank
+    public interface IProcessTag : IProcessRange 
+    {
+        string Label { get; }
+        int Verbosity { get; }
+    }
+
+    public class ProcessRange : IProcessRange
+    {
+        public ProcessRange(IProcessRange start, IProcessRange end)
         {
-            get
-            {
-                if (m_InputRank < 0)
-                    foreach (var process in m_InputProcesses)
-                        m_InputRank = Math.Max(m_InputRank, process.Rank);
-                return m_InputRank;
-            }
+            if (start == null)
+                throw new ArgumentNullException("start");
+            if (end == null)
+                throw new ArgumentNullException("end");
+
+            m_Start = start;
+            m_End = end;
         }
 
-        public int Rank
-        {
-            get
-            {
-                if (m_Rank < 0)
-                    m_Rank = InputRank;
-                return m_Rank;
-            }
+        #region IProcessRange Implementation
 
-            set { m_Rank = value; }
+        private IProcessRange m_Start;
+        private IProcessRange m_End;
+
+        public ProcessInterval Range(IDictionary<IProcessRange, ProcessInterval> cache)
+        {
+            ProcessInterval interval = cache.TryGetValue(this, out interval)
+                ? interval
+                : cache[this] = new ProcessInterval(m_Start.Range(cache).Max, m_End.Range(cache).Max);
+            return interval;
         }
+
+        #endregion
+    }
+
+    public abstract class ProcessTagBase : IProcessTag
+    {
+        public abstract string Label { get; }
+
+        public abstract int Verbosity { get; }
+
+        #region IProcessRange Implementation
+
+        private readonly IProcessRange m_Range;
+
+        public ProcessTagBase(IProcessRange range) { m_Range = range; }
+
+        public ProcessInterval Range(IDictionary<IProcessRange, ProcessInterval> cache) { return m_Range.Range(cache); } 
+
+        public override string ToString() { return Label; }
+
+        #endregion
+    }
+
+    public class ProcessTag : ProcessTagBase
+    {
+        public override string Label { get { return m_Label; } }
+
+        public override int Verbosity { get { return m_Verbosity; } }
 
         #region Implementation
 
-        private int m_InputRank = -1;
+        private readonly string m_Label;
+        private readonly int m_Verbosity;
 
-        private int m_Rank = -1;
-
-        private IList<IProcessData> m_InputProcesses = new List<IProcessData>();
-
-        private void MergeWith(IProcessData process)
+        public ProcessTag(string label, int verbostiy, IProcessRange range)
+            : base(range)
         {
-            TagTree.MergeWith(process.TagTree);
+            m_Label = label;
+            m_Verbosity = verbostiy;
         }
 
-        public void AddInputs(IEnumerable<IProcessData> inputProcesses)
+        #endregion
+    }
+
+    public class DeferredTag : ProcessTagBase
+    {
+        public override string Label { get { return m_Func(); } }
+
+        public override int Verbosity { get { return m_VerbosityFunc(); } }
+
+        #region Implementation
+
+        private readonly Func<string> m_Func;
+        private readonly Func<int> m_VerbosityFunc;
+
+        public DeferredTag(Func<string> func, IProcessRange range)
+            : this(func, () => String.IsNullOrEmpty(func()) ? 1000 : 1, range)
+        { }
+
+        public DeferredTag(string label, Func<int> verbosityFunc, IProcessRange range)
+            : this(() => label, verbosityFunc, range)
+        { }
+
+        public DeferredTag(Func<string> func, Func<int> verbosityFunc, IProcessRange range)
+            : base(range)
         {
-            foreach (var process in inputProcesses)
+            m_Func = func;
+            m_VerbosityFunc = verbosityFunc;
+        }
+
+        #endregion
+    }
+
+    public class ProcessData : UnionCollection<IProcessTag>, IProcessData
+    {
+#if DEBUG
+        public string DebugDescription { get { return this.CreateString(10); } }
+#endif
+
+        #region Implementation
+
+        private readonly IList<IProcessData> m_InputProcesses = new List<IProcessData>();
+
+        public void AddInput(IProcessData process)
+        {
             if (process != this)
             {
                 m_InputProcesses.Add(process);
@@ -209,9 +192,28 @@ namespace Mpdn.Extensions.Framework
             }
         }
 
-        public ProcessData()
+        public ProcessInterval Range(IDictionary<IProcessRange, ProcessInterval> cache)
         {
-            TagTree = new UnionTree<ProcessTag>();
+            ProcessInterval interval;
+            if (cache.TryGetValue(this, out interval))
+                return interval;
+            
+            int rank = m_InputProcesses
+                .Select(x => x.Range(cache).Max)
+                .Concat(new[] { -1 })
+                .Max();
+            return cache[this] = new ProcessInterval(rank, rank);
+        }
+
+        public IEnumerable<IProcessData> Enumerate(ISet<IProcessData> visited)
+        {
+            if (visited.Contains(this))
+                yield break;
+
+            visited.Add(this);
+            foreach (var child in m_InputProcesses.SelectMany(p => p.Enumerate(visited)))
+                yield return child;
+            yield return this;
         }
 
         #endregion
@@ -219,59 +221,66 @@ namespace Mpdn.Extensions.Framework
     
     public static class TagHelper
     {
-        public static void AddTag(this IProcessData processData, ProcessTag tag)
+        public static void AddTag(this ITagged tagged, IProcessTag tag)
         {
-            processData.Tags.Add(tag);
+            tagged.ProcessData.Add(tag);
         }
 
-        public static void AddTag(this ITaggedProcess taggedProcess, ProcessTag tag)
+        public static void AddLabel(this ITagged tagged, string label, int verbosity = 1, ITagged start = null)
         {
-            taggedProcess.ProcessData.AddTag(tag);
+            tagged.AddTag(new ProcessTag(label, String.IsNullOrEmpty(label) ? 1000 : verbosity, 
+                (start == null) 
+                ? (IProcessRange)tagged.ProcessData
+                : new ProcessRange(start.ProcessData, tagged.ProcessData)));
         }
 
-        public static void AddLabel(this ITaggedProcess taggedProcess, string label, int verbosity = 0, ITaggedProcess start = null)
+        public static TTagged Tagged<TTagged>(this TTagged tagged, IProcessTag tag)
+            where TTagged : ITagged
         {
-            taggedProcess.AddTag(new ProcessTag(label, String.IsNullOrEmpty(label) ? 1000 : verbosity, start != null ? start.ProcessData : null, taggedProcess.ProcessData));
+            tagged.AddTag(tag);
+            return tagged;
         }
 
-        public static TtaggedProcess Tagged<TtaggedProcess>(this TtaggedProcess taggedProcess, ProcessTag tag)
-            where TtaggedProcess : ITaggedProcess
-        {
-            taggedProcess.AddTag(tag);
-            return taggedProcess;
-        }
-
-        public static TtaggedProcess Labeled<TtaggedProcess>(this TtaggedProcess taggedProcess, string label, int verbosity = 0, ITaggedProcess start = null)
-            where TtaggedProcess : ITaggedProcess
+        public static TTagged Labeled<TTagged>(this TTagged taggedProcess, string label, int verbosity = 0, ITagged start = null)
+            where TTagged : ITagged
         {
             taggedProcess.AddLabel(label, verbosity, start);
             return taggedProcess;
         }
 
         #region String Generation
+    
+        private const int DefaultVerbosity = 1;
 
-        private const int DefaultVerbosity = 0;
-
-        public static string CreateString(this IProcessData data, int verbosity = DefaultVerbosity)
+        public static string CreateString(this IProcessData process, int verbosity = DefaultVerbosity)
         {
-            var tags = data.Tags.Where(t => (t.Verbosity <= verbosity)).ToList();
+            var processes = process.Enumerate(new HashSet<IProcessData>()).ToList();
+            var tags = process.Data.Where(t => (t.Verbosity <= verbosity)).ToList();
 
-            var range = tags.ToDictionary(
-                tag => tag,
-                tag => tag.Range());
+            var cache = processes
+                .Select((p, k) => new { Key = (IProcessRange)p, Value = new ProcessInterval(k, k + 1) })
+                .ToDictionary(x => x.Key, x => x.Value);
+            var range = tags.ToDictionary(tag => tag, tag => tag.Range(cache));
 
-            tags = tags.Where(t => (range[t].Item1 < range[t].Item2)).ToList();
+            tags = (from tag in tags
+                    where range[tag].NonEmpty()
+                    orderby range[tag].Max descending
+                    select tag)
+                    .ToList();
 
+            var ranges = new List<ProcessInterval>();
             var depth = tags.ToDictionary(
                 tag => tag,
-                tag => tags.Count(t => 
-                        range[t].Item1 <= range[tag].Item1 && range[tag].Item2 <= range[t].Item2
-                    && (range[t].Item1 != range[tag].Item1 || range[tag].Item2 != range[t].Item2)));
+                tag => (ranges = ranges
+                    .Where(r => r.Min <= range[tag].Min)
+                    .Concat(new[] { range[tag] })
+                    .ToList())
+                    .Count() - 1);
+            tags.Reverse();
 
-            var labels = tags
-                .Where(n => -n.Verbosity <= verbosity)
-                .Select(n => String.Concat(Enumerable.Repeat("    ", depth[n])) + n.Label);
-            return string.Join("\n", labels);
+            return string.Join("\n",
+                from tag in tags
+                select String.Concat(Enumerable.Repeat("    ", depth[tag])) + tag.Label);
         }
 
         #endregion

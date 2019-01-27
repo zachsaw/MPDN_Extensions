@@ -82,18 +82,18 @@ namespace Mpdn.Extensions.RenderScripts
                     return input;
 
                 var targetSize = Renderer.TargetSize;
-                CreateWeights((Size) sourceSize, targetSize);
+                CreateWeights((Size)sourceSize, targetSize);
 
-                int lobes = TapCount.ToInt()/2;
-                var shader = CompileShader("EwaScaler.hlsl",
-                    macroDefinitions:
+                int lobes = TapCount.ToInt() / 2;
+                var shader = new Shader(FromFile("EwaScaler.hlsl",
+                    compilerOptions:
                         string.Format("LOBES = {0}; AR = {1}",
-                            lobes, AntiRingingEnabled ? 1 : 0))
-                    .Configure(
-                        transform: size => targetSize,
-                        arguments: new[] {AntiRingingStrength},
-                        linearSampling: true
-                    );
+                            lobes, AntiRingingEnabled ? 1 : 0)))
+                    {
+                        Transform = size => targetSize,
+                        Arguments = new[] { AntiRingingStrength },
+                        LinearSampling = true
+                    };
 
                 return GetEwaFilter(shader, new[] {input});
             }
@@ -103,10 +103,10 @@ namespace Mpdn.Extensions.RenderScripts
                 return Math.Log(dest/(double)source, 2);
             }
 
-            protected ITextureFilter GetEwaFilter(IShaderFilterSettings<IShader> shader, ITextureFilter[] inputs)
+            protected ITextureFilter GetEwaFilter(IShaderConfig shader, ITextureFilter[] inputs)
             {
                 var filters = m_Weights.Select(w => (ITextureFilter<IBaseTexture>)w.ToFilter());
-                return shader.ApplyTo(inputs.Concat(filters));
+                return shader.ApplyTo(inputs.Concat(filters).ToArray());
             }
 
             private static double GetDistance(double point1, double point2)

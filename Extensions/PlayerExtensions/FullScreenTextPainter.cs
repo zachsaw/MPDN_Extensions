@@ -20,7 +20,7 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using Mpdn.Extensions.Framework;
-using Timer = System.Windows.Forms.Timer;
+using Timer = System.Timers.Timer;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -51,36 +51,22 @@ namespace Mpdn.Extensions.PlayerExtensions
         public override void Initialize()
         {
             m_Text = Player.CreateText("Verdana", TEXT_HEIGHT, TextFontStyle.Regular);
-            m_Timer = new Timer {Interval = 100};
-            m_Timer.Tick += TimerOnTick;
+
+            m_Timer = new Timer { Interval = 100, SynchronizingObject = Gui.VideoBox };
+            m_Timer.Elapsed += TimerOnTick;
             m_Timer.Start();
 
             Gui.VideoBox.MouseMove += MouseMove;
-            
             Player.PaintOverlay += OnPaintOverlay;
-            Player.FullScreenMode.Entered += EnteredFullScreenMode;
-            Player.FullScreenMode.Exited += ExitedFullScreenMode;
         }
 
         public override void Destroy()
         {
             Gui.VideoBox.MouseMove -= MouseMove;
             Player.PaintOverlay -= OnPaintOverlay;
-            Player.FullScreenMode.Entered -= EnteredFullScreenMode;
-            Player.FullScreenMode.Exited -= ExitedFullScreenMode;
 
             m_Timer.Dispose();
             m_Text.Dispose();
-        }
-
-        private void ExitedFullScreenMode(object sender, EventArgs e)
-        {
-            m_FullScreenMode = false;
-        }
-
-        private void EnteredFullScreenMode(object sender, EventArgs e)
-        {
-            m_FullScreenMode = true;
         }
 
         private int SeekBarTop
@@ -109,6 +95,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 && pos.X < Gui.VideoBox.Width
                 && pos.Y >=Gui.VideoBox.Height - SeekBarTop
                 && pos.Y < Gui.VideoBox.Height + SeekBarBottom;
+            m_FullScreenMode = Player.FullScreenMode.Active;
 
             AtomicWrite(ref m_Position, Media.Position);
             AtomicWrite(ref m_Duration, Media.Duration);

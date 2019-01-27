@@ -29,7 +29,7 @@ namespace Mpdn.Extensions.AudioScripts
 {
     namespace Mpdn
     {
-        public class DynamicRangeCompressor : AudioFilter
+        public class DynamicRangeCompressor : AudioProcess
         {
             #region Settings
 
@@ -67,19 +67,18 @@ namespace Mpdn.Extensions.AudioScripts
                 Gpu.LoadAudioKernel(typeof(Decibels), typeof(DynamicRangeCompressorKernel));
             }
 
-            public override void Reset()
+            protected override void Dispose(bool disposing)
             {
                 DisposeGpuResources();
-                base.Reset();
             }
 
-            protected override void Process(float[,] samples, short channels, int sampleCount)
+            protected override void Process(IAudioDescription input, float[,] samples, short channels, int sampleCount)
             {
-                UpdateEnvelopeDetectors();
+                UpdateEnvelopeDetectors(input);
                 Compress(samples, sampleCount, ThresholddB, Ratio, MakeupGaindB);
             }
 
-            private void UpdateEnvelopeDetectors()
+            private void UpdateEnvelopeDetectors(IAudioDescription Input)
             {
                 if (m_Attack != null && m_Release != null) return;
 

@@ -68,10 +68,14 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "OCL_NNEDI3"; }
             }
 
-            protected IShaderFilterSettings<IKernel> CompileKernel(bool u)
+            protected NNedi3Kernel CompileKernel(bool u)
             {
-                return CompileClKernel("nnedi3ocl.cl", "nnedi3",
-                    string.Format("-cl-fast-relaxed-math -D {0}", u ? "CHROMA_U=1" : "CHROMA_V=1"));
+                var localWorkSizes = new[] { 8, 8 };
+                return new NNedi3Kernel(
+                    FromString("nnedi3ocl.cl",
+                        entryPoint: "nnedi3",
+                        compilerOptions: string.Format("-cl-fast-relaxed-math -D {0}", u ? "CHROMA_U=1" : "CHROMA_V=1")),
+                    localWorkSizes);
             }
 
             public override ITextureFilter ScaleChroma(ICompositionFilter composition)
@@ -94,15 +98,9 @@ namespace Mpdn.Extensions.RenderScripts
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2 * s.Width, s.Height);
                 Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2 * s.Height);
 
-                var kernelU = CompileKernel(true);
-                var kernelV = CompileKernel(false);
-                var shaderUh = kernelU.Configure(transform: transformWidth);
-                var shaderUv = kernelU.Configure(transform: transformHeight);
-                var shaderVh = kernelV.Configure(transform: transformWidth);
-                var shaderVv = kernelV.Configure(transform: transformHeight);
-
                 var neuronCount1 = s_NeuronCount[(int)Neurons1];
                 var neuronCount2 = s_NeuronCount[(int)Neurons2];
+
                 var weights1 = s_Weights[(int)Neurons1];
                 m_Buffer1 = Renderer.CreateClBuffer(weights1);
                 var differentWeights = neuronCount1 != neuronCount2;
@@ -112,20 +110,19 @@ namespace Mpdn.Extensions.RenderScripts
                     m_Buffer2 = Renderer.CreateClBuffer(weights2);
                 }
 
-                var localWorkSizes = new[] { 8, 8 };
-                var nnedi3Uh = new NNedi3HKernelFilter(shaderUh, m_Buffer1, neuronCount1,
-                    new TextureSize(chromaSize.Width, chromaSize.Height),
-                    localWorkSizes, composition.Chroma);
-                var nnedi3Uv = new NNedi3VKernelFilter(shaderUv, m_Buffer2, neuronCount2, differentWeights,
-                    new TextureSize(nnedi3Uh.Size().Width, nnedi3Uh.Size().Height),
-                    localWorkSizes, nnedi3Uh);
+                var kernelU = CompileKernel(true);  // Note: compiled shader is shared between filters
+                var kernelV = CompileKernel(false); // Note: compiled shader is shared between filters
 
-                var nnedi3Vh = new NNedi3HKernelFilter(shaderVh, m_Buffer1, neuronCount1,
-                    new TextureSize(chromaSize.Width, chromaSize.Height),
-                    localWorkSizes, composition.Chroma);
-                var nnedi3Vv = new NNedi3VKernelFilter(shaderVv, m_Buffer2, neuronCount2, differentWeights,
-                    new TextureSize(nnedi3Vh.Size().Width, nnedi3Vh.Size().Height),
-                    localWorkSizes, nnedi3Vh);
+                var shaderUh = new NNedi3Kernel(kernelU) { Horizontal = true , Buffer = m_Buffer1, NeuronCount = neuronCount1, Transform = transformWidth };
+                var shaderUv = new NNedi3Kernel(kernelU) { Horizontal = false, Buffer = m_Buffer2, ReloadWeights = differentWeights, NeuronCount = neuronCount2, Transform = transformHeight};
+                var shaderVh = new NNedi3Kernel(kernelV) { Horizontal = true , Buffer = m_Buffer1, NeuronCount = neuronCount1, Transform = transformWidth };
+                var shaderVv = new NNedi3Kernel(kernelV) { Horizontal = false, Buffer = m_Buffer2, ReloadWeights = differentWeights, NeuronCount = neuronCount2, Transform = transformHeight };
+
+                var nnedi3Uh = composition.Chroma.Apply(shaderUh);
+                var nnedi3Uv = nnedi3Uh.Apply(shaderUv);
+
+                var nnedi3Vh = composition.Chroma.Apply(shaderVh);
+                var nnedi3Vv = nnedi3Vh.Apply(shaderVv);
 
                 return composition.Luma.MergeWith(nnedi3Uv, nnedi3Vv).ConvertToRgb();
             }

@@ -20,7 +20,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
+using Mpdn.Extensions.Framework.RenderChain.Filters;
+using Mpdn.Extensions.Framework.RenderChain.Shaders;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 using SharpDX;
@@ -42,85 +43,89 @@ namespace Mpdn.Extensions.RenderScripts
         {
             public static int[] Get(int width, int height, int[] localWorkSizes)
             {
-                var baseWidth = (float) localWorkSizes[0];
-                var baseHeight = (float) localWorkSizes[1];
+                var baseWidth = (float)localWorkSizes[0];
+                var baseHeight = (float)localWorkSizes[1];
 
-                var widthGroupCount = Math.Ceiling(width/(baseWidth*baseWidth));
-                var heightGroupCount = Math.Ceiling(height/baseHeight);
-                return new[] {(int) (baseWidth*widthGroupCount), (int) (baseHeight*heightGroupCount)};
+                var widthGroupCount = Math.Ceiling(width / (baseWidth * baseWidth));
+                var heightGroupCount = Math.Ceiling(height / baseHeight);
+                return new[] { (int)(baseWidth * widthGroupCount), (int)(baseHeight * heightGroupCount) };
             }
         }
 
-        public class NNedi3HKernelFilter : ClKernelFilter
+        public class NNedi3Kernel : ClKernel
         {
-            private readonly int m_NeuronCount;
-            private readonly TextureSize m_TextureSize;
-            private IDisposable m_Buffer;
+            public int NeuronCount { get; set; }
+            public bool ReloadWeights { get; set; }
+            public bool Horizontal { get; set; }
 
-            public NNedi3HKernelFilter(IShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, TextureSize textureSize, int[] localWorkSizes,
-                ITextureFilter<IBaseTexture> inputFilter)
-                : base(settings, GlobalWorkSizesHelper.Get(textureSize.Height, textureSize.Width, localWorkSizes), localWorkSizes, inputFilter)
+            public IDisposable Buffer { get; set; }
+
+            public bool ReuseHandle { get; set; }
+
+            public NNedi3Kernel(IShaderDefinition<IKernel> definition, int[] localWorkSizes)
+                : base(new CachedDefinition<IKernel>(definition), null, localWorkSizes)
             {
-                m_Buffer = buffer;
-                m_NeuronCount = neuronCount;
-                m_TextureSize = textureSize;
+                NeuronCount = 16;
+                ReloadWeights = true;
+                Buffer = null;
+                Horizontal = true;
+            }
+            
+            public NNedi3Kernel(NNedi3Kernel config)
+                : base(config)
+            {
+                NeuronCount = config.NeuronCount;
+                ReloadWeights = config.ReloadWeights;
+                Buffer = config.Buffer;
             }
 
-            protected override void LoadInputs(IList<IBaseTexture> inputs)
+            public override IShaderHandle GetHandle()
             {
-                Shader.SetInputTextureArg(0, (ITexture2D)inputs[0]); // srcImg
-                                                                     // First pass doesn't require result to be copied back to Direct3D - so we use a 'temp' texture
-                Shader.SetTempTextureArg(1, Target.Texture); // dstImg
-                Shader.SetBufferArg(2, m_Buffer); // weights
-                Shader.SetArg(3, m_NeuronCount); // nnst
-                Shader.SetArg(4, m_TextureSize.Height); // SrcWidth
-                Shader.SetArg(5, m_TextureSize.Width); // SrcHeight
-                Shader.SetArg(6, 1); // SwapXy
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                base.Dispose(disposing);
-                DisposeHelper.Dispose(ref m_Buffer);
+                return new NNediKernelHandle(this, Definition, Horizontal);
             }
         }
 
-        public class NNedi3VKernelFilter : ClKernelFilter
+        public class NNediKernelHandle : ClKernelHandle
         {
             private readonly bool m_ReloadWeights;
             private readonly int m_NeuronCount;
-            private readonly TextureSize m_TextureSize;
-            private IDisposable m_Buffer;
+            private readonly bool m_Horizontal;
 
-            public NNedi3VKernelFilter(IShaderFilterSettings<IKernel> settings, IDisposable buffer, int neuronCount, bool reloadWeights, TextureSize textureSize, int[] localWorkSizes,
-                ITextureFilter<IBaseTexture> inputFilter)
-                : base(settings, GlobalWorkSizesHelper.Get(textureSize.Width, textureSize.Height, localWorkSizes), localWorkSizes, inputFilter)
+            private readonly IDisposable m_Buffer;
+
+            public NNediKernelHandle(NNedi3Kernel parameters, IShaderDefinition<IKernel> definition, bool horizontal)
+                : base(parameters, definition)
             {
-                m_Buffer = buffer;
-                m_NeuronCount = neuronCount;
-                m_ReloadWeights = reloadWeights;
-                m_TextureSize = textureSize;
+                m_NeuronCount = parameters.NeuronCount;
+                m_ReloadWeights = parameters.ReloadWeights;
+                m_Horizontal = horizontal;
+
+                m_Buffer = parameters.Buffer;
             }
 
-            protected override void LoadInputs(IList<IBaseTexture> inputs)
+            protected override void LoadArguments(IList<IBaseTexture> inputs, ITargetTexture output)
             {
+                var inputTexture = (ITexture2D)inputs[0];
+
+                GlobalWorkSizes = GlobalWorkSizesHelper.Get(inputTexture.Width, inputTexture.Height, LocalWorkSizes);
+
                 // Use the 'temp' texture from first pass as input
-                Shader.SetTempTextureArg(0, (ITexture2D)inputs[0]); // srcImg
-                Shader.SetOutputTextureArg(1, Target.Texture); // dstImg
+                Shader.SetTempTextureArg(0, inputTexture); // srcImg
+                Shader.SetOutputTextureArg(1, output); // dstImg
                 if (m_ReloadWeights)
                 {
                     Shader.SetBufferArg(2, m_Buffer); // weights
                     Shader.SetArg(3, m_NeuronCount); // nnst
                 }
-                Shader.SetArg(4, m_TextureSize.Width); // SrcWidth
-                Shader.SetArg(5, m_TextureSize.Height); // SrcHeight
-                Shader.SetArg(6, 0); // SwapXy
+                Shader.SetArg(4, m_Horizontal ? inputTexture.Height : inputTexture.Width ); // SrcWidth
+                Shader.SetArg(5, m_Horizontal ? inputTexture.Width  : inputTexture.Height); // SrcHeight
+                Shader.SetArg(6, m_Horizontal ? 1 : 0); // SwapXy
             }
 
             protected override void Dispose(bool disposing)
             {
                 base.Dispose(disposing);
-                DisposeHelper.Dispose(ref m_Buffer);
+                DisposeHelper.Dispose(m_Buffer);
             }
         }
 
@@ -167,9 +172,10 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "OCL_NNEDI3"; }
             }
 
-            protected IShaderFilterSettings<IKernel> CompileKernel()
+            protected NNedi3Kernel GetKernel()
             {
-                return CompileClKernel("nnedi3ocl.cl", "nnedi3", "-cl-fast-relaxed-math");
+                var localWorkSizes = new[] { 8, 8 };
+                return new NNedi3Kernel(FromFile("nnedi3ocl.cl", entryPoint: "nnedi3", compilerOptions: "-cl-fast-relaxed-math"), localWorkSizes);
             }
 
             private IChromaScaler ChromaScaler
@@ -192,10 +198,6 @@ namespace Mpdn.Extensions.RenderScripts
                 Func<TextureSize, TextureSize> transformWidth = s => new TextureSize(2*s.Width, s.Height);
                 Func<TextureSize, TextureSize> transformHeight = s => new TextureSize(s.Width, 2*s.Height);
 
-                var kernel = CompileKernel();
-                var shaderH = kernel.Configure(transform: transformWidth);
-                var shaderV = kernel.Configure(transform: transformHeight);
-
                 var neuronCount1 = s_NeuronCount[(int) Neurons1];
                 var neuronCount2 = s_NeuronCount[(int) Neurons2];
                 var weights1 = s_Weights[(int) Neurons1];
@@ -209,24 +211,23 @@ namespace Mpdn.Extensions.RenderScripts
                     buffer2 = Renderer.CreateClBuffer(weights2);
                 }
 
+                var kernel = GetKernel(); // Note Kernel is reused between different filters
+                var shaderH = new NNedi3Kernel(kernel) { Horizontal = true, Buffer = buffer1, NeuronCount = neuronCount1, Transform = transformWidth };
+                var shaderV = new NNedi3Kernel(kernel) { Horizontal = false, Buffer = buffer2, NeuronCount = neuronCount2, Transform = transformHeight, ReloadWeights = differentWeights };
+
                 var sourceSize = input.Size();
                 if ((Renderer.TargetSize <= sourceSize).Any)
                     return input;
 
-                var yuv = input.ConvertToYuv();
+                var composition = input.Decompose();
 
-                var localWorkSizes = new[] {8, 8};
-                var nnedi3H = new NNedi3HKernelFilter(shaderH, buffer1, neuronCount1,
-                    new TextureSize(yuv.Size().Width, yuv.Size().Height), 
-                    localWorkSizes, yuv);
-                var nnedi3V = new NNedi3VKernelFilter(shaderV, buffer2, neuronCount2, differentWeights,
-                    new TextureSize(nnedi3H.Size().Width, nnedi3H.Size().Height), 
-                    localWorkSizes, nnedi3H);
+                var nnedi3H = shaderH.ApplyTo(composition.Luma);
+                var nnedi3V = shaderV.ApplyTo(nnedi3H);
 
-                var result = ChromaScaler.ScaleChroma(
-                    new CompositionFilter(nnedi3V, yuv, targetSize: nnedi3V.Size(), chromaOffset: new Vector2(-0.25f, -0.25f)));
+                composition = nnedi3V.ComposeWith(composition.Chroma, chromaOffset: new Vector2(-0.25f, -0.25f));
+                var result = ChromaScaler.ScaleChroma(composition);
 
-                return new ResizeFilter(result, result.Size(), new Vector2(0.5f, 0.5f), Renderer.LumaUpscaler, Renderer.LumaDownscaler);
+                return result.Convolve(null, offset: new Vector2(0.5f, 0.5f));
             }
         }
 

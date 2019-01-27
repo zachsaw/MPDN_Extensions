@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Mpdn</RootNamespace>
     <AssemblyName>Mpdn.Extensions</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -75,6 +75,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Extensions\Libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Onsyn, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Onsyn.0.1.2\lib\net45\Onsyn.dll</HintPath>
+    </Reference>
     <Reference Include="Ooki.Dialogs">
       <HintPath>Extensions\Libs\Ookii.Dialogs.dll</HintPath>
     </Reference>
@@ -129,6 +132,7 @@
     <Compile Include="Extensions\AudioScripts\Mpdn.Reclock.cs" />
     <Compile Include="Extensions\AudioScripts\Mpdn.ScriptChain.cs" />
     <Compile Include="Extensions\AudioScripts\Mpdn.ScriptGroup.cs" />
+    <Compile Include="Extensions\AudioScripts\Shiandow.Crossfeed.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Functions\Jinc.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Gaussian.cs" />
     <Compile Include="Extensions\CustomLinearScalers\Sinc.cs" />
@@ -496,7 +500,6 @@
     <None Include="Extensions\RenderScripts\NNEDI3\Interleave.hlsl" />
     <None Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
-    <None Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
     <None Include="Extensions\RenderScripts\SSimDownscaler\SoftDownscaler.hlsl" />
     <None Include="Extensions\RenderScripts\SSSR\GammaToLinear.hlsl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
@@ -516,6 +519,7 @@
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\nnedi3ocl.cl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr.hlsl" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">

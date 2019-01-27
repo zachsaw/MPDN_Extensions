@@ -18,10 +18,10 @@
 sampler s0 : register(s0);
 sampler sUV : register(s1);
 
-float4 size1  : register(c2);
-float4 sizeOutput : register(c3);
-float4 chromaParams : register(c4);
-float  power  : register(c5);
+float4 size1  : register(c0);
+float4 sizeOutput : register(c1);
+float4 chromaParams : register(c2);
+float  power  : register(c3);
 
 // -- Convenience --
 #define sqr(x) dot(x,x)

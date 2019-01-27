@@ -20,27 +20,33 @@ using System.Linq;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
 using SharpDX;
+using Mpdn.Extensions.Framework.Filter;
+using Mpdn.Extensions.Framework.RenderChain.Filters;
+using Onsyn.Lending;
 
-namespace Mpdn.Extensions.Framework.RenderChain.Shader
+namespace Mpdn.Extensions.Framework.RenderChain.Shaders
 {
-    public interface IShaderHandle
-    {
-        TextureFormat OutputFormat { get; }
-        TextureSize CalcSize(IList<TextureSize> inputSizes);
+    public interface IShaderHandle : IMultiProcess<ITextureFilter<IBaseTexture>, ITextureFilter>, IDisposable { }
 
-        void Initialize();
-        void LoadArguments(IList<IBaseTexture> inputs, ITargetTexture output);
-        void Render();
-    }
-
-    public abstract class BaseShaderHandle<TShader> : IShaderHandle
+    public abstract class BaseShaderHandle<TShader> : IMultiProcess<ITextureFilter<IBaseTexture>, ITextureFilter>, IShaderHandle
         where TShader : IShaderBase
     {
-        private readonly IShaderDefinition<TShader> m_Definition;
-        protected TShader Shader;
+        protected abstract void RenderOutput(ITargetTexture output);
+        protected abstract void LoadArguments(IList<IBaseTexture> inputs, ITargetTexture output);
 
-        public abstract void Render();
-        public abstract void LoadArguments(IList<IBaseTexture> inputs, ITargetTexture output);
+        #region Implementation
+
+        protected readonly TShader Shader;
+
+        protected readonly Func<TextureSize, TextureSize> Transform;
+        protected readonly TextureFormat Format;
+        protected readonly int SizeIndex;
+
+        protected readonly bool LinearSampling;
+        protected readonly bool[] PerTextureLinearSampling;
+        protected readonly ArgumentList Arguments;
+
+        private readonly IShaderDefinition<TShader> m_Definition;
 
         protected BaseShaderHandle(IShaderParameters parameters, IShaderDefinition<TShader> definition)
         {
@@ -52,32 +58,62 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
             PerTextureLinearSampling = parameters.PerTextureLinearSampling;
 
             m_Definition = definition;
+            Shader = m_Definition.Compile();
         }
 
-        protected Func<TextureSize, TextureSize> Transform;
-        protected TextureFormat Format;
-        protected int SizeIndex;
-
-        protected bool LinearSampling { get; set; }
-        protected bool[] PerTextureLinearSampling { get; set; }
-        protected ArgumentList Arguments { get; set; }
-
-        public TextureFormat OutputFormat { get { return Format; } }
-
-        public TextureSize CalcSize(IList<TextureSize> inputSizes)
+        private ITextureOutput Allocate(IEnumerable<ITextureDescription> inputs)
         {
-            if (SizeIndex < 0 || SizeIndex >= inputSizes.Count)
+            return new TextureOutput(CalcSize(inputs.Select(x => x.Size)), Format);
+        }
+
+        private TextureSize CalcSize(IEnumerable<TextureSize> inputSizes)
+        {
+            var sizes = inputSizes.ToList();
+            if (SizeIndex < 0 || SizeIndex >= sizes.Count)
             {
                 throw new IndexOutOfRangeException(string.Format("No valid input filter at index {0}", SizeIndex));
             }
 
-            return Transform(inputSizes[SizeIndex]);
+            return Transform(sizes[SizeIndex]);
         }
 
-        public void Initialize()
+        #endregion
+
+        #region IProcess Implementation
+
+        public ITextureFilter ApplyTo(IEnumerable<ITextureFilter<IBaseTexture>> inputs)
         {
-            Shader = m_Definition.Compile();
+            var folded = inputs.Fold();
+            return new TextureFilter(
+                from _ in FilterBaseHelper.Bind(this)
+                from values in folded
+                select Allocate(folded.Output).Do(Render, values));
         }
+
+        public void Render(IEnumerable<IBaseTexture> inputs, ITargetTexture output)
+        {
+            LoadArguments(inputs.ToList(), output);
+            RenderOutput(output);
+        }
+
+        #endregion
+
+        #region Resource Management
+
+        ~BaseShaderHandle()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing) { }
+
+        #endregion
     }
 
     public abstract class GenericShaderHandle<TShader> : BaseShaderHandle<TShader>
@@ -86,22 +122,19 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
         protected abstract void SetTextureConstant(int index, IBaseTexture texture, bool linearSampling);
         protected abstract void SetConstant(string identifier, Vector4 value);
 
+        #region Implementation
+
         protected GenericShaderHandle(IShaderParameters parameters, IShaderDefinition<TShader> definition)
             : base(parameters, definition)
         { }
 
-        protected ITargetTexture Target;
-
-        protected virtual void LoadCustomConstants() { }
-
-        public override void LoadArguments(IList<IBaseTexture> inputs, ITargetTexture output)
+        protected override void LoadArguments(IList<IBaseTexture> inputs, ITargetTexture output)
         {
             LoadTextureConstants(inputs, output);
             LoadShaderConstants();
-            LoadCustomConstants();
         }
 
-        protected virtual void LoadTextureConstants(IList<IBaseTexture> inputs, ITargetTexture output)
+        protected void LoadTextureConstants(IList<IBaseTexture> inputs, ITargetTexture output)
         {
             var index = 0;
             foreach (var input in inputs)
@@ -117,7 +150,6 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
 
             /* Add Output Size */
             LoadSizeConstant("Output", output.GetSize());
-            SetOutputTexture(output);
         }
 
         protected void LoadSizeConstant(string identifier, TextureSize size)
@@ -134,10 +166,7 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
                 SetConstant(argument.Key, argument.Value);
         }
 
-        protected virtual void SetOutputTexture(ITargetTexture targetTexture)
-        {
-            Target = targetTexture;
-        }
+        #endregion
     }
 
     public class ShaderHandle : GenericShaderHandle<IShader>
@@ -146,7 +175,9 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
             : base(parameters, definition)
         { }
 
-        protected override void SetTextureConstant(int index, IBaseTexture texture, bool linearSampling)
+        #region Implementation
+
+        protected sealed override void SetTextureConstant(int index, IBaseTexture texture, bool linearSampling)
         {
             if (texture is ITexture2D)
             {
@@ -160,26 +191,32 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
             }
         }
 
-        protected override void SetConstant(string identifier, Vector4 value)
+        protected sealed override void SetConstant(string identifier, Vector4 value)
         {
             Shader.SetConstant(identifier, value, false);
         }
 
-        public override void Render()
+        protected sealed override void RenderOutput(ITargetTexture output)
         {
-            Renderer.Render(Target, Shader);
+            Renderer.Render(output, Shader);
         }
+
+        #endregion
     }
 
-    public class Shader11Handle : GenericShaderHandle<IShader11>
+    public abstract class BaseShader11Handle : GenericShaderHandle<IShader11>
     {
+        protected abstract void Render(ITargetTexture output);
+
+        #region Implementation
+
         private readonly IList<IDisposable> m_Buffers = new List<IDisposable>();
 
-        public Shader11Handle(IShaderParameters parameters, IShaderDefinition<IShader11> definition)
+        public BaseShader11Handle(IShaderParameters parameters, IShaderDefinition<IShader11> definition)
             : base(parameters, definition)
         { }
 
-        protected override void SetTextureConstant(int index, IBaseTexture texture, bool linearSampling)
+        protected sealed override void SetTextureConstant(int index, IBaseTexture texture, bool linearSampling)
         {
             if (texture is ITexture2D)
             {
@@ -193,28 +230,37 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
             }
         }
 
-        protected override void SetConstant(string identifier, Vector4 value)
+        protected sealed override void SetConstant(string identifier, Vector4 value)
         {
             var buffer = Renderer.CreateConstantBuffer(value);
             m_Buffers.Add(buffer);
             Shader.SetConstantBuffer(identifier, buffer, false);
         }
 
-        protected override void SetOutputTexture(ITargetTexture targetTexture)
+        protected sealed override void RenderOutput(ITargetTexture output)
         {
-            Target = targetTexture;
-        }
-
-        public override void Render()
-        {
-            Renderer.Render(Target, Shader);
+            Render(output);
 
             DisposeHelper.DisposeElements(m_Buffers);
             m_Buffers.Clear();
         }
+
+        #endregion
     }
 
-    public class ComputeShaderHandle : Shader11Handle
+    public class Shader11Handle : BaseShader11Handle
+    {
+        public Shader11Handle(IShaderParameters parameters, IShaderDefinition<IShader11> definition)
+            : base(parameters, definition)
+        { }
+
+        protected sealed override void Render(ITargetTexture output)
+        {
+            Renderer.Render(output, Shader);
+        }
+    }
+
+    public class ComputeShaderHandle : BaseShader11Handle
     {
         protected int ThreadGroupX { get; set; }
         protected int ThreadGroupY { get; set; }
@@ -228,16 +274,16 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
             ThreadGroupZ = parameters.ThreadGroupZ;
         }
 
-        public override void Render()
+        protected sealed override void Render(ITargetTexture output)
         {
-            Renderer.Compute(Target, Shader, ThreadGroupX, ThreadGroupY, ThreadGroupZ);
+            Renderer.Compute(output, Shader, ThreadGroupX, ThreadGroupY, ThreadGroupZ);
         }
     }
 
     public class ClKernelHandle : BaseShaderHandle<IKernel>
     {
-        public int[] GlobalWorkSizes { get; set; }
-        public int[] LocalWorkSizes { get; set; }
+        protected int[] GlobalWorkSizes { get; set; }
+        protected int[] LocalWorkSizes { get; set; }
 
         protected virtual void LoadAdditionalInputs(int currentIndex) { }
 
@@ -248,7 +294,9 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
             LocalWorkSizes = parameters.LocalWorkSizes;
         }
 
-        public override void LoadArguments(IList<IBaseTexture> inputs, ITargetTexture output)
+        #region Implementation
+
+        protected override void LoadArguments(IList<IBaseTexture> inputs, ITargetTexture output)
         {
             IList<ITexture2D> inputs2D;
             try
@@ -268,12 +316,14 @@ namespace Mpdn.Extensions.Framework.RenderChain.Shader
             LoadAdditionalInputs(index);
         }
 
-        public override void Render()
+        protected sealed override void RenderOutput(ITargetTexture output)
         {
             if (GlobalWorkSizes == null)
                 throw new ArgumentNullException("OpenCL global workgroup sizes not set.");
 
             Renderer.RunClKernel(Shader, GlobalWorkSizes, LocalWorkSizes);
         }
+
+        #endregion
     }
 }

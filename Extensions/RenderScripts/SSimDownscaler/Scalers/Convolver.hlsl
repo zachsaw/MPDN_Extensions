@@ -17,14 +17,12 @@
 // -- Misc --
 #ifndef Initialized
 	sampler s0:	register(s0);
-	float4 p0 : register(c0);
-	float2 p1 : register(c1);
-	float4 size0 : register(c2);
+	float4 size0 : register(c0);
 
 	#define Initialized 1
 #endif
 
-#define dxdy (p1.xy)
+#define dxdy (InputSize.zw)
 
 // -- Definitions --
 #define factor (1)
@@ -33,6 +31,10 @@
 // -- Handles --
 #ifndef Get
 	#define Get(pos)    (GetFrom(s0, pos))
+#endif
+
+#ifndef InputSize
+	#define InputSize size0
 #endif
 
 #ifndef axis

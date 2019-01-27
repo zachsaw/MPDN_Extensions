@@ -25,12 +25,12 @@ namespace Mpdn.Extensions.Framework.Config
         private Exception m_LastException;
         private IConfigProvider<TSettings> m_ScriptSettings;
 
+        protected abstract IConfigProvider<TSettings> CreateConfigProvider();
+
         protected IConfigProvider<TSettings> Settings
         {
             get { return m_ScriptSettings ?? (m_ScriptSettings = CreateConfigProvider()); }
         }
-
-        protected abstract IConfigProvider<TSettings> CreateConfigProvider();
 
         public TSettings Config
         {

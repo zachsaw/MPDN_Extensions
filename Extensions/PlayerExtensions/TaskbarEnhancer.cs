@@ -23,6 +23,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Mpdn.Extensions.Framework;
+using System.Threading.Tasks;
 
 namespace Mpdn.Extensions.PlayerExtensions
 {
@@ -63,6 +64,22 @@ namespace Mpdn.Extensions.PlayerExtensions
         private Playlist.Playlist m_Playlist;
         private IntPtr m_MpdnFormHandle;
 
+        private IntPtr MpdnFormHandle
+        {
+            get
+            {
+                if (m_MpdnFormHandle == null)
+                    Player.ActiveForm.Invoke((Action)GetHandle);
+
+                return m_MpdnFormHandle;
+            }
+        }
+
+        private void GetHandle()
+        {
+            m_MpdnFormHandle = Player.ActiveForm.Handle;
+        }
+
         public override ExtensionUiDescriptor Descriptor
         {
             get
@@ -80,16 +97,22 @@ namespace Mpdn.Extensions.PlayerExtensions
         {
             base.Initialize();
 
-            m_MpdnFormHandle = Player.ActiveForm.Handle;
+            Player.ActiveForm.BeginInvoke((Action)GetHandle);
 
-            m_UpdateTimer = new Timer();
-            m_UpdateTimer.Tick += UpdateTimerTick;
-            m_Playlist = GetPlaylistInstance();
+            EventHandler onLoaded = null;
+            PlayerControl.PlayerLoaded += onLoaded = (o, e) =>
+            {
+                m_UpdateTimer = new Timer();
+                m_UpdateTimer.Tick += UpdateTimerTick;
+                m_Playlist = GetPlaylistInstance();
 
-            Player.StateChanged += PlayerStateChanged;
-            Media.Loaded += MediaLoaded;
+                CreateToolBarButtons();
 
-            CreateToolBarButtons();
+                Player.StateChanged += PlayerStateChanged;
+                Media.Loaded += MediaLoaded;
+
+                PlayerControl.PlayerLoaded -= onLoaded;
+            };
         }
 
         private Playlist.Playlist GetPlaylistInstance()
@@ -123,28 +146,28 @@ namespace Mpdn.Extensions.PlayerExtensions
                     m_UpdateTimer.Stop();
                     s_PlayPauseButton.Icon = s_PlayIcon;
                     s_PlayPauseButton.Tooltip = TEXT_PLAY;
-                    Taskbar.SetOverlayIcon(m_MpdnFormHandle, null, "");
+                    Taskbar.SetOverlayIcon(MpdnFormHandle, null, "");
                     break;
                 case PlayerState.Stopped:
                     Taskbar.SetProgressState(TaskbarProgressBarState.NoProgress);
                     m_UpdateTimer.Start();
                     s_PlayPauseButton.Icon = s_PlayIcon;
                     s_PlayPauseButton.Tooltip = TEXT_PLAY;
-                    Taskbar.SetOverlayIcon(m_MpdnFormHandle, null, "");
+                    Taskbar.SetOverlayIcon(MpdnFormHandle, null, "");
                     break;
                 case PlayerState.Playing:
                     Taskbar.SetProgressState(TaskbarProgressBarState.Normal);
                     m_UpdateTimer.Start();
                     s_PlayPauseButton.Icon = s_PauseIcon;
                     s_PlayPauseButton.Tooltip = TEXT_PAUSE;
-                    Taskbar.SetOverlayIcon(m_MpdnFormHandle, s_PlayOverlayIcon, "Playing");
+                    Taskbar.SetOverlayIcon(MpdnFormHandle, s_PlayOverlayIcon, "Playing");
                     break;
                 case PlayerState.Paused:
                     Taskbar.SetProgressState(TaskbarProgressBarState.Paused);
                     m_UpdateTimer.Start();
                     s_PlayPauseButton.Icon = s_PlayIcon;
                     s_PlayPauseButton.Tooltip = TEXT_PLAY;
-                    Taskbar.SetOverlayIcon(m_MpdnFormHandle, s_PauseOverlayIcon, "Paused");
+                    Taskbar.SetOverlayIcon(MpdnFormHandle, s_PauseOverlayIcon, "Paused");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -199,7 +222,7 @@ namespace Mpdn.Extensions.PlayerExtensions
                 buttons.Insert(0, s_PrevButton);
             }
 
-            Taskbar.ThumbnailToolBars.AddButtons(m_MpdnFormHandle, buttons.ToArray());
+            Taskbar.ThumbnailToolBars.AddButtons(MpdnFormHandle, buttons.ToArray());
         }
 
         private void PrevClick(object sender, ThumbnailButtonClickedEventArgs e)

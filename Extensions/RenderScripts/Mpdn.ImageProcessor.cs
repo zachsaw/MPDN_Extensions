@@ -15,10 +15,13 @@
 // License along with this library.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Mpdn.Extensions.Framework.RenderChain;
+using Mpdn.Extensions.Framework.RenderChain.Shaders;
 using Mpdn.RenderScript;
+using SharpDX;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -77,23 +80,52 @@ namespace Mpdn.Extensions.RenderScripts
                     input = input.ConvertToYuv();
 
                 var output = ShaderFileNames.Aggregate(input,
-                    (current, filename) =>
-                        CompileShader(filename)
-                            .Configure(format: GetTextureFormat())
-                            .ApplyTo(current));
+                    (current, filename) => current.Apply(GetShader(filename)));
 
                 return ProcessInYUV
                     ? output.ConvertToRgb()
                     : output;
             }
 
-            private TextureFormat? GetTextureFormat()
+            private class LegacyShader : Shader
             {
-                return CompatibilityMode
-                    ? Renderer.RenderQuality == RenderQuality.MaxQuality
+                public LegacyShader(IShaderDefinition<IShader> config) : base(config) { }
+                public LegacyShader(Shader config) : base(config) { }
+
+                private class LegacyHandle : ShaderHandle
+                {
+                    private int m_Counter;
+
+                    public LegacyHandle(IShaderParameters parameters, IShaderDefinition<IShader> definition) 
+                        : base(parameters, definition)
+                    { }
+
+                    protected override void LoadArguments(IList<IBaseTexture> inputs, ITargetTexture output)
+                    {
+                        base.LoadArguments(inputs, output);
+
+                        // Load Legacy Constants
+                        Shader.SetConstant(0, new Vector4(output.Width, output.Height, m_Counter++ & 0x7fffff, Renderer.FrameTimeStampMicrosec / 1000000.0f), false);
+                        Shader.SetConstant(1, new Vector4(1.0f / output.Width, 1.0f / output.Height, 0, 0), false);
+                    }
+                }
+
+                public override IShaderHandle GetHandle()
+                {
+                    return new LegacyHandle(this, Definition);
+                }
+            }
+
+            private Shader GetShader(string filename)
+            {
+                var shader = (CompatibilityMode)
+                    ? new LegacyShader(FromFile(filename))
+                    : new Shader(FromFile(filename));
+                if (CompatibilityMode)
+                    shader.Format = (Renderer.RenderQuality == RenderQuality.MaxQuality)
                         ? TextureFormat.Float32
-                        : TextureFormat.Float16
-                    : (TextureFormat?) null;
+                        : TextureFormat.Float16;
+                return shader;
             }
         }
 

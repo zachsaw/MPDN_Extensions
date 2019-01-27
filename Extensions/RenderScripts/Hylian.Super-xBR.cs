@@ -49,9 +49,12 @@ namespace Mpdn.Extensions.RenderScripts
                 float[] arguments = { EdgeStrength, Sharpness };
                 string fastToggle = FastMethod ? "FAST_METHOD=1;" : "";
 
-                var pass0 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 0;" + fastToggle).Configure(transform: transform, arguments: arguments);
-                var pass1 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 1;" + fastToggle).Configure(arguments: arguments);
-                var pass2 = CompileShader("super-xbr.hlsl", entryPoint: "main_fragment", macroDefinitions: "Pass = 2;" + fastToggle).Configure(arguments: arguments);
+                var pass0 = new Shader(FromFile("super-xbr.hlsl", entryPoint: "main_fragment", compilerOptions: "Pass = 0;" + fastToggle))
+                    { Transform = transform, Arguments = arguments };
+                var pass1 = new Shader(FromFile("super-xbr.hlsl", entryPoint: "main_fragment", compilerOptions: "Pass = 1;" + fastToggle))
+                    { Arguments = arguments };
+                var pass2 = new Shader(FromFile("super-xbr.hlsl", entryPoint: "main_fragment", compilerOptions: "Pass = 2;" + fastToggle))
+                    { Arguments = arguments };
 
                 // Skip if downscaling
                 if ((Renderer.TargetSize <= input.Size()).Any)
@@ -62,7 +65,7 @@ namespace Mpdn.Extensions.RenderScripts
                     .Apply(pass1);
 
                 return ThirdPass
-                    ? (ITextureFilter) xbr.Apply(pass2)
+                    ? xbr.Apply(pass2)
                     : xbr.Resize(xbr.Size(), offset: new Vector2(0.5f, 0.5f));
             }
 

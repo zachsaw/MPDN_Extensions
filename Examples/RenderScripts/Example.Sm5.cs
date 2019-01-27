@@ -16,7 +16,7 @@
 
 using System;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
+using Mpdn.Extensions.Framework.RenderChain.Filters;
 using Mpdn.Extensions.RenderScripts.Mpdn.Resizer;
 using Mpdn.RenderScript;
 
@@ -40,9 +40,13 @@ namespace Mpdn.Extensions.RenderScripts
                 input += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
 
                 // apply our blue tint
-                var blueTint = CompileShader11("BlueTintSm5.hlsl", "ps_5_0")
-                    .Configure(linearSampling: false, arguments: new[] {0.25f, 0.5f, 0.75f});
-                return new Shader11Filter(blueTint, input);
+                var blueTint = new Shader11(FromFile("BlueTintSm5.hlsl", "ps_5_0"))
+                {
+                    LinearSampling = false,
+                    Arguments = new[] { 0.25f, 0.5f, 0.75f }
+                };
+
+                return input.Apply(blueTint);
             }
         }
 

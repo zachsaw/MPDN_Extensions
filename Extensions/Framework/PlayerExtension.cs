@@ -15,6 +15,7 @@
 // License along with this library.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -35,7 +36,7 @@ namespace Mpdn.Extensions.Framework
     {
         #region Implementation
 
-        private readonly Guid m_HotkeyGuid = Guid.NewGuid();
+        private IList<IDisposable> m_HotkeyEntries;
 
         public virtual IList<Verb> Verbs
         {
@@ -48,11 +49,17 @@ namespace Mpdn.Extensions.Framework
             LoadVerbs();
         }
 
+        public override void Destroy()
+        {
+            DisposeHelper.DisposeElements(ref m_HotkeyEntries);
+            base.Destroy();
+        }
+
         protected void LoadVerbs()
         {
-            HotkeyRegister.DeregisterHotkey(m_HotkeyGuid);
-            foreach (var verb in Verbs)
-                HotkeyRegister.RegisterHotkey(m_HotkeyGuid, verb.ShortcutDisplayStr, verb.Action);
+            m_HotkeyEntries = Verbs
+                .Select(verb => HotkeyRegister.AddOrUpdateHotkey(verb.ShortcutDisplayStr, verb.Action))
+                .ToList<IDisposable>();
         }
 
         #endregion

@@ -18,65 +18,119 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Cudafy.Host;
 using DirectShowLib;
 using Mpdn.Extensions.Framework.Filter;
+using Onsyn.Lending;
 
 namespace Mpdn.Extensions.Framework.AudioChain
 {
-    public interface IAudioFilter : IFilter<IAudioOutput> { }
+    public interface IAudioFilter : IFilter<IAudioDescription, IAudioOutput> { }
 
-    public abstract class AudioFilterBase : PinFilter<IAudioOutput>, IAudioFilter
+    public interface IAudioProcess : IProcess<IAudioFilter, IAudioFilter>, IDisposable { }
+
+    public class AudioFilter : Filter<IAudioDescription, IAudioOutput>, IAudioFilter
     {
-        protected IAudioOutput Input { get { return InputFilter.Output; } }
+        public AudioFilter(IFilterBase<IFilterOutput<IAudioDescription, IAudioOutput>> filterBase) 
+            : base(filterBase)
+        { }
+    }
 
+    public abstract class AudioProcessBase : IAudioProcess 
+    {
         protected virtual void OnLoadAudioKernel() { }
 
         protected abstract bool Process(IAudioOutput input, IAudioOutput output);
 
-        #region Implementation
-
-        private readonly IPinAudioOutput m_PinOutput;
-
-        public AudioFilterBase() : this(new PinAudioOutput()) { }
-
-        protected AudioFilterBase(IPinAudioOutput output) : base(output)
+        protected virtual void Initialize()
         {
-            m_PinOutput = output;
+            m_LoadAudioKernel = new Lazy<bool>(OnLoadAudioKernelInternal);
+            Task.Run(() => m_LoadAudioKernel.Value);
         }
 
-        protected override void Initialize()
-        {
-            m_PinOutput.SetPin(InputFilter);
-            base.Initialize();
+        #region IProcess Implementation
 
+        private bool m_Initialized = false;
+
+        public IAudioOutput Allocate(IAudioDescription input)
+        {
+            return new PinAudioOutput(input);
+        }
+
+        public void Render(IAudioOutput input, IAudioOutput output)
+        {
+            if (!AudioKernelLoaded || !Process(input, output))
+                AudioHelpers.CopySample(input.Sample, output.Sample, true);
+        }
+
+        public IAudioFilter ApplyTo(IAudioFilter input)
+        {
+            if (m_Initialized)
+                throw new InvalidOperationException("AudioProcesses can only be used once.");
+
+            m_Initialized = true;
+            Initialize();
+
+            return new AudioFilter(from _ in FilterBaseHelper.Bind(this)
+                                   from value in input                                   
+                                   select Allocate(input.Output).Do(Render, value));
+        }
+
+        #endregion
+
+        #region Initialisation
+
+        private Lazy<bool> m_LoadAudioKernel;
+
+        protected bool AudioKernelLoaded { get { return m_LoadAudioKernel.Value; } }
+
+        private bool OnLoadAudioKernelInternal()
+        {
             try
             {
-                OnLoadAudioKernel();
+                // Gpu may not yet be defined if we're just loading settings
+                if (AudioProc.Gpu != null)
+                {
+                    OnLoadAudioKernel();
+                    return true;
+                }
             }
             catch (Exception ex)
             {
                 Trace.WriteLine(ex);
             }
+
+            return false;
         }
 
-        protected override void Render(IList<IAudioOutput> inputs)
+        #endregion
+
+        #region Resource Management
+
+        ~AudioProcessBase()
         {
-            if (inputs.Count != 1)
-                throw new ArgumentException("Incorrect number of inputs.");
-            if (!Process(inputs.First(), Output))
-                AudioHelpers.CopySample(inputs.First().Sample, Output.Sample, true);
+            Dispose(false);
         }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing) { }
+
 
         #endregion
     }
 
     namespace Internal
     {
-        public abstract class GenericAudioFilter : AudioFilterBase
+        public abstract class GenericAudioProcess : AudioProcessBase
         {
-            protected abstract Func<IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat);
+            protected abstract Func<IAudioDescription, IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat);
 
             #region Implementation
 
@@ -98,7 +152,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 var channels = format.nChannels;
                 var sampleFormat = format.SampleFormat();
 
-                return Process(sampleFormat, samples, channels, length, output.Sample);
+                return Process(input, sampleFormat, samples, channels, length, output.Sample);
             }
 
             #endregion
@@ -106,12 +160,12 @@ namespace Mpdn.Extensions.Framework.AudioChain
             #region Audio Rendering
 
             private AudioSampleFormat m_SampleFormat = AudioSampleFormat.Unknown;
-            private Func<IntPtr, short, int, IMediaSample, bool> m_ProcessFunc;
+            private Func<IAudioDescription, IntPtr, short, int, IMediaSample, bool> m_ProcessFunc;
 
-            private bool Process(AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
+            private bool Process(IAudioDescription input, AudioSampleFormat sampleFormat, IntPtr samples, short channels, int length, IMediaSample output)
             {
                 UpdateSampleFormat(sampleFormat);
-                return m_ProcessFunc(samples, channels, length, output);
+                return m_ProcessFunc(input, samples, channels, length, output);
             }
 
             private void UpdateSampleFormat(AudioSampleFormat sampleFormat)
@@ -209,13 +263,13 @@ namespace Mpdn.Extensions.Framework.AudioChain
         }
     }
 
-    public abstract class AudioFilter : Internal.GenericAudioFilter
+    public abstract class AudioProcess : Internal.GenericAudioProcess
     {
-        protected abstract void Process(float[,] samples, short channels, int sampleCount);
+        protected abstract void Process(IAudioDescription input, float[,] samples, short channels, int sampleCount);
 
         #region Implementation
 
-        protected sealed override Func<IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat)
+        protected sealed override Func<IAudioDescription, IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat)
         {
             switch (sampleFormat)
             {
@@ -236,7 +290,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
             }
         }
 
-        private bool ProcessInternal<T>(IntPtr samples, short channels, int length, IMediaSample output) where T : struct
+        private bool ProcessInternal<T>(IAudioDescription input, IntPtr samples, short channels, int length, IMediaSample output) where T : struct
         {
             UpdateGpuResources(length);
 
@@ -249,7 +303,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 Gpu.CopyToDevice(samples, 0, devInputSamples, 0, length);
                 Gpu.Launch(AudioProc.THREAD_COUNT, 1, string.Format("GetSamples{0}", typeof(T).Name),
                     devInputSamples, devInputResult);
-                Process(devInputResult, channels, sampleCount);
+                Process(input, devInputResult, channels, sampleCount);
                 output.GetPointer(out samples);
                 Gpu.Launch(AudioProc.THREAD_COUNT, 1, string.Format("PutSamples{0}", typeof(T).Name),
                     devInputResult, devOutputResult);
@@ -266,13 +320,13 @@ namespace Mpdn.Extensions.Framework.AudioChain
         #endregion
     }
 
-    public abstract class CpuAudioFilter : Internal.GenericAudioFilter
+    public abstract class CpuAudioProcess : Internal.GenericAudioProcess
     {
-        protected abstract void Process(float[,] samples, short channels, int sampleCount);
+        protected abstract void Process(IAudioDescription input, float[,] samples, short channels, int sampleCount);
 
         #region Implementation
 
-        protected sealed override Func<IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat)
+        protected sealed override Func<IAudioDescription, IntPtr, short, int, IMediaSample, bool> GetProcessFunc(AudioSampleFormat sampleFormat)
         {
             switch (sampleFormat)
             {
@@ -293,7 +347,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
             }
         }
 
-        private bool ProcessCpuInternal<T>(IntPtr samples, short channels, int length, IMediaSample output) where T : struct
+        private bool ProcessCpuInternal<T>(IAudioDescription input, IntPtr samples, short channels, int length, IMediaSample output) where T : struct
         {
             UpdateGpuResources(length);
 
@@ -302,7 +356,7 @@ namespace Mpdn.Extensions.Framework.AudioChain
                 return false;
 
             var sampleCount = length / channels;
-            Process(inputSamples, channels, sampleCount);
+            Process(input, inputSamples, channels, sampleCount);
 
             output.GetPointer(out samples);
             return PutOutputSamplesCpu<T>(inputSamples, samples);
@@ -353,37 +407,34 @@ namespace Mpdn.Extensions.Framework.AudioChain
         #endregion
     }
 
-    public interface IAudioOutput : IFilterOutput
+    public interface IAudioDescription
     {
         WaveFormatExtensible Format { get; }
         IMediaSample MediaSample { get; }
+    }
+
+    public interface IAudioOutput : IFilterOutput<IAudioDescription, IAudioOutput>, IAudioDescription
+    {
         IMediaSample Sample { get; }
     }
 
-    public interface IPinAudioOutput : IAudioOutput
+    public class PinAudioOutput : Lendable<IAudioOutput>, IAudioOutput
     {
-        void SetPin(IFilter<IAudioOutput> pin);
-    }
+        private IAudioDescription m_Format;
 
-    public class PinAudioOutput : FilterOutput, IPinAudioOutput
-    {
-        private IFilter<IAudioOutput> m_Pin;
-
-        private IMediaSample m_Sample;
-
-        public void SetPin(IFilter<IAudioOutput> pin)
+        public PinAudioOutput(IAudioDescription format)
         {
-            m_Pin = pin;
+            m_Format = format;
         }
 
         public WaveFormatExtensible Format
         {
-            get { return (m_Pin != null) ? m_Pin.Output.Format : null; }
+            get { return (m_Format != null) ? m_Format.Format : null; }
         }
 
         public IMediaSample MediaSample
         {
-            get { return (m_Pin != null) ? m_Pin.Output.MediaSample : null; }
+            get { return (m_Format != null) ? m_Format.MediaSample : null; }
         }
 
         public IMediaSample Sample
@@ -391,21 +442,34 @@ namespace Mpdn.Extensions.Framework.AudioChain
             get { return m_Sample; }
         }
 
-        public override void Initialize()
+        public IAudioDescription Description
         {
-            if (m_Pin == null)
-                throw new InvalidOperationException("Pin not set, can't allocate output.");
+            get { return this; }
         }
 
-        public override void Allocate()
+        #region Lendable Implementation
+
+        private IMediaSample m_Sample;
+
+        protected override void Allocate()
         {
+            if (m_Format == null)
+                throw new InvalidOperationException("Format not set, can't allocate output.");
+
             m_Sample = new MediaSample(MediaSample);
         }
 
-        public override void Deallocate()
+        protected override IAudioOutput Value
+        {
+            get { return this; }
+        }
+
+        protected override void Deallocate()
         {
             DisposeHelper.Dispose(ref m_Sample);
         }
+
+        #endregion
     }
 
     public sealed class MediaSample : IMediaSample, IDisposable

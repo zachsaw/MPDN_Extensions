@@ -15,6 +15,7 @@
 // License along with this library.
 
 #define main Downscale
+#define FirstPass 1
 #include "Downscale.hlsl"
 #undef main
 

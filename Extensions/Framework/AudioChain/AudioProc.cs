@@ -17,6 +17,8 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Cudafy;
 using Cudafy.Host;
 using Mpdn.OpenCl;
@@ -35,7 +37,20 @@ namespace Mpdn.Extensions.Framework.AudioChain
             get { return s_Gpu; }
         }
 
+        private static Lazy<bool> s_Init = new Lazy<bool>(Init);
+        private static Lazy<Task<bool>> s_InitAsync = new Lazy<Task<bool>>(() => Task.Run(() => s_Init.Value));
+
+        public static Task<bool> AsyncInitialize()
+        {
+            return s_InitAsync.Value;
+        }
+
         public static bool Initialize()
+        {
+            return s_Init.Value;
+        }
+
+        private static bool Init()
         {
             if (s_Gpu != null)
                 return true;
@@ -59,10 +74,12 @@ namespace Mpdn.Extensions.Framework.AudioChain
                         }
                     }
                 }
-                s_Gpu = CudafyHost.GetDevice(eGPUType.OpenCL, device.DeviceId);
-                s_Gpu.LoadAudioKernel(typeof(AudioKernels));
+                var gpu = CudafyHost.GetDevice(eGPUType.OpenCL, device.DeviceId);
+                gpu.LoadAudioKernel(typeof(AudioKernels));
 
                 Player.Closed += PlayerOnClosed;
+
+                s_Gpu = gpu;
             }
             catch (Exception ex)
             {

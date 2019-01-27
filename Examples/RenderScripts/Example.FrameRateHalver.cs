@@ -16,8 +16,9 @@
 // 
 
 using System;
+using Mpdn.Extensions.Framework.Filter;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
+using Mpdn.Extensions.Framework.RenderChain.Filters;
 using Mpdn.RenderScript;
 
 namespace Mpdn.Extensions.RenderScripts
@@ -26,16 +27,11 @@ namespace Mpdn.Extensions.RenderScripts
     {
         public sealed class FrameRateHalver : RenderChain
         {
-            private class FramerateHalvingFilter : BasicFilter
+            private class FramerateHalvingFilter : BasicProcess
             {
                 private int m_Counter;
 
-                public FramerateHalvingFilter(ITextureFilter inputFilter)
-                    : base(inputFilter)
-                {
-                }
-
-                protected override void Render(ITexture2D texture)
+                protected override void Render(ITexture2D texture, ITargetTexture target)
                 {
                     // Render all frames but only present half of them
                     // In real life scenario, you'd probably want to use Renderer.RenderQueue[i].Frame
@@ -43,7 +39,7 @@ namespace Mpdn.Extensions.RenderScripts
                     // (Note: Renderer.RenderQueue.First().Frame is the frame before the current, while 
                     //        Renderer.RenderQueue.Last().Frame is earliest frame in the queue.
                     //        Renderer.RenderQueue will have no elements to start off with!)
-                    Renderer.Render(Target.Texture, texture, false);
+                    Renderer.Render(target, texture, false);
 
                     // Note: To get actual odd/even frame number, you should calculate from 
                     //       Renderer.FrameRateHz and Renderer.FrameTimeStampMicrosec instead of relying on m_Counter
@@ -61,7 +57,7 @@ namespace Mpdn.Extensions.RenderScripts
             protected override ITextureFilter CreateFilter(ITextureFilter sourceFilter)
             {
                 // apply the halving filter
-                return new FramerateHalvingFilter(sourceFilter);
+                return new TextureFilter(new FramerateHalvingFilter().ApplyTo(sourceFilter));
             }
         }
 

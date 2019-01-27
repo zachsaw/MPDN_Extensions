@@ -1,6 +1,6 @@
 using System;
 
-namespace Mpdn.Extensions.Framework.RenderChain.Shader
+namespace Mpdn.Extensions.Framework.RenderChain.Shaders
 {
     public interface IShaderParameters
     {

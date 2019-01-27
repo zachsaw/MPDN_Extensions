@@ -13,7 +13,6 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
-// 
 
 using System;
 using System.Collections.Generic;
@@ -37,7 +36,7 @@ namespace Mpdn.Extensions.Framework
 
         public static Icon Icon
         {
-            get { return PlayerControl.ApplicationIcon; }
+            get { return PlayerControl.About.Icon; }
         }
 
         public static int FullScreenSeekBarHeight
@@ -65,28 +64,28 @@ namespace Mpdn.Extensions.Framework
         {
             get { return 9; }
         }
-
+    
         public static IList<IExtensionUi> Scripts
         {
-            get { return RenderScripts.Concat(AudioScripts.Cast<IExtensionUi>()).ToArray(); }
+            get { return RenderScripts.Concat<IExtensionUi>(AudioScripts).ToList(); }
         }
 
-        public static IList<Assembly> Assemblies
+        public static IReadOnlyList<Assembly> Assemblies
         {
             get { return PlayerControl.ExtensionAssemblies; }
         }
 
-        public static IList<IRenderScriptUi> RenderScripts
+        public static IReadOnlyList<IRenderScriptUi> RenderScripts
         {
             get { return PlayerControl.RenderScripts; }
         }
 
-        public static IList<IAudioScriptUi> AudioScripts
+        public static IReadOnlyList<IAudioScriptUi> AudioScripts
         {
             get { return PlayerControl.AudioScripts; }
         }
 
-        public static IList<IPlayerExtension> PlayerExtensions
+        public static IReadOnlyList<IPlayerExtension> PlayerExtensions
         {
             get { return PlayerControl.PlayerExtensions; }
         }
@@ -111,11 +110,29 @@ namespace Mpdn.Extensions.Framework
             get { return PlayerControl.ActiveRenderScriptGuid; }
         }
 
+        public static void SetAudioScript(Guid scriptGuid)
+        {
+            PlayerControl.ActiveAudioScriptGuid = scriptGuid;
+        }
+
         public static void SetRenderScript(Guid scriptGuid)
         {
-            Player.Config.Settings.VideoRendererSettings.RenderScript =
-                new Mpdn.Config.RenderScript { Guid = scriptGuid, SettingsChanged = true };
-            Player.Config.Refresh();
+            PlayerControl.ActiveRenderScriptGuid = scriptGuid;
+        }
+
+        public static void Refresh<TScript>()
+            where TScript : class, IScript
+        {
+            if (typeof(IRenderScript).IsAssignableFrom(typeof(TScript)))
+                RefreshRenderScript();
+            else if (typeof(IAudioScript).IsAssignableFrom(typeof(TScript)))
+                RefreshAudioScript();
+            else throw new ArgumentOutOfRangeException("Unrecognised Script type");
+        }
+
+        private static void RefreshAudioScript()
+        {
+            SetAudioScript(AudioScriptGuid);
         }
 
         public static void RefreshRenderScript()
@@ -200,7 +217,6 @@ namespace Mpdn.Extensions.Framework
                 add { PlayerControl.PlaybackRateChanged += value; }
                 remove { PlayerControl.PlaybackRateChanged -= value; }
             }
-
 
             public static event EventHandler Completed
             {
@@ -386,6 +402,7 @@ namespace Mpdn.Extensions.Framework
             remove { PlayerControl.CommandLineFileOpen -= value; }
         }
 
+        [Obsolete]
         public static class Window
         {
             public static void FitAspectRatio()
@@ -476,7 +493,7 @@ namespace Mpdn.Extensions.Framework
             PlayerControl.ShowOptionsDialog();
         }
 
-        public static IList<DirectShow.Filter> Filters
+        public static IReadOnlyList<DirectShow.Filter> Filters
         {
             get { return PlayerControl.Filters; }
         }
@@ -499,7 +516,7 @@ namespace Mpdn.Extensions.Framework
             get { return PlayerControl.MediaPosition; }
         }
 
-        public static IList<Chapter> Chapters
+        public static IReadOnlyList<Chapter> Chapters
         {
             get { return PlayerControl.Chapters; }
         }
@@ -555,17 +572,17 @@ namespace Mpdn.Extensions.Framework
             PlayerControl.SelectSubtitleTrack(track, showOsd);
         }
 
-        public static IList<MediaTrack> AudioTracks
+        public static IReadOnlyList<MediaTrack> AudioTracks
         {
             get { return PlayerControl.AudioTracks; }
         }
 
-        public static IList<MediaTrack> VideoTracks
+        public static IReadOnlyList<MediaTrack> VideoTracks
         {
             get { return PlayerControl.VideoTracks; }
         }
 
-        public static IList<MediaTrack> SubtitleTracks
+        public static IReadOnlyList<MediaTrack> SubtitleTracks
         {
             get { return PlayerControl.SubtitleTracks; }
         }

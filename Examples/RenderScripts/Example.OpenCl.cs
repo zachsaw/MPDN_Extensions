@@ -18,7 +18,7 @@
 using System;
 using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
-using Mpdn.Extensions.Framework.RenderChain.TextureFilter;
+using Mpdn.Extensions.Framework.RenderChain.Filters;
 using Mpdn.Extensions.RenderScripts.Mpdn.Resizer;
 using Mpdn.RenderScript;
 
@@ -43,11 +43,10 @@ namespace Mpdn.Extensions.RenderScripts
                 sourceFilter += new Resizer { ResizerOption = ResizerOption.TargetSize100Percent };
 
                 // apply our blue tint
-                var blueTint = CompileClKernel("BlueTint.cl", "BlueTint")
-                    .Configure(arguments: new[] {0.25f, 0.5f, 0.75f});
-
                 var outputSize = sourceFilter.Size();
-                return new ClKernelFilter(blueTint, new[] {outputSize.Width, outputSize.Height}, sourceFilter);
+                var blueTint = new ClKernel(FromFile("BlueTint.cl", entryPoint: "BlueTint"), globalWorkSizes: new[] { outputSize.Width, outputSize.Height })
+                    { Arguments = new[] { 0.25f, 0.5f, 0.75f } };
+                return blueTint.ApplyTo(sourceFilter);
             }
         }
 
