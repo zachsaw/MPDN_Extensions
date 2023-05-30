@@ -65,7 +65,7 @@ float8 nnedi3process(__local float (* restrict in)[74], __global const float* re
         #pragma unroll
         for (uint i = 0; i < 8; i++)
         {
-            pix = (float8)(pix.s1234567, in[j][i + 7]);
+            pix = (float8)(pix.s1, pix.s2, pix.s3, pix.s4, pix.s5, pix.s6, pix.s7, in[j][i + 7]);
             sum += pix;
             sumsq += pix*pix;
         }
@@ -105,7 +105,7 @@ float8 nnedi3process(__local float (* restrict in)[74], __global const float* re
             #pragma unroll
             for (uint i = 0; i < 8; i++)
             {
-                pix = (float8) (pix.s1234567, in[j][i + 7]);
+                pix = (float8) (pix.s1, pix.s2, pix.s3, pix.s4, pix.s5, pix.s6, pix.s7, in[j][i + 7]);
                 sum1 += pix * w[i];
                 sum2 += pix * w[i + 8];
             }
