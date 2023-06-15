@@ -194,5 +194,6 @@ ModelManifest.xml
 # MPDN
 MPDN/
 
-# Ignore Visual Studio temp files
+# Ignore Visual Studio and Rider temp files
 .vs/
+.idea/

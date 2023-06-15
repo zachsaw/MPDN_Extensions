@@ -167,7 +167,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "OCL_NNEDI3"; }
             }
 
-            protected IShaderFilterSettings<IKernel> CompileKernel()
+            private IShaderFilterSettings<IKernel> CompileKernel()
             {
                 return CompileClKernel("nnedi3ocl.cl", "nnedi3", "-cl-fast-relaxed-math");
             }

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Mpdn</RootNamespace>
     <AssemblyName>Mpdn.Extensions</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -26,6 +27,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <LangVersion>5</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>$(MSBuildProjectDirectory)\MPDN\</OutputPath>
@@ -39,6 +41,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
@@ -71,9 +74,9 @@
     <Reference Include="Mpdn.RenderScript">
       <HintPath>MPDN\Mpdn.RenderScript.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Extensions\Libs\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL"> 
+      <SpecificVersion>False</SpecificVersion> 
+      <HintPath>Extensions\Libs\Newtonsoft.Json.dll</HintPath> 
     </Reference>
     <Reference Include="Ooki.Dialogs">
       <HintPath>Extensions\Libs\Ookii.Dialogs.dll</HintPath>
@@ -328,6 +331,13 @@
       <DependentUpon>Mpdn.Lut3D.ConfigDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RenderScripts\Mpdn.Lut3D.cs" />
+    <Compile Include="Extensions\RenderScripts\Mpdn.NeoCnn.Ai.ConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.NeoCnn.Ai.ConfigDialog.Designer.cs">
+      <DependentUpon>Mpdn.NeoCnn.Ai.ConfigDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RenderScripts\Mpdn.NeoCnn.Ai.Scaler.cs" />
     <Compile Include="Extensions\RenderScripts\Mpdn.Nnedi3.NeuronsSelector.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -496,7 +506,6 @@
     <None Include="Extensions\RenderScripts\NNEDI3\Interleave.hlsl" />
     <None Include="Extensions\RenderScripts\NNEDI3\nnedi3.hlsl" />
     <None Include="Extensions\RenderScripts\OCL_NNEDI3\Combine.hlsl" />
-    <None Include="Extensions\RenderScripts\ScriptedRenderChain\ErrorTexture.hlsl" />
     <None Include="Extensions\RenderScripts\SSimDownscaler\SoftDownscaler.hlsl" />
     <None Include="Extensions\RenderScripts\SSSR\GammaToLinear.hlsl" />
     <None Include="Extensions\RenderScripts\Super-xBR\super-xbr-params.inc" />
@@ -521,6 +530,12 @@
     <EmbeddedResource Include="Extensions\PlayerExtensions\PlaylistForm.resx">
       <DependentUpon>PlaylistForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Extensions\RenderScripts\Mpdn.Nnedi3.NeuronsSelector.resx">
+      <DependentUpon>Mpdn.Nnedi3.NeuronsSelector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Extensions\RenderScripts\Mpdn.OclNnedi3.ConfigDialog.resx">
+      <DependentUpon>Mpdn.OclNnedi3.ConfigDialog.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Mpdn.Extensions.Framework.csproj">
@@ -533,6 +548,12 @@
     <None Include="Extensions\RenderScripts\DebandExperimental\Downscale.hlsl" />
     <Content Include="Extensions\RenderScripts\DebandExperimental\Deband.hlsl" />
     <Content Include="Extensions\RenderScripts\EwaScaler\EwaScaler.hlsl" />
+    <Content Include="Extensions\RenderScripts\NeoCNN.AI\conv2d.cl" />
+    <Content Include="Extensions\RenderScripts\NeoCNN.AI\conv2d_2.cl" />
+    <Content Include="Extensions\RenderScripts\NeoCNN.AI\conv2d_3.cl" />
+    <Content Include="Extensions\RenderScripts\NeoCNN.AI\neo4-2x.weights.json" />
+    <Content Include="Extensions\RenderScripts\NeoCNN.AI\neo5-2x.weights.json" />
+    <Content Include="Extensions\RenderScripts\NeoCNN.AI\subpixel.cl" />
     <Content Include="Extensions\RenderScripts\SSimDownscaler\Calc.hlsl" />
     <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Convolver.hlsl" />
     <Content Include="Extensions\RenderScripts\SSimDownscaler\DownscaledVarI.hlsl" />
@@ -542,7 +563,7 @@
     <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Upscaler.hlsl" />
     <Content Include="Extensions\RenderScripts\SSimDownscaler\Scalers\Downscaler.hlsl" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup /> 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>xcopy /q /d /y /s "$(SolutionDir)Sources\*.resx" "$(SolutionDir)Extensions\"

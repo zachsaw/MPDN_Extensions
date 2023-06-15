@@ -20,7 +20,6 @@ using Mpdn.Extensions.Framework;
 using Mpdn.Extensions.Framework.RenderChain;
 using Mpdn.OpenCl;
 using Mpdn.RenderScript;
-using SharpDX;
 
 namespace Mpdn.Extensions.RenderScripts
 {
@@ -68,7 +67,7 @@ namespace Mpdn.Extensions.RenderScripts
                 get { return "OCL_NNEDI3"; }
             }
 
-            protected IShaderFilterSettings<IKernel> CompileKernel(bool u)
+            private IShaderFilterSettings<IKernel> CompileKernel(bool u)
             {
                 return CompileClKernel("nnedi3ocl.cl", "nnedi3",
                     string.Format("-cl-fast-relaxed-math -D {0}", u ? "CHROMA_U=1" : "CHROMA_V=1"));

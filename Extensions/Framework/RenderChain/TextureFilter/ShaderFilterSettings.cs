@@ -42,8 +42,8 @@ namespace Mpdn.Extensions.Framework.RenderChain.TextureFilter
         {
             Shader = shader;
             LinearSampling = false;
-            PerTextureLinearSampling = new bool[0];
-            Transform = (s => s);
+            PerTextureLinearSampling = Array.Empty<bool>();
+            Transform = s => s;
             Format = Renderer.RenderQuality.GetTextureFormat();
             SizeIndex = 0;
             Arguments = new ArgumentList();
